@@ -1,0 +1,208 @@
+package types
+
+import (
+	"encoding/base64"
+	"fmt"
+	"multy-go/resources"
+	"multy-go/resources/common"
+	"multy-go/resources/output/network_interface"
+	"multy-go/resources/output/network_security_group"
+	"multy-go/resources/output/public_ip"
+	"multy-go/resources/output/virtual_machine"
+	rg "multy-go/resources/resource_group"
+	"multy-go/validate"
+)
+
+/*
+Notes:
+AWS: Can pass NICs and which overrides public_ip and subnet_id
+Azure: To have a private IP by default, if no NIC is passed, one will be created.
+       For PublicIp to be auto_assigned, public_ip is created an attached to default NIC
+ 	   NSG_NIC association
+*/
+
+type VirtualMachine struct {
+	*resources.CommonResourceParams
+	Name                    string   `hcl:"name"`
+	OperatingSystem         string   `hcl:"os"`
+	NetworkInterfaceIds     []string `hcl:"network_interface_ids,optional"`
+	NetworkSecurityGroupIds []string `hcl:"network_security_group_ids,optional"`
+	Size                    string   `hcl:"size"`
+	UserData                string   `hcl:"user_data,optional"`
+	SubnetId                string   `hcl:"subnet_id"`
+	PublicIpId              string   `hcl:"public_ip_id,optional"`
+	// PublicIp auto-generate public IP
+	PublicIp bool `hcl:"public_ip,optional"`
+}
+
+func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+	if vm.UserData != "" {
+		userData := fmt.Sprintf("#!/bin/bash -xe\n%s\necho \"<h1>Hello from Multy on %s</h1>\" > /var/www/html/index.html", vm.UserData, cloud)
+		vm.UserData = base64.StdEncoding.EncodeToString([]byte(userData))
+	}
+	var subnetId string
+	if s, err := ctx.GetResource(vm.SubnetId); err != nil {
+		vm.LogFatal(vm.ResourceId, "subnet_id", err.Error())
+	} else {
+		subnetId = s.Resource.(*Subnet).GetId(cloud)
+	}
+
+	var nicIds []string
+	for _, id := range vm.NetworkInterfaceIds {
+		if n, err := ctx.GetResource(id); err != nil {
+			vm.LogFatal(vm.ResourceId, "network_interface_ids", err.Error())
+		} else {
+			nicIds = append(nicIds, n.Resource.(*NetworkInterface).GetId(cloud))
+		}
+	}
+
+	var nsgIds []string
+	for _, id := range vm.NetworkSecurityGroupIds {
+		if n, err := ctx.GetResource(id); err != nil {
+			vm.LogFatal(vm.ResourceId, "network_security_group_ids", err.Error())
+		} else {
+			nsgIds = append(nsgIds, n.Resource.(*NetworkSecurityGroup).GetId(cloud))
+		}
+	}
+
+	if cloud == common.AWS {
+		var ec2NicIds []virtual_machine.AwsEc2NetworkInterface
+		for i, id := range nicIds {
+			ec2NicIds = append(ec2NicIds, virtual_machine.AwsEc2NetworkInterface{
+				NetworkInterfaceId: id,
+				DeviceIndex:        i,
+			})
+		}
+
+		ec2 := virtual_machine.AwsEC2{
+			AwsResource: common.AwsResource{
+				ResourceName: virtual_machine.AwsResourceName,
+				ResourceId:   vm.GetTfResourceId(cloud),
+				Tags:         map[string]string{"Name": vm.Name},
+			},
+			Ami:                      "ami-09d4a659cdd8677be", // eu-west-2 "ami-0fc15d50d39e4503c", // https://cloud-images.ubuntu.com/locator/ec2/
+			InstanceType:             common.VMSIZE[common.MICRO][cloud],
+			AssociatePublicIpAddress: vm.PublicIp,
+			UserDataBase64:           vm.UserData,
+			SubnetId:                 subnetId,
+			NetworkInterfaces:        ec2NicIds,
+			SecurityGroupIds:         nsgIds,
+		}
+
+		if len(ec2NicIds) != 0 {
+			ec2.SubnetId = ""
+			ec2.AssociatePublicIpAddress = false
+		}
+
+		return []interface{}{ec2}
+	} else if cloud == common.AZURE {
+		// TODO validate that NIC is on the same VNET
+		var azResources []interface{}
+		rgName := rg.GetResourceGroupName(vm.ResourceGroupId, cloud)
+
+		if len(vm.NetworkInterfaceIds) == 0 {
+			nic := network_interface.AzureNetworkInterface{
+				AzResource: common.AzResource{
+					ResourceName:      network_interface.AzureResourceName,
+					ResourceId:        vm.GetTfResourceId(cloud),
+					ResourceGroupName: rgName,
+					Name:              vm.Name,
+					Location:          ctx.GetLocationFromCommonParams(vm.CommonResourceParams, cloud),
+				},
+				IpConfigurations: []network_interface.AzureIpConfiguration{{
+					Name:                       "internal", // this name shouldn't be vm.name
+					PrivateIpAddressAllocation: "Dynamic",
+					SubnetId:                   subnetId,
+					Primary:                    true,
+				}},
+			}
+			azResources = append(azResources, &nic)
+
+			if vm.PublicIp {
+				pIp := public_ip.AzurePublicIp{
+					AzResource: common.AzResource{
+						ResourceName:      public_ip.AzureResourceName,
+						ResourceId:        vm.GetTfResourceId(cloud),
+						ResourceGroupName: rgName,
+						Name:              vm.Name,
+						Location:          ctx.GetLocationFromCommonParams(vm.CommonResourceParams, cloud),
+					},
+					AllocationMethod: "Static",
+				}
+				nic.IpConfigurations = []network_interface.AzureIpConfiguration{{
+					Name:                       "external", // this name shouldn't be vm.name
+					PrivateIpAddressAllocation: "Dynamic",
+					SubnetId:                   subnetId,
+					PublicIpAddressId:          pIp.GetId(cloud),
+					Primary:                    true,
+				}}
+				azResources = append(azResources, &pIp)
+			}
+			nicIds = append(nicIds, nic.GetId(cloud))
+		}
+
+		// TODO change this to multy nsg_nic_attachment resource and use aws_network_interface_sg_attachment
+		if len(vm.NetworkSecurityGroupIds) != 0 {
+			for _, nsgId := range nsgIds {
+				for _, nicId := range nicIds {
+					azResources = append(azResources, network_security_group.AzureNetworkInterfaceSecurityGroupAssociation{
+						ResourceName:           network_security_group.AzureNicNsgAssociation,
+						ResourceId:             vm.GetTfResourceId(cloud),
+						NetworkInterfaceId:     nicId,
+						NetworkSecurityGroupId: nsgId,
+					})
+				}
+			}
+		}
+
+		azResources = append(azResources, virtual_machine.AzureVirtualMachine{
+			AzResource: common.AzResource{
+				ResourceName:      virtual_machine.AzureResourceName,
+				ResourceId:        vm.GetTfResourceId(cloud),
+				ResourceGroupName: rgName,
+				Name:              vm.Name,
+			},
+			Location:            ctx.GetLocationFromCommonParams(vm.CommonResourceParams, cloud),
+			Size:                common.VMSIZE[common.MICRO][cloud],
+			NetworkInterfaceIds: nicIds,
+			CustomData:          vm.UserData,
+			OsDisk: virtual_machine.AzureOsDisk{
+				Caching:            "None",
+				StorageAccountType: "Standard_LRS",
+			},
+			AdminUsername: "multyadmin",
+			AdminPassword: "Multyadmin090#",
+			SourceImageReference: virtual_machine.AzureSourceImageReference{
+				Publisher: "OpenLogic",
+				Offer:     "CentOS",
+				Sku:       "7_9-gen2",
+				Version:   "latest",
+			},
+			DisablePasswordAuthentication: false,
+		})
+
+		return azResources
+	}
+
+	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
+	return nil
+}
+
+func (vm *VirtualMachine) Validate(ctx resources.MultyContext) {
+	//if vn.Name contains not letters,numbers,_,- { return false }
+	//if vn.Name length? { return false }
+	//if vn.Size valid { return false }
+	if vm.OperatingSystem != "linux" { // max len?
+		vm.LogFatal(vm.ResourceId, "os", "invalid operating system")
+	}
+	if vm.PublicIp && len(vm.NetworkInterfaceIds) != 0 {
+		vm.LogFatal(vm.ResourceId, "public_ip", "public ip can't be set with network interface ids")
+	}
+	if vm.PublicIp && vm.PublicIpId != "" {
+		vm.LogFatal(vm.ResourceId, "public_ip", "conflict between public_ip and public_ip_id")
+	}
+	if common.ValidateVmSize(vm.Size) {
+		vm.LogFatal(vm.ResourceId, "size", fmt.Sprintf("\"%s\" is not []", vm.Size))
+	}
+	return
+}
