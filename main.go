@@ -36,11 +36,13 @@ func main() {
 		}
 	}
 
+	if len(configFiles) == 0 {
+		log.Fatalf("no .mt config files found")
+	}
+
 	if len(configFiles) > 1 {
 		log.Fatalf("multiple config files are not yet supported")
 	}
-
-	log.Printf("parsed vars: %v", commandLineVars.String())
 
 	p := parser.Parser{CliVars: commandLineVars}
 	parsedConfig := p.Parse(configFiles)
