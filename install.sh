@@ -52,3 +52,38 @@ else
     >&2  printf "error: failed to download %s\\n" "${DOWNLOAD_URL}"
     exit 1
 fi
+
+# Add $HOME/.multy/bin to the PATH
+if ! command -v multy >/dev/null; then
+    SHELL_NAME=$(basename "${SHELL}")
+    PROFILE_FILE=""
+
+    if [ "${SHELL_NAME}" = "zsh" ]; then
+      PROFILE_FILE="${ZDOTDIR:-$HOME}/.zshrc"
+    else
+      if [ "$(uname)" != "Darwin" ]; then
+          if [ -e "${HOME}/.bashrc" ]; then
+              PROFILE_FILE="${HOME}/.bashrc"
+          elif [ -e "${HOME}/.bash_profile" ]; then
+              PROFILE_FILE="${HOME}/.bash_profile"
+          fi
+      else
+          if [ -e "${HOME}/.bash_profile" ]; then
+              PROFILE_FILE="${HOME}/.bash_profile"
+          elif [ -e "${HOME}/.bashrc" ]; then
+              PROFILE_FILE="${HOME}/.bashrc"
+          fi
+      fi
+    fi
+
+    if [ -n "${PROFILE_FILE}" ]; then
+        LINE_TO_ADD="export PATH=\$PATH:\$HOME/.multy/bin"
+        if ! grep -q "# add multy to PATH" "${PROFILE_FILE}"; then
+            printf "Adding \$HOME/.multy/bin to \$PATH in %s\\n" "${PROFILE_FILE}"
+            printf "\\n# add multy to PATH\\n%s\\n" "${LINE_TO_ADD}" >> "${PROFILE_FILE}"
+        fi
+        printf "Please restart your shell or add %s to your \$PATH\\n" "$HOME/.multy/bin"
+    else
+        printf "Please add %s to your \$PATH\\n" "$HOME/.multy/bin"
+    fi
+fi
