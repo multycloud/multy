@@ -35,5 +35,6 @@ multy "virtual_machine" "vm" {
   size      = "micro"
   user_data = "sudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html;"
   subnet_id = subnet.id
+  ssh_key_file_name = "./ssh_key.pub"
   public_ip = true
 }
