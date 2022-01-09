@@ -43,15 +43,14 @@ func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...interface{}) {
 			printLinesInRange(*diag.Subject)
 		}
 	}
-
-	exitAndPrintStackTrace()
+	os.Exit(1)
 }
 
 func LogFatalWithSourceRange(sourceRange hcl.Range, format string, a ...interface{}) {
 	printToStdErr(format, a...)
 	printToStdErr("  on %s\n", sourceRange)
 	printLinesInRange(sourceRange)
-	exitAndPrintStackTrace()
+	os.Exit(1)
 }
 
 func LogInternalError(format string, a ...interface{}) {
