@@ -187,6 +187,30 @@ With Multy, **you write once, and deploy anywhere**.
 
 ---
 
+#### Install
+To install the latest release, you can run the install.sh script.
+```shell
+curl https://raw.githubusercontent.com/multycloud/multy/main/install.sh | sh
+```
+
+You can also download any release at https://github.com/multycloud/multy/releases or build the Go binary yourself.
+
+#### Create a deployment configuration
+
+See some examples in our documentation at https://multy.dev/docs/examples/,
+
+#### Translate your multy configuration to terraform
+
+Generate your terraform configuration by running the multy binary with the following command:
+
+```shell
+multy --output=main.tf
+```
+
+You can now use familiar terraform commands to deploy your configuration to multiple clouds!
+
+#### More resources
+
 * **[Docs](https://multy.dev/docs/intro/)**: check our documentation page to get started
 * **[Examples](https://multy.dev/docs/examples/)**: look over some common examples
 * **[Resources](https://multy.dev/docs/resources/virtual_network/)**: currently supported resources

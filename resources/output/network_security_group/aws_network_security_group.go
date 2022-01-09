@@ -29,11 +29,11 @@ type AwsSecurityGroup struct {
 }
 
 type AwsSecurityGroupRule struct {
-	Protocol   string `hcl:"protocol"`
-	FromPort   int    `hcl:"from_port"`
-	ToPort     int    `hcl:"to_port"`
-	CidrBlocks string `hcl:"cidr_blocks"`
-	Self       bool   `hcl:"self" hcle:"omitempty"`
+	Protocol   string   `hcl:"protocol"`
+	FromPort   int      `hcl:"from_port"`
+	ToPort     int      `hcl:"to_port"`
+	CidrBlocks []string `hcl:"cidr_blocks"`
+	Self       bool     `hcl:"self" hcle:"omitempty"`
 }
 
 type AwsDefaultAcl struct {
