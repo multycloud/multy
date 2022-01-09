@@ -54,5 +54,5 @@ func main() {
 	fmt.Println(hclOutput)
 	d1 := []byte(hclOutput)
 	_ = os.WriteFile(*outputFile, d1, 0644)
-	_ = exec.Command("terraform", "fmt", "terraform/")
+	_ = exec.Command("terraform", "fmt", *outputFile)
 }
