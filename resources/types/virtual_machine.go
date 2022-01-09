@@ -8,6 +8,7 @@ import (
 	"multy-go/resources/output/network_interface"
 	"multy-go/resources/output/network_security_group"
 	"multy-go/resources/output/public_ip"
+	"multy-go/resources/output/terraform"
 	"multy-go/resources/output/virtual_machine"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
@@ -174,6 +175,33 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			}
 		}
 
+		// if ssh key is specified, add admin_ssh param
+		// ssh authentication will replace password authentication
+		// if no ssh key is passed, password is required
+		// random_password will be used
+		var azureSshKey virtual_machine.AzureAdminSshKey
+		var vmPassword string
+		disablePassAuth := false
+		if vm.SshKeyFileName != "" {
+			azureSshKey = virtual_machine.AzureAdminSshKey{
+				Username:  "adminuser",
+				PublicKey: fmt.Sprintf("file(\"%s\")", vm.SshKeyFileName),
+			}
+			disablePassAuth = true
+		} else {
+			randomPassword := terraform.RandomPassword{
+				ResourceName: terraform.TerraformResourceName,
+				ResourceId:   vm.GetTfResourceId(cloud),
+				Length:       16,
+				Special:      true,
+				Upper:        true,
+				Lower:        true,
+				Number:       true,
+			}
+			vmPassword = randomPassword.GetResult()
+			azResources = append(azResources, randomPassword)
+		}
+
 		azResources = append(azResources, virtual_machine.AzureVirtualMachine{
 			AzResource: common.AzResource{
 				ResourceName:      virtual_machine.AzureResourceName,
@@ -189,15 +217,16 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 				Caching:            "None",
 				StorageAccountType: "Standard_LRS",
 			},
-			AdminUsername: "multyadmin",
-			AdminPassword: "Multyadmin090#",
+			AdminUsername: "adminuser",
+			AdminPassword: vmPassword,
+			AdminSshKey:   azureSshKey,
 			SourceImageReference: virtual_machine.AzureSourceImageReference{
 				Publisher: "OpenLogic",
 				Offer:     "CentOS",
 				Sku:       "7_9-gen2",
 				Version:   "latest",
 			},
-			DisablePasswordAuthentication: false,
+			DisablePasswordAuthentication: disablePassAuth,
 		})
 
 		return azResources

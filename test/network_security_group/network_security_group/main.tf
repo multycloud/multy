@@ -246,6 +246,13 @@ resource "azurerm_public_ip" "vm_azure" {
   location            = "northeurope"
   allocation_method   = "Static"
 }
+resource "random_password" "vm_azure" {
+    length  = 16
+    special = true
+    upper   = true
+    lower   = true
+    number  = true
+}
 resource "azurerm_linux_virtual_machine" "vm_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
   name                  = "test-vm"
@@ -259,8 +266,8 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
     storage_account_type = "Standard_LRS"
   }
 
-  admin_username = "multyadmin"
-  admin_password = "Multyadmin090#"
+  admin_username = "adminuser"
+  admin_password = random_password.vm_azure.result
 
   source_image_reference {
     publisher = "OpenLogic"
@@ -298,6 +305,13 @@ resource "azurerm_network_interface_security_group_association" "vm2_azure" {
   network_interface_id      = azurerm_network_interface.vm2_azure.id
   network_security_group_id = azurerm_network_security_group.nsg2_azure.id
 }
+resource "random_password" "vm2_azure" {
+  length  = 16
+  special = true
+  upper   = true
+  lower   = true
+  number  = true
+}
 resource "azurerm_linux_virtual_machine" "vm2_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
   name                  = "test-vm2"
@@ -311,8 +325,8 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
     storage_account_type = "Standard_LRS"
   }
 
-  admin_username = "multyadmin"
-  admin_password = "Multyadmin090#"
+  admin_username = "adminuser"
+  admin_password = random_password.vm2_azure.result
 
   source_image_reference {
     publisher = "OpenLogic"

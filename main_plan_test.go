@@ -52,6 +52,9 @@ func testPlan(outfile string, t *testing.T) {
 	t.Parallel()
 	outputFilePath := fmt.Sprintf("%s_output.tf", strings.TrimSuffix(outfile, ".tf"))
 
+	// if terraform providers change but .terraform already exists
+	// run `find . -type d -name '.terraform' -exec rm -r {} +`
+	// TODO add to make test clean
 	if _, err := os.Stat(fmt.Sprintf("%s/.terraform", filepath.Dir(outputFilePath))); os.IsNotExist(err) {
 		cmd := exec.Command("terraform", "init")
 		cmd.Dir = filepath.Dir(outputFilePath)

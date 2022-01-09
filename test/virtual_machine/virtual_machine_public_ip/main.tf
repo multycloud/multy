@@ -151,8 +151,12 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
     storage_account_type = "Standard_LRS"
   }
 
-  admin_username = "multyadmin"
-  admin_password = "Multyadmin090#"
+  admin_username = "adminuser"
+
+  admin_ssh_key {
+    username   = "adminuser"
+    public_key = file("./ssh_key.pub")
+}
 
   source_image_reference {
     publisher = "OpenLogic"
@@ -161,7 +165,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
     version   = "latest"
   }
 
-  disable_password_authentication = false
+  disable_password_authentication = true
 }
 resource "azurerm_resource_group" "vm-rg" {
   name     = "vm-rg"
