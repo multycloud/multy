@@ -32,7 +32,7 @@ func TestTranslate(t *testing.T) {
 		}
 
 		ext := filepath.Ext(path)
-		base := strings.TrimSuffix(path, ext)
+		base := filepath.Dir(path)
 		if _, ok := allTests[base]; !ok {
 			allTests[base] = &TestFiles{}
 		}
@@ -40,7 +40,7 @@ func TestTranslate(t *testing.T) {
 		if ext == ".tf" {
 			allTests[base].OutputFile = path
 		} else {
-			allTests[base].InputFile = path
+			allTests[base].InputFile = append(allTests[base].InputFile, path)
 		}
 		return nil
 	})
@@ -49,8 +49,8 @@ func TestTranslate(t *testing.T) {
 		panic(err)
 	}
 
-	for _, testFile := range allTests {
-		t.Run(filepath.Base(filepath.Dir(testFile.InputFile)), func(t *testing.T) {
+	for dir, testFile := range allTests {
+		t.Run(filepath.Base(dir), func(t *testing.T) {
 			test(*testFile, t)
 		})
 	}
@@ -95,13 +95,11 @@ var tfConfigFileSchema = &hcl.BodySchema{
 }
 
 func test(testFiles TestFiles, t *testing.T) {
-
-	t.Logf("testing file %s", testFiles.InputFile)
-	if testFiles.InputFile == "" {
-		t.Errorf("No tf file found for input file %s", testFiles.InputFile)
+	if len(testFiles.InputFile) == 0 {
+		t.Fatalf("No tf file found for input file %s", testFiles.InputFile)
 	}
 	if testFiles.OutputFile == "" {
-		t.Errorf("No hcl file found for expected file %s", testFiles.OutputFile)
+		t.Fatalf("No hcl file found for expected file %s", testFiles.OutputFile)
 	}
 	p := parser.Parser{}
 	parsedConfig := p.Parse(testFiles.InputFile)
@@ -115,7 +113,7 @@ func test(testFiles TestFiles, t *testing.T) {
 	t.Logf("output:\n%s", strings.Join(lines, "\n"))
 
 	hclP := hclparse.NewParser()
-	f, diags := hclP.ParseHCL([]byte(hclOutput), testFiles.InputFile)
+	f, diags := hclP.ParseHCL([]byte(hclOutput), "generated_file")
 	if diags != nil {
 		t.Fatal(diags)
 	}
