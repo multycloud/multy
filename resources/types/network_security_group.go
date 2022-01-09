@@ -56,7 +56,7 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 			Protocol:   "-1",
 			FromPort:   0,
 			ToPort:     0,
-			CidrBlocks: virtualNetwork.CidrBlock,
+			CidrBlocks: []string{virtualNetwork.CidrBlock},
 		}
 
 		awsRules[INGRESS] = append(awsRules[INGRESS], allowVpcTraffic)
@@ -140,20 +140,20 @@ func translateAwsNsgRules(r *NetworkSecurityGroup, rules []RuleType) map[string]
 				Protocol:   awsProtocol,
 				FromPort:   awsFromPort,
 				ToPort:     awsToPort,
-				CidrBlocks: rule.CidrBlock,
+				CidrBlocks: []string{rule.CidrBlock},
 			})
 			awsRules[EGRESS] = append(awsRules[EGRESS], network_security_group.AwsSecurityGroupRule{
 				Protocol:   awsProtocol,
 				FromPort:   awsFromPort,
 				ToPort:     awsToPort,
-				CidrBlocks: rule.CidrBlock,
+				CidrBlocks: []string{rule.CidrBlock},
 			})
 		} else {
 			awsRules[rule.Direction] = append(awsRules[rule.Direction], network_security_group.AwsSecurityGroupRule{
 				Protocol:   awsProtocol,
 				FromPort:   awsFromPort,
 				ToPort:     awsToPort,
-				CidrBlocks: rule.CidrBlock,
+				CidrBlocks: []string{rule.CidrBlock},
 			})
 		}
 	}
@@ -174,7 +174,7 @@ func translateAzNsgRules(rules []RuleType) []network_security_group.AzureRule {
 				Name:                     strconv.Itoa(len(rls)),
 				Protocol:                 rule.Protocol,
 				Priority:                 rule.Priority,
-				Access:                   ALLOW,
+				Access:                   "Allow",
 				SourcePortRange:          "*",
 				SourceAddressPrefix:      "*",
 				DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
@@ -185,7 +185,7 @@ func translateAzNsgRules(rules []RuleType) []network_security_group.AzureRule {
 				Name:                     strconv.Itoa(len(rls)),
 				Protocol:                 rule.Protocol,
 				Priority:                 rule.Priority,
-				Access:                   ALLOW,
+				Access:                   "Allow",
 				SourcePortRange:          "*",
 				SourceAddressPrefix:      "*",
 				DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
@@ -197,7 +197,7 @@ func translateAzNsgRules(rules []RuleType) []network_security_group.AzureRule {
 				Name:                     strconv.Itoa(len(rls)),
 				Protocol:                 rule.Protocol,
 				Priority:                 rule.Priority,
-				Access:                   ALLOW,
+				Access:                   "Allow",
 				SourcePortRange:          "*",
 				SourceAddressPrefix:      "*",
 				DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),

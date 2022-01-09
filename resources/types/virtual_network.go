@@ -56,7 +56,7 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 			Protocol:   "-1",
 			FromPort:   0,
 			ToPort:     0,
-			CidrBlocks: "0.0.0.0/0",
+			CidrBlocks: []string{"0.0.0.0/0"},
 			Self:       true,
 		}}
 		sg := network_security_group.AwsDefaultSecurityGroup{

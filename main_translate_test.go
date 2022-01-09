@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"io/ioutil"
 	"log"
 	"multy-go/decoder"
@@ -230,6 +231,7 @@ func printBlock(b *hcl.Block, attrs hcl.Attributes, bytes []byte) string {
 }
 
 func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile string) {
+	failed := false
 	expectedAttrs, _ := expected.Body.JustAttributes()
 	actualAttrs, _ := actual.Body.JustAttributes()
 
@@ -252,6 +254,7 @@ func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile st
 				errorMessage += line.String() + "\n"
 			}
 			t.Errorf(errorMessage)
+			failed = true
 			continue
 		}
 
@@ -276,6 +279,7 @@ func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile st
 			for _, line := range actualLines {
 				errorMessage += line.String()
 			}
+			failed = true
 			t.Errorf(errorMessage)
 		}
 	}
@@ -291,8 +295,17 @@ func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile st
 			for _, line := range expectedLines {
 				errorMessage += line.String() + "\n"
 			}
+			failed = true
 			t.Errorf(errorMessage)
 		}
 
+	}
+
+	// If all attributes are correct so far, we still need to check nested blocks. HCL doesn't allow us to do that
+	// without a schema, so we'll just have to compare everything.
+	if !failed && !cmp.Equal(actual, expected, cmp.Comparer(func(a, b cty.Value) bool {
+		return a.Equals(b).True()
+	}), cmpopts.IgnoreUnexported(hclsyntax.Body{}, hcl.TraverseRoot{}, hcl.TraverseAttr{}, hcl.TraverseIndex{}, hcl.TraverseSplat{}), cmpopts.IgnoreTypes(hcl.Range{})) {
+		t.Errorf("some nested blocks differ within this block,\nactual:%s\nexpected:%s\n", actual.DefRange, expected.DefRange)
 	}
 }
