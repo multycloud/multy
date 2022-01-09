@@ -1,7 +1,7 @@
 package main
 
 type TestFiles struct {
-	InputFile  string
+	InputFile  []string
 	OutputFile string
 	Dir        string
 }

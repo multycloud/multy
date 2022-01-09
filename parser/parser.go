@@ -1,14 +1,15 @@
 package parser
 
 import (
-	"multy-go/resources/common"
-	"multy-go/validate"
-	"multy-go/variables"
-
+	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/zclconf/go-cty/cty"
+	"log"
+	"multy-go/resources/common"
+	"multy-go/validate"
+	"multy-go/variables"
 )
 
 type Parser struct {
@@ -46,26 +47,77 @@ type ParsedVariable struct {
 	Value cty.Value
 }
 
-func (p *Parser) Parse(filepath string) ParsedConfig {
-	type multyConfig struct {
-		HCLBody hcl.Body `hcl:",remain"`
-	}
-	type config struct {
-		Variables      []variables.Variable `hcl:"variable,block"`
-		MultyResources []*MultyResource     `hcl:"multy,block"`
-		MultyConfig    multyConfig          `hcl:"config,block"`
-	}
-	var c config
+type multyConfig struct {
+	HCLBody hcl.Body `hcl:",remain"`
+}
+
+type config struct {
+	Variables      []variables.Variable `hcl:"variable,block"`
+	MultyResources []*MultyResource     `hcl:"multy,block"`
+	MultyConfig    *multyConfig         `hcl:"config,block"`
+}
+
+func (p *Parser) Parse(filepaths []string) ParsedConfig {
+
+	var configs []config
 	parser := hclparse.NewParser()
-	f, _ := parser.ParseHCLFile(filepath)
-	diags := gohcl.DecodeBody(f.Body, nil, &c)
-	if diags != nil {
-		validate.LogFatalWithDiags(diags, "Failed to load configuration.")
+	resourcesById := map[string]*MultyResource{}
+	for _, filepath := range filepaths {
+		var c config
+		blocks := p.parseSingleFile(filepath, parser, &c)
+		for _, r := range c.MultyResources {
+			resourceId := fmt.Sprintf("%s", r.ID)
+			if dup, ok := resourcesById[resourceId]; ok {
+				validate.LogFatalWithSourceRange(dup.DefinitionRange, "duplicate resource found")
+			}
+			resourcesById[resourceId] = r
+		}
+		for _, block := range blocks {
+			resourcesById[fmt.Sprintf("%s", block.Labels[1])].DefinitionRange = block.DefRange
+		}
+		configs = append(configs, c)
 	}
 
-	resourcesById := map[string]*MultyResource{}
+	c := mergeConfigs(configs)
+
 	for _, r := range c.MultyResources {
-		resourcesById[r.ID] = r
+		r.Dependencies = findDependencies(r, resourcesById)
+	}
+
+	result := ParsedConfig{
+		Variables:      convertVars(c.Variables, p.CliVars),
+		MultyResources: c.MultyResources,
+	}
+	if c.MultyConfig != nil {
+		result.GlobalConfig = c.MultyConfig.HCLBody
+	}
+	return result
+
+}
+
+func mergeConfigs(configs []config) config {
+	var c config
+	for _, fileConfig := range configs {
+		c.MultyResources = append(c.MultyResources, fileConfig.MultyResources...)
+		c.Variables = append(c.Variables, fileConfig.Variables...)
+		if fileConfig.MultyConfig != nil {
+			if c.MultyConfig != nil {
+				log.Fatalf("multiple multy configs found, but only one is allowed")
+			}
+			c.MultyConfig = fileConfig.MultyConfig
+		}
+	}
+	return c
+}
+
+func (p *Parser) parseSingleFile(filepath string, parser *hclparse.Parser, c *config) hcl.Blocks {
+	f, diags := parser.ParseHCLFile(filepath)
+	if diags != nil {
+		validate.LogFatalWithDiags(diags, "unable to parse file %s", filepath)
+	}
+	diags = gohcl.DecodeBody(f.Body, nil, c)
+	if diags != nil {
+		validate.LogFatalWithDiags(diags, "failed to decode file %s", filepath)
 	}
 
 	rootSchema := &hcl.BodySchema{
@@ -79,20 +131,7 @@ func (p *Parser) Parse(filepath string) ParsedConfig {
 		validate.LogFatalWithDiags(diags, "Failed to load configuration.")
 	}
 
-	for _, block := range content.Blocks {
-		resourcesById[block.Labels[1]].DefinitionRange = block.DefRange
-	}
-
-	for _, r := range c.MultyResources {
-		r.Dependencies = findDependencies(r, resourcesById)
-	}
-
-	return ParsedConfig{
-		Variables:      convertVars(c.Variables, p.CliVars),
-		MultyResources: c.MultyResources,
-		GlobalConfig:   c.MultyConfig.HCLBody,
-	}
-
+	return content.Blocks
 }
 
 func findDependencies(resource *MultyResource, resourcesById map[string]*MultyResource) []MultyResourceDependency {
