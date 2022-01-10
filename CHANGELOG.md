@@ -10,3 +10,9 @@ CHANGELOG
 ### Changed
 
 `virtual_machine` - password now uses terraform `random_password` instead of hardcoded password
+
+---
+
+## [0.0.1-alpha] - 08/01/2021
+
+Initial release
