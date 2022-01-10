@@ -1,6 +1,6 @@
 #!/bin/sh
 #VERSION=$(curl --silent "https://api.github.com/repos/multycloud/multy/releases/latest" |  jq -r .tag_name)
-VERSION="v0.0.1-alpha"
+VERSION="latest"
 
 ARCH=""
 case $(uname -m) in
@@ -25,7 +25,11 @@ case $(uname) in
         ;;
 esac
 
-DOWNLOAD_URL="https://github.com/multycloud/multy/releases/download/${VERSION}/multy-${VERSION}-${OS}-${ARCH}.${EXT}"
+if [ "${VERSION}" = "latest" ]; then
+  DOWNLOAD_URL="https://github.com/multycloud/multy/releases/${VERSION}/download/multy-${OS}-${ARCH}.${EXT}"
+else
+  DOWNLOAD_URL="https://github.com/multycloud/multy/releases/download/${VERSION}/multy-${OS}-${ARCH}.${EXT}"
+fi
 TARBALL_DEST="multy-${VERSION}-${OS}-${ARCH}.${EXT}"
 
 printf "Downloading multy version %s\\n" "${VERSION}"
