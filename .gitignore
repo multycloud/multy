@@ -4,3 +4,5 @@
 terraform.*
 **/*.lock.hcl
 .multy
+ssh_key
+/main.tf

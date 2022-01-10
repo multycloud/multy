@@ -14,9 +14,15 @@ type AzureVirtualMachine struct {
 	CustomData                    string                    `hcl:"custom_data" hcle:"omitempty"`
 	OsDisk                        AzureOsDisk               `hcl:"os_disk"`
 	AdminUsername                 string                    `hcl:"admin_username"`
-	AdminPassword                 string                    `hcl:"admin_password"`
+	AdminPassword                 string                    `hcl:"admin_password,expr" hcle:"omitempty"`
+	AdminSshKey                   AzureAdminSshKey          `hcl:"admin_ssh_key" hcle:"omitempty"`
 	SourceImageReference          AzureSourceImageReference `hcl:"source_image_reference"`
 	DisablePasswordAuthentication bool                      `hcl:"disable_password_authentication"`
+}
+
+type AzureAdminSshKey struct {
+	Username  string `hcl:"username"`
+	PublicKey string `hcl:"public_key,expr"`
 }
 
 type AzureOsDisk struct {

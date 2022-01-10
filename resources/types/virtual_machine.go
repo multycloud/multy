@@ -8,6 +8,7 @@ import (
 	"multy-go/resources/output/network_interface"
 	"multy-go/resources/output/network_security_group"
 	"multy-go/resources/output/public_ip"
+	"multy-go/resources/output/terraform"
 	"multy-go/resources/output/virtual_machine"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
@@ -30,6 +31,7 @@ type VirtualMachine struct {
 	Size                    string   `hcl:"size"`
 	UserData                string   `hcl:"user_data,optional"`
 	SubnetId                string   `hcl:"subnet_id"`
+	SshKeyFileName          string   `hcl:"ssh_key_file_path,optional"`
 	PublicIpId              string   `hcl:"public_ip_id,optional"`
 	// PublicIp auto-generate public IP
 	PublicIp bool `hcl:"public_ip,optional"`
@@ -66,6 +68,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 	}
 
 	if cloud == common.AWS {
+		var awsResources []interface{}
 		var ec2NicIds []virtual_machine.AwsEc2NetworkInterface
 		for i, id := range nicIds {
 			ec2NicIds = append(ec2NicIds, virtual_machine.AwsEc2NetworkInterface{
@@ -94,7 +97,24 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			ec2.AssociatePublicIpAddress = false
 		}
 
-		return []interface{}{ec2}
+		// adding ssh key to vm requires aws key pair resource
+		// key pair will be added and referenced via key_name parameter
+		if vm.SshKeyFileName != "" {
+			keyPair := virtual_machine.AwsKeyPair{
+				AwsResource: common.AwsResource{
+					ResourceName: virtual_machine.AwsKeyPairResourceName,
+					ResourceId:   vm.GetTfResourceId(cloud),
+					Tags:         map[string]string{"Name": vm.Name},
+				},
+				KeyName:   fmt.Sprintf("%s_multy", vm.ResourceId),
+				PublicKey: fmt.Sprintf("file(\"%s\")", vm.SshKeyFileName),
+			}
+			ec2.KeyName = vm.GetAssociatedKeyPairName(cloud)
+			awsResources = append(awsResources, keyPair)
+		}
+
+		awsResources = append(awsResources, ec2)
+		return awsResources
 	} else if cloud == common.AZURE {
 		// TODO validate that NIC is on the same VNET
 		var azResources []interface{}
@@ -155,6 +175,33 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			}
 		}
 
+		// if ssh key is specified, add admin_ssh param
+		// ssh authentication will replace password authentication
+		// if no ssh key is passed, password is required
+		// random_password will be used
+		var azureSshKey virtual_machine.AzureAdminSshKey
+		var vmPassword string
+		disablePassAuth := false
+		if vm.SshKeyFileName != "" {
+			azureSshKey = virtual_machine.AzureAdminSshKey{
+				Username:  "adminuser",
+				PublicKey: fmt.Sprintf("file(\"%s\")", vm.SshKeyFileName),
+			}
+			disablePassAuth = true
+		} else {
+			randomPassword := terraform.RandomPassword{
+				ResourceName: terraform.TerraformResourceName,
+				ResourceId:   vm.GetTfResourceId(cloud),
+				Length:       16,
+				Special:      true,
+				Upper:        true,
+				Lower:        true,
+				Number:       true,
+			}
+			vmPassword = randomPassword.GetResult()
+			azResources = append(azResources, randomPassword)
+		}
+
 		azResources = append(azResources, virtual_machine.AzureVirtualMachine{
 			AzResource: common.AzResource{
 				ResourceName:      virtual_machine.AzureResourceName,
@@ -170,15 +217,16 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 				Caching:            "None",
 				StorageAccountType: "Standard_LRS",
 			},
-			AdminUsername: "multyadmin",
-			AdminPassword: "Multyadmin090#",
+			AdminUsername: "adminuser",
+			AdminPassword: vmPassword,
+			AdminSshKey:   azureSshKey,
 			SourceImageReference: virtual_machine.AzureSourceImageReference{
 				Publisher: "OpenLogic",
 				Offer:     "CentOS",
 				Sku:       "7_9-gen2",
 				Version:   "latest",
 			},
-			DisablePasswordAuthentication: false,
+			DisablePasswordAuthentication: disablePassAuth,
 		})
 
 		return azResources
@@ -186,6 +234,14 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return nil
+}
+
+func (vm *VirtualMachine) GetAssociatedKeyPairName(cloud common.CloudProvider) string {
+	if cloud == common.AWS {
+		return fmt.Sprintf("%s.%s.key_name", virtual_machine.AwsKeyPairResourceName, vm.GetTfResourceId(common.AWS))
+	}
+	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
+	return ""
 }
 
 func (vm *VirtualMachine) Validate(ctx resources.MultyContext) {
