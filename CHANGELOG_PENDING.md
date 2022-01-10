@@ -1,7 +1,7 @@
 CHANGELOG PENDING
 =========
 
-## [0.1.0-alpha] - xx/xx/2021
+## [0.1.0-alpha] - 10/01/2021
 
 ### Added
 
