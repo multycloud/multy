@@ -31,7 +31,7 @@ type VirtualMachine struct {
 	Size                    string   `hcl:"size"`
 	UserData                string   `hcl:"user_data,optional"`
 	SubnetId                string   `hcl:"subnet_id"`
-	SshKeyFileName          string   `hcl:"ssh_key_file_name,optional"`
+	SshKeyFileName          string   `hcl:"ssh_key_file_path,optional"`
 	PublicIpId              string   `hcl:"public_ip_id,optional"`
 	// PublicIp auto-generate public IP
 	PublicIp bool `hcl:"public_ip,optional"`

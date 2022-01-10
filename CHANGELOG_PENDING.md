@@ -5,7 +5,7 @@ CHANGELOG PENDING
 
 ### Added
 
-`virtual_machine` - added `ssh_key_file_name` parameter
+`virtual_machine` - added `ssh_key_file_path` parameter
 
 ### Changed
 
