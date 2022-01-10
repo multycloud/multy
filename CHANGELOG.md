@@ -9,7 +9,7 @@ CHANGELOG
 
 ### Changed
 
-`virtual_machine` - password now uses terraform `random_password` instead of hardcoded password
+[Azure] `virtual_machine` - password now uses terraform `random_password` instead of hardcoded password
 
 ---
 
