@@ -25,7 +25,6 @@ func main() {
 	configFiles := flag.Args()
 
 	if len(configFiles) == 0 {
-		log.Println("scanning current directory for .mt files")
 		files, err := ioutil.ReadDir(".")
 		if err != nil {
 			log.Fatalf("error while reading current directory: %s", err.Error())
