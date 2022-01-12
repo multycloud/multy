@@ -9,7 +9,6 @@ import (
 	"multy-go/parser"
 	"multy-go/variables"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 )
@@ -51,8 +50,18 @@ func main() {
 	hclOutput := encoder.Encode(r)
 
 	d1 := []byte(hclOutput)
-	_ = os.WriteFile(*outputFile, d1, 0644)
-	_ = exec.Command("terraform", "fmt", *outputFile)
+	err := os.WriteFile(*outputFile, d1, 0644)
+	if err != nil {
+		log.Fatalf("error creating output file: %s", err.Error())
+	}
+
+	// needs terraform cli to run
+	//cmd := exec.Command("terraform", "fmt", *outputFile)
+	//err = cmd.Run()
+	//if err != nil {
+	//	log.Fatalf("error formatting output file: %s", err.Error())
+	//}
+
 	log.Printf("multy finished running: %s\n\n", time.Since(start).Round(time.Second))
 	log.Println("output file:", *outputFile)
 }
