@@ -7,4 +7,6 @@ CHANGELOG PENDING
 
 ### Changed
 
+CLI Logging
+
 ### Fixed
