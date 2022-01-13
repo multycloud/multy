@@ -59,7 +59,7 @@ resource "aws_instance" "vm_aws" {
 
   ami              = "ami-09d4a659cdd8677be"
   instance_type    = "t2.nano"
-  user_data_base64 = "IyEvYmluL2Jhc2ggLXhlCmVjaG8gJ0hlbGxvIFdvcmxkJwplY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBhd3M8L2gxPiIgPiAvdmFyL3d3dy9odG1sL2luZGV4Lmh0bWw="
+  user_data_base64 = "ZWNobyAnSGVsbG8gV29ybGQn"
 
   network_interface {
     network_interface_id = aws_network_interface.nic_aws.id
@@ -122,7 +122,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   location              = "northeurope"
   size                  = "Standard_B1ls"
   network_interface_ids = [azurerm_network_interface.nic_azure.id]
-  custom_data           = "IyEvYmluL2Jhc2ggLXhlCmVjaG8gJ0hlbGxvIFdvcmxkJwplY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBhenVyZTwvaDE+IiA+IC92YXIvd3d3L2h0bWwvaW5kZXguaHRtbA=="
+  custom_data           = "ZWNobyAnSGVsbG8gV29ybGQn"
 
   os_disk {
     caching              = "None"

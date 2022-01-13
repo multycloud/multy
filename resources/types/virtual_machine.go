@@ -39,9 +39,9 @@ type VirtualMachine struct {
 
 func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
 	if vm.UserData != "" {
-		userData := fmt.Sprintf("#!/bin/bash -xe\n%s\necho \"<h1>Hello from Multy on %s</h1>\" > /var/www/html/index.html", vm.UserData, cloud)
-		vm.UserData = base64.StdEncoding.EncodeToString([]byte(userData))
+		vm.UserData = base64.StdEncoding.EncodeToString([]byte(vm.UserData))
 	}
+
 	var subnetId string
 	if s, err := ctx.GetResource(vm.SubnetId); err != nil {
 		vm.LogFatal(vm.ResourceId, "subnet_id", err.Error())
