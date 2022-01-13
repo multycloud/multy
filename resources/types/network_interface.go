@@ -44,6 +44,7 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 				Name:              r.Name,
 				Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 			},
+			// by default, virtual_machine will have a private ip
 			IpConfigurations: []network_interface.AzureIpConfiguration{{
 				Name:                       "internal", // this name shouldn't be vm.name
 				PrivateIpAddressAllocation: "Dynamic",
@@ -51,6 +52,7 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 				Primary:                    true,
 			}},
 		}
+		// associate a public ip configuration in case a public_ip resource references this network_interface
 		if publicIpReference := getPublicIpReferences(ctx, *r, subnetId); len(publicIpReference) != 0 {
 			nic.IpConfigurations = publicIpReference
 		}
