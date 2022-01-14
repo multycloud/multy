@@ -54,13 +54,6 @@ func main() {
 		log.Fatalf("error creating output file: %s", err.Error())
 	}
 
-	// needs terraform cli to run
-	//cmd := exec.Command("terraform", "fmt", *outputFile)
-	//err = cmd.Run()
-	//if err != nil {
-	//	log.Fatalf("error formatting output file: %s", err.Error())
-	//}
-
 	log.Printf("multy finished running: %s\n\n", time.Since(start).Round(time.Second))
 	log.Println("output file:", *outputFile)
 }
