@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+## [0.1.1-alpha] - 14/01/2021
+
+### Changed
+
+CLI Logging
+
+### Fixed
+
+`virtual_network.user_data` improvements
+
+---
+
 ## [0.1.0-alpha] - 10/01/2021
 
 ### Added
