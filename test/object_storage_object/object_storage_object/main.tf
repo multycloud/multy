@@ -8,6 +8,7 @@ resource "aws_s3_bucket_object" "file1_public_aws" {
 resource "aws_s3_bucket_object" "file2_private_aws" {
   bucket       = aws_s3_bucket.obj_storage_aws.id
   key          = "index_private.html"
+  acl          = "private"
   content      = "<h1>Hi</h1>"
   content_type = "text/html"
 }
