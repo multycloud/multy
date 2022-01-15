@@ -17,11 +17,8 @@ type NetworkInterface struct {
 
 func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
 	var subnetId string
-	if s, err := ctx.GetResource(r.SubnetId); err != nil {
-		r.LogFatal(r.ResourceId, "subnet_id", err.Error())
-	} else {
-		subnetId = s.Resource.(*Subnet).GetId(cloud)
-	}
+
+	subnetId = r.SubnetId
 
 	if cloud == common.AWS {
 		return []interface{}{
@@ -53,7 +50,7 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 			}},
 		}
 		// associate a public ip configuration in case a public_ip resource references this network_interface
-		if publicIpReference := getPublicIpReferences(ctx, *r, subnetId); len(publicIpReference) != 0 {
+		if publicIpReference := getPublicIpReferences(ctx, subnetId); len(publicIpReference) != 0 {
 			nic.IpConfigurations = publicIpReference
 		}
 		return []interface{}{nic}
@@ -68,7 +65,7 @@ func (r *NetworkInterface) GetId(cloud common.CloudProvider) string {
 	return fmt.Sprintf("%s.%s.id", types[cloud], r.GetTfResourceId(cloud))
 }
 
-func getPublicIpReferences(ctx resources.MultyContext, nic NetworkInterface, subnetId string) []network_interface.AzureIpConfiguration {
+func getPublicIpReferences(ctx resources.MultyContext, subnetId string) []network_interface.AzureIpConfiguration {
 	var ipConfigurations []network_interface.AzureIpConfiguration
 	for _, resource := range ctx.Resources {
 		switch resource.Resource.(type) {

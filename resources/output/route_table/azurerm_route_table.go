@@ -18,5 +18,5 @@ type AzureRouteTableRoute struct {
 type AzureRouteTableAssociation struct {
 	common.AzResource `hcl:",squash"`
 	RouteTableId      string `hcl:"route_table_id,expr"`
-	SubnetId          string `hcl:"subnet_id,expr"`
+	SubnetId          string `hcl:"subnet_id"`
 }

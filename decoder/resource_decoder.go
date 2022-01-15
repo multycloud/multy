@@ -58,11 +58,11 @@ func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecific
 		if diags != nil {
 			validate.LogFatalWithDiags(diags, "Unable to resolve input variables.")
 		}
+		allVars["id"] = cty.StringVal(cloudSpecificR.GetResourceId())
 		outputVars := r.GetOutputValues(cloud)
 		for key, val := range outputVars {
 			allVars[key] = val
 		}
-		allVars["id"] = cty.StringVal(cloudSpecificR.GetResourceId())
 		resultCtx.AddCloudDependentVars(map[string]cty.Value{
 			resource.ID: cty.ObjectVal(allVars),
 		}, cloud)

@@ -29,21 +29,7 @@ type Database struct {
 }
 
 func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
-	var subnetList []*Subnet
-	for _, id := range db.SubnetIds {
-		if s, err := ctx.GetResource(id); err != nil {
-			db.LogFatal(db.ResourceId, "subnet_ids", err.Error())
-		} else {
-			subnet := s.Resource.(*Subnet)
-			subnetList = append(subnetList, subnet)
-		}
-	}
-
 	if cloud == common.AWS {
-		var awsSubnetIds []string
-		for _, sub := range subnetList {
-			awsSubnetIds = append(awsSubnetIds, sub.GetId(cloud))
-		}
 		name := common.RemoveSpecialChars(db.Name)
 		dbSubnetGroup := database.AwsDbSubnetGroup{
 			AwsResource: common.AwsResource{
@@ -51,7 +37,7 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 				ResourceId:   db.GetTfResourceId(cloud),
 				Name:         db.Name,
 			},
-			SubnetIds: awsSubnetIds,
+			SubnetIds: db.SubnetIds,
 		}
 		return []interface{}{
 			dbSubnetGroup,
@@ -74,10 +60,6 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 			},
 		}
 	} else if cloud == common.AZURE {
-		var azSubnets []string
-		for _, sub := range subnetList {
-			azSubnets = append(azSubnets, sub.GetId(cloud))
-		}
 
 		return database.NewAzureDatabase(database.AzureDbServer{
 			AzResource: common.AzResource{
@@ -92,7 +74,7 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 			AdministratorLogin:         db.DbUsername,
 			AdministratorLoginPassword: db.DbPassword,
 			SkuName:                    common.DBSIZE[db.Size][cloud],
-			SubnetIds:                  azSubnets,
+			SubnetIds:                  db.SubnetIds,
 		})
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)

@@ -9,8 +9,6 @@ import (
 	"multy-go/resources/output/virtual_network"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
-
-	"github.com/zclconf/go-cty/cty"
 )
 
 /*
@@ -98,21 +96,6 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 				NextHopType:   "VnetLocal",
 			}},
 		}}
-	}
-
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
-}
-
-func (vn *VirtualNetwork) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
-	if cloud == common.AWS {
-		return map[string]cty.Value{
-			"test": cty.StringVal(fmt.Sprintf("%s.id", vn.GetTfResourceId(cloud))),
-		}
-	} else if cloud == common.AZURE {
-		return map[string]cty.Value{
-			"test": cty.StringVal(fmt.Sprintf("%s.id", vn.GetTfResourceId(cloud))),
-		}
 	}
 
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)

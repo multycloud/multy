@@ -100,7 +100,7 @@ resource "azurerm_subnet" "subnet1_azure" {
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_subnet_route_table_association" "subnet1_azure" {
-  subnet_id      = azurerm_subnet.subnet1_azure.id
+  subnet_id      = "${azurerm_subnet.subnet1_azure.id}"
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_subnet" "subnet2_azure" {
@@ -110,7 +110,7 @@ resource "azurerm_subnet" "subnet2_azure" {
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_subnet_route_table_association" "subnet2_azure" {
-  subnet_id      = azurerm_subnet.subnet2_azure.id
+  subnet_id      = "${azurerm_subnet.subnet2_azure.id}"
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_resource_group" "vn-rg" {

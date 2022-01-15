@@ -13,7 +13,6 @@ multy virtual_network "example_vn_1" {
 }
 
 multy virtual_network "example_vn" {
-    name       = "example_vn"
+    name       = example_vn_1.new_id
     cidr_block = "2"
-    test_id = example_vn_1
 }

@@ -18,7 +18,7 @@ type AzureMySqlServer struct {
 type AzureMySqlVirtualNetworkRule struct {
 	common.AzResource `hcl:",squash"`
 	ServerName        string `hcl:"server_name,expr"`
-	SubnetId          string `hcl:"subnet_id,expr"`
+	SubnetId          string `hcl:"subnet_id"`
 }
 
 func (db AzureMySqlServer) GetServerName() string {

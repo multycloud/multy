@@ -6,6 +6,6 @@ const AwsResourceName = "aws_route_table_association"
 
 type AwsRouteTableAssociation struct {
 	common.AwsResource `hcl:",squash"`
-	SubnetId           string `hcl:"subnet_id,expr"`
+	SubnetId           string `hcl:"subnet_id"`
 	RouteTableId       string `hcl:"route_table_id,expr"`
 }
