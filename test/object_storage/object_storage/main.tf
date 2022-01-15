@@ -9,6 +9,16 @@ resource "azurerm_storage_account" "obj_storage_azure" {
   account_replication_type = "GZRS"
   allow_blob_public_access = true
 }
+resource "azurerm_storage_container" "obj_storage_azure_public" {
+  name                  = "public"
+  storage_account_name  = azurerm_storage_account.obj_storage_azure.name
+  container_access_type = "blob"
+}
+resource "azurerm_storage_container" "obj_storage_azure_private" {
+  name                  = "private"
+  storage_account_name  = azurerm_storage_account.obj_storage_azure.name
+  container_access_type = "private"
+}
 resource "azurerm_resource_group" "st-rg" {
   name     = "st-rg"
   location = "northeurope"

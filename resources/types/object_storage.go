@@ -5,6 +5,7 @@ import (
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output/object_storage"
+	"multy-go/resources/output/object_storage_object"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
 )
@@ -60,7 +61,8 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 			}, Bucket: name}}
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
-		return []interface{}{object_storage.AzureStorageAccount{
+
+		storageAccount := object_storage.AzureStorageAccount{
 			AzResource: common.AzResource{
 				ResourceName:      "azurerm_storage_account",
 				ResourceId:        r.GetTfResourceId(cloud),
@@ -71,11 +73,45 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 			AccountTier:            "Standard",
 			AccountReplicationType: "GZRS",
 			AllowBlobPublicAccess:  true,
+		}
+
+		return []interface{}{storageAccount, object_storage_object.AzureStorageContainer{
+			AzResource: common.AzResource{
+				ResourceName: "azurerm_storage_container",
+				ResourceId:   fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "public"),
+				Name:         "public",
+			},
+			StorageAccountName:  storageAccount.GetResourceName(),
+			ContainerAccessType: "blob",
+		}, object_storage_object.AzureStorageContainer{
+			AzResource: common.AzResource{
+				ResourceName: "azurerm_storage_container",
+				ResourceId:   fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "private"),
+				Name:         "private",
+			},
+			StorageAccountName:  storageAccount.GetResourceName(),
+			ContainerAccessType: "private",
 		}}
 	}
 
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return nil
+}
+
+func (r *ObjectStorage) GetAssociatedPublicContainerResourceName(cloud common.CloudProvider) string {
+	if cloud == common.AZURE {
+		return fmt.Sprintf("azurerm_storage_container.%s_public.name", r.GetTfResourceId(common.AZURE))
+	}
+	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
+	return ""
+}
+
+func (r *ObjectStorage) GetAssociatedPrivateContainerResourceName(cloud common.CloudProvider) string {
+	if cloud == common.AZURE {
+		return fmt.Sprintf("azurerm_storage_container.%s_private.name", r.GetTfResourceId(common.AZURE))
+	}
+	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
+	return ""
 }
 
 func (r *ObjectStorage) GetResourceName(cloud common.CloudProvider) string {

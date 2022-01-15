@@ -7,7 +7,7 @@ type AwsS3BucketObject struct {
 	common.AwsResource `hcl:",squash"`
 	Bucket             string `hcl:"bucket,expr"`
 	Key                string `hcl:"key"`
-	Acl                string `hcl:"acl"`
+	Acl                string `hcl:"acl" hcle:"omitempty"`
 	Content            string `hcl:"content"`
 	ContentType        string `hcl:"content_type"`
 }
