@@ -52,7 +52,7 @@ resource "aws_instance" "vm_aws" {
 
   ami              = "ami-09d4a659cdd8677be"
   instance_type    = "t2.nano"
-  subnet_id        = aws_subnet.subnet_aws.id
+  subnet_id        = "${aws_subnet.subnet_aws.id}"
   user_data_base64 = "ZWNobyAnSGVsbG8gV29ybGQn"
 }
 resource "aws_instance" "vm2_aws" {
@@ -62,7 +62,7 @@ resource "aws_instance" "vm2_aws" {
 
   ami           = "ami-09d4a659cdd8677be"
   instance_type = "t2.nano"
-  subnet_id     = aws_subnet.subnet_aws.id
+  subnet_id     = "${aws_subnet.subnet_aws.id}"
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
@@ -88,7 +88,7 @@ resource "azurerm_subnet" "subnet_azure" {
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_subnet_route_table_association" "subnet_azure" {
-  subnet_id      = azurerm_subnet.subnet_azure.id
+  subnet_id      = "${azurerm_subnet.subnet_azure.id}"
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_network_interface" "vm_azure" {
@@ -99,7 +99,7 @@ resource "azurerm_network_interface" "vm_azure" {
   ip_configuration {
     name                          = "internal"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = azurerm_subnet.subnet_azure.id
+    subnet_id                     = "${azurerm_subnet.subnet_azure.id}"
     primary                       = true
   }
 }
@@ -147,7 +147,7 @@ resource "azurerm_network_interface" "vm2_azure" {
   ip_configuration {
     name                          = "internal"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = azurerm_subnet.subnet_azure.id
+    subnet_id                     = "${azurerm_subnet.subnet_azure.id}"
     primary                       = true
   }
 }

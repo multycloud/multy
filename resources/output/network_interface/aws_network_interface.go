@@ -6,5 +6,5 @@ const AwsResourceName = "aws_network_interface"
 
 type AwsNetworkInterface struct {
 	common.AwsResource `hcl:",squash"`
-	SubnetId           string `hcl:"subnet_id,expr"`
+	SubnetId           string `hcl:"subnet_id"`
 }

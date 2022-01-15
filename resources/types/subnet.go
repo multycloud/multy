@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output/route_table_association"
@@ -20,7 +21,29 @@ type Subnet struct {
 	Name             string `hcl:"name"`
 	CidrBlock        string `hcl:"cidr_block"`
 	VirtualNetworkId string `hcl:"virtual_network_id"`
-	AvailabilityZone int    `hcl:"availability_zone,optional""`
+	AvailabilityZone int    `hcl:"availability_zone,optional"`
+}
+
+func (s *Subnet) getMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return subnet.AwsResourceName
+	case common.AZURE:
+		return subnet.AzureResourceName
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
+}
+
+func (s *Subnet) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
+	return map[string]cty.Value{
+		"id": cty.StringVal(s.getOutputId(cloud)),
+	}
+}
+
+func (s *Subnet) getOutputId(cloud common.CloudProvider) string {
+	return fmt.Sprintf("${%s.%s.id}", s.getMainResourceName(cloud), s.GetTfResourceId(cloud))
 }
 
 func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
@@ -53,17 +76,18 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			AddressPrefixes:    []string{s.CidrBlock},
 			VirtualNetworkName: virtualNetwork.GetVirtualNetworkName(cloud),
 		}
-		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, resources.GetCloudSpecificResourceId(s, cloud))
+		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, s.getOutputId(cloud))
 		azResources = append(azResources, azSubnet)
 
-		if !checkSubnetRouteTableAssociated(ctx, resources.GetCloudSpecificResourceId(s, cloud)) {
+		// there must be a better way to do this
+		if !checkSubnetRouteTableAssociated(ctx, s.getOutputId(cloud)) {
 			rt := virtualNetwork.GetAssociatedRouteTableId(cloud)
 			rtAssociation := route_table_association.AzureRouteTableAssociation{
 				AzResource: common.AzResource{
 					ResourceName: route_table_association.AzureResourceName,
 					ResourceId:   s.GetTfResourceId(cloud),
 				},
-				SubnetId:     s.GetId(cloud),
+				SubnetId:     s.getOutputId(cloud),
 				RouteTableId: rt,
 			}
 			azResources = append(azResources, rtAssociation)

@@ -42,12 +42,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		vm.UserData = base64.StdEncoding.EncodeToString([]byte(vm.UserData))
 	}
 
-	var subnetId string
-	if s, err := ctx.GetResource(vm.SubnetId); err != nil {
-		vm.LogFatal(vm.ResourceId, "subnet_id", err.Error())
-	} else {
-		subnetId = s.Resource.(*Subnet).GetId(cloud)
-	}
+	var subnetId = vm.SubnetId
 
 	var nicIds []string
 	for _, id := range vm.NetworkInterfaceIds {

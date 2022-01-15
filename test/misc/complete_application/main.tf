@@ -8,7 +8,7 @@ resource "aws_network_interface" "example_nic_aws" {
     Name = "example_nic"
   }
 
-  subnet_id = aws_subnet.example_subnet_aws.id
+  subnet_id = "${aws_subnet.example_subnet_aws.id}"
 }
 resource "aws_subnet" "example_subnet_aws" {
   tags =  {
@@ -74,7 +74,7 @@ resource "azurerm_network_interface" "example_nic_azure" {
   ip_configuration {
     name                          = "internal"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = azurerm_subnet.example_subnet_azure.id
+    subnet_id                     = "${azurerm_subnet.example_subnet_azure.id}"
     primary                       = true
   }
 }
@@ -85,7 +85,7 @@ resource "azurerm_subnet" "example_subnet_azure" {
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_subnet_route_table_association" "example_subnet_azure" {
-  subnet_id      = azurerm_subnet.example_subnet_azure.id
+  subnet_id      = "${azurerm_subnet.example_subnet_azure.id}"
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
