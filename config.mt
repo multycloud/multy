@@ -6,3 +6,7 @@ variable "location" {
   type    = string
   default = "ireland"
 }
+multy virtual_network "example_vn" {
+  name       = "example_vn"
+  cidr_block = ""
+}

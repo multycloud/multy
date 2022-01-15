@@ -13,11 +13,13 @@ type ResourceValidationInfo struct {
 	SourceRanges map[string]hcl.Range
 }
 
-func NewResourceValidationInfo(attrs hcl.Attributes) *ResourceValidationInfo {
+func NewResourceValidationInfoFromContent(content *hcl.BodyContent) *ResourceValidationInfo {
 	result := map[string]hcl.Range{}
-	for _, attr := range attrs {
+	for _, attr := range content.Attributes {
 		result[attr.Name] = attr.Range
 	}
+	// TODO: also map blocks
+
 	return &ResourceValidationInfo{result}
 }
 
