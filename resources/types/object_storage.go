@@ -75,23 +75,25 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 			AllowBlobPublicAccess:  true,
 		}
 
-		return []interface{}{storageAccount, object_storage_object.AzureStorageContainer{
-			AzResource: common.AzResource{
-				ResourceName: "azurerm_storage_container",
-				ResourceId:   fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "public"),
-				Name:         "public",
-			},
-			StorageAccountName:  storageAccount.GetResourceName(),
-			ContainerAccessType: "blob",
-		}, object_storage_object.AzureStorageContainer{
-			AzResource: common.AzResource{
-				ResourceName: "azurerm_storage_container",
-				ResourceId:   fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "private"),
-				Name:         "private",
-			},
-			StorageAccountName:  storageAccount.GetResourceName(),
-			ContainerAccessType: "private",
-		}}
+		return []interface{}{
+			storageAccount,
+			object_storage_object.AzureStorageContainer{
+				AzResource: common.AzResource{
+					ResourceName: "azurerm_storage_container",
+					ResourceId:   fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "public"),
+					Name:         "public",
+				},
+				StorageAccountName:  storageAccount.GetResourceName(),
+				ContainerAccessType: "blob",
+			}, object_storage_object.AzureStorageContainer{
+				AzResource: common.AzResource{
+					ResourceName: "azurerm_storage_container",
+					ResourceId:   fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "private"),
+					Name:         "private",
+				},
+				StorageAccountName:  storageAccount.GetResourceName(),
+				ContainerAccessType: "private",
+			}}
 	}
 
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
