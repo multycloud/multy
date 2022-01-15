@@ -7,7 +7,6 @@ import (
 	"multy-go/resources"
 	"multy-go/resources/common"
 	rg "multy-go/resources/resource_group"
-	"multy-go/resources/types"
 	"multy-go/validate"
 
 	"github.com/hashicorp/hcl/v2"
@@ -44,7 +43,7 @@ func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecific
 	for _, cloud := range clouds {
 		cloudCtx := ctx.GetContext(cloud)
 		rgId, shouldCreateRg := getRgId(d.globalConfig.DefaultRgName, attrs, cloudCtx, resource)
-		r, diags := decode(resource, cloudCtx, rgId, attrs)
+		r, diags := decode(resource, cloudCtx, rgId)
 		if diags != nil {
 			validate.LogFatalWithDiags(diags, "Unable to decode resource %s.", resource.ID)
 		}
@@ -74,87 +73,39 @@ func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecific
 	return result, resultCtx
 }
 
-func decode(resource parser.MultyResource, ctx *hcl.EvalContext, rgId string, attrs hcl.Attributes) (resources.Resource, hcl.Diagnostics) {
-	var r resources.Resource
+func decode(resource parser.MultyResource, ctx *hcl.EvalContext, rgId string) (resources.Resource, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
 	if resource.ID == "" {
 		validate.LogFatalWithSourceRange(resource.DefinitionRange, "found resource of type '%s' with no id", resource.Type)
 	}
 
-	validationInfo := validate.NewResourceValidationInfo(attrs)
+	var validationInfo *validate.ResourceValidationInfo
+
 	commonParams := &resources.CommonResourceParams{
-		ResourceValidationInfo: validationInfo,
-		ResourceId:             resource.ID,
-		ResourceGroupId:        rgId,
+		ResourceId:      resource.ID,
+		ResourceGroupId: rgId,
 	}
 
 	body := hclutil.PartialDecode(resource.HCLBody, ctx, commonParams)
 
-	if resource.Type == "virtual_network" {
-		t := types.VirtualNetwork{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "subnet" {
-		t := types.Subnet{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "network_security_group" {
-		t := types.NetworkSecurityGroup{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "virtual_machine" {
-		t := types.VirtualMachine{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "public_ip" {
-		t := types.PublicIp{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "route_table" {
-		t := types.RouteTable{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "route_table_association" {
-		t := types.RouteTableAssociation{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "network_interface" {
-		t := types.NetworkInterface{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "database" {
-		t := types.Database{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "resource_group" {
-		t := rg.Type{ResourceId: resource.ID}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "object_storage" {
-		t := types.ObjectStorage{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-	} else if resource.Type == "object_storage_object" {
-		t := types.ObjectStorageObject{CommonResourceParams: commonParams}
-		diags = gohcl.DecodeBody(body, ctx, &t)
-		r = &t
-		//} else if resource.Type == "vault" {
-		//	t := types.Vault{CommonResourceParams: commonParams}
-		//	diags = gohcl.DecodeBody(body, ctx, &t)
-		//	r = &t
-		//} else if resource.Type == "vault_secret" {
-		//	t := types.VaultSecret{CommonResourceParams: commonParams}
-		//	diags = gohcl.DecodeBody(body, ctx, &t)
-		//	r = &t
-		//} else if resource.Type == "lambda" {
-		//	t := types.Lambda{CommonResourceParams: commonParams}
-		//	diags = gohcl.DecodeBody(body, ctx, &t)
-		//	r = &t
-	} else {
-		validate.LogFatalWithSourceRange(resource.DefinitionRange, "unknown resource type %s", resource.Type)
+	r, err := InitResource(resource.Type, commonParams)
+	if err != nil {
+		validate.LogFatalWithSourceRange(resource.DefinitionRange, err.Error())
 	}
+	validationInfo, diags = decodeBody(r, body, ctx)
+	commonParams.ResourceValidationInfo = validationInfo
 
 	return r, diags
+}
+
+func decodeBody(t interface{}, body hcl.Body, ctx *hcl.EvalContext) (*validate.ResourceValidationInfo, hcl.Diagnostics) {
+	schema, _ := gohcl.ImpliedBodySchema(t)
+	content, diags := body.Content(schema)
+	if diags != nil {
+		return nil, diags
+	}
+	diags = gohcl.DecodeBody(body, ctx, t)
+	return validate.NewResourceValidationInfoFromContent(content), diags
 }
 
 func getRgId(defaultRgId hcl.Expression, attrs hcl.Attributes, ctx *hcl.EvalContext, resource parser.MultyResource) (string, bool) {
