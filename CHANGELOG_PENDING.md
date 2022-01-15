@@ -7,4 +7,6 @@ CHANGELOG PENDING
 
 ### Changed
 
+`object_storage_object.acl` now allows explicit `private`
+
 ### Fixed
