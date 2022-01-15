@@ -2,8 +2,8 @@ resource "aws_db_subnet_group" "example_db_aws" {
   name = "example-db"
 
   subnet_ids = [
-    aws_subnet.subnet1_aws.id,
-    aws_subnet.subnet2_aws.id,
+    "${aws_subnet.subnet1_aws.id}",
+    "${aws_subnet.subnet2_aws.id}",
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
@@ -133,7 +133,7 @@ resource "aws_route_table" "rt_aws" {
   }
 }
 resource "aws_route_table_association" "rta_aws" {
-  subnet_id      = aws_subnet.subnet3_aws.id
+  subnet_id      = "${aws_subnet.subnet3_aws.id}"
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_subnet" "subnet1_aws" {
@@ -169,7 +169,7 @@ resource "aws_instance" "vm_aws" {
   ami                         = "ami-09d4a659cdd8677be"
   instance_type               = "t2.nano"
   associate_public_ip_address = true
-  subnet_id                   = aws_subnet.subnet3_aws.id
+  subnet_id                   = "${aws_subnet.subnet3_aws.id}"
   user_data_base64            = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3U7IHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBlbmFibGUgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBV1M8L2gxPiIgPiAvdmFyL3d3dy9odG1sL2luZGV4Lmh0bWw="
 }
 resource "azurerm_resource_group" "db-rg" {
@@ -191,13 +191,13 @@ resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
   resource_group_name = azurerm_resource_group.db-rg.name
   name                = "example-db0"
   server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = azurerm_subnet.subnet1_azure.id
+  subnet_id           = "${azurerm_subnet.subnet1_azure.id}"
 }
 resource "azurerm_mysql_virtual_network_rule" "example_db_azure1" {
   resource_group_name = azurerm_resource_group.db-rg.name
   name                = "example-db1"
   server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = azurerm_subnet.subnet2_azure.id
+  subnet_id           = "${azurerm_subnet.subnet2_azure.id}"
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
@@ -309,7 +309,7 @@ resource "azurerm_route_table" "rt_azure" {
   }
 }
 resource "azurerm_subnet_route_table_association" "rta_azure" {
-  subnet_id      = azurerm_subnet.subnet3_azure.id
+  subnet_id      = "${azurerm_subnet.subnet3_azure.id}"
   route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet" "subnet1_azure" {
@@ -320,7 +320,7 @@ resource "azurerm_subnet" "subnet1_azure" {
   service_endpoints    = ["Microsoft.Sql"]
 }
 resource "azurerm_subnet_route_table_association" "subnet1_azure" {
-  subnet_id      = azurerm_subnet.subnet1_azure.id
+  subnet_id      = "${azurerm_subnet.subnet1_azure.id}"
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_subnet" "subnet2_azure" {
@@ -331,7 +331,7 @@ resource "azurerm_subnet" "subnet2_azure" {
   service_endpoints    = ["Microsoft.Sql"]
 }
 resource "azurerm_subnet_route_table_association" "subnet2_azure" {
-  subnet_id      = azurerm_subnet.subnet2_azure.id
+  subnet_id      = "${azurerm_subnet.subnet2_azure.id}"
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_subnet" "subnet3_azure" {
@@ -348,7 +348,7 @@ resource "azurerm_network_interface" "vm_azure" {
   ip_configuration {
     name                          = "external"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = azurerm_subnet.subnet3_azure.id
+    subnet_id                     = "${azurerm_subnet.subnet3_azure.id}"
     public_ip_address_id          = azurerm_public_ip.vm_azure.id
     primary                       = true
   }

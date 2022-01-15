@@ -49,7 +49,7 @@ resource "aws_route_table" "rt_aws" {
   }
 }
 resource "aws_route_table_association" "rta_aws" {
-  subnet_id      = aws_subnet.subnet_aws.id
+  subnet_id      = "${aws_subnet.subnet_aws.id}"
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_subnet" "subnet_aws" {
@@ -77,7 +77,7 @@ resource "aws_instance" "vm_aws" {
   ami                         = "ami-09d4a659cdd8677be"
   instance_type               = "t2.nano"
   associate_public_ip_address = true
-  subnet_id                   = aws_subnet.subnet_aws.id
+  subnet_id                   = "${aws_subnet.subnet_aws.id}"
   user_data_base64            = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3U7IHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBlbmFibGUgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBV1M8L2gxPiIgPiAvdmFyL3d3dy9odG1sL2luZGV4Lmh0bWw="
   key_name                    = aws_key_pair.vm_aws.key_name
 }
@@ -110,7 +110,7 @@ resource "azurerm_route_table" "rt_azure" {
   }
 }
 resource "azurerm_subnet_route_table_association" "rta_azure" {
-  subnet_id      = azurerm_subnet.subnet_azure.id
+  subnet_id      = "${azurerm_subnet.subnet_azure.id}"
   route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet" "subnet_azure" {
@@ -127,7 +127,7 @@ resource "azurerm_network_interface" "vm_azure" {
   ip_configuration {
     name                          = "external"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = azurerm_subnet.subnet_azure.id
+    subnet_id                     = "${azurerm_subnet.subnet_azure.id}"
     public_ip_address_id          = azurerm_public_ip.vm_azure.id
     primary                       = true
   }

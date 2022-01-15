@@ -31,7 +31,7 @@ type AzureRule struct {
 type AzureSubnetNsgAssociation struct {
 	ResourceName string `hcl:",key"`
 	ResourceId   string `hcl:",key"`
-	SubnetId     string `hcl:"subnet_id,expr"`
+	SubnetId     string `hcl:"subnet_id"`
 	NsgId        string `hcl:"network_security_group_id,expr"`
 }
 
