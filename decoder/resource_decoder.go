@@ -3,6 +3,7 @@ package decoder
 import (
 	"fmt"
 	"multy-go/hclutil"
+	"multy-go/mhcl"
 	"multy-go/parser"
 	"multy-go/resources"
 	"multy-go/resources/common"
@@ -18,7 +19,7 @@ type ResourceDecoder struct {
 	globalConfig DecodedGlobalConfig
 }
 
-func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecificContext) ([]resources.CloudSpecificResource, CloudSpecificContext) {
+func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecificContext, mhclProcessor mhcl.MHCLProcessor) ([]resources.CloudSpecificResource, CloudSpecificContext) {
 	attrs, diags := resource.HCLBody.JustAttributes()
 	if diags != nil {
 		validate.LogFatalWithDiags(diags, "Unable to parse attributes of resource %s.", resource.ID)
@@ -43,7 +44,7 @@ func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecific
 	for _, cloud := range clouds {
 		cloudCtx := ctx.GetContext(cloud)
 		rgId, shouldCreateRg := getRgId(d.globalConfig.DefaultRgName, attrs, cloudCtx, resource)
-		r, diags := decode(resource, cloudCtx, rgId)
+		r, diags := decode(resource, cloudCtx, rgId, mhclProcessor)
 		if diags != nil {
 			validate.LogFatalWithDiags(diags, "Unable to decode resource %s.", resource.ID)
 		}
@@ -73,26 +74,26 @@ func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecific
 	return result, resultCtx
 }
 
-func decode(resource parser.MultyResource, ctx *hcl.EvalContext, rgId string) (resources.Resource, hcl.Diagnostics) {
+func decode(resource parser.MultyResource, ctx *hcl.EvalContext, rgId string, mhclProcessor mhcl.MHCLProcessor) (resources.Resource, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
 	if resource.ID == "" {
 		validate.LogFatalWithSourceRange(resource.DefinitionRange, "found resource of type '%s' with no id", resource.Type)
 	}
 
-	var validationInfo *validate.ResourceValidationInfo
-
 	commonParams := &resources.CommonResourceParams{
 		ResourceId:      resource.ID,
 		ResourceGroupId: rgId,
 	}
-
 	body := hclutil.PartialDecode(resource.HCLBody, ctx, commonParams)
 
 	r, err := InitResource(resource.Type, commonParams)
 	if err != nil {
 		validate.LogFatalWithSourceRange(resource.DefinitionRange, err.Error())
 	}
-	validationInfo, diags = decodeBody(r, body, ctx)
+
+	body = mhclProcessor.Process(body, r, ctx)
+
+	validationInfo, diags := decodeBody(r, body, ctx)
 	commonParams.ResourceValidationInfo = validationInfo
 
 	return r, diags

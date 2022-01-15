@@ -3,6 +3,7 @@ package decoder
 import (
 	"fmt"
 	"multy-go/hclutil"
+	"multy-go/mhcl"
 	"multy-go/parser"
 	"multy-go/resources"
 	"multy-go/resources/common"
@@ -48,9 +49,10 @@ func Decode(config parser.ParsedConfig) *DecodedResources {
 
 	resourceDecoder := ResourceDecoder{globalConfig: globalConfig}
 	cloudSpecificCtx := InitCloudSpecificContext(ctx)
+	mhclProcessor := mhcl.MHCLProcessor{ResourceRefs: r}
 
 	for _, resource := range multyResources {
-		decodedResources, outCtx := resourceDecoder.Decode(*resource, cloudSpecificCtx)
+		decodedResources, outCtx := resourceDecoder.Decode(*resource, cloudSpecificCtx, mhclProcessor)
 		cloudSpecificCtx.AddCtx(outCtx)
 		for _, decodedResource := range decodedResources {
 			uniqueId := decodedResource.GetResourceId()
