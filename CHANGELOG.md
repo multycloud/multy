@@ -1,6 +1,14 @@
 CHANGELOG
 =========
 
+## [0.1.2-alpha] - 15/01/2021
+
+### Added
+
+`object_storage_object.acl` parameter
+
+---
+
 ## [0.1.1-alpha] - 14/01/2021
 
 ### Changed
