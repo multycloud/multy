@@ -9,8 +9,6 @@ import (
 	"multy-go/resources/output/virtual_network"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
-
-	"github.com/zclconf/go-cty/cty"
 )
 
 /*
@@ -30,24 +28,6 @@ type VirtualNetwork struct {
 type VirtualNetworkOutput struct {
 	*resources.CommonResourceOutputs
 	CidrBlock string
-}
-
-func (vn *VirtualNetwork) getMainResourceName(cloud common.CloudProvider) string {
-	switch cloud {
-	case common.AWS:
-		return virtual_network.AwsResourceName
-	case common.AZURE:
-		return virtual_network.AzureResourceName
-	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
-	}
-	return ""
-}
-
-func (vn *VirtualNetwork) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
-	return map[string]cty.Value{
-		"new_id": cty.StringVal(fmt.Sprintf("${%s.%s.id}", vn.getMainResourceName(cloud), vn.GetTfResourceId(cloud))),
-	}
 }
 
 func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
