@@ -1,17 +1,17 @@
 resource "aws_eip" "example_ip_aws" {
-  tags = {
+  tags =  {
     Name = "example_ip"
   }
 }
 resource "aws_network_interface" "example_nic_aws" {
-  tags = {
+  tags =  {
     Name = "example_nic"
   }
 
   subnet_id = aws_subnet.example_subnet_aws.id
 }
 resource "aws_subnet" "example_subnet_aws" {
-  tags = {
+  tags =  {
     Name = "example_subnet"
   }
 
@@ -19,7 +19,7 @@ resource "aws_subnet" "example_subnet_aws" {
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 resource "aws_vpc" "example_vn_aws" {
-  tags = {
+  tags =  {
     Name = "example_vn"
   }
 
@@ -27,14 +27,14 @@ resource "aws_vpc" "example_vn_aws" {
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags = {
+  tags =  {
     Name = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags = {
+  tags =  {
     Name = "example_vn"
   }
 
@@ -116,6 +116,16 @@ resource "azurerm_storage_account" "obj_storage_azure" {
   account_tier             = "Standard"
   account_replication_type = "GZRS"
   allow_blob_public_access = true
+}
+resource "azurerm_storage_container" "obj_storage_azure_public" {
+  name                  = "public"
+  storage_account_name  = azurerm_storage_account.obj_storage_azure.name
+  container_access_type = "blob"
+}
+resource "azurerm_storage_container" "obj_storage_azure_private" {
+  name                  = "private"
+  storage_account_name  = azurerm_storage_account.obj_storage_azure.name
+  container_access_type = "private"
 }
 resource "azurerm_resource_group" "pip-rg" {
   name     = "pip-rg"
