@@ -18,9 +18,9 @@ Azure: Internet route nextHop Internet
 
 type RouteTable struct {
 	*resources.CommonResourceParams
-	Name             string            `hcl:"name"`
-	VirtualNetworkId string            `hcl:"virtual_network_id,optional"`
-	Routes           []RouteTableRoute `hcl:"routes,optional"`
+	Name           string            `hcl:"name"`
+	VirtualNetwork *VirtualNetwork   `mhcl:"ref=virtual_network,optional"`
+	Routes         []RouteTableRoute `hcl:"routes,optional"`
 }
 
 type RouteTableRoute struct {
@@ -34,12 +34,6 @@ const (
 )
 
 func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
-	var virtualNetwork *VirtualNetwork
-	if vn, err := ctx.GetResource(r.VirtualNetworkId); err != nil {
-		r.LogFatal(r.ResourceId, "virtual_network_id", err.Error())
-	} else {
-		virtualNetwork = vn.Resource.(*VirtualNetwork)
-	}
 	if cloud == common.AWS {
 		rt := route_table.AwsRouteTable{
 			AwsResource: common.AwsResource{
@@ -47,7 +41,7 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 				ResourceId:   r.GetTfResourceId(cloud),
 				Tags:         map[string]string{"Name": r.Name},
 			},
-			VpcId: virtualNetwork.GetVirtualNetworkId(cloud),
+			VpcId: resources.GetMainOutputId(r.VirtualNetwork, cloud),
 		}
 
 		var routes []route_table.AwsRouteTableRoute
@@ -55,7 +49,7 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 			if strings.EqualFold(route.Destination, INTERNET) {
 				routes = append(routes, route_table.AwsRouteTableRoute{
 					CidrBlock: route.CidrBlock,
-					GatewayId: virtualNetwork.GetAssociatedInternetGateway(cloud),
+					GatewayId: r.VirtualNetwork.GetAssociatedInternetGateway(cloud),
 				})
 			}
 		}

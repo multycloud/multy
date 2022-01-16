@@ -125,7 +125,7 @@ resource "aws_route_table" "rt_aws" {
     Name = "test-rt"
   }
 
-  vpc_id = aws_vpc.example_vn_aws.id
+  vpc_id = "${aws_vpc.example_vn_aws.id}"
 
   route {
     cidr_block = "0.0.0.0/0"

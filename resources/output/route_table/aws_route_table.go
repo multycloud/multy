@@ -6,7 +6,7 @@ const AwsResourceName = "aws_route_table"
 
 type AwsRouteTable struct {
 	common.AwsResource `hcl:",squash"`
-	VpcId              string               `hcl:"vpc_id,expr"`
+	VpcId              string               `hcl:"vpc_id"`
 	Routes             []AwsRouteTableRoute `hcl:"route,blocks"`
 }
 

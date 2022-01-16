@@ -24,7 +24,7 @@ multy "subnet" "subnet3" {
 }
 multy route_table "rt" {
   name               = "test-rt"
-  virtual_network_id = example_vn.id
+  virtual_network    = example_vn
   routes             = [
     {
       cidr_block  = "0.0.0.0/0"
