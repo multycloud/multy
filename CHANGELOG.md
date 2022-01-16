@@ -1,6 +1,14 @@
 CHANGELOG
 =========
 
+## [0.1.3-alpha] - 16/01/2021
+
+### Changed
+
+Changed virtual_machine resource references. Now passing full object instead of id
+
+---
+
 ## [0.1.2-alpha] - 15/01/2021
 
 ### Added
