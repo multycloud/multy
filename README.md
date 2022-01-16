@@ -23,7 +23,7 @@ multy "virtual_network" "example_vn" {
 multy "subnet" "subnet" {
   name               = "subnet"
   cidr_block         = "10.0.2.0/24"
-  virtual_network_id = example_vn.id
+  virtual_network    = example_vn
 }
 multy "virtual_machine" "vm" {
   name      = "test-vm"
@@ -218,7 +218,7 @@ You can now use familiar terraform commands to deploy your configuration to mult
 
 #### More resources
 
-* **[Docs](https://multy.dev/docs/intro/)**: check our documentation page to get started
+* **[Docs](https://multy.dev/docs/introduction/)**: check our documentation page to get started
 * **[Examples](https://multy.dev/docs/examples/)**: look over some common examples
 * **[Resources](https://multy.dev/docs/resources/virtual_network/)**: currently supported resources
 
