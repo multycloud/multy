@@ -11,7 +11,7 @@ multy "subnet" "example_subnet" {
   }
   name               = "example_subnet"
   cidr_block         = "10.0.0.0/24"
-  virtual_network_id = example_vn.id
+  virtual_network = example_vn
 }
 multy "public_ip" "example_ip" {
   name = "example_ip"

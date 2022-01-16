@@ -13,7 +13,7 @@ multy "subnet" "example_subnet" {
   name               = "example_subnet"
   cidr_block         = "10.0.0.0/24"
   clouds             = ["aws"]
-  virtual_network_id = aws.example_vn.id
+  virtual_network = aws.example_vn
 }
 config {
   default_resource_group_name = "${resource_type}-rg"

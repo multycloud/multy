@@ -9,7 +9,7 @@ multy "virtual_network" "example_vn" {
 multy "subnet" "subnet" {
   name               = "subnet"
   cidr_block         = "10.0.2.0/24"
-  virtual_network_id = example_vn.id
+  virtual_network = example_vn
   availability_zone  = 2
 }
 multy "virtual_machine" "vm" {

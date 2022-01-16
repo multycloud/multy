@@ -18,10 +18,10 @@ Azure: New subnets will be associated with a default route table to block traffi
 
 type Subnet struct {
 	*resources.CommonResourceParams
-	Name             string `hcl:"name"`
-	CidrBlock        string `hcl:"cidr_block"`
-	VirtualNetworkId string `hcl:"virtual_network_id"`
-	AvailabilityZone int    `hcl:"availability_zone,optional"`
+	Name             string          `hcl:"name"`
+	CidrBlock        string          `hcl:"cidr_block"`
+	VirtualNetwork   *VirtualNetwork `mhcl:"ref=virtual_network"`
+	AvailabilityZone int             `hcl:"availability_zone,optional"`
 }
 
 func (s *Subnet) GetMainResourceName(cloud common.CloudProvider) string {
@@ -43,12 +43,6 @@ func (s *Subnet) GetOutputValues(cloud common.CloudProvider) map[string]cty.Valu
 }
 
 func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
-	var virtualNetwork *VirtualNetwork
-	if vn, err := ctx.GetResource(s.VirtualNetworkId); err != nil {
-		s.LogFatal(s.ResourceId, "virtual_network_id", err.Error())
-	} else {
-		virtualNetwork = vn.Resource.(*VirtualNetwork)
-	}
 	if cloud == common.AWS {
 		return []interface{}{subnet.AwsSubnet{
 			AwsResource: common.AwsResource{
@@ -57,7 +51,7 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				Tags:         map[string]string{"Name": s.Name},
 			},
 			CidrBlock:        s.CidrBlock,
-			VpcId:            virtualNetwork.GetVirtualNetworkId(cloud),
+			VpcId:            s.VirtualNetwork.GetVirtualNetworkId(cloud),
 			AvailabilityZone: common.GetAvailabilityZone(ctx.Location, s.AvailabilityZone, cloud),
 		}}
 	} else if cloud == common.AZURE {
@@ -70,14 +64,14 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				ResourceGroupName: rg.GetResourceGroupName(s.ResourceGroupId, cloud),
 			},
 			AddressPrefixes:    []string{s.CidrBlock},
-			VirtualNetworkName: virtualNetwork.GetVirtualNetworkName(cloud),
+			VirtualNetworkName: s.VirtualNetwork.GetVirtualNetworkName(cloud),
 		}
 		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, resources.GetMainOutputId(s, cloud))
 		azResources = append(azResources, azSubnet)
 
 		// there must be a better way to do this
 		if !checkSubnetRouteTableAssociated(ctx, resources.GetMainOutputId(s, cloud)) {
-			rt := virtualNetwork.GetAssociatedRouteTableId(cloud)
+			rt := s.VirtualNetwork.GetAssociatedRouteTableId(cloud)
 			rtAssociation := route_table_association.AzureRouteTableAssociation{
 				AzResource: common.AzResource{
 					ResourceName: route_table_association.AzureResourceName,
