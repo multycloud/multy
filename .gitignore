@@ -6,3 +6,4 @@ terraform.*
 .multy
 ssh_key
 /main.tf
+/main.mt
