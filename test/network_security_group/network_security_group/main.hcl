@@ -50,7 +50,7 @@ multy "virtual_machine" "vm" {
 }
 multy "network_security_group" nsg2 {
   name               = "test-nsg2"
-  virtual_network_id = example_vn.id
+  virtual_network = example_vn
   rules              = [
     {
       protocol   = "tcp"

@@ -19,9 +19,9 @@ AWS: VPC traffic is always added as an extra rule
 
 type NetworkSecurityGroup struct {
 	*resources.CommonResourceParams
-	Name             string     `hcl:"name"`
-	VirtualNetworkId string     `hcl:"virtual_network_id"`
-	Rules            []RuleType `hcl:"rules,optional"`
+	Name           string          `hcl:"name"`
+	VirtualNetwork *VirtualNetwork `mhcl:"ref=virtual_network"`
+	Rules          []RuleType      `hcl:"rules,optional"`
 }
 
 type RuleType struct {
@@ -42,13 +42,6 @@ const (
 )
 
 func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
-	var virtualNetwork *VirtualNetwork
-	if vn, err := ctx.GetResource(r.VirtualNetworkId); err != nil {
-		r.LogFatal(r.ResourceId, "virtual_network_id", err.Error())
-	} else {
-		virtualNetwork = vn.Resource.(*VirtualNetwork)
-	}
-
 	if cloud == common.AWS {
 		awsRules := translateAwsNsgRules(r, r.Rules)
 
@@ -56,7 +49,7 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 			Protocol:   "-1",
 			FromPort:   0,
 			ToPort:     0,
-			CidrBlocks: []string{virtualNetwork.CidrBlock},
+			CidrBlocks: []string{r.VirtualNetwork.CidrBlock},
 		}
 
 		awsRules[INGRESS] = append(awsRules[INGRESS], allowVpcTraffic)
@@ -69,7 +62,7 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 					ResourceId:   r.GetTfResourceId(cloud),
 					Tags:         map[string]string{"Name": r.Name},
 				},
-				VpcId:   virtualNetwork.GetVirtualNetworkId(cloud),
+				VpcId:   resources.GetMainOutputId(r.VirtualNetwork, cloud),
 				Ingress: awsRules["ingress"],
 				Egress:  awsRules["egress"],
 			},
