@@ -10,13 +10,13 @@ multy "object_storage" "obj_storage" {
 multy "object_storage_object" "file1_public" {
   name                = "index.html"
   content             = cloud_specific_value({aws:"<h1>Hi from AWS</h1>", azure:"<h1>Hi from Azure</h1>"})
-  object_storage_name = obj_storage.id
+  object_storage      = obj_storage
   content_type        = "text/html"
   acl = "public_read"
 }
 multy "object_storage_object" "file2_private" {
   name                = "index_private.html"
   content             = "<h1>Hi</h1>"
-  object_storage_name = obj_storage.id
+  object_storage      = obj_storage
   content_type        = "text/html"
 }

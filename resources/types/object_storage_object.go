@@ -13,20 +13,14 @@ import (
 
 type ObjectStorageObject struct {
 	*resources.CommonResourceParams
-	Name              string `hcl:"name"`
-	Content           string `hcl:"content"`
-	ObjectStorageName string `hcl:"object_storage_name"`
-	ContentType       string `hcl:"content_type"`
-	Acl               string `hcl:"acl,optional"`
+	Name          string         `hcl:"name"`
+	Content       string         `hcl:"content"`
+	ObjectStorage *ObjectStorage `mhcl:"ref=object_storage"`
+	ContentType   string         `hcl:"content_type"`
+	Acl           string         `hcl:"acl,optional"`
 }
 
 func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
-	var objectStorage *ObjectStorage
-	if o, err := ctx.GetResource(r.ObjectStorageName); err != nil {
-		r.LogFatal(r.ResourceId, "object_storage_name", err.Error())
-	} else {
-		objectStorage = o.Resource.(*ObjectStorage)
-	}
 	var acl string
 	if r.Acl == "public_read" {
 		acl = "public-read"
@@ -39,7 +33,7 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 				ResourceName: "aws_s3_bucket_object",
 				ResourceId:   r.GetTfResourceId(cloud),
 			},
-			Bucket:      objectStorage.GetResourceName(cloud),
+			Bucket:      r.ObjectStorage.GetResourceName(cloud),
 			Key:         r.Name,
 			Acl:         acl,
 			Content:     r.Content,
@@ -48,9 +42,9 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 	} else if cloud == common.AZURE {
 		var containerName string
 		if r.Acl == "public_read" {
-			containerName = objectStorage.GetAssociatedPublicContainerResourceName(cloud)
+			containerName = r.ObjectStorage.GetAssociatedPublicContainerResourceName(cloud)
 		} else {
-			containerName = objectStorage.GetAssociatedPrivateContainerResourceName(cloud)
+			containerName = r.ObjectStorage.GetAssociatedPrivateContainerResourceName(cloud)
 		}
 		return []interface{}{
 			object_storage_object.AzureStorageAccountBlob{
@@ -59,7 +53,7 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 					ResourceId:   r.GetTfResourceId(cloud),
 					Name:         r.Name,
 				},
-				StorageAccountName:   objectStorage.GetResourceName(cloud),
+				StorageAccountName:   r.ObjectStorage.GetResourceName(cloud),
 				StorageContainerName: containerName,
 				Type:                 "Block",
 				SourceContent:        r.Content,
