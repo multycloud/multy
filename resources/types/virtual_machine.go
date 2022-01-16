@@ -44,15 +44,6 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 
 	var subnetId = vm.SubnetId
 
-	var nsgIds []string
-	for _, id := range vm.NetworkSecurityGroupIds {
-		if n, err := ctx.GetResource(id); err != nil {
-			vm.LogFatal(vm.ResourceId, "network_security_group_ids", err.Error())
-		} else {
-			nsgIds = append(nsgIds, n.Resource.(*NetworkSecurityGroup).GetId(cloud))
-		}
-	}
-
 	if cloud == common.AWS {
 		var awsResources []interface{}
 		var ec2NicIds []virtual_machine.AwsEc2NetworkInterface
@@ -75,7 +66,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			UserDataBase64:           vm.UserData,
 			SubnetId:                 subnetId,
 			NetworkInterfaces:        ec2NicIds,
-			SecurityGroupIds:         nsgIds,
+			SecurityGroupIds:         vm.NetworkSecurityGroupIds,
 		}
 
 		if len(ec2NicIds) != 0 {
@@ -150,7 +141,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 
 		// TODO change this to multy nsg_nic_attachment resource and use aws_network_interface_sg_attachment
 		if len(vm.NetworkSecurityGroupIds) != 0 {
-			for _, nsgId := range nsgIds {
+			for _, nsgId := range vm.NetworkSecurityGroupIds {
 				for _, nicId := range nicIds {
 					azResources = append(azResources, network_security_group.AzureNetworkInterfaceSecurityGroupAssociation{
 						ResourceName:           network_security_group.AzureNicNsgAssociation,

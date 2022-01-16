@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output/network_security_group"
@@ -247,4 +248,10 @@ func (r *NetworkSecurityGroup) GetMainResourceName(cloud common.CloudProvider) s
 		validate.LogInternalError("unknown cloud %s", cloud)
 	}
 	return ""
+}
+
+func (r *NetworkSecurityGroup) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
+	return map[string]cty.Value{
+		"id": cty.StringVal(resources.GetMainOutputId(r, cloud)),
+	}
 }

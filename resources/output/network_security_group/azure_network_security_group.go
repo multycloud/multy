@@ -41,5 +41,5 @@ type AzureNetworkInterfaceSecurityGroupAssociation struct {
 	ResourceName           string `hcl:",key"`
 	ResourceId             string `hcl:",key"`
 	NetworkInterfaceId     string `hcl:"network_interface_id"`
-	NetworkSecurityGroupId string `hcl:"network_security_group_id,expr"`
+	NetworkSecurityGroupId string `hcl:"network_security_group_id"`
 }

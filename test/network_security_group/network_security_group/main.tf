@@ -130,7 +130,7 @@ resource "aws_instance" "vm2_aws" {
   associate_public_ip_address = true
   subnet_id                   = "${aws_subnet.subnet1_aws.id}"
   user_data_base64            = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3U7IHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBlbmFibGUgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBV1M8L2gxPiIgPiAvdmFyL3d3dy9odG1sL2luZGV4Lmh0bWw="
-  vpc_security_group_ids      = [aws_security_group.nsg2_aws.id]
+  vpc_security_group_ids      = ["${aws_security_group.nsg2_aws.id}"]
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
@@ -303,7 +303,7 @@ resource "azurerm_public_ip" "vm2_azure" {
 }
 resource "azurerm_network_interface_security_group_association" "vm2_azure" {
   network_interface_id      = "${azurerm_network_interface.vm2_azure.id}"
-  network_security_group_id = azurerm_network_security_group.nsg2_azure.id
+  network_security_group_id = "${azurerm_network_security_group.nsg2_azure.id}"
 }
 resource "random_password" "vm2_azure" {
   length  = 16
