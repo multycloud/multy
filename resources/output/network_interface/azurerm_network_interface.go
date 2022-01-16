@@ -19,7 +19,7 @@ func (nic AzureNetworkInterface) GetResourceId(cloud common.CloudProvider) strin
 
 func (nic AzureNetworkInterface) GetId(cloud common.CloudProvider) string {
 	if cloud == common.AZURE {
-		return fmt.Sprintf("%s.%s.id", AzureResourceName, nic.ResourceId)
+		return fmt.Sprintf("${%s.%s.id}", AzureResourceName, nic.ResourceId)
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return ""

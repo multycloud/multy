@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output/network_interface"
@@ -99,4 +100,10 @@ func (r *NetworkInterface) GetMainResourceName(cloud common.CloudProvider) strin
 		validate.LogInternalError("unknown cloud %s", cloud)
 	}
 	return ""
+}
+
+func (r *NetworkInterface) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
+	return map[string]cty.Value{
+		"id": cty.StringVal(resources.GetMainOutputId(r, cloud)),
+	}
 }

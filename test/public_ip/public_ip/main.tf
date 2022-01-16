@@ -41,7 +41,7 @@ resource "aws_eip" "ip_aws" {
     Name = "test-ip"
   }
 
-  network_interface = aws_network_interface.public-nic_aws.id
+  network_interface = "${aws_network_interface.public-nic_aws.id}"
 }
 resource "aws_network_interface" "private-nic_aws" {
   tags = {

@@ -115,7 +115,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   name                  = "test-vm"
   location              = "northeurope"
   size                  = "Standard_B1ls"
-  network_interface_ids = [azurerm_network_interface.vm_azure.id]
+  network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
   custom_data           = "ZWNobyAnSGVsbG8gV29ybGQn"
 
   os_disk {
@@ -163,7 +163,7 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   name                  = "test-vm"
   location              = "northeurope"
   size                  = "Standard_B1ls"
-  network_interface_ids = [azurerm_network_interface.vm2_azure.id]
+  network_interface_ids = ["${azurerm_network_interface.vm2_azure.id}"]
 
   os_disk {
     caching              = "None"

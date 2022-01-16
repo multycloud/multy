@@ -44,15 +44,6 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 
 	var subnetId = vm.SubnetId
 
-	var nicIds []string
-	for _, id := range vm.NetworkInterfaceIds {
-		if n, err := ctx.GetResource(id); err != nil {
-			vm.LogFatal(vm.ResourceId, "network_interface_ids", err.Error())
-		} else {
-			nicIds = append(nicIds, n.Resource.(*NetworkInterface).GetId(cloud))
-		}
-	}
-
 	var nsgIds []string
 	for _, id := range vm.NetworkSecurityGroupIds {
 		if n, err := ctx.GetResource(id); err != nil {
@@ -65,7 +56,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 	if cloud == common.AWS {
 		var awsResources []interface{}
 		var ec2NicIds []virtual_machine.AwsEc2NetworkInterface
-		for i, id := range nicIds {
+		for i, id := range vm.NetworkInterfaceIds {
 			ec2NicIds = append(ec2NicIds, virtual_machine.AwsEc2NetworkInterface{
 				NetworkInterfaceId: id,
 				DeviceIndex:        i,
@@ -114,6 +105,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		// TODO validate that NIC is on the same VNET
 		var azResources []interface{}
 		rgName := rg.GetResourceGroupName(vm.ResourceGroupId, cloud)
+		nicIds := vm.NetworkInterfaceIds
 
 		if len(vm.NetworkInterfaceIds) == 0 {
 			nic := network_interface.AzureNetworkInterface{

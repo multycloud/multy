@@ -19,7 +19,7 @@ type AwsEC2 struct {
 }
 
 type AwsEc2NetworkInterface struct {
-	NetworkInterfaceId string `hcl:"network_interface_id,expr"`
+	NetworkInterfaceId string `hcl:"network_interface_id"`
 	DeviceIndex        int    `hcl:"device_index"`
 }
 

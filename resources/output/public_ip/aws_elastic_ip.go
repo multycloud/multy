@@ -13,7 +13,7 @@ type AwsElasticIp struct {
 	common.AwsResource `hcl:",squash"`
 	InstanceId         string `hcl:"instance" hcle:"omitempty"`
 	Vpc                bool   `hcl:"vpc,optional" hcle:"omitempty"`
-	NetworkInterfaceId string `hcl:"network_interface,expr" hcle:"omitempty"`
+	NetworkInterfaceId string `hcl:"network_interface" hcle:"omitempty"`
 }
 
 func (eIp AwsElasticIp) GetId(cloud common.CloudProvider) string {

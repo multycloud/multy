@@ -62,7 +62,7 @@ resource "aws_instance" "vm_aws" {
   user_data_base64 = "ZWNobyAnSGVsbG8gV29ybGQn"
 
   network_interface {
-    network_interface_id = aws_network_interface.nic_aws.id
+    network_interface_id = "${aws_network_interface.nic_aws.id}"
     device_index         = 0
   }
 }
@@ -121,7 +121,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   name                  = "test-vm"
   location              = "northeurope"
   size                  = "Standard_B1ls"
-  network_interface_ids = [azurerm_network_interface.nic_azure.id]
+  network_interface_ids = ["${azurerm_network_interface.nic_azure.id}"]
   custom_data           = "ZWNobyAnSGVsbG8gV29ybGQn"
 
   os_disk {

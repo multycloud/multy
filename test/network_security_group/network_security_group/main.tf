@@ -258,7 +258,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   name                  = "test-vm"
   location              = "northeurope"
   size                  = "Standard_B1ls"
-  network_interface_ids = [azurerm_network_interface.vm_azure.id]
+  network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
   custom_data           = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3U7IHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBzdGF0dXMgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBenVyZTwvaDE+IiA+IC92YXIvd3d3L2h0bWwvaW5kZXguaHRtbA=="
 
   os_disk {
@@ -302,7 +302,7 @@ resource "azurerm_public_ip" "vm2_azure" {
   allocation_method   = "Static"
 }
 resource "azurerm_network_interface_security_group_association" "vm2_azure" {
-  network_interface_id      = azurerm_network_interface.vm2_azure.id
+  network_interface_id      = "${azurerm_network_interface.vm2_azure.id}"
   network_security_group_id = azurerm_network_security_group.nsg2_azure.id
 }
 resource "random_password" "vm2_azure" {
@@ -317,7 +317,7 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   name                  = "test-vm2"
   location              = "northeurope"
   size                  = "Standard_B1ls"
-  network_interface_ids = [azurerm_network_interface.vm2_azure.id]
+  network_interface_ids = ["${azurerm_network_interface.vm2_azure.id}"]
   custom_data           = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3U7IHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBzdGF0dXMgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBenVyZTwvaDE+IiA+IC92YXIvd3d3L2h0bWwvaW5kZXguaHRtbA=="
 
   os_disk {

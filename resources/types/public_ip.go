@@ -22,14 +22,6 @@ type PublicIp struct {
 }
 
 func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
-	var nicId string
-	if r.NetworkInterfaceId != "" {
-		if n, err := ctx.GetResource(r.NetworkInterfaceId); err != nil {
-			r.LogFatal(r.ResourceId, "network_interface_id", err.Error())
-		} else {
-			nicId = n.Resource.(*NetworkInterface).GetId(cloud)
-		}
-	}
 
 	if cloud == common.AWS {
 		return []interface{}{
@@ -39,7 +31,7 @@ func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyCont
 					ResourceId:   r.GetTfResourceId(cloud),
 					Tags:         map[string]string{"Name": r.Name},
 				},
-				NetworkInterfaceId: nicId,
+				NetworkInterfaceId: r.NetworkInterfaceId,
 				//Vpc:        true,
 			},
 		}
