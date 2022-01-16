@@ -107,7 +107,7 @@ resource "azurerm_subnet" "subnet_azure" {
 }
 resource "azurerm_subnet_route_table_association" "subnet_azure" {
   subnet_id      = "${azurerm_subnet.subnet_azure.id}"
-  route_table_id = azurerm_route_table.example_vn_azure.id
+  route_table_id = "${azurerm_route_table.example_vn_azure.id}"
 }
 resource "random_password" "vm_azure" {
   length  = 16

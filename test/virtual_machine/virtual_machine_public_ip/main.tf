@@ -50,7 +50,7 @@ resource "aws_route_table" "rt_aws" {
 }
 resource "aws_route_table_association" "rta_aws" {
   subnet_id      = "${aws_subnet.subnet_aws.id}"
-  route_table_id = aws_route_table.rt_aws.id
+  route_table_id = "${aws_route_table.rt_aws.id}"
 }
 resource "aws_subnet" "subnet_aws" {
   tags = {
@@ -111,7 +111,7 @@ resource "azurerm_route_table" "rt_azure" {
 }
 resource "azurerm_subnet_route_table_association" "rta_azure" {
   subnet_id      = "${azurerm_subnet.subnet_azure.id}"
-  route_table_id = azurerm_route_table.rt_azure.id
+  route_table_id = "${azurerm_route_table.rt_azure.id}"
 }
 resource "azurerm_subnet" "subnet_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name

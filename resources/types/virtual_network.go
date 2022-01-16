@@ -117,7 +117,7 @@ func (vn *VirtualNetwork) GetDefaultNetworkAclId(cloud common.CloudProvider) str
 
 func (vn *VirtualNetwork) GetAssociatedRouteTableId(cloud common.CloudProvider) string {
 	if cloud == common.AZURE {
-		return fmt.Sprintf("%s.%s.id", route_table.AzureResourceName, vn.GetTfResourceId(common.AZURE))
+		return fmt.Sprintf("${%s.%s.id}", route_table.AzureResourceName, vn.GetTfResourceId(common.AZURE))
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return ""

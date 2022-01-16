@@ -86,7 +86,7 @@ resource "azurerm_subnet" "example_subnet_azure" {
 }
 resource "azurerm_subnet_route_table_association" "example_subnet_azure" {
   subnet_id      = "${azurerm_subnet.example_subnet_azure.id}"
-  route_table_id = azurerm_route_table.example_vn_azure.id
+  route_table_id = "${azurerm_route_table.example_vn_azure.id}"
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name

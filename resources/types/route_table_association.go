@@ -15,13 +15,6 @@ type RouteTableAssociation struct {
 }
 
 func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
-	var rt *RouteTable
-	if s, err := ctx.GetResource(r.RouteTableId); err != nil {
-		r.LogFatal(r.ResourceId, "route_table_id", err.Error())
-	} else {
-		rt = s.Resource.(*RouteTable)
-	}
-
 	if cloud == common.AWS {
 		return []interface{}{
 			route_table_association.AwsRouteTableAssociation{
@@ -29,7 +22,7 @@ func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resour
 					ResourceName: route_table_association.AwsResourceName,
 					ResourceId:   r.GetTfResourceId(cloud),
 				},
-				RouteTableId: rt.GetId(cloud),
+				RouteTableId: r.RouteTableId,
 				SubnetId:     r.SubnetId,
 			},
 		}
@@ -40,7 +33,7 @@ func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resour
 					ResourceName: route_table_association.AzureResourceName,
 					ResourceId:   r.GetTfResourceId(cloud),
 				},
-				RouteTableId: rt.GetId(cloud),
+				RouteTableId: r.RouteTableId,
 				SubnetId:     r.SubnetId,
 			},
 		}
