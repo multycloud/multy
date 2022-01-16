@@ -107,3 +107,15 @@ func (r *RouteTable) Validate(ctx resources.MultyContext) {
 	}
 	return
 }
+
+func (r *RouteTable) GetMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return route_table.AwsResourceName
+	case common.AZURE:
+		return route_table.AzureResourceName
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
+}

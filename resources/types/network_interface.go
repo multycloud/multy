@@ -88,3 +88,15 @@ func getPublicIpReferences(ctx resources.MultyContext, subnetId string) []networ
 func (r *NetworkInterface) Validate(ctx resources.MultyContext) {
 	return
 }
+
+func (r *NetworkInterface) GetMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return network_interface.AwsResourceName
+	case common.AZURE:
+		return network_interface.AzureResourceName
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
+}

@@ -92,3 +92,15 @@ func (db *Database) Validate(ctx resources.MultyContext) {
 	// TODO validate DB Size
 	return
 }
+
+func (db *Database) GetMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return "aws_db_instance"
+	case common.AZURE:
+		return "azurerm_mysql_server"
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
+}

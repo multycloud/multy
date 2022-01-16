@@ -243,3 +243,15 @@ func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext) {
 	// TODO validate location matches with VN location
 	return
 }
+
+func (r *NetworkSecurityGroup) GetMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return network_security_group.AwsSecurityGroupResourceName
+	case common.AZURE:
+		return network_security_group.AzureNetworkSecurityGroupResourceName
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
+}

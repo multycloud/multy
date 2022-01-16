@@ -25,11 +25,6 @@ type VirtualNetwork struct {
 	CidrBlock                       string `hcl:"cidr_block"`
 }
 
-type VirtualNetworkOutput struct {
-	*resources.CommonResourceOutputs
-	CidrBlock string
-}
-
 func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
 	if cloud == common.AWS {
 		vpc := virtual_network.AwsVpc{
@@ -145,6 +140,18 @@ func (vn *VirtualNetwork) Validate(ctx resources.MultyContext) {
 		vn.LogFatal(vn.ResourceId, "cidr_block", "cidr_block length is invalid")
 	}
 	return
+}
+
+func (vn *VirtualNetwork) GetMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return virtual_network.AwsResourceName
+	case common.AZURE:
+		return virtual_network.AzureResourceName
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
 }
 
 /*

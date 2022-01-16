@@ -14,5 +14,5 @@ multy virtual_network "example_vn_1" {
 
 multy virtual_network "example_vn" {
     name       = example_vn_1.new_id
-    cidr_block = "2"
+    cidr_block = max(1, 2)
 }

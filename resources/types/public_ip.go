@@ -72,3 +72,15 @@ func (r *PublicIp) Validate(ctx resources.MultyContext) {
 	//}
 	return
 }
+
+func (r *PublicIp) GetMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return public_ip.AwsResourceName
+	case common.AZURE:
+		return public_ip.AzureResourceName
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
+}

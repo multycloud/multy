@@ -24,7 +24,7 @@ type Subnet struct {
 	AvailabilityZone int    `hcl:"availability_zone,optional"`
 }
 
-func (s *Subnet) getMainResourceName(cloud common.CloudProvider) string {
+func (s *Subnet) GetMainResourceName(cloud common.CloudProvider) string {
 	switch cloud {
 	case common.AWS:
 		return subnet.AwsResourceName
@@ -38,12 +38,8 @@ func (s *Subnet) getMainResourceName(cloud common.CloudProvider) string {
 
 func (s *Subnet) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
 	return map[string]cty.Value{
-		"id": cty.StringVal(s.getOutputId(cloud)),
+		"id": cty.StringVal(resources.GetMainOutputId(s, cloud)),
 	}
-}
-
-func (s *Subnet) getOutputId(cloud common.CloudProvider) string {
-	return fmt.Sprintf("${%s.%s.id}", s.getMainResourceName(cloud), s.GetTfResourceId(cloud))
 }
 
 func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
@@ -76,18 +72,18 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			AddressPrefixes:    []string{s.CidrBlock},
 			VirtualNetworkName: virtualNetwork.GetVirtualNetworkName(cloud),
 		}
-		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, s.getOutputId(cloud))
+		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, resources.GetMainOutputId(s, cloud))
 		azResources = append(azResources, azSubnet)
 
 		// there must be a better way to do this
-		if !checkSubnetRouteTableAssociated(ctx, s.getOutputId(cloud)) {
+		if !checkSubnetRouteTableAssociated(ctx, resources.GetMainOutputId(s, cloud)) {
 			rt := virtualNetwork.GetAssociatedRouteTableId(cloud)
 			rtAssociation := route_table_association.AzureRouteTableAssociation{
 				AzResource: common.AzResource{
 					ResourceName: route_table_association.AzureResourceName,
 					ResourceId:   s.GetTfResourceId(cloud),
 				},
-				SubnetId:     s.getOutputId(cloud),
+				SubnetId:     resources.GetMainOutputId(s, cloud),
 				RouteTableId: rt,
 			}
 			azResources = append(azResources, rtAssociation)

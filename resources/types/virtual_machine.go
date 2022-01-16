@@ -257,3 +257,15 @@ func (vm *VirtualMachine) Validate(ctx resources.MultyContext) {
 	}
 	return
 }
+
+func (vm *VirtualMachine) GetMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return virtual_machine.AwsResourceName
+	case common.AZURE:
+		return virtual_machine.AzureResourceName
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
+}

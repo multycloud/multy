@@ -93,3 +93,15 @@ func (rg *Type) GetLocation(cloud common.CloudProvider, ctx resources.MultyConte
 func (rg *Type) Validate(ctx resources.MultyContext) {
 	return
 }
+
+func (rg *Type) GetMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return ""
+	case common.AZURE:
+		return "AzureResourceName"
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
+}

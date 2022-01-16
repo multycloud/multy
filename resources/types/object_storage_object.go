@@ -80,3 +80,15 @@ func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) {
 	}
 	return
 }
+
+func (r *ObjectStorageObject) GetMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return "aws_s3_bucket_object"
+	case common.AZURE:
+		return "azurerm_storage_blob"
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
+}
