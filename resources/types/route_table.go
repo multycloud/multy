@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output/route_table"
@@ -113,10 +112,4 @@ func (r *RouteTable) GetMainResourceName(cloud common.CloudProvider) string {
 		validate.LogInternalError("unknown cloud %s", cloud)
 	}
 	return ""
-}
-
-func (r *RouteTable) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
-	return map[string]cty.Value{
-		"id": cty.StringVal(resources.GetMainOutputId(r, cloud)),
-	}
 }

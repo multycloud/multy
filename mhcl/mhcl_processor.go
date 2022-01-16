@@ -62,10 +62,10 @@ func (p *MHCLProcessor) Process(body hcl.Body, r interface{}, ctx *hcl.EvalConte
 		if diags != nil {
 			validate.LogFatalWithDiags(diags, "error while evaluating attribute")
 		}
-		if !val.Type().HasAttribute("id") {
+		if !val.Type().HasAttribute("multy_id") {
 			validate.LogFatalWithSourceRange(attr.Range, "expected a multy resource, but got %s", val.Type().GoString())
 		}
-		refId := val.AsValueMap()["id"].AsString()
+		refId := val.AsValueMap()["multy_id"].AsString()
 		if resource, ok := p.ResourceRefs[refId]; ok {
 			actualType := reflect.TypeOf(resource.Resource).Elem()
 			expectedType := refFields[attr.Name].Type.Elem()

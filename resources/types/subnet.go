@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output/route_table_association"
@@ -22,24 +21,6 @@ type Subnet struct {
 	CidrBlock        string          `hcl:"cidr_block"`
 	VirtualNetwork   *VirtualNetwork `mhcl:"ref=virtual_network"`
 	AvailabilityZone int             `hcl:"availability_zone,optional"`
-}
-
-func (s *Subnet) GetMainResourceName(cloud common.CloudProvider) string {
-	switch cloud {
-	case common.AWS:
-		return subnet.AwsResourceName
-	case common.AZURE:
-		return subnet.AzureResourceName
-	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
-	}
-	return ""
-}
-
-func (s *Subnet) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
-	return map[string]cty.Value{
-		"id": cty.StringVal(resources.GetMainOutputId(s, cloud)),
-	}
 }
 
 func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
@@ -135,4 +116,16 @@ func (s *Subnet) Validate(ctx resources.MultyContext) {
 	}
 
 	return
+}
+
+func (s *Subnet) GetMainResourceName(cloud common.CloudProvider) string {
+	switch cloud {
+	case common.AWS:
+		return subnet.AwsResourceName
+	case common.AZURE:
+		return subnet.AzureResourceName
+	default:
+		validate.LogInternalError("unknown cloud %s", cloud)
+	}
+	return ""
 }
