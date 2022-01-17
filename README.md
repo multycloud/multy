@@ -1,5 +1,5 @@
 <a href="https://multy.dev?utm_source=github.com">
-    <img src="https://multy.dev/assets/multy.svg" width="200">
+    <img src="https://multy.dev/assets/multy.svg" width="250">
 </a>
 
 <br/>
