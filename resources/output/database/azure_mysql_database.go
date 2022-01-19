@@ -5,6 +5,8 @@ import (
 	"multy-go/resources/common"
 )
 
+const AzureMysqlResourceName = "azurerm_mysql_server"
+
 type AzureMySqlServer struct {
 	common.AzResource          `hcl:",squash"`
 	AdministratorLogin         string `hcl:"administrator_login"`

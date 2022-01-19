@@ -5,6 +5,8 @@ import (
 	"multy-go/resources/common"
 )
 
+const AwsResourceName = "aws_db_instance"
+
 // aws_db_instance
 type AwsDbInstance struct {
 	common.AwsResource `hcl:",squash"`
