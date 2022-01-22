@@ -21,10 +21,10 @@ type PublicIp struct {
 	NetworkInterfaceId string `hcl:"network_interface_id,optional"`
 }
 
-func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 
 	if cloud == common.AWS {
-		return []interface{}{
+		return []any{
 			public_ip.AwsElasticIp{
 				AwsResource: common.AwsResource{
 					ResourceName: public_ip.AwsResourceName,
@@ -36,7 +36,7 @@ func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyCont
 			},
 		}
 	} else if cloud == common.AZURE {
-		return []interface{}{
+		return []any{
 			public_ip.AzurePublicIp{
 				AzResource: common.AzResource{
 					ResourceName:      public_ip.AzureResourceName,

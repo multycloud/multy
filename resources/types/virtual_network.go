@@ -25,7 +25,7 @@ type VirtualNetwork struct {
 	CidrBlock                       string `hcl:"cidr_block"`
 }
 
-func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		vpc := virtual_network.AwsVpc{
 			AwsResource: common.AwsResource{
@@ -62,13 +62,13 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 			Ingress: allowAllSgRule,
 			Egress:  allowAllSgRule,
 		}
-		return []interface{}{
+		return []any{
 			vpc,
 			igw,
 			sg,
 		}
 	} else if cloud == common.AZURE {
-		return []interface{}{virtual_network.AzureVnet{
+		return []any{virtual_network.AzureVnet{
 			AzResource: common.AzResource{
 				ResourceName:      virtual_network.AzureResourceName,
 				ResourceId:        vn.GetTfResourceId(cloud),

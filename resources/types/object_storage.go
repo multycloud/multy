@@ -48,13 +48,13 @@ type ObjectStorage struct {
 
 type AclRules struct{}
 
-func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	name := r.Name
 	if r.RandomSuffix {
 		name += fmt.Sprintf("-%s", common.RandomString(6))
 	}
 	if cloud == common.AWS {
-		return []interface{}{object_storage.AwsS3Bucket{
+		return []any{object_storage.AwsS3Bucket{
 			AwsResource: common.AwsResource{
 				ResourceName: "aws_s3_bucket",
 				ResourceId:   r.GetTfResourceId(cloud),
@@ -75,7 +75,7 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 			AllowBlobPublicAccess:  true,
 		}
 
-		return []interface{}{
+		return []any{
 			storageAccount,
 			object_storage_object.AzureStorageContainer{
 				AzResource: common.AzResource{

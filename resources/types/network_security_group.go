@@ -41,7 +41,7 @@ const (
 	DENY    = "deny"
 )
 
-func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		awsRules := translateAwsNsgRules(r, r.Rules)
 
@@ -55,7 +55,7 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 		awsRules[INGRESS] = append(awsRules[INGRESS], allowVpcTraffic)
 		awsRules[EGRESS] = append(awsRules[EGRESS], allowVpcTraffic)
 
-		return []interface{}{
+		return []any{
 			network_security_group.AwsSecurityGroup{
 				AwsResource: common.AwsResource{
 					ResourceName: network_security_group.AwsSecurityGroupResourceName,
@@ -68,7 +68,7 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 			},
 		}
 	} else if cloud == common.AZURE {
-		return []interface{}{
+		return []any{
 			network_security_group.AzureNsg{
 				AzResource: common.AzResource{
 					ResourceName:      network_security_group.AzureNetworkSecurityGroupResourceName,

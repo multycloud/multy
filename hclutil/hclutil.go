@@ -54,7 +54,7 @@ func GetOptionalAttributeAsExpr(hclBody hcl.Body, key string) *hcl.Expression {
 	return nil
 }
 
-func PartialDecode(hclBody hcl.Body, ctx *hcl.EvalContext, val interface{}) hcl.Body {
+func PartialDecode(hclBody hcl.Body, ctx *hcl.EvalContext, val any) hcl.Body {
 	tValue := reflect.ValueOf(val)
 	if tValue.Kind() != reflect.Ptr {
 		validate.LogInternalError("target value must be a pointer, not: %s", tValue.Type().String())

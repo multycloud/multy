@@ -28,7 +28,7 @@ type Database struct {
 	SubnetIds     []string `hcl:"subnet_ids,optional"`
 }
 
-func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		name := common.RemoveSpecialChars(db.Name)
 		dbSubnetGroup := database.AwsDbSubnetGroup{
@@ -39,7 +39,7 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 			},
 			SubnetIds: db.SubnetIds,
 		}
-		return []interface{}{
+		return []any{
 			dbSubnetGroup,
 			database.AwsDbInstance{
 				AwsResource: common.AwsResource{

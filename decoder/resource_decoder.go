@@ -100,7 +100,7 @@ func decode(resource parser.MultyResource, ctx *hcl.EvalContext, rgId string, mh
 	return r, diags
 }
 
-func decodeBody(t interface{}, body hcl.Body, ctx *hcl.EvalContext) (*validate.ResourceValidationInfo, hcl.Diagnostics) {
+func decodeBody(t any, body hcl.Body, ctx *hcl.EvalContext) (*validate.ResourceValidationInfo, hcl.Diagnostics) {
 	schema, _ := gohcl.ImpliedBodySchema(t)
 	content, diags := body.Content(schema)
 	if diags != nil {

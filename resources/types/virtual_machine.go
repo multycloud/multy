@@ -37,7 +37,7 @@ type VirtualMachine struct {
 	PublicIp bool `hcl:"public_ip,optional"`
 }
 
-func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if vm.UserData != "" {
 		vm.UserData = base64.StdEncoding.EncodeToString([]byte(vm.UserData))
 	}
@@ -45,7 +45,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 	var subnetId = vm.SubnetId
 
 	if cloud == common.AWS {
-		var awsResources []interface{}
+		var awsResources []any
 		var ec2NicIds []virtual_machine.AwsEc2NetworkInterface
 		for i, id := range vm.NetworkInterfaceIds {
 			ec2NicIds = append(ec2NicIds, virtual_machine.AwsEc2NetworkInterface{
@@ -94,7 +94,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		return awsResources
 	} else if cloud == common.AZURE {
 		// TODO validate that NIC is on the same VNET
-		var azResources []interface{}
+		var azResources []any
 		rgName := rg.GetResourceGroupName(vm.ResourceGroupId, cloud)
 		nicIds := vm.NetworkInterfaceIds
 

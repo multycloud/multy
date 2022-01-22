@@ -13,18 +13,18 @@ type Provider struct {
 	NumResources      int
 }
 
-func (p *Provider) Translate() []interface{} {
+func (p *Provider) Translate() []any {
 	if p.Cloud == common.AWS {
-		return []interface{}{provider.AwsProvider{
+		return []any{provider.AwsProvider{
 			ResourceName: provider.AwsResourceName,
 			Region:       p.Location,
 			Alias:        p.getAlias(),
 		}}
 	} else if p.Cloud == common.AZURE {
 		if !p.IsDefaultProvider {
-			return []interface{}{}
+			return []any{}
 		}
-		return []interface{}{provider.AzureProvider{
+		return []any{provider.AzureProvider{
 			ResourceName: provider.AzureResourceName,
 			Features:     provider.AzureProviderFeatures{},
 		}}

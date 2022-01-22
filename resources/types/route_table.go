@@ -33,7 +33,7 @@ const (
 	VIRTUALNETWORK = "VirtualNetwork"
 )
 
-func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		rt := route_table.AwsRouteTable{
 			AwsResource: common.AwsResource{
@@ -55,7 +55,7 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 		}
 		rt.Routes = routes
 
-		return []interface{}{rt}
+		return []any{rt}
 	} else if cloud == common.AZURE {
 		rt := route_table.AzureRouteTable{
 			AzResource: common.AzResource{
@@ -78,7 +78,7 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 			}
 		}
 		rt.Routes = routes
-		return []interface{}{rt}
+		return []any{rt}
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return nil

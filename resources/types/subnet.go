@@ -23,9 +23,9 @@ type Subnet struct {
 	AvailabilityZone int             `hcl:"availability_zone,optional"`
 }
 
-func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
-		return []interface{}{subnet.AwsSubnet{
+		return []any{subnet.AwsSubnet{
 			AwsResource: common.AwsResource{
 				ResourceName: subnet.AwsResourceName,
 				ResourceId:   s.GetTfResourceId(cloud),
@@ -36,7 +36,7 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			AvailabilityZone: common.GetAvailabilityZone(ctx.Location, s.AvailabilityZone, cloud),
 		}}
 	} else if cloud == common.AZURE {
-		var azResources []interface{}
+		var azResources []any
 		azSubnet := subnet.AzureSubnet{
 			AzResource: common.AzResource{
 				ResourceName:      subnet.AzureResourceName,
@@ -81,26 +81,18 @@ func getServiceEndpointSubnetReferences(ctx resources.MultyContext, id string) [
 	)
 
 	var serviceEndpoints []string
-	for _, resource := range ctx.Resources {
-		switch resource.Resource.(type) {
-		case *Database:
-			r := resource.Resource.(*Database)
-			if common.StringInSlice(id, r.SubnetIds) {
-				serviceEndpoints = append(serviceEndpoints, DATABASE)
-			}
+	for _, resource := range resources.GetAllResources[*Database](ctx) {
+		if common.StringInSlice(id, resource.SubnetIds) {
+			serviceEndpoints = append(serviceEndpoints, DATABASE)
 		}
 	}
 	return serviceEndpoints
 }
 
 func checkSubnetRouteTableAssociated(ctx resources.MultyContext, sId string) bool {
-	for _, resource := range ctx.Resources {
-		switch resource.Resource.(type) {
-		case *RouteTableAssociation:
-			r := resource.Resource.(*RouteTableAssociation)
-			if sId == r.SubnetId {
-				return true
-			}
+	for _, resource := range resources.GetAllResources[*RouteTableAssociation](ctx) {
+		if sId == resource.SubnetId {
+			return true
 		}
 	}
 	return false

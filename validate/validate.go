@@ -32,7 +32,7 @@ func (info *ResourceValidationInfo) LogFatal(resourceId string, fieldName string
 	exitAndPrintStackTrace()
 }
 
-func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...interface{}) {
+func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...any) {
 	printToStdErr(format, a...)
 
 	for _, diag := range diags {
@@ -48,14 +48,14 @@ func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...interface{}) {
 	os.Exit(1)
 }
 
-func LogFatalWithSourceRange(sourceRange hcl.Range, format string, a ...interface{}) {
+func LogFatalWithSourceRange(sourceRange hcl.Range, format string, a ...any) {
 	printToStdErr(format, a...)
 	printToStdErr("  on %s\n", sourceRange)
 	printLinesInRange(sourceRange)
 	os.Exit(1)
 }
 
-func LogInternalError(format string, a ...interface{}) {
+func LogInternalError(format string, a ...any) {
 	printToStdErr(format, a...)
 	exitAndPrintStackTrace()
 }
@@ -75,7 +75,7 @@ func printLinesInRange(sourceRange hcl.Range) {
 	}
 }
 
-func printToStdErr(format string, a ...interface{}) {
+func printToStdErr(format string, a ...any) {
 	_, err := fmt.Fprintf(os.Stderr, format+"\n", a...)
 	if err != nil {
 		panic(err)

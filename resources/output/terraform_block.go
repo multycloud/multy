@@ -13,15 +13,15 @@ func (*isTfBlock) isTerraformBlock() {
 // ResourceWrapper just to add a resource {} around when encoding into hcl
 type ResourceWrapper struct {
 	*isTfBlock `hcle:"omit"`
-	R          interface{} `hcl:"resource"`
+	R          any `hcl:"resource"`
 }
 
 type DataSourceWrapper struct {
 	*isTfBlock `hcle:"omit"`
-	R          interface{} `hcl:"data"`
+	R          any `hcl:"data"`
 }
 
-func IsTerraformBlock(r interface{}) bool {
+func IsTerraformBlock(r any) bool {
 	if _, ok := r.(TerraformBlock); ok {
 		return true
 	}

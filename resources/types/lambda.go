@@ -28,9 +28,9 @@ type awsLambdaZip struct {
 	OutputPath         string `hcl:"output_path"`
 }
 
-func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
-		return []interface{}{
+		return []any{
 			lambda.AwsLambdaFunction{
 				AwsResource: common.AwsResource{
 					ResourceName: lambda.AwsResourceName,
@@ -63,7 +63,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		}
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
-		return []interface{}{
+		return []any{
 			object_storage.AzureStorageAccount{
 				AzResource: common.AzResource{
 					ResourceName:      object_storage.AzureResourceName,
