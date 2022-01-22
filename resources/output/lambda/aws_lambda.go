@@ -12,11 +12,13 @@ const DefaultLambdaPolicy = `{\"Version\": \"2012-10-17\",\"Statement\": [{\"Act
 type AwsLambdaFunction struct {
 	common.AwsResource `hcl:",squash"`
 	FunctionName       string `hcl:"function_name"`
-	Filename           string `hcl:"filename"`
-	SourceCodeHash     string `hcl:"source_code_hash,expr"`
 	Role               string `hcl:"role,expr"`
-	Runtime            string `hcl:"runtime"`
+	Filename           string `hcl:"filename" hcle:"omitempty"`
+	SourceCodeHash     string `hcl:"source_code_hash,expr" hcle:"omitempty"`
+	Runtime            string `hcl:"runtime" hcle:"omitempty"`
 	Handler            string `hcl:"handler"  hcle:"omitempty"`
+	S3Bucket           string `hcl:"s3_bucket,expr" hcle:"omitempty"`
+	S3Key              string `hcl:"s3_key,expr" hcle:"omitempty"`
 }
 
 type AwsIamRole struct {

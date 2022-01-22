@@ -3,6 +3,7 @@ package mhcl
 import (
 	"github.com/hashicorp/hcl/v2"
 	"multy-go/resources"
+	"multy-go/resources/common"
 	"multy-go/validate"
 	"reflect"
 	"strings"
@@ -23,7 +24,7 @@ type MHclTag struct {
 	Optional bool
 }
 
-func (p *MHCLProcessor) Process(body hcl.Body, r any, ctx *hcl.EvalContext) hcl.Body {
+func (p *MHCLProcessor) Process(body hcl.Body, r any, ctx *hcl.EvalContext, cloud common.CloudProvider) hcl.Body {
 	// Find tag
 	tValue := reflect.ValueOf(r)
 	if tValue.Kind() != reflect.Ptr {
@@ -43,10 +44,12 @@ func (p *MHCLProcessor) Process(body hcl.Body, r any, ctx *hcl.EvalContext) hcl.
 				validate.LogInternalError("duplicate mhcl tag for ref %s", mhcltag.Ref)
 			}
 			refFields[mhcltag.Ref] = t.Field(i)
-			schema.Attributes = append(schema.Attributes, hcl.AttributeSchema{
-				Name:     mhcltag.Ref,
-				Required: !mhcltag.Optional,
-			})
+			schema.Attributes = append(
+				schema.Attributes, hcl.AttributeSchema{
+					Name:     mhcltag.Ref,
+					Required: !mhcltag.Optional,
+				},
+			)
 		}
 	}
 
@@ -70,7 +73,14 @@ func (p *MHCLProcessor) Process(body hcl.Body, r any, ctx *hcl.EvalContext) hcl.
 			actualType := reflect.TypeOf(resource.Resource).Elem()
 			expectedType := refFields[attr.Name].Type.Elem()
 			if !actualType.AssignableTo(expectedType) {
-				validate.LogFatalWithSourceRange(attr.Range, "expected resource of type %s but got %s", expectedType.Name(), actualType.Name())
+				validate.LogFatalWithSourceRange(
+					attr.Range, "expected resource of type %s but got %s", expectedType.Name(), actualType.Name(),
+				)
+			}
+			if resource.Cloud != cloud {
+				validate.LogFatalWithSourceRange(
+					attr.Range, "cross-cloud references are not supported for this attribute",
+				)
 			}
 			tValue.Elem().FieldByName(refFields[attr.Name].Name).Set(reflect.ValueOf(resource.Resource))
 		} else {

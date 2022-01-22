@@ -35,7 +35,9 @@ func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecific
 			if provider, ok := common.AsCloudProvider(cloudValue.AsString()); ok {
 				clouds = append(clouds, provider)
 			} else {
-				validate.LogFatalWithSourceRange(cloudsAttr.Range, fmt.Sprintf("Unknown cloud provider %s.", cloudValue.AsString()))
+				validate.LogFatalWithSourceRange(
+					cloudsAttr.Range, fmt.Sprintf("Unknown cloud provider %s.", cloudValue.AsString()),
+				)
 			}
 		}
 	}
@@ -44,7 +46,7 @@ func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecific
 	for _, cloud := range clouds {
 		cloudCtx := ctx.GetContext(cloud)
 		rgId, shouldCreateRg := getRgId(d.globalConfig.DefaultRgName, attrs, cloudCtx, resource)
-		r, diags := decode(resource, cloudCtx, rgId, mhclProcessor)
+		r, diags := decode(resource, cloudCtx, rgId, mhclProcessor, cloud)
 		if diags != nil {
 			validate.LogFatalWithDiags(diags, "Unable to decode resource %s.", resource.ID)
 		}
@@ -64,21 +66,28 @@ func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecific
 		for key, val := range outputVars {
 			allVars[key] = val
 		}
-		resultCtx.AddCloudDependentVars(map[string]cty.Value{
-			resource.ID: cty.ObjectVal(allVars),
-		}, cloud)
+		resultCtx.AddCloudDependentVars(
+			map[string]cty.Value{
+				resource.ID: cty.ObjectVal(allVars),
+			}, cloud,
+		)
 
 		if shouldCreateRg {
-			result = append(result, resources.CloudSpecificResource{ImplicitlyCreated: true, Cloud: cloud, Resource: rg.DefaultResourceGroup(rgId)})
+			result = append(
+				result,
+				resources.CloudSpecificResource{ImplicitlyCreated: true, Cloud: cloud, Resource: rg.DefaultResourceGroup(rgId)},
+			)
 		}
 	}
 	return result, resultCtx
 }
 
-func decode(resource parser.MultyResource, ctx *hcl.EvalContext, rgId string, mhclProcessor mhcl.MHCLProcessor) (resources.Resource, hcl.Diagnostics) {
+func decode(resource parser.MultyResource, ctx *hcl.EvalContext, rgId string, mhclProcessor mhcl.MHCLProcessor, cloud common.CloudProvider) (resources.Resource, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
 	if resource.ID == "" {
-		validate.LogFatalWithSourceRange(resource.DefinitionRange, "found resource of type '%s' with no id", resource.Type)
+		validate.LogFatalWithSourceRange(
+			resource.DefinitionRange, "found resource of type '%s' with no id", resource.Type,
+		)
 	}
 
 	commonParams := &resources.CommonResourceParams{
@@ -92,22 +101,22 @@ func decode(resource parser.MultyResource, ctx *hcl.EvalContext, rgId string, mh
 		validate.LogFatalWithSourceRange(resource.DefinitionRange, err.Error())
 	}
 
-	body = mhclProcessor.Process(body, r, ctx)
+	body = mhclProcessor.Process(body, r, ctx, cloud)
 
-	validationInfo, diags := decodeBody(r, body, ctx)
+	validationInfo, diags := decodeBody(r, body, ctx, resource.DefinitionRange)
 	commonParams.ResourceValidationInfo = validationInfo
 
 	return r, diags
 }
 
-func decodeBody(t any, body hcl.Body, ctx *hcl.EvalContext) (*validate.ResourceValidationInfo, hcl.Diagnostics) {
+func decodeBody(t any, body hcl.Body, ctx *hcl.EvalContext, definitionRange hcl.Range) (*validate.ResourceValidationInfo, hcl.Diagnostics) {
 	schema, _ := gohcl.ImpliedBodySchema(t)
 	content, diags := body.Content(schema)
 	if diags != nil {
 		return nil, diags
 	}
 	diags = gohcl.DecodeBody(body, ctx, t)
-	return validate.NewResourceValidationInfoFromContent(content), diags
+	return validate.NewResourceValidationInfoFromContent(content, definitionRange), diags
 }
 
 func getRgId(defaultRgId hcl.Expression, attrs hcl.Attributes, ctx *hcl.EvalContext, resource parser.MultyResource) (string, bool) {
@@ -143,8 +152,10 @@ func getRgId(defaultRgId hcl.Expression, attrs hcl.Attributes, ctx *hcl.EvalCont
 	childCtx.Variables["rg_vars"] = rgVars
 	diags = gohcl.DecodeExpression(rgIdExpr, ctx, &rgId)
 	if diags != nil {
-		validate.LogFatalWithDiags(diags, "Unable to resolve resource group name for resource %s. "+
-			"Are you missing a rg_var?", resource.ID)
+		validate.LogFatalWithDiags(
+			diags, "Unable to resolve resource group name for resource %s. "+
+				"Are you missing a rg_var?", resource.ID,
+		)
 	}
 	return rgId, shouldCreateRg
 }
