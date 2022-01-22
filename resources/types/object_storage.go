@@ -63,13 +63,10 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 
 		storageAccount := object_storage.AzureStorageAccount{
-			AzResource: common.AzResource{
-				ResourceName:      "azurerm_storage_account",
-				ResourceId:        r.GetTfResourceId(cloud),
-				ResourceGroupName: rgName,
-				Name:              common.RemoveSpecialChars(name),
-				Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
-			},
+			AzResource: common.NewAzResource(
+				"azurerm_storage_account", r.GetTfResourceId(cloud), common.RemoveSpecialChars(name), rgName,
+				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+			),
 			AccountTier:            "Standard",
 			AccountReplicationType: "GZRS",
 			AllowBlobPublicAccess:  true,

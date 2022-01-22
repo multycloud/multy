@@ -1,4 +1,7 @@
 resource "aws_lambda_function" "test_aws" {
+  tags = {
+    Name = "test_name"
+  }
   function_name    = "test_name"
   filename         = ".multy/tmp/test_name.zip"
   source_code_hash = data.archive_file.test_aws.output_base64sha256
@@ -7,6 +10,9 @@ resource "aws_lambda_function" "test_aws" {
   handler          = "lambda_function.lambda_handler"
 }
 resource "aws_iam_role" "iam_for_lambda_test_name" {
+  tags = {
+    Name = "iam_for_lambda_test_name"
+  }
   name               = "iam_for_lambda_test_name"
   assume_role_policy = "{\"Version\": \"2012-10-17\",\"Statement\": [{\"Action\": \"sts:AssumeRole\",\"Principal\": {\"Service\": \"lambda.amazonaws.com\"},\"Effect\": \"Allow\",\"Sid\": \"\"}]}"
 }

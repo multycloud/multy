@@ -32,10 +32,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 	if cloud == common.AWS {
 		return []any{
 			lambda.AwsLambdaFunction{
-				AwsResource: common.AwsResource{
-					ResourceName: lambda.AwsResourceName,
-					ResourceId:   r.GetTfResourceId(cloud),
-				},
+				AwsResource:    common.NewAwsResource(lambda.AwsResourceName, r.GetTfResourceId(cloud), r.FunctionName),
 				FunctionName:   r.FunctionName,
 				Runtime:        r.Runtime,
 				Filename:       r.getAwsZipFile(),
@@ -44,11 +41,10 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				Handler:        "lambda_function.lambda_handler",
 			},
 			lambda.AwsIamRole{
-				AwsResource: common.AwsResource{
-					ResourceName: lambda.AwsIamRoleResourceName,
-					ResourceId:   r.getAwsIamRoleName(),
-					Name:         r.getAwsIamRoleName(),
-				},
+				AwsResource: common.NewAwsResource(
+					lambda.AwsIamRoleResourceName, r.getAwsIamRoleName(), r.getAwsIamRoleName(),
+				),
+				Name:             r.getAwsIamRoleName(),
 				AssumeRolePolicy: lambda.DefaultLambdaPolicy,
 			},
 			output.DataSourceWrapper{R: awsLambdaZip{
@@ -65,24 +61,18 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 		return []any{
 			object_storage.AzureStorageAccount{
-				AzResource: common.AzResource{
-					ResourceName:      object_storage.AzureResourceName,
-					ResourceId:        r.ResourceId,
-					Name:              fmt.Sprintf("%sstacct", r.ResourceId),
-					Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
-					ResourceGroupName: rgName,
-				},
+				AzResource: common.NewAzResource(
+					object_storage.AzureResourceName, r.ResourceId, fmt.Sprintf("%sstacct", r.ResourceId), rgName,
+					ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+				),
 				AccountTier:            "Standard",
 				AccountReplicationType: "LRS",
 			},
 			lambda.AzureAppServicePlan{
-				AzResource: common.AzResource{
-					ResourceName:      lambda.AzureAppServicePlanResourceName,
-					Name:              fmt.Sprintf("%sservplan", r.ResourceId),
-					ResourceId:        r.ResourceId,
-					Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
-					ResourceGroupName: rgName,
-				},
+				AzResource: common.NewAzResource(
+					lambda.AzureAppServicePlanResourceName, r.ResourceId, fmt.Sprintf("%sservplan", r.ResourceId),
+					rgName, ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+				),
 				Kind:     "Linux",
 				Reserved: true,
 				Sku: lambda.AzureSku{
@@ -91,23 +81,23 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				},
 			},
 			lambda.AzureFunctionApp{
-				// TODO: add local exec and run `func azure functionapp publish function_app_id`
-				AzResource: common.AzResource{
-					ResourceName:      lambda.AzureResourceName,
-					Name:              strings.ReplaceAll(r.FunctionName, "_", ""),
-					ResourceId:        r.ResourceId,
-					Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
-					ResourceGroupName: rgName,
-				},
+				AzResource: common.NewAzResource(
+					lambda.AzureResourceName, r.ResourceId, strings.ReplaceAll(r.FunctionName, "_", ""), rgName,
+					ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+				),
 				// AWS only supports linux
-				OperatingSystem:         "linux",
-				AppServicePlanId:        fmt.Sprintf("%s.%s.id", lambda.AzureAppServicePlanResourceName, r.ResourceId),
-				StorageAccountName:      fmt.Sprintf("%s.%s.name", object_storage.AzureResourceName, r.ResourceId),
-				StorageAccountAccessKey: fmt.Sprintf("%s.%s.primary_access_key", object_storage.AzureResourceName, r.ResourceId),
-				LocalExec: local_exec.New(local_exec.LocalExec{
-					WorkingDir: r.SourceCodeDir,
-					Command:    "func azure functionapp publish ${self.id}",
-				}),
+				OperatingSystem:    "linux",
+				AppServicePlanId:   fmt.Sprintf("%s.%s.id", lambda.AzureAppServicePlanResourceName, r.ResourceId),
+				StorageAccountName: fmt.Sprintf("%s.%s.name", object_storage.AzureResourceName, r.ResourceId),
+				StorageAccountAccessKey: fmt.Sprintf(
+					"%s.%s.primary_access_key", object_storage.AzureResourceName, r.ResourceId,
+				),
+				LocalExec: local_exec.New(
+					local_exec.LocalExec{
+						WorkingDir: r.SourceCodeDir,
+						Command:    "func azure functionapp publish ${self.id}",
+					},
+				),
 			},
 		}
 	}

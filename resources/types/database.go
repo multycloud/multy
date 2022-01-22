@@ -32,21 +32,14 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 	if cloud == common.AWS {
 		name := common.RemoveSpecialChars(db.Name)
 		dbSubnetGroup := database.AwsDbSubnetGroup{
-			AwsResource: common.AwsResource{
-				ResourceName: "aws_db_subnet_group",
-				ResourceId:   db.GetTfResourceId(cloud),
-				Name:         db.Name,
-			},
-			SubnetIds: db.SubnetIds,
+			AwsResource: common.NewAwsResource("aws_db_subnet_group", db.GetTfResourceId(cloud), db.Name),
+			SubnetIds:   db.SubnetIds,
 		}
 		return []any{
 			dbSubnetGroup,
 			database.AwsDbInstance{
-				AwsResource: common.AwsResource{
-					ResourceName: "aws_db_instance",
-					ResourceId:   db.GetTfResourceId(cloud),
-					Name:         name,
-				},
+				AwsResource:        common.NewAwsResource("aws_db_instance", db.GetTfResourceId(cloud), name),
+				Name:               name,
 				AllocatedStorage:   db.Storage,
 				Engine:             db.Engine,
 				EngineVersion:      db.EngineVersion,
@@ -61,21 +54,23 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 		}
 	} else if cloud == common.AZURE {
 
-		return database.NewAzureDatabase(database.AzureDbServer{
-			AzResource: common.AzResource{
-				ResourceId:        db.GetTfResourceId(cloud),
-				Name:              db.Name,
-				ResourceGroupName: rg.GetResourceGroupName(db.ResourceGroupId, cloud),
-				Location:          ctx.GetLocationFromCommonParams(db.CommonResourceParams, cloud),
+		return database.NewAzureDatabase(
+			database.AzureDbServer{
+				AzResource: common.AzResource{
+					ResourceId:        db.GetTfResourceId(cloud),
+					Name:              db.Name,
+					ResourceGroupName: rg.GetResourceGroupName(db.ResourceGroupId, cloud),
+					Location:          ctx.GetLocationFromCommonParams(db.CommonResourceParams, cloud),
+				},
+				Engine:                     db.Engine,
+				Version:                    db.EngineVersion,
+				StorageMb:                  db.Storage * 1024,
+				AdministratorLogin:         db.DbUsername,
+				AdministratorLoginPassword: db.DbPassword,
+				SkuName:                    common.DBSIZE[db.Size][cloud],
+				SubnetIds:                  db.SubnetIds,
 			},
-			Engine:                     db.Engine,
-			Version:                    db.EngineVersion,
-			StorageMb:                  db.Storage * 1024,
-			AdministratorLogin:         db.DbUsername,
-			AdministratorLoginPassword: db.DbPassword,
-			SkuName:                    common.DBSIZE[db.Size][cloud],
-			SubnetIds:                  db.SubnetIds,
-		})
+		)
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return nil

@@ -23,24 +23,17 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 	if cloud == common.AWS {
 		return []any{
 			network_interface.AwsNetworkInterface{
-				AwsResource: common.AwsResource{
-					ResourceName: network_interface.AwsResourceName,
-					ResourceId:   r.GetTfResourceId(cloud),
-					Tags:         map[string]string{"Name": r.Name},
-				},
-				SubnetId: subnetId,
+				AwsResource: common.NewAwsResource(network_interface.AwsResourceName, r.GetTfResourceId(cloud), r.Name),
+				SubnetId:    subnetId,
 			},
 		}
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 		nic := network_interface.AzureNetworkInterface{
-			AzResource: common.AzResource{
-				ResourceName:      network_interface.AzureResourceName,
-				ResourceId:        r.GetTfResourceId(cloud),
-				ResourceGroupName: rgName,
-				Name:              r.Name,
-				Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
-			},
+			AzResource: common.NewAzResource(
+				network_interface.AzureResourceName, r.GetTfResourceId(cloud), r.Name, rgName,
+				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+			),
 			// by default, virtual_machine will have a private ip
 			IpConfigurations: []network_interface.AzureIpConfiguration{{
 				Name:                       "internal", // this name shouldn't be vm.name
@@ -69,13 +62,15 @@ func getPublicIpReferences(ctx resources.MultyContext, subnetId string) []networ
 	var ipConfigurations []network_interface.AzureIpConfiguration
 	for _, resource := range resources.GetAllResources[*PublicIp](ctx) {
 		if resources.GetCloudSpecificResourceId(resource, common.AZURE) == resource.NetworkInterfaceId {
-			ipConfigurations = append(ipConfigurations, network_interface.AzureIpConfiguration{
-				Name:                       fmt.Sprintf("external-%s", resource.Name),
-				PrivateIpAddressAllocation: "Dynamic",
-				PublicIpAddressId:          resource.GetId(common.AZURE),
-				SubnetId:                   subnetId,
-				Primary:                    true,
-			})
+			ipConfigurations = append(
+				ipConfigurations, network_interface.AzureIpConfiguration{
+					Name:                       fmt.Sprintf("external-%s", resource.Name),
+					PrivateIpAddressAllocation: "Dynamic",
+					PublicIpAddressId:          resource.GetId(common.AZURE),
+					SubnetId:                   subnetId,
+					Primary:                    true,
+				},
+			)
 		}
 	}
 	return ipConfigurations

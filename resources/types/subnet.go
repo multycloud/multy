@@ -7,6 +7,7 @@ import (
 	"multy-go/resources/output/route_table_association"
 	"multy-go/resources/output/subnet"
 	rg "multy-go/resources/resource_group"
+	"multy-go/util"
 	"multy-go/validate"
 )
 
@@ -26,11 +27,7 @@ type Subnet struct {
 func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		return []any{subnet.AwsSubnet{
-			AwsResource: common.AwsResource{
-				ResourceName: subnet.AwsResourceName,
-				ResourceId:   s.GetTfResourceId(cloud),
-				Tags:         map[string]string{"Name": s.Name},
-			},
+			AwsResource:      common.NewAwsResource(subnet.AwsResourceName, s.GetTfResourceId(cloud), s.Name),
 			CidrBlock:        s.CidrBlock,
 			VpcId:            s.VirtualNetwork.GetVirtualNetworkId(cloud),
 			AvailabilityZone: common.GetAvailabilityZone(ctx.Location, s.AvailabilityZone, cloud),
@@ -80,13 +77,13 @@ func getServiceEndpointSubnetReferences(ctx resources.MultyContext, id string) [
 		DATABASE = "Microsoft.Sql"
 	)
 
-	var serviceEndpoints []string
+	serviceEndpoints := map[string]bool{}
 	for _, resource := range resources.GetAllResources[*Database](ctx) {
-		if common.StringInSlice(id, resource.SubnetIds) {
-			serviceEndpoints = append(serviceEndpoints, DATABASE)
+		if util.Contains(resource.SubnetIds, id) {
+			serviceEndpoints[DATABASE] = true
 		}
 	}
-	return serviceEndpoints
+	return util.Keys(serviceEndpoints)
 }
 
 func checkSubnetRouteTableAssociated(ctx resources.MultyContext, sId string) bool {

@@ -9,6 +9,7 @@ import (
 type AwsDbInstance struct {
 	common.AwsResource `hcl:",squash"`
 	AllocatedStorage   int    `hcl:"allocated_storage"`
+	Name               string `hcl:"name"`
 	Engine             string `hcl:"engine"`
 	EngineVersion      string `hcl:"engine_version"`
 	Username           string `hcl:"username"`

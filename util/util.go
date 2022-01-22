@@ -6,9 +6,11 @@ import (
 )
 
 func SortResourcesById[T any](r []T, idGetter func(T) string) []T {
-	sort.Slice(r, func(a, b int) bool {
-		return idGetter(r[a]) < idGetter(r[b])
-	})
+	sort.Slice(
+		r, func(a, b int) bool {
+			return idGetter(r[a]) < idGetter(r[b])
+		},
+	)
 	return r
 }
 
@@ -45,4 +47,12 @@ func Contains[T comparable](list []T, a T) bool {
 		}
 	}
 	return false
+}
+
+func Keys[K comparable, V any](m map[K]V) []K {
+	var keys []K
+	for k, _ := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }

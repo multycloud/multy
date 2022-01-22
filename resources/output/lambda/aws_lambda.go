@@ -21,5 +21,6 @@ type AwsLambdaFunction struct {
 
 type AwsIamRole struct {
 	common.AwsResource `hcl:",squash"`
+	Name               string `hcl:"name"`
 	AssumeRolePolicy   string `hcl:"assume_role_policy"`
 }
