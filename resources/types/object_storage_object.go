@@ -20,7 +20,7 @@ type ObjectStorageObject struct {
 	Acl           string         `hcl:"acl,optional"`
 }
 
-func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	var acl string
 	if r.Acl == "public_read" {
 		acl = "public-read"
@@ -28,7 +28,7 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 		acl = "private"
 	}
 	if cloud == common.AWS {
-		return []interface{}{object_storage_object.AwsS3BucketObject{
+		return []any{object_storage_object.AwsS3BucketObject{
 			AwsResource: common.AwsResource{
 				ResourceName: "aws_s3_bucket_object",
 				ResourceId:   r.GetTfResourceId(cloud),
@@ -46,7 +46,7 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 		} else {
 			containerName = r.ObjectStorage.GetAssociatedPrivateContainerResourceName(cloud)
 		}
-		return []interface{}{
+		return []any{
 			object_storage_object.AzureStorageAccountBlob{
 				AzResource: common.AzResource{
 					ResourceName: "azurerm_storage_blob",

@@ -17,7 +17,7 @@ type AzureDbServer struct {
 	SubnetIds                  []string
 }
 
-func NewAzureDatabase(server AzureDbServer) []interface{} {
+func NewAzureDatabase(server AzureDbServer) []any {
 	switch strings.ToLower(server.Engine) {
 	case "mysql":
 		mysqlServer := AzureMySqlServer{
@@ -36,7 +36,7 @@ func NewAzureDatabase(server AzureDbServer) []interface{} {
 			//SslEnforcementEnabled:      true,
 		}
 
-		resources := []interface{}{mysqlServer}
+		resources := []any{mysqlServer}
 		for i, subnetId := range server.SubnetIds {
 			resources = append(resources, AzureMySqlVirtualNetworkRule{
 				AzResource: common.AzResource{

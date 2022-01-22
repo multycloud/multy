@@ -23,7 +23,7 @@ type MHclTag struct {
 	Optional bool
 }
 
-func (p *MHCLProcessor) Process(body hcl.Body, r interface{}, ctx *hcl.EvalContext) hcl.Body {
+func (p *MHCLProcessor) Process(body hcl.Body, r any, ctx *hcl.EvalContext) hcl.Body {
 	// Find tag
 	tValue := reflect.ValueOf(r)
 	if tValue.Kind() != reflect.Ptr {
