@@ -14,7 +14,8 @@ type AzureFunctionApp struct {
 	StorageAccountAccessKey string               `hcl:"storage_account_access_key,expr"`
 	AppServicePlanId        string               `hcl:"app_service_plan_id,expr"`
 	OperatingSystem         string               `hcl:"os_type" hcle:"omitempty"`
-	LocalExec               local_exec.LocalExec `hcl:"provisioner"`
+	LocalExec               local_exec.LocalExec `hcl:"provisioner" hcle:"omitempty"`
+	AppSettings             map[string]string    `hcl:"app_settings" hcle:"omitempty"`
 }
 
 type AzureAppServicePlan struct {

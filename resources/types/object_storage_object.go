@@ -5,11 +5,14 @@ import (
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output/object_storage_object"
+	"multy-go/util"
 	"multy-go/validate"
 )
 
 // AWS: aws_s3_bucket_object
 // Azure: azurerm_storage_blob
+
+var SUPPORTED_CONTENT_TYPES = []string{"text/html", "application/zip"}
 
 type ObjectStorageObject struct {
 	*resources.CommonResourceParams
@@ -65,8 +68,16 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 	return nil
 }
 
+func (r *ObjectStorageObject) GetS3Key() string {
+	return fmt.Sprintf("%s.%s.key", "aws_s3_bucket_object", r.GetTfResourceId(common.AWS))
+}
+
+func (r *ObjectStorageObject) GetAzureBlobName() string {
+	return fmt.Sprintf("%s.%s.name", "azurerm_storage_blob", r.GetTfResourceId(common.AZURE))
+}
+
 func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) {
-	if r.ContentType != "text/html" {
+	if !util.Contains(SUPPORTED_CONTENT_TYPES, r.ContentType) {
 		r.LogFatal(r.ResourceId, "content_type", fmt.Sprintf("%s not a valid content_type", r.ContentType))
 	}
 	if r.Acl != "" && r.Acl != "public_read" && r.Acl != "private" {
