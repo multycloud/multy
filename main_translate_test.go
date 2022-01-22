@@ -21,6 +21,12 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+type TestFiles struct {
+	InputFile  []string
+	OutputFile string
+	Dir        string
+}
+
 func TestTranslate(t *testing.T) {
 	log.SetFlags(log.Lshortfile)
 
@@ -203,7 +209,7 @@ func groupAllLabels(content *hcl.BodyContent) (map[string]map[string]*hcl.Block,
 			uniqueName := strings.Join(block.Labels, ".")
 			if _, ok := result[t][uniqueName]; ok {
 				if t != "provider" {
-					return nil, &block.DefRange, fmt.Errorf("duplicate resource %s\n", uniqueName)
+					return nil, &block.DefRange, fmt.Errorf("duplicate resource %s", uniqueName)
 				}
 				// TODO: IMPORTANT - handle duplicate resources
 			}
