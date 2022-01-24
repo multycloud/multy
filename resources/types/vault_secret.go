@@ -23,8 +23,8 @@ func (r *VaultSecret) Translate(cloud common.CloudProvider, ctx resources.MultyC
 				AwsResource: common.AwsResource{
 					ResourceName: vault_secret.AwsResourceName,
 					ResourceId:   r.GetTfResourceId(cloud),
-					Name:         fmt.Sprintf("/%s/%s", r.Vault.Name, r.Name),
 				},
+				Name:  fmt.Sprintf("/%s/%s", r.Vault.Name, r.Name),
 				Type:  "SecureString",
 				Value: r.Value,
 			},
