@@ -15,32 +15,25 @@ type NetworkInterface struct {
 	SubnetId string `hcl:"subnet_id,optional"`
 }
 
-func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	var subnetId string
 
 	subnetId = r.SubnetId
 
 	if cloud == common.AWS {
-		return []interface{}{
+		return []any{
 			network_interface.AwsNetworkInterface{
-				AwsResource: common.AwsResource{
-					ResourceName: network_interface.AwsResourceName,
-					ResourceId:   r.GetTfResourceId(cloud),
-					Tags:         map[string]string{"Name": r.Name},
-				},
-				SubnetId: subnetId,
+				AwsResource: common.NewAwsResource(network_interface.AwsResourceName, r.GetTfResourceId(cloud), r.Name),
+				SubnetId:    subnetId,
 			},
 		}
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 		nic := network_interface.AzureNetworkInterface{
-			AzResource: common.AzResource{
-				ResourceName:      network_interface.AzureResourceName,
-				ResourceId:        r.GetTfResourceId(cloud),
-				ResourceGroupName: rgName,
-				Name:              r.Name,
-				Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
-			},
+			AzResource: common.NewAzResource(
+				network_interface.AzureResourceName, r.GetTfResourceId(cloud), r.Name, rgName,
+				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+			),
 			// by default, virtual_machine will have a private ip
 			IpConfigurations: []network_interface.AzureIpConfiguration{{
 				Name:                       "internal", // this name shouldn't be vm.name
@@ -53,7 +46,7 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 		if publicIpReference := getPublicIpReferences(ctx, subnetId); len(publicIpReference) != 0 {
 			nic.IpConfigurations = publicIpReference
 		}
-		return []interface{}{nic}
+		return []any{nic}
 	}
 
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
@@ -67,19 +60,17 @@ func (r *NetworkInterface) GetId(cloud common.CloudProvider) string {
 
 func getPublicIpReferences(ctx resources.MultyContext, subnetId string) []network_interface.AzureIpConfiguration {
 	var ipConfigurations []network_interface.AzureIpConfiguration
-	for _, resource := range ctx.Resources {
-		switch resource.Resource.(type) {
-		case *PublicIp:
-			r := resource.Resource.(*PublicIp)
-			if resources.GetCloudSpecificResourceId(r, common.AZURE) == r.NetworkInterfaceId {
-				ipConfigurations = append(ipConfigurations, network_interface.AzureIpConfiguration{
-					Name:                       fmt.Sprintf("external-%s", r.Name),
+	for _, resource := range resources.GetAllResources[*PublicIp](ctx) {
+		if resources.GetCloudSpecificResourceId(resource, common.AZURE) == resource.NetworkInterfaceId {
+			ipConfigurations = append(
+				ipConfigurations, network_interface.AzureIpConfiguration{
+					Name:                       fmt.Sprintf("external-%s", resource.Name),
 					PrivateIpAddressAllocation: "Dynamic",
-					PublicIpAddressId:          r.GetId(common.AZURE),
+					PublicIpAddressId:          resource.GetId(common.AZURE),
 					SubnetId:                   subnetId,
 					Primary:                    true,
-				})
-			}
+				},
+			)
 		}
 	}
 	return ipConfigurations

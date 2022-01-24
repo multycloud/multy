@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"fmt"
 	"multy-go/resources/common"
 	"multy-go/validate"
 )
@@ -11,11 +10,14 @@ type MultyContext struct {
 	Location  string
 }
 
-func (ctx *MultyContext) GetResource(id string) (*CloudSpecificResource, error) {
-	if r, ok := ctx.Resources[id]; ok {
-		return &r, nil
+func GetAllResources[T Resource](ctx MultyContext) []T {
+	var result []T
+	for _, r := range ctx.Resources {
+		if casted, canCast := r.Resource.(T); canCast {
+			result = append(result, casted)
+		}
 	}
-	return nil, fmt.Errorf("resource %s not found", id)
+	return result
 }
 
 func (ctx *MultyContext) GetLocationFromCommonParams(commonParams *CommonResourceParams, cloud common.CloudProvider) string {

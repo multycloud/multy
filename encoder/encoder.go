@@ -2,20 +2,19 @@ package encoder
 
 import (
 	"bytes"
+	"github.com/multy-dev/hclencoder"
 	"log"
 	"multy-go/decoder"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output"
 	"multy-go/resources/types"
-	"sort"
-
-	"github.com/multy-dev/hclencoder"
+	"multy-go/util"
 )
 
 type WithProvider struct {
-	Resource      interface{} `hcl:",squash"`
-	ProviderAlias string      `hcl:"provider" hcle:"omitempty"`
+	Resource      any    `hcl:",squash"`
+	ProviderAlias string `hcl:"provider" hcle:"omitempty"`
 }
 
 func Encode(decodedResources *decoder.DecodedResources) string {
@@ -24,11 +23,11 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 
 	providers := buildProviders(decodedResources, ctx)
 
-	for _, r := range sortResources(decodedResources) {
+	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
 		r.Resource.Validate(ctx)
 		providerAlias := getProvider(providers, r, ctx).GetResourceId()
 		for _, translated := range r.Translate(ctx) {
-			var result interface{}
+			var result any
 			result = WithProvider{
 				Resource:      translated,
 				ProviderAlias: providerAlias,
@@ -86,22 +85,12 @@ func buildProviders(r *decoder.DecodedResources, ctx resources.MultyContext) map
 		}
 	}
 
-	biggestProviders := map[common.CloudProvider]*types.Provider{}
-	for cloud, providerByLocation := range providers {
-		for _, provider := range providerByLocation {
-			if biggest, ok := biggestProviders[cloud]; ok {
-				if biggest.NumResources < provider.NumResources || (biggest.NumResources == provider.NumResources &&
-					biggest.Location > provider.Location) {
-					biggestProviders[cloud] = provider
-					provider.IsDefaultProvider = true
-					biggest.IsDefaultProvider = false
-				}
-			} else {
-				biggestProviders[cloud] = provider
-				provider.IsDefaultProvider = true
-			}
-		}
+	for _, providerByLocation := range providers {
+		providerByLocation[util.MaxBy(providerByLocation, func(v *types.Provider) int {
+			return v.NumResources
+		})].IsDefaultProvider = true
 	}
+
 	return providers
 }
 
@@ -112,25 +101,10 @@ func flatten(p map[common.CloudProvider]map[string]*types.Provider) []*types.Pro
 			result = append(result, provider)
 		}
 	}
-	sort.Slice(result, func(a, b int) bool {
-		return result[a].GetId() < result[b].GetId()
-	})
+	util.SortResourcesById(result, func(p *types.Provider) string { return p.GetId() })
 	return result
 }
 
 type providerWrapper struct {
-	P interface{} `hcl:"provider"`
-}
-
-func sortResources(decodedResources *decoder.DecodedResources) []resources.CloudSpecificResource {
-	var keys []string
-	for k := range decodedResources.Resources {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	var result []resources.CloudSpecificResource
-	for _, k := range keys {
-		result = append(result, decodedResources.Resources[k])
-	}
-	return result
+	P any `hcl:"provider"`
 }

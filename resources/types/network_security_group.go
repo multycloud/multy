@@ -41,7 +41,7 @@ const (
 	DENY    = "deny"
 )
 
-func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		awsRules := translateAwsNsgRules(r, r.Rules)
 
@@ -55,28 +55,24 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 		awsRules[INGRESS] = append(awsRules[INGRESS], allowVpcTraffic)
 		awsRules[EGRESS] = append(awsRules[EGRESS], allowVpcTraffic)
 
-		return []interface{}{
+		return []any{
 			network_security_group.AwsSecurityGroup{
-				AwsResource: common.AwsResource{
-					ResourceName: network_security_group.AwsSecurityGroupResourceName,
-					ResourceId:   r.GetTfResourceId(cloud),
-					Tags:         map[string]string{"Name": r.Name},
-				},
+				AwsResource: common.NewAwsResource(
+					network_security_group.AwsSecurityGroupResourceName, r.GetTfResourceId(cloud), r.Name,
+				),
 				VpcId:   resources.GetMainOutputId(r.VirtualNetwork, cloud),
 				Ingress: awsRules["ingress"],
 				Egress:  awsRules["egress"],
 			},
 		}
 	} else if cloud == common.AZURE {
-		return []interface{}{
+		return []any{
 			network_security_group.AzureNsg{
-				AzResource: common.AzResource{
-					ResourceName:      network_security_group.AzureNetworkSecurityGroupResourceName,
-					ResourceId:        r.GetTfResourceId(cloud),
-					Name:              r.Name,
-					ResourceGroupName: rg.GetResourceGroupName(r.ResourceGroupId, cloud),
-					Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
-				},
+				AzResource: common.NewAzResource(
+					network_security_group.AzureNetworkSecurityGroupResourceName, r.GetTfResourceId(cloud), r.Name,
+					rg.GetResourceGroupName(r.ResourceGroupId, cloud),
+					ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+				),
 				Rules: translateAzNsgRules(r.Rules),
 			},
 		}
@@ -89,7 +85,9 @@ func (r NetworkSecurityGroup) GetId(cloud common.CloudProvider) string {
 	if cloud == common.AWS {
 		return fmt.Sprintf("%s.%s.id", network_security_group.AwsSecurityGroupResourceName, r.GetTfResourceId(cloud))
 	} else if cloud == common.AZURE {
-		return fmt.Sprintf("%s.%s.id", network_security_group.AzureNetworkSecurityGroupResourceName, r.GetTfResourceId(cloud))
+		return fmt.Sprintf(
+			"%s.%s.id", network_security_group.AzureNetworkSecurityGroupResourceName, r.GetTfResourceId(cloud),
+		)
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return ""
@@ -129,25 +127,31 @@ func translateAwsNsgRules(r *NetworkSecurityGroup, rules []RuleType) map[string]
 		}
 
 		if rule.Direction == BOTH {
-			awsRules[INGRESS] = append(awsRules[INGRESS], network_security_group.AwsSecurityGroupRule{
-				Protocol:   awsProtocol,
-				FromPort:   awsFromPort,
-				ToPort:     awsToPort,
-				CidrBlocks: []string{rule.CidrBlock},
-			})
-			awsRules[EGRESS] = append(awsRules[EGRESS], network_security_group.AwsSecurityGroupRule{
-				Protocol:   awsProtocol,
-				FromPort:   awsFromPort,
-				ToPort:     awsToPort,
-				CidrBlocks: []string{rule.CidrBlock},
-			})
+			awsRules[INGRESS] = append(
+				awsRules[INGRESS], network_security_group.AwsSecurityGroupRule{
+					Protocol:   awsProtocol,
+					FromPort:   awsFromPort,
+					ToPort:     awsToPort,
+					CidrBlocks: []string{rule.CidrBlock},
+				},
+			)
+			awsRules[EGRESS] = append(
+				awsRules[EGRESS], network_security_group.AwsSecurityGroupRule{
+					Protocol:   awsProtocol,
+					FromPort:   awsFromPort,
+					ToPort:     awsToPort,
+					CidrBlocks: []string{rule.CidrBlock},
+				},
+			)
 		} else {
-			awsRules[rule.Direction] = append(awsRules[rule.Direction], network_security_group.AwsSecurityGroupRule{
-				Protocol:   awsProtocol,
-				FromPort:   awsFromPort,
-				ToPort:     awsToPort,
-				CidrBlocks: []string{rule.CidrBlock},
-			})
+			awsRules[rule.Direction] = append(
+				awsRules[rule.Direction], network_security_group.AwsSecurityGroupRule{
+					Protocol:   awsProtocol,
+					FromPort:   awsFromPort,
+					ToPort:     awsToPort,
+					CidrBlocks: []string{rule.CidrBlock},
+				},
+			)
 		}
 	}
 	return awsRules
@@ -163,40 +167,46 @@ func translateAzNsgRules(rules []RuleType) []network_security_group.AzureRule {
 
 	for _, rule := range rules {
 		if rule.Direction == BOTH {
-			rls = append(rls, network_security_group.AzureRule{
-				Name:                     strconv.Itoa(len(rls)),
-				Protocol:                 rule.Protocol,
-				Priority:                 rule.Priority,
-				Access:                   "Allow",
-				SourcePortRange:          "*",
-				SourceAddressPrefix:      "*",
-				DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
-				DestinationAddressPrefix: "*",
-				Direction:                m[INGRESS],
-			})
-			rls = append(rls, network_security_group.AzureRule{
-				Name:                     strconv.Itoa(len(rls)),
-				Protocol:                 rule.Protocol,
-				Priority:                 rule.Priority,
-				Access:                   "Allow",
-				SourcePortRange:          "*",
-				SourceAddressPrefix:      "*",
-				DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
-				DestinationAddressPrefix: "*",
-				Direction:                m[EGRESS],
-			})
+			rls = append(
+				rls, network_security_group.AzureRule{
+					Name:                     strconv.Itoa(len(rls)),
+					Protocol:                 rule.Protocol,
+					Priority:                 rule.Priority,
+					Access:                   "Allow",
+					SourcePortRange:          "*",
+					SourceAddressPrefix:      "*",
+					DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
+					DestinationAddressPrefix: "*",
+					Direction:                m[INGRESS],
+				},
+			)
+			rls = append(
+				rls, network_security_group.AzureRule{
+					Name:                     strconv.Itoa(len(rls)),
+					Protocol:                 rule.Protocol,
+					Priority:                 rule.Priority,
+					Access:                   "Allow",
+					SourcePortRange:          "*",
+					SourceAddressPrefix:      "*",
+					DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
+					DestinationAddressPrefix: "*",
+					Direction:                m[EGRESS],
+				},
+			)
 		} else {
-			rls = append(rls, network_security_group.AzureRule{
-				Name:                     strconv.Itoa(len(rls)),
-				Protocol:                 rule.Protocol,
-				Priority:                 rule.Priority,
-				Access:                   "Allow",
-				SourcePortRange:          "*",
-				SourceAddressPrefix:      "*",
-				DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
-				DestinationAddressPrefix: "*",
-				Direction:                m[rule.Direction],
-			})
+			rls = append(
+				rls, network_security_group.AzureRule{
+					Name:                     strconv.Itoa(len(rls)),
+					Protocol:                 rule.Protocol,
+					Priority:                 rule.Priority,
+					Access:                   "Allow",
+					SourcePortRange:          "*",
+					SourceAddressPrefix:      "*",
+					DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
+					DestinationAddressPrefix: "*",
+					Direction:                m[rule.Direction],
+				},
+			)
 		}
 	}
 
@@ -222,7 +232,12 @@ func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext) {
 	for _, rule := range r.Rules {
 		// TODO: get better source ranges
 		if !validateRuleDirection(rule.Direction) {
-			r.LogFatal(r.ResourceId, "rules", fmt.Sprintf("rule direction \"%s\" is not valid. direction must be \"%s\", \"%s\" or \"%s\"", rule.Direction, INGRESS, EGRESS, BOTH))
+			r.LogFatal(
+				r.ResourceId, "rules", fmt.Sprintf(
+					"rule direction \"%s\" is not valid. direction must be \"%s\", \"%s\" or \"%s\"", rule.Direction,
+					INGRESS, EGRESS, BOTH,
+				),
+			)
 		}
 		if !validatePort(rule.ToPort) {
 			r.LogFatal(r.ResourceId, "rules", fmt.Sprintf("rule to_port \"%s\" is not valid", rule.ToPort))

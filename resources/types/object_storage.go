@@ -48,13 +48,13 @@ type ObjectStorage struct {
 
 type AclRules struct{}
 
-func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	name := r.Name
 	if r.RandomSuffix {
 		name += fmt.Sprintf("-%s", common.RandomString(6))
 	}
 	if cloud == common.AWS {
-		return []interface{}{object_storage.AwsS3Bucket{
+		return []any{object_storage.AwsS3Bucket{
 			AwsResource: common.AwsResource{
 				ResourceName: "aws_s3_bucket",
 				ResourceId:   r.GetTfResourceId(cloud),
@@ -63,19 +63,16 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 
 		storageAccount := object_storage.AzureStorageAccount{
-			AzResource: common.AzResource{
-				ResourceName:      "azurerm_storage_account",
-				ResourceId:        r.GetTfResourceId(cloud),
-				ResourceGroupName: rgName,
-				Name:              common.RemoveSpecialChars(name),
-				Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
-			},
+			AzResource: common.NewAzResource(
+				"azurerm_storage_account", r.GetTfResourceId(cloud), common.RemoveSpecialChars(name), rgName,
+				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+			),
 			AccountTier:            "Standard",
 			AccountReplicationType: "GZRS",
 			AllowBlobPublicAccess:  true,
 		}
 
-		return []interface{}{
+		return []any{
 			storageAccount,
 			object_storage_object.AzureStorageContainer{
 				AzResource: common.AzResource{

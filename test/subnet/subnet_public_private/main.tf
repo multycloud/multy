@@ -1,12 +1,16 @@
 resource "aws_db_subnet_group" "example_db_aws" {
-  name = "example-db"
-
+  tags = {
+    Name = "example-db"
+  }
   subnet_ids = [
     "${aws_subnet.subnet1_aws.id}",
     "${aws_subnet.subnet2_aws.id}",
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
+  tags = {
+    Name = "exampledb"
+  }
   name                 = "exampledb"
   allocated_storage    = 10
   engine               = "mysql"

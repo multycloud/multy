@@ -127,7 +127,6 @@ func ValidateVmSize(s string) bool {
 type AwsResource struct {
 	ResourceName string            `hcl:",key"`
 	ResourceId   string            `hcl:",key"`
-	Name         string            `hcl:"name" hcle:"omitempty"`
 	Tags         map[string]string `hcl:"tags" hcle:"omitempty"`
 }
 
@@ -137,4 +136,18 @@ type AzResource struct {
 	ResourceGroupName string `hcl:"resource_group_name,expr" hcle:"omitempty"`
 	Name              string `hcl:"name" hcle:"omitempty"`
 	Location          string `hcl:"location" hcle:"omitempty"`
+}
+
+func NewAwsResource(resourceName string, resourceId string, name string) AwsResource {
+	return AwsResource{ResourceName: resourceName, ResourceId: resourceId, Tags: map[string]string{"Name": name}}
+}
+
+func NewAzResource(resourceName string, resourceId string, name string, rgName string, location string) AzResource {
+	return AzResource{
+		ResourceName:      resourceName,
+		ResourceId:        resourceId,
+		Name:              name,
+		ResourceGroupName: rgName,
+		Location:          location,
+	}
 }

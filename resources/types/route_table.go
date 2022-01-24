@@ -33,52 +33,50 @@ const (
 	VIRTUALNETWORK = "VirtualNetwork"
 )
 
-func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		rt := route_table.AwsRouteTable{
-			AwsResource: common.AwsResource{
-				ResourceName: route_table.AwsResourceName,
-				ResourceId:   r.GetTfResourceId(cloud),
-				Tags:         map[string]string{"Name": r.Name},
-			},
-			VpcId: resources.GetMainOutputId(r.VirtualNetwork, cloud),
+			AwsResource: common.NewAwsResource(route_table.AwsResourceName, r.GetTfResourceId(cloud), r.Name),
+			VpcId:       resources.GetMainOutputId(r.VirtualNetwork, cloud),
 		}
 
 		var routes []route_table.AwsRouteTableRoute
 		for _, route := range r.Routes {
 			if strings.EqualFold(route.Destination, INTERNET) {
-				routes = append(routes, route_table.AwsRouteTableRoute{
-					CidrBlock: route.CidrBlock,
-					GatewayId: r.VirtualNetwork.GetAssociatedInternetGateway(cloud),
-				})
+				routes = append(
+					routes, route_table.AwsRouteTableRoute{
+						CidrBlock: route.CidrBlock,
+						GatewayId: r.VirtualNetwork.GetAssociatedInternetGateway(cloud),
+					},
+				)
 			}
 		}
 		rt.Routes = routes
 
-		return []interface{}{rt}
+		return []any{rt}
 	} else if cloud == common.AZURE {
 		rt := route_table.AzureRouteTable{
-			AzResource: common.AzResource{
-				ResourceName:      route_table.AzureResourceName,
-				ResourceId:        r.GetTfResourceId(cloud),
-				ResourceGroupName: rg.GetResourceGroupName(r.ResourceGroupId, cloud),
-				Name:              r.Name,
-				Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
-			},
+			AzResource: common.NewAzResource(
+				route_table.AzureResourceName, r.GetTfResourceId(cloud), r.Name,
+				rg.GetResourceGroupName(r.ResourceGroupId, cloud),
+				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+			),
 		}
 
 		var routes []route_table.AzureRouteTableRoute
 		for _, route := range r.Routes {
 			if strings.EqualFold(route.Destination, INTERNET) {
-				routes = append(routes, route_table.AzureRouteTableRoute{
-					Name:          "internet",
-					AddressPrefix: route.CidrBlock,
-					NextHopType:   INTERNET,
-				})
+				routes = append(
+					routes, route_table.AzureRouteTableRoute{
+						Name:          "internet",
+						AddressPrefix: route.CidrBlock,
+						NextHopType:   INTERNET,
+					},
+				)
 			}
 		}
 		rt.Routes = routes
-		return []interface{}{rt}
+		return []any{rt}
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return nil
