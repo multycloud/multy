@@ -7,6 +7,7 @@ import (
 	"multy-go/resources/output/route_table_association"
 	"multy-go/resources/output/subnet"
 	rg "multy-go/resources/resource_group"
+	"multy-go/util"
 	"multy-go/validate"
 )
 
@@ -23,20 +24,16 @@ type Subnet struct {
 	AvailabilityZone int             `hcl:"availability_zone,optional"`
 }
 
-func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
-		return []interface{}{subnet.AwsSubnet{
-			AwsResource: common.AwsResource{
-				ResourceName: subnet.AwsResourceName,
-				ResourceId:   s.GetTfResourceId(cloud),
-				Tags:         map[string]string{"Name": s.Name},
-			},
+		return []any{subnet.AwsSubnet{
+			AwsResource:      common.NewAwsResource(subnet.AwsResourceName, s.GetTfResourceId(cloud), s.Name),
 			CidrBlock:        s.CidrBlock,
 			VpcId:            s.VirtualNetwork.GetVirtualNetworkId(cloud),
 			AvailabilityZone: common.GetAvailabilityZone(ctx.Location, s.AvailabilityZone, cloud),
 		}}
 	} else if cloud == common.AZURE {
-		var azResources []interface{}
+		var azResources []any
 		azSubnet := subnet.AzureSubnet{
 			AzResource: common.AzResource{
 				ResourceName:      subnet.AzureResourceName,
@@ -80,27 +77,19 @@ func getServiceEndpointSubnetReferences(ctx resources.MultyContext, id string) [
 		DATABASE = "Microsoft.Sql"
 	)
 
-	var serviceEndpoints []string
-	for _, resource := range ctx.Resources {
-		switch resource.Resource.(type) {
-		case *Database:
-			r := resource.Resource.(*Database)
-			if common.StringInSlice(id, r.SubnetIds) {
-				serviceEndpoints = append(serviceEndpoints, DATABASE)
-			}
+	serviceEndpoints := map[string]bool{}
+	for _, resource := range resources.GetAllResources[*Database](ctx) {
+		if util.Contains(resource.SubnetIds, id) {
+			serviceEndpoints[DATABASE] = true
 		}
 	}
-	return serviceEndpoints
+	return util.Keys(serviceEndpoints)
 }
 
 func checkSubnetRouteTableAssociated(ctx resources.MultyContext, sId string) bool {
-	for _, resource := range ctx.Resources {
-		switch resource.Resource.(type) {
-		case *RouteTableAssociation:
-			r := resource.Resource.(*RouteTableAssociation)
-			if sId == r.SubnetId {
-				return true
-			}
+	for _, resource := range resources.GetAllResources[*RouteTableAssociation](ctx) {
+		if sId == resource.SubnetId {
+			return true
 		}
 	}
 	return false

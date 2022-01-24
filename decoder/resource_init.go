@@ -37,6 +37,8 @@ func InitResource(resourceType string, commonParams *resources.CommonResourcePar
 		return &types.Vault{CommonResourceParams: commonParams}, nil
 	case "vault_secret":
 		return &types.VaultSecret{CommonResourceParams: commonParams}, nil
+	case "lambda":
+		return &types.Lambda{CommonResourceParams: commonParams}, nil
 	default:
 		return nil, fmt.Errorf("unknown resource type %s", resourceType)
 	}

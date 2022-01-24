@@ -10,29 +10,37 @@ import (
 )
 
 type ResourceValidationInfo struct {
-	SourceRanges map[string]hcl.Range
+	SourceRanges  map[string]hcl.Range
+	BlockDefRange hcl.Range
 }
 
-func NewResourceValidationInfoFromContent(content *hcl.BodyContent) *ResourceValidationInfo {
+func NewResourceValidationInfoFromContent(content *hcl.BodyContent, definitionRange hcl.Range) *ResourceValidationInfo {
 	result := map[string]hcl.Range{}
 	for _, attr := range content.Attributes {
 		result[attr.Name] = attr.Range
 	}
 	// TODO: also map blocks
 
-	return &ResourceValidationInfo{result}
+	return &ResourceValidationInfo{result, definitionRange}
 }
 
 func (info *ResourceValidationInfo) LogFatal(resourceId string, fieldName string, errorMessage string) {
-	sourceRange := info.SourceRanges[fieldName]
-
-	printToStdErr("Validation error when parsing resource %s: %s\n  on %s\n", resourceId, errorMessage, sourceRange)
-	printLinesInRange(sourceRange)
+	if _, ok := info.SourceRanges[fieldName]; ok {
+		sourceRange := info.SourceRanges[fieldName]
+		printToStdErr(
+			"Validation error when parsing resource %s: %s\n  on %s\n", resourceId, errorMessage, sourceRange,
+		)
+		printLinesInRange(sourceRange)
+	} else {
+		printToStdErr(
+			"Validation error when parsing resource %s (%s): %s\n", resourceId, info.BlockDefRange, errorMessage,
+		)
+	}
 
 	exitAndPrintStackTrace()
 }
 
-func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...interface{}) {
+func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...any) {
 	printToStdErr(format, a...)
 
 	for _, diag := range diags {
@@ -48,14 +56,14 @@ func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...interface{}) {
 	os.Exit(1)
 }
 
-func LogFatalWithSourceRange(sourceRange hcl.Range, format string, a ...interface{}) {
+func LogFatalWithSourceRange(sourceRange hcl.Range, format string, a ...any) {
 	printToStdErr(format, a...)
 	printToStdErr("  on %s\n", sourceRange)
 	printLinesInRange(sourceRange)
 	os.Exit(1)
 }
 
-func LogInternalError(format string, a ...interface{}) {
+func LogInternalError(format string, a ...any) {
 	printToStdErr(format, a...)
 	exitAndPrintStackTrace()
 }
@@ -75,7 +83,7 @@ func printLinesInRange(sourceRange hcl.Range) {
 	}
 }
 
-func printToStdErr(format string, a ...interface{}) {
+func printToStdErr(format string, a ...any) {
 	_, err := fmt.Fprintf(os.Stderr, format+"\n", a...)
 	if err != nil {
 		panic(err)
@@ -104,10 +112,12 @@ func ReadLines(sourceRange hcl.Range, bytes []byte) ([]Line, error) {
 	scanner := hcl.NewRangeScanner(bytes, sourceRange.Filename, bufio.ScanLines)
 	for inProgress := true; inProgress; inProgress = scanner.Scan() {
 		if scanner.Range().Overlaps(sourceRange) {
-			matchingLines = append(matchingLines, Line{
-				LineNumber: scanner.Range().Start.Line,
-				Content:    string(scanner.Bytes()),
-			})
+			matchingLines = append(
+				matchingLines, Line{
+					LineNumber: scanner.Range().Start.Line,
+					Content:    string(scanner.Bytes()),
+				},
+			)
 		}
 	}
 	if scanner.Err() != nil {

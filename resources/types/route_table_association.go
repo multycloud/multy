@@ -14,9 +14,9 @@ type RouteTableAssociation struct {
 	RouteTableId string `hcl:"route_table_id"`
 }
 
-func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
-		return []interface{}{
+		return []any{
 			route_table_association.AwsRouteTableAssociation{
 				AwsResource: common.AwsResource{
 					ResourceName: route_table_association.AwsResourceName,
@@ -27,7 +27,7 @@ func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resour
 			},
 		}
 	} else if cloud == common.AZURE {
-		return []interface{}{
+		return []any{
 			route_table_association.AzureRouteTableAssociation{
 				AzResource: common.AzResource{
 					ResourceName: route_table_association.AzureResourceName,

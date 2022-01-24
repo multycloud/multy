@@ -24,12 +24,12 @@ func (c *CloudSpecificResource) GetLocation(ctx MultyContext) string {
 	return c.Resource.GetLocation(c.Cloud, ctx)
 }
 
-func (c *CloudSpecificResource) Translate(ctx MultyContext) []interface{} {
+func (c *CloudSpecificResource) Translate(ctx MultyContext) []any {
 	return c.Resource.Translate(c.Cloud, ctx)
 }
 
 type Resource interface {
-	Translate(cloud common.CloudProvider, ctx MultyContext) []interface{}
+	Translate(cloud common.CloudProvider, ctx MultyContext) []any
 	// GetOutputValues returns values that should be passed around when parsing the remainder of the config file.
 	GetOutputValues(cloud common.CloudProvider) map[string]cty.Value
 

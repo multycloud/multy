@@ -18,13 +18,13 @@ type template struct {
 	Optional        bool   `hcl:"optional,optional""`
 }
 
-func (r *template) Translate(cloud common.CloudProvider, ctx resources.MultyContext) interface{} {
+func (r *template) Translate(cloud common.CloudProvider, ctx resources.MultyContext) any {
 	if cloud == common.AWS {
-		return []interface{}{}
+		return []any{}
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 		fmt.Sprintln(rgName)
-		return []interface{}{}
+		return []any{}
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return nil

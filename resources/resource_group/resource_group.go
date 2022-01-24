@@ -36,9 +36,9 @@ type ResourceGroup struct {
 
 const AzureResourceName = "azurerm_resource_group"
 
-func (rg *Type) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (rg *Type) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AZURE {
-		return []interface{}{ResourceGroup{
+		return []any{ResourceGroup{
 			AzResource: common.AzResource{
 				ResourceName: AzureResourceName,
 				ResourceId:   rg.ResourceId,
