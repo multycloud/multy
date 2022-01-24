@@ -1,14 +1,17 @@
 resource "aws_db_subnet_group" "example_db_aws" {
-  tags = {
+  tags =  {
     Name = "example-db"
   }
+
+  name = "example-db"
+
   subnet_ids = [
     "${aws_subnet.subnet1_aws.id}",
     "${aws_subnet.subnet2_aws.id}",
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
-  tags = {
+  tags =  {
     Name = "exampledb"
   }
   name                 = "exampledb"

@@ -26,6 +26,7 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 		name := common.RemoveSpecialChars(db.Name)
 		dbSubnetGroup := database.AwsDbSubnetGroup{
 			AwsResource: common.NewAwsResource("aws_db_subnet_group", db.GetTfResourceId(cloud), db.Name),
+			Name:        db.Name,
 			SubnetIds:   db.SubnetIds,
 		}
 		return []any{

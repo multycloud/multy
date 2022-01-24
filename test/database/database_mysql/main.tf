@@ -1,4 +1,8 @@
 resource "aws_db_subnet_group" "example_db_aws" {
+  tags =  {
+    Name = "example-db"
+  }
+
   name = "example-db"
 
   subnet_ids = [
@@ -7,8 +11,12 @@ resource "aws_db_subnet_group" "example_db_aws" {
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
-  name                 = "exampledb"
+  tags =  {
+    Name = "exampledb"
+  }
+
   allocated_storage    = 10
+  name                 = "exampledb"
   engine               = "mysql"
   engine_version       = "5.7"
   username             = "multyadmin"

@@ -26,6 +26,7 @@ type AwsDbInstance struct {
 // aws_db_subnet_group
 type AwsDbSubnetGroup struct {
 	common.AwsResource `hcl:",squash"`
+	Name               string   `hcl:"name"`
 	SubnetIds          []string `hcl:"subnet_ids"`
 }
 
