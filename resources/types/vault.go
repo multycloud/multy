@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/vault"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
@@ -14,11 +15,21 @@ type Vault struct {
 	Name string `hcl:"name"`
 }
 
-func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+type AzureClientConfig struct {
+	common.AzResource `hcl:",squash"`
+}
+
+func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
-		return []interface{}{}
+		return []any{}
 	} else if cloud == common.AZURE {
-		return []interface{}{
+		config := output.DataSourceWrapper{R: AzureClientConfig{AzResource: common.AzResource{
+			ResourceName: "azurerm_client_config",
+			ResourceId:   r.GetTfResourceId(cloud),
+		}}}
+
+		return []any{
+			config,
 			vault.AzureKeyVault{
 				AzResource: common.AzResource{
 					ResourceName:      vault.AzureResourceName,
@@ -27,8 +38,8 @@ func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext
 					ResourceGroupName: rg.GetResourceGroupName(r.ResourceGroupId, cloud),
 					Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 				},
-				Sku:      "Standard",
-				TenantId: "data.azurerm_client_config.current.tenant_id",
+				Sku:      "standard",
+				TenantId: fmt.Sprintf("data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud)),
 			}}
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)

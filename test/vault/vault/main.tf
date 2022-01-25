@@ -1,10 +1,10 @@
-data azurerm_client_config current {}
+data azurerm_client_config example_azure {}
 resource "azurerm_key_vault" "example_azure" {
   resource_group_name = azurerm_resource_group.kv-rg.name
-  name                = "dev"
+  name                = "dev-test-multy"
   location            = "ukwest"
-  sku_name            = "Standard"
-  tenant_id           = data.azurerm_client_config.current.tenant_id
+  sku_name            = "standard"
+  tenant_id           = data.azurerm_client_config.example_azure.tenant_id
 }
 resource "azurerm_resource_group" "kv-rg" {
   name     = "kv-rg"

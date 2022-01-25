@@ -4,5 +4,5 @@ config {
 }
 
 multy "vault" "example" {
-  name = "dev"
+  name = "dev-test-multy"
 }

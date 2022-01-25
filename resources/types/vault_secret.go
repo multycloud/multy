@@ -5,7 +5,6 @@ import (
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output/vault_secret"
-	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
 )
 
@@ -33,11 +32,9 @@ func (r *VaultSecret) Translate(cloud common.CloudProvider, ctx resources.MultyC
 		return []interface{}{
 			vault_secret.AzureKeyVaultSecret{
 				AzResource: common.AzResource{
-					ResourceName:      vault_secret.AzureResourceName,
-					ResourceId:        r.GetTfResourceId(cloud),
-					ResourceGroupName: rg.GetResourceGroupName(r.ResourceGroupId, cloud),
-					Name:              r.Name,
-					Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+					ResourceName: vault_secret.AzureResourceName,
+					ResourceId:   r.GetTfResourceId(cloud),
+					Name:         r.Name,
 				},
 				KeyVaultId: r.Vault.GetVaultId(cloud),
 				Value:      r.Value,
