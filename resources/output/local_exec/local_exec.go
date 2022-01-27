@@ -2,7 +2,7 @@ package local_exec
 
 type LocalExec struct {
 	Label      string `hcl:",key"`
-	WorkingDir string `hcl:"working_dir"`
+	WorkingDir string `hcl:"working_dir" hcle:"omitempty"`
 	Command    string `hcl:"command"`
 }
 
