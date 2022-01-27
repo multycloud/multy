@@ -1,5 +1,5 @@
-multy "lambda" "test" {
-  function_name = "test_name"
+multy "lambda" "super_long_function" {
+  function_name = "super_long_function"
   runtime = "python3.9"
   source_code_dir = cloud_specific_value({aws: "source_dir/aws", azure: "source_dir/azure"})
 }
