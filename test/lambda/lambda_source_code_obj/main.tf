@@ -2,18 +2,17 @@ resource "aws_s3_bucket" "obj_storage_aws" {
   bucket = "test-storage-9999919"
 }
 resource "aws_s3_bucket_object" "source_code_aws" {
-  bucket       = aws_s3_bucket.obj_storage_aws.id
-  key          = "source_code.zip"
-  acl          = "private"
-  content      = "test"
-  content_type = "application/zip"
+  bucket = aws_s3_bucket.obj_storage_aws.id
+  key    = "source_code.zip"
+  acl    = "public-read"
+  source = "source_dir/aws_code.zip"
 }
 resource "aws_lambda_function" "test_aws" {
   tags =  {
-    Name = "test_name"
+    Name = "multyfunobj"
   }
 
-  function_name = "test_name"
+  function_name = "multyfunobj"
   role          = aws_iam_role.iam_for_lambda_test.arn
   runtime       = "python3.9"
   handler       = "lambda_function.lambda_handler"
@@ -53,10 +52,9 @@ resource "azurerm_storage_container" "obj_storage_azure_private" {
 resource "azurerm_storage_blob" "source_code_azure" {
   name                   = "source_code.zip"
   storage_account_name   = azurerm_storage_account.obj_storage_azure.name
-  storage_container_name = azurerm_storage_container.obj_storage_azure_private.name
+  storage_container_name = azurerm_storage_container.obj_storage_azure_public.name
   type                   = "Block"
-  source_content         = "test"
-  content_type           = "application/zip"
+  source                 = "source_dir/azure_code.zip"
 }
 resource "azurerm_resource_group" "st-rg" {
   name     = "st-rg"
@@ -64,16 +62,20 @@ resource "azurerm_resource_group" "st-rg" {
 }
 resource "azurerm_function_app" "test_azure" {
   resource_group_name        = azurerm_resource_group.fun-rg.name
-  name                       = "testname"
+  name                       = "multyfunobj"
   location                   = "northeurope"
   storage_account_name       = azurerm_storage_account.obj_storage_azure.name
   storage_account_access_key = azurerm_storage_account.obj_storage_azure.primary_access_key
   app_service_plan_id        = azurerm_app_service_plan.test_azure.id
   os_type                    = "linux"
+
+  app_settings =  {
+    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.source_code_azure.url}"
+  }
 }
 resource "azurerm_app_service_plan" "test_azure" {
   resource_group_name = azurerm_resource_group.fun-rg.name
-  name                = "testnamesvplnlce"
+  name                = "multyfunobjsvpl3ub6"
   location            = "northeurope"
   kind                = "Linux"
   reserved            = true

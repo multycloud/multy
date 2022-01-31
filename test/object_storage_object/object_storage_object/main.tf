@@ -42,7 +42,7 @@ resource "azurerm_storage_blob" "file3_source_azure" {
   storage_account_name   = azurerm_storage_account.obj_storage_azure.name
   storage_container_name = azurerm_storage_container.obj_storage_azure_public.name
   type                   = "Block"
-  content_type           = "test.zip"
+  source                 = "test.zip"
 }
 resource "azurerm_storage_account" "obj_storage_azure" {
   resource_group_name      = azurerm_resource_group.st-rg.name
