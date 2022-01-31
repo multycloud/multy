@@ -27,6 +27,10 @@ func StartCli() {
 		}
 	}
 
+	if selected == nil {
+		log.Fatalf("command not found: %s", args[0])
+	}
+
 	selected.Init()
 	flag.Parse()
 	args = flag.Args()
