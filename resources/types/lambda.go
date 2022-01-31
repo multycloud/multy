@@ -125,7 +125,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				"%s.%s.primary_access_key", object_storage.AzureResourceName,
 				r.SourceCodeObject.ObjectStorage.GetTfResourceId(common.AZURE),
 			)
-			// TODO: create sas and test this
+			// TODO: create sas and test this for private
 			//function.AppSettings = map[string]string{
 			//	"WEBSITE_RUN_FROM_PACKAGE": fmt.Sprintf(
 			//		"https://${%s}.blob.core.windows.net/${%s}/${%s}${data."+
@@ -135,6 +135,9 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			//		r.SourceCodeObject.GetAzureBlobName(),
 			//	),
 			//}
+			function.AppSettings = map[string]string{
+				"WEBSITE_RUN_FROM_PACKAGE": fmt.Sprintf("${%s}", r.SourceCodeObject.GetAzureBlobUrl()),
+			}
 		}
 
 		result = append(result, function)
