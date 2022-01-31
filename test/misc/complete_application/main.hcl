@@ -17,9 +17,8 @@ multy "public_ip" "example_ip" {
   name = "example_ip"
 }
 multy "object_storage" "obj_storage" {
-  name          = "test-storage"
+  name          = "test-storage-999999"
   random_suffix = false
-  location      = "uk"
 }
 multy "network_interface" "example_nic" {
   name      = "example_nic"
