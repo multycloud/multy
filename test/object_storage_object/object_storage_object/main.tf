@@ -12,6 +12,12 @@ resource "aws_s3_bucket_object" "file2_private_aws" {
   content      = "<h1>Hi</h1>"
   content_type = "text/html"
 }
+resource "aws_s3_bucket_object" "file3_source_aws" {
+  bucket = aws_s3_bucket.obj_storage_aws.id
+  key    = "index.html"
+  acl    = "public-read"
+  source = "test.zip"
+}
 resource "aws_s3_bucket" "obj_storage_aws" {
   bucket = "test-storage-9999919"
 }
@@ -30,6 +36,13 @@ resource "azurerm_storage_blob" "file2_private_azure" {
   type                   = "Block"
   source_content         = "<h1>Hi</h1>"
   content_type           = "text/html"
+}
+resource "azurerm_storage_blob" "file3_source_azure" {
+  name                   = "index.html"
+  storage_account_name   = azurerm_storage_account.obj_storage_azure.name
+  storage_container_name = azurerm_storage_container.obj_storage_azure_public.name
+  type                   = "Block"
+  content_type           = "test.zip"
 }
 resource "azurerm_storage_account" "obj_storage_azure" {
   resource_group_name      = azurerm_resource_group.st-rg.name
