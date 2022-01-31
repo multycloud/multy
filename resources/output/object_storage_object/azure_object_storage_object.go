@@ -11,8 +11,9 @@ type AzureStorageAccountBlob struct {
 	StorageAccountName   string `hcl:"storage_account_name,expr"`
 	StorageContainerName string `hcl:"storage_container_name,expr"`
 	Type                 string `hcl:"type"`
-	SourceContent        string `hcl:"source_content"`
-	ContentType          string `hcl:"content_type"`
+	SourceContent        string `hcl:"source_content"  hcle:"omitempty"`
+	ContentType          string `hcl:"content_type" hcle:"omitempty"`
+	Source               string `hcl:"content_type" hcle:"omitempty"`
 }
 
 // azurerm_storage_container
