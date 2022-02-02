@@ -14,13 +14,13 @@ func (d *DestroyCommand) Name() string {
 func (d *DestroyCommand) Init() {
 }
 
-func (d *DestroyCommand) Execute(args []string) error {
-	tf, err := InitTf()
+func (d *DestroyCommand) Execute(args []string, ctx context.Context) error {
+	tf, err := InitTf(ctx)
 	if err != nil {
 		return err
 	}
 
-	err = tf.Destroy(context.Background())
+	err = tf.Destroy(ctx)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -28,7 +29,7 @@ func (c *TranslateCommand) Init() {
 	flag.StringVar(&c.OutputFile, "output", "main.tf", "Name of the output file")
 }
 
-func (c *TranslateCommand) Execute(args []string) error {
+func (c *TranslateCommand) Execute(args []string, ctx context.Context) error {
 	start := time.Now()
 	configFiles := args
 
