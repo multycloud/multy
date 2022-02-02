@@ -57,8 +57,7 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_s3_bucket" "obj_storage_aws" {
-  bucket   = "test-storage"
-  provider = "aws.eu-west-2"
+  bucket   = "test-storage-999999"
 }
 resource "azurerm_public_ip" "example_ip_azure" {
   resource_group_name = azurerm_resource_group.pip-rg.name
@@ -111,8 +110,8 @@ resource "azurerm_resource_group" "nic-rg" {
 }
 resource "azurerm_storage_account" "obj_storage_azure" {
   resource_group_name      = azurerm_resource_group.st-rg.name
-  name                     = "teststorage"
-  location                 = "ukwest"
+  name                     = "teststorage999999"
+  location                 = "northeurope"
   account_tier             = "Standard"
   account_replication_type = "GZRS"
   allow_blob_public_access = true
@@ -141,10 +140,6 @@ resource "azurerm_resource_group" "vn-rg" {
 }
 provider "aws" {
   region = "eu-west-1"
-}
-provider "aws" {
-  region = "eu-west-2"
-  alias  = "eu-west-2"
 }
 provider "azurerm" {
   features {}

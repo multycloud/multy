@@ -13,7 +13,7 @@ type AzureStorageAccountBlob struct {
 	Type                 string `hcl:"type"`
 	SourceContent        string `hcl:"source_content"  hcle:"omitempty"`
 	ContentType          string `hcl:"content_type" hcle:"omitempty"`
-	Source               string `hcl:"content_type" hcle:"omitempty"`
+	Source               string `hcl:"source" hcle:"omitempty"`
 }
 
 // azurerm_storage_container
