@@ -8,8 +8,10 @@ import (
 	"multy-go/resources/output/lambda"
 	"multy-go/resources/output/local_exec"
 	"multy-go/resources/output/object_storage"
+	"multy-go/resources/output/object_storage_object"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
+	"time"
 )
 
 type Lambda struct {
@@ -28,6 +30,8 @@ type lambdaZip struct {
 	SourceDir    string `hcl:"source_dir"`
 	OutputPath   string `hcl:"output_path"`
 }
+
+const SasExpirationDuration = time.Hour * 24 * 365
 
 func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
@@ -125,18 +129,35 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				"%s.%s.primary_access_key", object_storage.AzureResourceName,
 				r.SourceCodeObject.ObjectStorage.GetTfResourceId(common.AZURE),
 			)
-			// TODO: create sas and test this for private
-			//function.AppSettings = map[string]string{
-			//	"WEBSITE_RUN_FROM_PACKAGE": fmt.Sprintf(
-			//		"https://${%s}.blob.core.windows.net/${%s}/${%s}${data."+
-			//			"azurerm_storage_account_blob_container_sas.storage_account_blob_container_sas.sas}",
-			//		r.SourceCodeObject.ObjectStorage.GetResourceName(cloud),
-			//		r.SourceCodeObject.ObjectStorage.GetAssociatedPrivateContainerResourceName(cloud),
-			//		r.SourceCodeObject.GetAzureBlobName(),
-			//	),
-			//}
-			function.AppSettings = map[string]string{
-				"WEBSITE_RUN_FROM_PACKAGE": fmt.Sprintf("${%s}", r.SourceCodeObject.GetAzureBlobUrl()),
+			if r.SourceCodeObject.IsPrivate() {
+				sas := object_storage_object.AzureStorageAccountBlobSas{
+					AzResource: common.AzResource{
+						ResourceName: "azurerm_storage_account_blob_container_sas",
+						ResourceId:   r.GetTfResourceId(cloud),
+					},
+					ConnectionString: fmt.Sprintf(
+						"azurerm_storage_account.%s.primary_connection_string",
+						r.SourceCodeObject.ObjectStorage.GetTfResourceId(cloud),
+					),
+					ContainerName: r.SourceCodeObject.ObjectStorage.GetAssociatedPrivateContainerResourceName(cloud),
+					Start:         time.Now().Add(-24 * time.Hour).Format("2006-01-02T15:04:05Z"),
+					Expiry:        time.Now().Add(SasExpirationDuration).Format("2006-01-02T15:04:05Z"),
+					AzureStorageAccountBlobSasPermissions: object_storage_object.AzureStorageAccountBlobSasPermissions{
+						Read: true,
+					},
+				}
+				result = append(result, output.DataSourceWrapper{R: sas})
+				function.AppSettings = map[string]string{
+					"WEBSITE_RUN_FROM_PACKAGE": sas.GetSignedUrl(
+						r.SourceCodeObject.ObjectStorage.GetResourceName(cloud),
+						r.SourceCodeObject.ObjectStorage.GetAssociatedPrivateContainerResourceName(cloud),
+						r.SourceCodeObject.GetAzureBlobName(),
+					),
+				}
+			} else {
+				function.AppSettings = map[string]string{
+					"WEBSITE_RUN_FROM_PACKAGE": fmt.Sprintf("${%s}", r.SourceCodeObject.GetAzureBlobUrl()),
+				}
 			}
 		}
 

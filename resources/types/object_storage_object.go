@@ -83,6 +83,10 @@ func (r *ObjectStorageObject) GetAzureBlobUrl() string {
 	return fmt.Sprintf("%s.%s.url", "azurerm_storage_blob", r.GetTfResourceId(common.AZURE))
 }
 
+func (r *ObjectStorageObject) IsPrivate() bool {
+	return r.Acl == "private"
+}
+
 func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) {
 	if len(r.Content) > 0 && len(r.Source) > 0 {
 		r.LogFatal(r.ResourceId, "content", "content can't be set if source is already set")
