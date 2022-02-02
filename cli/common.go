@@ -9,12 +9,19 @@ import (
 	"os"
 )
 
-func InitTf() (*tfexec.Terraform, error) {
+type printfer struct {
+}
+
+func (p printfer) Printf(format string, v ...interface{}) {
+	fmt.Printf(format, v...)
+	fmt.Println()
+}
+func InitTf(ctx context.Context) (*tfexec.Terraform, error) {
 	installer := &releases.LatestVersion{
 		Product: product.Terraform,
 	}
 
-	execPath, err := installer.Install(context.Background())
+	execPath, err := installer.Install(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error installing Terraform: %s", err)
 	}
@@ -23,6 +30,9 @@ func InitTf() (*tfexec.Terraform, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error running NewTerraform: %s", err)
 	}
+
+	// TODO: hide this behind a flag?
+	tf.SetLogger(printfer{})
 
 	tf.SetStdout(os.Stdout)
 	return tf, nil
