@@ -41,7 +41,7 @@ func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecific
 			}
 		}
 	}
-	resultCtx := InitCloudSpecificContext(nil)
+	resultCtx := InitCloudSpecificContext(nil, nil)
 	var result []resources.CloudSpecificResource
 	for _, cloud := range clouds {
 		cloudCtx := ctx.GetContext(cloud)

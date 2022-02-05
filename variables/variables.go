@@ -3,6 +3,8 @@ package variables
 import (
 	"bytes"
 	"fmt"
+	"multy-go/functions"
+	"multy-go/resources/common"
 	"multy-go/validate"
 	"strings"
 
@@ -18,14 +20,9 @@ type Variable struct {
 	Type    hcl.Expression `hcl:"type"`
 }
 
-func (v Variable) GetValue(cliVar *string) cty.Value {
-
-	val, diags := v.Default.Value(nil)
-	if diags != nil {
-		validate.LogFatalWithDiags(diags, "unable to decode variable default value of variable '%s'", v.Name)
-	}
+func (v Variable) GetValueFromCli(cliVar *string) cty.Value {
 	if cliVar == nil {
-		return val
+		validate.LogInternalError("nil cli var for var %s", v.Name)
 	}
 
 	varType, diags := decodeVariableType(v.Type)
@@ -39,7 +36,20 @@ func (v Variable) GetValue(cliVar *string) cty.Value {
 	}
 
 	return val
+}
 
+func (v Variable) GetDefaultValueFunction() func(common.CloudProvider) cty.Value {
+	return func(cloud common.CloudProvider) cty.Value {
+		val, diags := v.Default.Value(
+			&hcl.EvalContext{
+				Variables: map[string]cty.Value{},
+				Functions: functions.GetAllFunctionsForVarEvaluation(cloud)},
+		)
+		if diags != nil {
+			validate.LogFatalWithDiags(diags, "unable to decode variable default value of variable '%s'", v.Name)
+		}
+		return val
+	}
 }
 
 func decodeVariableType(expr hcl.Expression) (cty.Type, hcl.Diagnostics) {
@@ -89,9 +99,11 @@ func (i *CommandLineVariables) Set(value string) error {
 	split := strings.SplitAfterN(value, "=", 2)
 	varName := split[0][:len(split[0])-1]
 	varValue := split[1]
-	*i = append(*i, CommandLineVariable{
-		Name:  varName,
-		Value: varValue,
-	})
+	*i = append(
+		*i, CommandLineVariable{
+			Name:  varName,
+			Value: varValue,
+		},
+	)
 	return nil
 }
