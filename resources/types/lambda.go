@@ -8,9 +8,10 @@ import (
 	"multy-go/resources/output/lambda"
 	"multy-go/resources/output/local_exec"
 	"multy-go/resources/output/object_storage"
+	"multy-go/resources/output/object_storage_object"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
-	"strings"
+	"time"
 )
 
 type Lambda struct {
@@ -22,12 +23,15 @@ type Lambda struct {
 	SourceCodeObject *ObjectStorageObject `mhcl:"ref=source_code_object,optional"`
 }
 
-type awsLambdaZip struct {
-	common.AwsResource `hcl:",squash"`
-	Type               string `hcl:"type"`
-	SourceDir          string `hcl:"source_dir"`
-	OutputPath         string `hcl:"output_path"`
+type lambdaZip struct {
+	ResourceName string `hcl:",key"`
+	ResourceId   string `hcl:",key"`
+	Type         string `hcl:"type"`
+	SourceDir    string `hcl:"source_dir"`
+	OutputPath   string `hcl:"output_path"`
 }
+
+const SasExpirationDuration = time.Hour * 24 * 365
 
 func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
@@ -43,18 +47,17 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 
 		if r.SourceCodeDir != "" {
 			result = append(
-				result, output.DataSourceWrapper{R: awsLambdaZip{
-					AwsResource: common.AwsResource{
-						ResourceName: "archive_file",
-						ResourceId:   r.GetTfResourceId(cloud),
-					},
+				result, output.DataSourceWrapper{R: lambdaZip{
+					ResourceName: "archive_file",
+					ResourceId:   r.GetTfResourceId(cloud),
+
 					Type:       "zip",
 					SourceDir:  r.SourceCodeDir,
-					OutputPath: r.getAwsZipFile(),
+					OutputPath: r.getSourceCodeZip(cloud),
 				}},
 			)
 			function.SourceCodeHash = fmt.Sprintf("data.archive_file.%s.output_base64sha256", r.GetTfResourceId(cloud))
-			function.Filename = r.getAwsZipFile()
+			function.Filename = r.getSourceCodeZip(cloud)
 		} else {
 			function.S3Bucket = r.SourceCodeObject.ObjectStorage.GetResourceName(cloud)
 			function.S3Key = r.SourceCodeObject.GetS3Key()
@@ -75,32 +78,49 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		var result []any
 		function := lambda.AzureFunctionApp{
 			AzResource: common.NewAzResource(
-				lambda.AzureResourceName, r.ResourceId, strings.ReplaceAll(r.FunctionName, "_", ""), rgName,
+				lambda.AzureResourceName, r.GetTfResourceId(cloud), common.AlphanumericFormatFunc(r.FunctionName),
+				rgName,
 				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 			),
 			// AWS only supports linux
 			OperatingSystem:  "linux",
-			AppServicePlanId: fmt.Sprintf("%s.%s.id", lambda.AzureAppServicePlanResourceName, r.ResourceId),
+			AppServicePlanId: fmt.Sprintf("%s.%s.id", lambda.AzureAppServicePlanResourceName, r.GetTfResourceId(cloud)),
 		}
 		if r.SourceCodeDir != "" {
 			result = append(
+				result, output.DataSourceWrapper{R: lambdaZip{
+					ResourceName: "archive_file",
+					ResourceId:   r.GetTfResourceId(cloud),
+					Type:         "zip",
+					SourceDir:    r.SourceCodeDir,
+					OutputPath:   r.getSourceCodeZip(cloud),
+				}},
+			)
+			result = append(
 				result, object_storage.AzureStorageAccount{
 					AzResource: common.NewAzResource(
-						object_storage.AzureResourceName, r.ResourceId, fmt.Sprintf("%sstacct", r.ResourceId), rgName,
+						object_storage.AzureResourceName, r.GetTfResourceId(cloud),
+						common.UniqueId(r.FunctionName, "stac", common.LowercaseAlphanumericFormatFunc),
+						rgName,
 						ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 					),
 					AccountTier:            "Standard",
 					AccountReplicationType: "LRS",
 				},
 			)
-			function.StorageAccountName = fmt.Sprintf("%s.%s.name", object_storage.AzureResourceName, r.ResourceId)
+			function.StorageAccountName = fmt.Sprintf(
+				"%s.%s.name", object_storage.AzureResourceName, r.GetTfResourceId(cloud),
+			)
 			function.StorageAccountAccessKey = fmt.Sprintf(
-				"%s.%s.primary_access_key", object_storage.AzureResourceName, r.ResourceId,
+				"%s.%s.primary_access_key", object_storage.AzureResourceName, r.GetTfResourceId(cloud),
 			)
 			function.LocalExec = local_exec.New(
 				local_exec.LocalExec{
-					WorkingDir: r.SourceCodeDir,
-					Command:    "func azure functionapp publish ${self.id}",
+					Command: fmt.Sprintf(
+						"az functionapp deployment source config-zip -g ${self.resource_group_name} -n ${self."+
+							"name} --src ${data.archive_file.%s.output_path}",
+						r.GetTfResourceId(cloud),
+					),
 				},
 			)
 		} else {
@@ -109,16 +129,36 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				"%s.%s.primary_access_key", object_storage.AzureResourceName,
 				r.SourceCodeObject.ObjectStorage.GetTfResourceId(common.AZURE),
 			)
-			// TODO: create sas and test this
-			//function.AppSettings = map[string]string{
-			//	"WEBSITE_RUN_FROM_PACKAGE": fmt.Sprintf(
-			//		"https://${%s}.blob.core.windows.net/${%s}/${%s}${data."+
-			//			"azurerm_storage_account_blob_container_sas.storage_account_blob_container_sas.sas}",
-			//		r.SourceCodeObject.ObjectStorage.GetResourceName(cloud),
-			//		r.SourceCodeObject.ObjectStorage.GetAssociatedPrivateContainerResourceName(cloud),
-			//		r.SourceCodeObject.GetAzureBlobName(),
-			//	),
-			//}
+			if r.SourceCodeObject.IsPrivate() {
+				sas := object_storage_object.AzureStorageAccountBlobSas{
+					AzResource: common.AzResource{
+						ResourceName: "azurerm_storage_account_blob_container_sas",
+						ResourceId:   r.GetTfResourceId(cloud),
+					},
+					ConnectionString: fmt.Sprintf(
+						"azurerm_storage_account.%s.primary_connection_string",
+						r.SourceCodeObject.ObjectStorage.GetTfResourceId(cloud),
+					),
+					ContainerName: r.SourceCodeObject.ObjectStorage.GetAssociatedPrivateContainerResourceName(cloud),
+					Start:         time.Now().Add(-24 * time.Hour).Format("2006-01-02T15:04:05Z"),
+					Expiry:        time.Now().Add(SasExpirationDuration).Format("2006-01-02T15:04:05Z"),
+					AzureStorageAccountBlobSasPermissions: object_storage_object.AzureStorageAccountBlobSasPermissions{
+						Read: true,
+					},
+				}
+				result = append(result, output.DataSourceWrapper{R: sas})
+				function.AppSettings = map[string]string{
+					"WEBSITE_RUN_FROM_PACKAGE": sas.GetSignedUrl(
+						r.SourceCodeObject.ObjectStorage.GetResourceName(cloud),
+						r.SourceCodeObject.ObjectStorage.GetAssociatedPrivateContainerResourceName(cloud),
+						r.SourceCodeObject.GetAzureBlobName(),
+					),
+				}
+			} else {
+				function.AppSettings = map[string]string{
+					"WEBSITE_RUN_FROM_PACKAGE": fmt.Sprintf("${%s}", r.SourceCodeObject.GetAzureBlobUrl()),
+				}
+			}
 		}
 
 		result = append(result, function)
@@ -126,7 +166,8 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		result = append(
 			result, lambda.AzureAppServicePlan{
 				AzResource: common.NewAzResource(
-					lambda.AzureAppServicePlanResourceName, r.ResourceId, fmt.Sprintf("%sservplan", r.ResourceId),
+					lambda.AzureAppServicePlanResourceName, r.GetTfResourceId(cloud),
+					common.UniqueId(r.FunctionName, "svpl", common.LowercaseAlphanumericFormatFunc),
 					rgName, ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 				),
 				Kind:     "Linux",
@@ -153,14 +194,14 @@ func (r *Lambda) Validate(ctx resources.MultyContext) {
 }
 
 func (r *Lambda) getAwsIamRoleName() string {
-	return fmt.Sprintf("iam_for_lambda_%s", r.FunctionName)
+	return fmt.Sprintf("iam_for_lambda_%s", r.ResourceId)
 }
 
-func (r *Lambda) getAwsZipFile() string {
+func (r *Lambda) getSourceCodeZip(cloud common.CloudProvider) string {
 	if r.SourceCodeDir == "" {
 		return ""
 	}
-	return fmt.Sprintf(".multy/tmp/%s.zip", r.FunctionName)
+	return fmt.Sprintf(".multy/tmp/%s_%s.zip", r.FunctionName, cloud)
 }
 
 func (r *Lambda) GetMainResourceName(cloud common.CloudProvider) string {
