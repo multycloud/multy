@@ -40,6 +40,13 @@ func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext
 				},
 				Sku:      "standard",
 				TenantId: fmt.Sprintf("data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud)),
+				AccessPolicy: []vault.AccessPolicy{{
+					TenantId:               fmt.Sprintf("data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud)),
+					ObjectId:               fmt.Sprintf("data.azurerm_client_config.%s.object_id", r.GetTfResourceId(cloud)),
+					CertificatePermissions: []string{},
+					KeyPermissions:         []string{},
+					SecretPermissions:      []string{"List", "Get", "Set", "Delete"},
+				}},
 			}}
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
