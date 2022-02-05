@@ -3,7 +3,6 @@ module multy-go
 go 1.18
 
 require (
-	github.com/hashicorp/go-version v1.3.0
 	github.com/hashicorp/hc-install v0.3.1
 	github.com/hashicorp/hcl/v2 v2.10.1
 	github.com/hashicorp/terraform-exec v0.15.0
@@ -17,6 +16,7 @@ require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/terraform-json v0.13.0 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect

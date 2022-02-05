@@ -33,33 +33,39 @@ func TestTranslate(t *testing.T) {
 	allTests := map[string]*TestFiles{}
 
 	root := "./test"
-	err := filepath.WalkDir(root, func(path string, info os.DirEntry, err error) error {
-		if info.IsDir() || (filepath.Ext(path) != ".tf" && filepath.Ext(path) != ".hcl") || strings.HasPrefix(filepath.Base(path), ".") {
+	err := filepath.WalkDir(
+		root, func(path string, info os.DirEntry, err error) error {
+			if info.IsDir() || (filepath.Ext(path) != ".tf" && filepath.Ext(path) != ".hcl") || strings.HasPrefix(
+				filepath.Base(path), ".",
+			) {
+				return nil
+			}
+
+			ext := filepath.Ext(path)
+			base := filepath.Dir(path)
+			if _, ok := allTests[base]; !ok {
+				allTests[base] = &TestFiles{}
+			}
+
+			if ext == ".tf" {
+				allTests[base].OutputFile = path
+			} else {
+				allTests[base].InputFile = append(allTests[base].InputFile, path)
+			}
 			return nil
-		}
-
-		ext := filepath.Ext(path)
-		base := filepath.Dir(path)
-		if _, ok := allTests[base]; !ok {
-			allTests[base] = &TestFiles{}
-		}
-
-		if ext == ".tf" {
-			allTests[base].OutputFile = path
-		} else {
-			allTests[base].InputFile = append(allTests[base].InputFile, path)
-		}
-		return nil
-	})
+		},
+	)
 
 	if err != nil {
 		panic(err)
 	}
 
 	for dir, testFile := range allTests {
-		t.Run(filepath.Base(dir), func(t *testing.T) {
-			test(*testFile, t)
-		})
+		t.Run(
+			filepath.Base(dir), func(t *testing.T) {
+				test(*testFile, t)
+			},
+		)
 	}
 }
 
@@ -264,9 +270,15 @@ func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile st
 			continue
 		}
 
-		if !cmp.Equal(attr, expectedAttrs[name], cmp.Comparer(func(a, b cty.Value) bool {
-			return a.Equals(b).True()
-		}), cmpopts.IgnoreUnexported(hcl.TraverseRoot{}, hcl.TraverseAttr{}, hcl.TraverseIndex{}, hcl.TraverseSplat{}), cmpopts.IgnoreTypes(hcl.Range{})) {
+		if !cmp.Equal(
+			attr, expectedAttrs[name], cmp.Comparer(
+				func(a, b cty.Value) bool {
+					return a.Equals(b).True()
+				},
+			),
+			cmpopts.IgnoreUnexported(hcl.TraverseRoot{}, hcl.TraverseAttr{}, hcl.TraverseIndex{}, hcl.TraverseSplat{}),
+			cmpopts.IgnoreTypes(hcl.Range{}),
+		) {
 			actualLines, err := validate.ReadLines(attr.Range, []byte(actualFile))
 			if err != nil {
 				panic(err)
@@ -275,15 +287,18 @@ func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile st
 			if err != nil {
 				panic(err)
 			}
-			errorMessage := fmt.Sprintf("[%s] different attribute values for attr %s in resouce '%s'\n", attr.Range, name, strings.Join(actual.Labels, "."))
-			errorMessage += "expected: \n"
+			errorMessage := fmt.Sprintf(
+				"[%s] different attribute values for attr %s in resouce '%s'\n", attr.Range, name,
+				strings.Join(actual.Labels, "."),
+			)
+			errorMessage += "expected:"
 			for _, line := range expectedLines {
-				errorMessage += line.String()
+				errorMessage += "\n" + line.String()
 			}
 			errorMessage += "\n"
-			errorMessage += "actual: \n"
+			errorMessage += "actual:"
 			for _, line := range actualLines {
-				errorMessage += line.String()
+				errorMessage += "\n" + line.String()
 			}
 			failed = true
 			t.Errorf(errorMessage)
@@ -292,7 +307,9 @@ func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile st
 
 	for name, attr := range expectedAttrs {
 		if _, ok := actualAttrs[name]; !ok {
-			errorMessage := fmt.Sprintf("\n[%s] missing attribute '%s' in resouce '%s' \n", attr.Range, name, strings.Join(actual.Labels, "."))
+			errorMessage := fmt.Sprintf(
+				"\n[%s] missing attribute '%s' in resouce '%s' \n", attr.Range, name, strings.Join(actual.Labels, "."),
+			)
 			expectedLines, err := validate.ReadLinesForRange(attr.Range)
 			if err != nil {
 				panic(err)
@@ -309,9 +326,18 @@ func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile st
 
 	// If all attributes are correct so far, we still need to check nested blocks. HCL doesn't allow us to do that
 	// without a schema, so we'll just have to compare everything.
-	if !failed && !cmp.Equal(actual, expected, cmp.Comparer(func(a, b cty.Value) bool {
-		return a.Equals(b).True()
-	}), cmpopts.IgnoreUnexported(hclsyntax.Body{}, hcl.TraverseRoot{}, hcl.TraverseAttr{}, hcl.TraverseIndex{}, hcl.TraverseSplat{}), cmpopts.IgnoreTypes(hcl.Range{})) {
-		t.Errorf("some nested blocks differ within this block,\nactual:%s\nexpected:%s\n", actual.DefRange, expected.DefRange)
+	if !failed && !cmp.Equal(
+		actual, expected, cmp.Comparer(
+			func(a, b cty.Value) bool {
+				return a.Equals(b).True()
+			},
+		), cmpopts.IgnoreUnexported(
+			hclsyntax.Body{}, hcl.TraverseRoot{}, hcl.TraverseAttr{}, hcl.TraverseIndex{}, hcl.TraverseSplat{},
+		), cmpopts.IgnoreTypes(hcl.Range{}),
+	) {
+		t.Errorf(
+			"some nested blocks differ within this block,\nactual:%s\nexpected:%s\n", actual.DefRange,
+			expected.DefRange,
+		)
 	}
 }

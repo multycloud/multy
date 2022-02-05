@@ -32,7 +32,7 @@ type DecodedResources struct {
 func Decode(config parser.ParsedConfig) *DecodedResources {
 	vars := map[string]cty.Value{}
 	for _, v := range config.Variables {
-		vars[v.Name] = v.Value
+		vars[v.Name] = v.Value("default")
 	}
 	ctx := &hcl.EvalContext{
 		Variables: map[string]cty.Value{"var": cty.ObjectVal(vars)},
@@ -44,11 +44,15 @@ func Decode(config parser.ParsedConfig) *DecodedResources {
 	multyResources := topologicalSort(config.MultyResources)
 	r := map[string]resources.CloudSpecificResource{}
 
-	defaultRgId := getDefaultResourceGroupId(hclutil.GetOptionalAttributeAsExpr(config.GlobalConfig, "default_resource_group_name"))
+	defaultRgId := getDefaultResourceGroupId(
+		hclutil.GetOptionalAttributeAsExpr(
+			config.GlobalConfig, "default_resource_group_name",
+		),
+	)
 	globalConfig.DefaultRgName = defaultRgId
 
 	resourceDecoder := ResourceDecoder{globalConfig: globalConfig}
-	cloudSpecificCtx := InitCloudSpecificContext(ctx)
+	cloudSpecificCtx := InitCloudSpecificContext(ctx, config.Variables)
 	mhclProcessor := mhcl.MHCLProcessor{ResourceRefs: r}
 
 	for _, resource := range multyResources {
@@ -59,7 +63,9 @@ func Decode(config parser.ParsedConfig) *DecodedResources {
 			if duplicate, ok := r[uniqueId]; ok {
 				if !duplicate.ImplicitlyCreated || !decodedResource.ImplicitlyCreated {
 					// TODO: allow specifying multiple ranges
-					validate.LogFatalWithSourceRange(resource.DefinitionRange, "duplicate resources found with id %s ", uniqueId)
+					validate.LogFatalWithSourceRange(
+						resource.DefinitionRange, "duplicate resources found with id %s ", uniqueId,
+					)
 				}
 			}
 			r[uniqueId] = decodedResource
@@ -94,9 +100,17 @@ func topologicalSortHelper(positions map[*parser.MultyResource]int, pos int, r *
 		if otherResource.From == r {
 			var errorMessages []string
 			for j := i; j < len(currentStack); j++ {
-				errorMessages = append(errorMessages, fmt.Sprintf("[%s]%s=>%s", currentStack[j].SourceRange, currentStack[j].From.ID, currentStack[j].To.ID))
+				errorMessages = append(
+					errorMessages, fmt.Sprintf(
+						"[%s]%s=>%s", currentStack[j].SourceRange, currentStack[j].From.ID, currentStack[j].To.ID,
+					),
+				)
 			}
-			validate.LogFatalWithSourceRange(currentStack[len(currentStack)-1].SourceRange, "found cycle while resolving dependencies for resource %s.\n%s", r.ID, strings.Join(errorMessages, "\n"))
+			validate.LogFatalWithSourceRange(
+				currentStack[len(currentStack)-1].SourceRange,
+				"found cycle while resolving dependencies for resource %s.\n%s", r.ID,
+				strings.Join(errorMessages, "\n"),
+			)
 		}
 	}
 
