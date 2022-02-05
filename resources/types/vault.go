@@ -70,7 +70,7 @@ func (r *Vault) Validate(ctx resources.MultyContext) {
 func (r *Vault) GetMainResourceName(cloud common.CloudProvider) string {
 	switch cloud {
 	case common.AWS:
-		return vault.AwsResourceName
+		return ""
 	case common.AZURE:
 		return vault.AzureResourceName
 	default:
