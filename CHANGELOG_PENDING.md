@@ -11,6 +11,8 @@ CHANGELOG PENDING
 
 `vault_secret` resource
 
+Added support for functions in variables
+
 ### Changed
 
 `object_storage_object.acl` now allows explicit `private`
