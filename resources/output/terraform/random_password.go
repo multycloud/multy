@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-const TerraformResourceName = "random_password"
+const RandomPasswordResourceName = "random_password"
 
 type RandomPassword struct {
 	ResourceName string `hcl:",key"`

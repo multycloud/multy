@@ -162,7 +162,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			disablePassAuth = true
 		} else {
 			randomPassword := terraform.RandomPassword{
-				ResourceName: terraform.TerraformResourceName,
+				ResourceName: terraform.RandomPasswordResourceName,
 				ResourceId:   vm.GetTfResourceId(cloud),
 				Length:       16,
 				Special:      true,
