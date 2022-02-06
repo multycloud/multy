@@ -44,7 +44,7 @@ type ParsedConfig struct {
 
 type ParsedVariable struct {
 	Name  string
-	Value cty.Value
+	Value func(common.CloudProvider) cty.Value
 }
 
 type multyConfig struct {
@@ -145,22 +145,28 @@ func findDependencies(resource *MultyResource, resourcesById map[string]*MultyRe
 			if _, ok := common.AsCloudProvider(v.RootName()); ok {
 				if traverseAttr, ok := v[1].(hcl.TraverseAttr); ok {
 					if _, ok := resourcesById[traverseAttr.Name]; ok {
-						result = append(result, MultyResourceDependency{
-							From:        resource,
-							To:          resourcesById[traverseAttr.Name],
-							SourceRange: v.SourceRange(),
-						})
+						result = append(
+							result, MultyResourceDependency{
+								From:        resource,
+								To:          resourcesById[traverseAttr.Name],
+								SourceRange: v.SourceRange(),
+							},
+						)
 					}
 				} else {
-					validate.LogFatalWithSourceRange(v.SourceRange(), "expected attr lookup when referencing a cloud name (aws, az, ...)")
+					validate.LogFatalWithSourceRange(
+						v.SourceRange(), "expected attr lookup when referencing a cloud name (aws, az, ...)",
+					)
 				}
 			} else {
 				if _, ok := resourcesById[v.RootName()]; ok {
-					result = append(result, MultyResourceDependency{
-						From:        resource,
-						To:          resourcesById[v.RootName()],
-						SourceRange: v.SourceRange(),
-					})
+					result = append(
+						result, MultyResourceDependency{
+							From:        resource,
+							To:          resourcesById[v.RootName()],
+							SourceRange: v.SourceRange(),
+						},
+					)
 				}
 			}
 		}
@@ -175,15 +181,16 @@ func convertVars(allVars []variables.Variable, cliVars variables.CommandLineVari
 	}
 	var result []ParsedVariable
 	for _, v := range allVars {
-		var val cty.Value
+		parsedV := ParsedVariable{Name: v.Name}
 		if cliVar, ok := cliVarsByName[v.Name]; ok {
-			val = v.GetValue(&cliVar)
+			val := v.GetValueFromCli(&cliVar)
+			parsedV.Value = func(common.CloudProvider) cty.Value {
+				return val
+			}
+		} else {
+			parsedV.Value = v.GetDefaultValueFunction()
 		}
-		val = v.GetValue(nil)
-		result = append(result, ParsedVariable{
-			Name:  v.Name,
-			Value: val,
-		})
+		result = append(result, parsedV)
 	}
 	return result
 }

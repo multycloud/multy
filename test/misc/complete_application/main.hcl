@@ -2,7 +2,7 @@ multy "virtual_network" "example_vn" {
   rg_vars    = {
     app = "backend"
   }
-  name       = "example_vn"
+  name       = "example_vn${var.name_suffix}"
   cidr_block = "10.0.0.0/16"
 }
 multy "subnet" "example_subnet" {
@@ -32,4 +32,8 @@ config {
 variable "location" {
   type    = string
   default = "ireland"
+}
+variable "name_suffix" {
+  type    = string
+  default = cloud_specific_value({aws: "_aws", azure: "_az"})
 }

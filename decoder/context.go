@@ -1,7 +1,8 @@
 package decoder
 
 import (
-	"fmt"
+	"multy-go/functions"
+	"multy-go/parser"
 	"multy-go/resources/common"
 	"multy-go/validate"
 
@@ -12,11 +13,7 @@ import (
 
 type CloudSpecificContext struct {
 	cloudDependentCtx *hcl.EvalContext
-}
-
-var cloudFunctions = map[common.CloudProvider]function.Function{
-	common.AWS:   getCloudSpecificValFunction(common.AWS),
-	common.AZURE: getCloudSpecificValFunction(common.AZURE),
+	variables         []parser.ParsedVariable
 }
 
 func (c CloudSpecificContext) GetContext(cloud common.CloudProvider) *hcl.EvalContext {
@@ -26,9 +23,7 @@ func (c CloudSpecificContext) GetContext(cloud common.CloudProvider) *hcl.EvalCo
 	}
 	result := c.cloudDependentCtx.NewChild()
 	result.Variables = vars
-	result.Functions = map[string]function.Function{
-		"cloud_specific_value": cloudFunctions[cloud],
-	}
+	result.Functions = functions.GetAllFunctions(cloud)
 	return result
 }
 
@@ -51,14 +46,22 @@ func (c CloudSpecificContext) AddVar(key string, v cty.Value) {
 	c.cloudDependentCtx.Variables[key] = v
 }
 
-func InitCloudSpecificContext(ctx *hcl.EvalContext) CloudSpecificContext {
+func InitCloudSpecificContext(ctx *hcl.EvalContext, variables []parser.ParsedVariable) CloudSpecificContext {
 	if ctx == nil {
 		ctx = &hcl.EvalContext{
 			Variables: map[string]cty.Value{},
 			Functions: map[string]function.Function{},
 		}
 	}
-	return CloudSpecificContext{cloudDependentCtx: ctx}
+	result := CloudSpecificContext{cloudDependentCtx: ctx, variables: variables}
+	for _, c := range common.GetAllCloudProviders() {
+		vars := map[string]cty.Value{}
+		for _, v := range variables {
+			vars[v.Name] = v.Value(c)
+		}
+		result.AddCloudDependentVar("var", cty.ObjectVal(vars), c)
+	}
+	return result
 }
 
 func (c CloudSpecificContext) AddCtx(otherC CloudSpecificContext) {
@@ -79,55 +82,4 @@ func (c CloudSpecificContext) AddCtx(otherC CloudSpecificContext) {
 		}
 		c.cloudDependentCtx.Functions[key] = value
 	}
-}
-
-func getCloudSpecificValFunction(cloud common.CloudProvider) function.Function {
-	return function.New(&function.Spec{
-		Params: []function.Parameter{{
-			Name:             "values",
-			Type:             getCloudSpecificValArgType(),
-			AllowNull:        false,
-			AllowUnknown:     false,
-			AllowDynamicType: false,
-			AllowMarked:      false,
-		}},
-		Type: func(args []cty.Value) (cty.Type, error) {
-			valueMap := args[0].AsValueMap()
-			returnType := cty.NilType
-			for key, val := range valueMap {
-				if val.IsNull() {
-					continue
-				}
-
-				if returnType == cty.NilType {
-					returnType = val.Type()
-				}
-
-				if errs := val.Type().TestConformance(returnType); errs != nil {
-					return returnType, fmt.Errorf("value type for %s does not comform with other values: %s", key, errs[0].Error())
-				}
-			}
-			return returnType, nil
-		},
-		Impl: func(args []cty.Value, retType cty.Type) (cty.Value, error) {
-			allValues := args[0].AsValueMap()
-			if val, ok := allValues[string(cloud)]; ok && !val.IsNull() {
-				return val, nil
-			} else if val, ok := allValues["default"]; ok && !val.IsNull() {
-				return val, nil
-			} else {
-				return cty.NilVal, fmt.Errorf("no value for %s", cloud)
-			}
-		},
-	})
-}
-
-func getCloudSpecificValArgType() cty.Type {
-	allTypes := map[string]cty.Type{"default": cty.DynamicPseudoType}
-	optionalAttrs := []string{"default"}
-	for _, cloud := range common.GetAllCloudProviders() {
-		allTypes[string(cloud)] = cty.DynamicPseudoType
-		optionalAttrs = append(optionalAttrs, string(cloud))
-	}
-	return cty.ObjectWithOptionalAttrs(allTypes, optionalAttrs)
 }
