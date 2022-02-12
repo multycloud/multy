@@ -33,9 +33,8 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 	}
 	if cloud == common.AWS {
 		return []any{object_storage_object.AwsS3BucketObject{
-			AwsResource: common.AwsResource{
-				ResourceName: "aws_s3_bucket_object",
-				ResourceId:   r.GetTfResourceId(cloud),
+			AwsResource: &common.AwsResource{
+				ResourceId: r.GetTfResourceId(cloud),
 			},
 			Bucket:      r.ObjectStorage.GetResourceName(cloud),
 			Key:         r.Name,
@@ -53,10 +52,9 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 		}
 		return []any{
 			object_storage_object.AzureStorageAccountBlob{
-				AzResource: common.AzResource{
-					ResourceName: "azurerm_storage_blob",
-					ResourceId:   r.GetTfResourceId(cloud),
-					Name:         r.Name,
+				AzResource: &common.AzResource{
+					ResourceId: r.GetTfResourceId(cloud),
+					Name:       r.Name,
 				},
 				StorageAccountName:   r.ObjectStorage.GetResourceName(cloud),
 				StorageContainerName: containerName,

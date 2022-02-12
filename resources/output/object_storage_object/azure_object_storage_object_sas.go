@@ -6,7 +6,7 @@ import (
 )
 
 type AzureStorageAccountBlobSas struct {
-	common.AzResource                     `hcl:",squash"`
+	*common.AzResource                    `hcl:",squash" default:"name=azurerm_storage_account_blob_container_sas"`
 	ConnectionString                      string `hcl:"connection_string,expr"`
 	ContainerName                         string `hcl:"container_name,expr"`
 	Start                                 string `hcl:"start"`

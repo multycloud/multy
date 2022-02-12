@@ -38,7 +38,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		var result []any
 
 		function := lambda.AwsLambdaFunction{
-			AwsResource:  common.NewAwsResource(lambda.AwsResourceName, r.GetTfResourceId(cloud), r.FunctionName),
+			AwsResource:  common.NewAwsResource(r.GetTfResourceId(cloud), r.FunctionName),
 			FunctionName: r.FunctionName,
 			Runtime:      r.Runtime,
 			Role:         fmt.Sprintf("aws_iam_role.%s.arn", r.getAwsIamRoleName()),
@@ -65,9 +65,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		result = append(result, function)
 		result = append(
 			result, lambda.AwsIamRole{
-				AwsResource: common.NewAwsResource(
-					lambda.AwsIamRoleResourceName, r.getAwsIamRoleName(), r.getAwsIamRoleName(),
-				),
+				AwsResource:      common.NewAwsResource(r.getAwsIamRoleName(), r.getAwsIamRoleName()),
 				Name:             r.getAwsIamRoleName(),
 				AssumeRolePolicy: lambda.DefaultLambdaPolicy,
 			},
@@ -78,8 +76,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		var result []any
 		function := lambda.AzureFunctionApp{
 			AzResource: common.NewAzResource(
-				lambda.AzureResourceName, r.GetTfResourceId(cloud), common.AlphanumericFormatFunc(r.FunctionName),
-				rgName,
+				r.GetTfResourceId(cloud), common.AlphanumericFormatFunc(r.FunctionName), rgName,
 				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 			),
 			// AWS only supports linux
@@ -99,9 +96,8 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			result = append(
 				result, object_storage.AzureStorageAccount{
 					AzResource: common.NewAzResource(
-						object_storage.AzureResourceName, r.GetTfResourceId(cloud),
-						common.UniqueId(r.FunctionName, "stac", common.LowercaseAlphanumericFormatFunc),
-						rgName,
+						r.GetTfResourceId(cloud),
+						common.UniqueId(r.FunctionName, "stac", common.LowercaseAlphanumericFormatFunc), rgName,
 						ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 					),
 					AccountTier:            "Standard",
@@ -131,9 +127,8 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			)
 			if r.SourceCodeObject.IsPrivate() {
 				sas := object_storage_object.AzureStorageAccountBlobSas{
-					AzResource: common.AzResource{
-						ResourceName: "azurerm_storage_account_blob_container_sas",
-						ResourceId:   r.GetTfResourceId(cloud),
+					AzResource: &common.AzResource{
+						ResourceId: r.GetTfResourceId(cloud),
 					},
 					ConnectionString: fmt.Sprintf(
 						"azurerm_storage_account.%s.primary_connection_string",
@@ -166,9 +161,9 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		result = append(
 			result, lambda.AzureAppServicePlan{
 				AzResource: common.NewAzResource(
-					lambda.AzureAppServicePlanResourceName, r.GetTfResourceId(cloud),
-					common.UniqueId(r.FunctionName, "svpl", common.LowercaseAlphanumericFormatFunc),
-					rgName, ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+					r.GetTfResourceId(cloud),
+					common.UniqueId(r.FunctionName, "svpl", common.LowercaseAlphanumericFormatFunc), rgName,
+					ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 				),
 				Kind:     "Linux",
 				Reserved: true,

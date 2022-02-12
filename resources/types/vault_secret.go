@@ -19,9 +19,8 @@ func (r *VaultSecret) Translate(cloud common.CloudProvider, ctx resources.MultyC
 	if cloud == common.AWS {
 		return []interface{}{
 			vault_secret.AwsSsmParameter{
-				AwsResource: common.AwsResource{
-					ResourceName: vault_secret.AwsResourceName,
-					ResourceId:   r.GetTfResourceId(cloud),
+				AwsResource: &common.AwsResource{
+					ResourceId: r.GetTfResourceId(cloud),
 				},
 				Name:  fmt.Sprintf("/%s/%s", r.Vault.Name, r.Name),
 				Type:  "SecureString",
@@ -31,10 +30,9 @@ func (r *VaultSecret) Translate(cloud common.CloudProvider, ctx resources.MultyC
 	} else if cloud == common.AZURE {
 		return []interface{}{
 			vault_secret.AzureKeyVaultSecret{
-				AzResource: common.AzResource{
-					ResourceName: vault_secret.AzureResourceName,
-					ResourceId:   r.GetTfResourceId(cloud),
-					Name:         r.Name,
+				AzResource: &common.AzResource{
+					ResourceId: r.GetTfResourceId(cloud),
+					Name:       r.Name,
 				},
 				KeyVaultId: r.Vault.GetVaultId(cloud),
 				Value:      r.Value,

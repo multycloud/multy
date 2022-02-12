@@ -3,29 +3,29 @@ package network_security_group
 import "multy-go/resources/common"
 
 type AwsAcl struct {
-	common.AwsResource `hcl:",squash"`
-	VpcId              string       `hcl:"vpc_id,expr"`
-	SubnetIds          []string     `hcl:"subnet_ids"`
-	Ingress            []AwsAclRule `hcl:"ingress"`
-	Egress             []AwsAclRule `hcl:"egress"`
+	*common.AwsResource `hcl:",squash"`
+	VpcId               string       `hcl:"vpc_id,expr"`
+	SubnetIds           []string     `hcl:"subnet_ids"`
+	Ingress             []AwsAclRule `hcl:"ingress"`
+	Egress              []AwsAclRule `hcl:"egress"`
 }
 
 const AwsDefaultSecurityGroupResourceName = "aws_default_security_group"
 
 type AwsDefaultSecurityGroup struct {
-	common.AwsResource `hcl:",squash"`
-	VpcId              string                 `hcl:"vpc_id,expr"`
-	Ingress            []AwsSecurityGroupRule `hcl:"ingress,blocks"`
-	Egress             []AwsSecurityGroupRule `hcl:"egress,blocks"`
+	*common.AwsResource `hcl:",squash" default:"name=aws_default_security_group"`
+	VpcId               string                 `hcl:"vpc_id,expr"`
+	Ingress             []AwsSecurityGroupRule `hcl:"ingress,blocks"`
+	Egress              []AwsSecurityGroupRule `hcl:"egress,blocks"`
 }
 
 const AwsSecurityGroupResourceName = "aws_security_group"
 
 type AwsSecurityGroup struct {
-	common.AwsResource `hcl:",squash"`
-	VpcId              string                 `hcl:"vpc_id"`
-	Ingress            []AwsSecurityGroupRule `hcl:"ingress,blocks"`
-	Egress             []AwsSecurityGroupRule `hcl:"egress,blocks"`
+	*common.AwsResource `hcl:",squash"  default:"name=aws_security_group"`
+	VpcId               string                 `hcl:"vpc_id"`
+	Ingress             []AwsSecurityGroupRule `hcl:"ingress,blocks"`
+	Egress              []AwsSecurityGroupRule `hcl:"egress,blocks"`
 }
 
 type AwsSecurityGroupRule struct {
@@ -37,7 +37,7 @@ type AwsSecurityGroupRule struct {
 }
 
 type AwsDefaultAcl struct {
-	common.AwsResource  `hcl:",squash"`
+	*common.AwsResource `hcl:",squash"`
 	DefaultNetworkAclId string       `hcl:"default_network_acl_id,expr"`
 	Ingress             []AwsAclRule `hcl:"ingress"`
 	Egress              []AwsAclRule `hcl:"egress"`

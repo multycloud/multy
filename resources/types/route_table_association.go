@@ -18,8 +18,7 @@ func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resour
 	if cloud == common.AWS {
 		return []any{
 			route_table_association.AwsRouteTableAssociation{
-				AwsResource: common.AwsResource{
-					ResourceName: route_table_association.AwsResourceName,
+				AwsResource: &common.AwsResource{
 					ResourceId:   r.GetTfResourceId(cloud),
 				},
 				RouteTableId: r.RouteTableId,
@@ -29,8 +28,7 @@ func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resour
 	} else if cloud == common.AZURE {
 		return []any{
 			route_table_association.AzureRouteTableAssociation{
-				AzResource: common.AzResource{
-					ResourceName: route_table_association.AzureResourceName,
+				AzResource: &common.AzResource{
 					ResourceId:   r.GetTfResourceId(cloud),
 				},
 				RouteTableId: r.RouteTableId,

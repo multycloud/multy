@@ -5,6 +5,7 @@ import (
 	"github.com/multy-dev/hclencoder"
 	"log"
 	"multy-go/decoder"
+	"multy-go/mhcl"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output"
@@ -20,6 +21,7 @@ type WithProvider struct {
 func Encode(decodedResources *decoder.DecodedResources) string {
 	ctx := resources.MultyContext{Resources: decodedResources.Resources, Location: decodedResources.GlobalConfig.Location}
 	var b bytes.Buffer
+	defaultTagProcessor := mhcl.DefaultTagProcessor{}
 
 	providers := buildProviders(decodedResources, ctx)
 
@@ -27,6 +29,7 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 		r.Resource.Validate(ctx)
 		providerAlias := getProvider(providers, r, ctx).GetResourceId()
 		for _, translated := range r.Translate(ctx) {
+			defaultTagProcessor.Process(translated)
 			var result any
 			result = WithProvider{
 				Resource:      translated,
@@ -49,9 +52,11 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 
 	for _, p := range flatten(providers) {
 		for _, translatedProvider := range p.Translate() {
-			hcl, err := hclencoder.Encode(providerWrapper{
-				P: translatedProvider,
-			})
+			hcl, err := hclencoder.Encode(
+				providerWrapper{
+					P: translatedProvider,
+				},
+			)
 			if err != nil {
 				log.Fatal("unable to encode: ", err)
 			}
@@ -86,9 +91,11 @@ func buildProviders(r *decoder.DecodedResources, ctx resources.MultyContext) map
 	}
 
 	for _, providerByLocation := range providers {
-		providerByLocation[util.MaxBy(providerByLocation, func(v *types.Provider) int {
-			return v.NumResources
-		})].IsDefaultProvider = true
+		providerByLocation[util.MaxBy(
+			providerByLocation, func(v *types.Provider) int {
+				return v.NumResources
+			},
+		)].IsDefaultProvider = true
 	}
 
 	return providers

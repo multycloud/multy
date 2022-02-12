@@ -55,16 +55,15 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 	}
 	if cloud == common.AWS {
 		return []any{object_storage.AwsS3Bucket{
-			AwsResource: common.AwsResource{
-				ResourceName: "aws_s3_bucket",
-				ResourceId:   r.GetTfResourceId(cloud),
+			AwsResource: &common.AwsResource{
+				ResourceId: r.GetTfResourceId(cloud),
 			}, Bucket: name}}
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 
 		storageAccount := object_storage.AzureStorageAccount{
 			AzResource: common.NewAzResource(
-				"azurerm_storage_account", r.GetTfResourceId(cloud), common.RemoveSpecialChars(name), rgName,
+				r.GetTfResourceId(cloud), common.RemoveSpecialChars(name), rgName,
 				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 			),
 			AccountTier:            "Standard",
@@ -75,18 +74,16 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 		return []any{
 			storageAccount,
 			object_storage_object.AzureStorageContainer{
-				AzResource: common.AzResource{
-					ResourceName: "azurerm_storage_container",
-					ResourceId:   fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "public"),
-					Name:         "public",
+				AzResource: &common.AzResource{
+					ResourceId: fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "public"),
+					Name:       "public",
 				},
 				StorageAccountName:  storageAccount.GetResourceName(),
 				ContainerAccessType: "blob",
 			}, object_storage_object.AzureStorageContainer{
-				AzResource: common.AzResource{
-					ResourceName: "azurerm_storage_container",
-					ResourceId:   fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "private"),
-					Name:         "private",
+				AzResource: &common.AzResource{
+					ResourceId: fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "private"),
+					Name:       "private",
 				},
 				StorageAccountName:  storageAccount.GetResourceName(),
 				ContainerAccessType: "private",

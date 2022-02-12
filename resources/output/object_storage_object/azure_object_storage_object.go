@@ -7,7 +7,7 @@ import (
 
 // azurerm_storage_blob
 type AzureStorageAccountBlob struct {
-	common.AzResource    `hcl:",squash"`
+	*common.AzResource   `hcl:",squash" default:"name=azurerm_storage_blob"`
 	StorageAccountName   string `hcl:"storage_account_name,expr"`
 	StorageContainerName string `hcl:"storage_container_name,expr"`
 	Type                 string `hcl:"type"`
@@ -18,7 +18,7 @@ type AzureStorageAccountBlob struct {
 
 // azurerm_storage_container
 type AzureStorageContainer struct {
-	common.AzResource   `hcl:",squash"`
+	*common.AzResource  `hcl:",squash"  default:"name=azurerm_storage_container"`
 	StorageAccountName  string `hcl:"storage_account_name,expr"`
 	ContainerAccessType string `hcl:"container_access_type"`
 }

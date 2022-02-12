@@ -30,8 +30,8 @@ type Type struct {
 }
 
 type ResourceGroup struct {
-	common.AzResource `hcl:",squash"`
-	Location          string `hcl:"location"`
+	*common.AzResource `hcl:",squash" default:"name=azurerm_resource_group"`
+	Location           string `hcl:"location"`
 }
 
 const AzureResourceName = "azurerm_resource_group"
@@ -39,10 +39,9 @@ const AzureResourceName = "azurerm_resource_group"
 func (rg *Type) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AZURE {
 		return []any{ResourceGroup{
-			AzResource: common.AzResource{
-				ResourceName: AzureResourceName,
-				ResourceId:   rg.ResourceId,
-				Name:         rg.Name,
+			AzResource: &common.AzResource{
+				ResourceId: rg.ResourceId,
+				Name:       rg.Name,
 			},
 			Location: ctx.GetLocation(rg.Location, cloud),
 		}}
