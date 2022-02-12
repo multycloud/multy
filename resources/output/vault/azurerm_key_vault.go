@@ -5,10 +5,10 @@ import "multy-go/resources/common"
 const AzureResourceName = "azurerm_key_vault"
 
 type AzureKeyVault struct {
-	common.AzResource `hcl:",squash"`
-	Sku               string         `hcl:"sku_name"`
-	TenantId          string         `hcl:"tenant_id,expr"`
-	AccessPolicy      []AccessPolicy `hcl:"access_policy,blocks"`
+	*common.AzResource `hcl:",squash" default:"name=azurerm_key_vault"`
+	Sku                string         `hcl:"sku_name"`
+	TenantId           string         `hcl:"tenant_id,expr"`
+	AccessPolicy       []AccessPolicy `hcl:"access_policy,blocks"`
 }
 
 type AccessPolicy struct {

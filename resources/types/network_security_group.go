@@ -57,20 +57,17 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 
 		return []any{
 			network_security_group.AwsSecurityGroup{
-				AwsResource: common.NewAwsResource(
-					network_security_group.AwsSecurityGroupResourceName, r.GetTfResourceId(cloud), r.Name,
-				),
-				VpcId:   resources.GetMainOutputId(r.VirtualNetwork, cloud),
-				Ingress: awsRules["ingress"],
-				Egress:  awsRules["egress"],
+				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
+				VpcId:       resources.GetMainOutputId(r.VirtualNetwork, cloud),
+				Ingress:     awsRules["ingress"],
+				Egress:      awsRules["egress"],
 			},
 		}
 	} else if cloud == common.AZURE {
 		return []any{
 			network_security_group.AzureNsg{
 				AzResource: common.NewAzResource(
-					network_security_group.AzureNetworkSecurityGroupResourceName, r.GetTfResourceId(cloud), r.Name,
-					rg.GetResourceGroupName(r.ResourceGroupId, cloud),
+					r.GetTfResourceId(cloud), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, cloud),
 					ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 				),
 				Rules: translateAzNsgRules(r.Rules),

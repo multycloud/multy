@@ -6,7 +6,7 @@ import (
 )
 
 type AzureMySqlServer struct {
-	common.AzResource          `hcl:",squash"`
+	*common.AzResource         `hcl:",squash" default:"name=azurerm_mysql_server"`
 	AdministratorLogin         string `hcl:"administrator_login"`
 	AdministratorLoginPassword string `hcl:"administrator_login_password"`
 	SkuName                    string `hcl:"sku_name"`
@@ -16,9 +16,9 @@ type AzureMySqlServer struct {
 }
 
 type AzureMySqlVirtualNetworkRule struct {
-	common.AzResource `hcl:",squash"`
-	ServerName        string `hcl:"server_name,expr"`
-	SubnetId          string `hcl:"subnet_id"`
+	*common.AzResource `hcl:",squash" default:"name=azurerm_mysql_virtual_network_rule"`
+	ServerName         string `hcl:"server_name,expr"`
+	SubnetId           string `hcl:"subnet_id"`
 }
 
 func (db AzureMySqlServer) GetServerName() string {

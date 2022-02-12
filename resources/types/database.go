@@ -32,13 +32,13 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 	if cloud == common.AWS {
 		name := common.RemoveSpecialChars(db.Name)
 		dbSubnetGroup := database.AwsDbSubnetGroup{
-			AwsResource: common.NewAwsResource("aws_db_subnet_group", db.GetTfResourceId(cloud), db.Name),
+			AwsResource: common.NewAwsResource(db.GetTfResourceId(cloud), db.Name),
 			SubnetIds:   db.SubnetIds,
 		}
 		return []any{
 			dbSubnetGroup,
 			database.AwsDbInstance{
-				AwsResource:        common.NewAwsResource("aws_db_instance", db.GetTfResourceId(cloud), name),
+				AwsResource:        common.NewAwsResource(db.GetTfResourceId(cloud), name),
 				Name:               name,
 				AllocatedStorage:   db.Storage,
 				Engine:             db.Engine,
@@ -56,7 +56,7 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 
 		return database.NewAzureDatabase(
 			database.AzureDbServer{
-				AzResource: common.AzResource{
+				AzResource: &common.AzResource{
 					ResourceId:        db.GetTfResourceId(cloud),
 					Name:              db.Name,
 					ResourceGroupName: rg.GetResourceGroupName(db.ResourceGroupId, cloud),

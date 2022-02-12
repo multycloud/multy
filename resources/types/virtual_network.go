@@ -28,18 +28,14 @@ type VirtualNetwork struct {
 func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		vpc := virtual_network.AwsVpc{
-			AwsResource: common.NewAwsResource(
-				virtual_network.AwsResourceName, vn.GetTfResourceId(cloud), vn.Name,
-			),
+			AwsResource:        common.NewAwsResource(vn.GetTfResourceId(cloud), vn.Name),
 			CidrBlock:          vn.CidrBlock,
 			EnableDnsHostnames: true,
 		}
 		// TODO make conditional on route_table_association with Internet Destination
 		igw := virtual_network.AwsInternetGateway{
-			AwsResource: common.NewAwsResource(
-				virtual_network.AwsInternetGatewayName, vn.GetTfResourceId(cloud), vn.Name,
-			),
-			VpcId: vn.GetVirtualNetworkId(common.AWS),
+			AwsResource: common.NewAwsResource(vn.GetTfResourceId(cloud), vn.Name),
+			VpcId:       vn.GetVirtualNetworkId(common.AWS),
 		}
 		allowAllSgRule := []network_security_group.AwsSecurityGroupRule{{
 			Protocol:   "-1",
@@ -49,12 +45,10 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 			Self:       true,
 		}}
 		sg := network_security_group.AwsDefaultSecurityGroup{
-			AwsResource: common.NewAwsResource(
-				network_security_group.AwsDefaultSecurityGroupResourceName, vn.GetTfResourceId(cloud), vn.Name,
-			),
-			VpcId:   vn.GetVirtualNetworkId(common.AWS),
-			Ingress: allowAllSgRule,
-			Egress:  allowAllSgRule,
+			AwsResource: common.NewAwsResource(vn.GetTfResourceId(cloud), vn.Name),
+			VpcId:       vn.GetVirtualNetworkId(common.AWS),
+			Ingress:     allowAllSgRule,
+			Egress:      allowAllSgRule,
 		}
 		return []any{
 			vpc,
@@ -64,15 +58,13 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 	} else if cloud == common.AZURE {
 		return []any{virtual_network.AzureVnet{
 			AzResource: common.NewAzResource(
-				virtual_network.AzureResourceName, vn.GetTfResourceId(cloud),
-				vn.Name, rg.GetResourceGroupName(vn.ResourceGroupId, cloud),
+				vn.GetTfResourceId(cloud), vn.Name, rg.GetResourceGroupName(vn.ResourceGroupId, cloud),
 				ctx.GetLocationFromCommonParams(vn.CommonResourceParams, cloud),
 			),
 			AddressSpace: []string{vn.CidrBlock},
 		}, route_table.AzureRouteTable{
 			AzResource: common.NewAzResource(
-				route_table.AzureResourceName, vn.GetTfResourceId(cloud),
-				vn.Name, rg.GetResourceGroupName(vn.ResourceGroupId, cloud),
+				vn.GetTfResourceId(cloud), vn.Name, rg.GetResourceGroupName(vn.ResourceGroupId, cloud),
 				ctx.GetLocationFromCommonParams(vn.CommonResourceParams, cloud),
 			),
 			Routes: []route_table.AzureRouteTableRoute{{

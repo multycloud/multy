@@ -7,7 +7,7 @@ import (
 const AwsResourceName = "aws_instance"
 
 type AwsEC2 struct {
-	common.AwsResource       `hcl:",squash"`
+	*common.AwsResource      `hcl:",squash"  default:"name=aws_instance"`
 	Ami                      string                   `hcl:"ami"`
 	InstanceType             string                   `hcl:"instance_type"`
 	AssociatePublicIpAddress bool                     `hcl:"associate_public_ip_address" hcle:"omitempty"`
@@ -26,7 +26,7 @@ type AwsEc2NetworkInterface struct {
 const AwsKeyPairResourceName = "aws_key_pair"
 
 type AwsKeyPair struct {
-	common.AwsResource `hcl:",squash"`
-	KeyName            string `hcl:"key_name"`
-	PublicKey          string `hcl:"public_key,expr"`
+	*common.AwsResource `hcl:",squash"  default:"name=aws_key_pair"`
+	KeyName             string `hcl:"key_name"`
+	PublicKey           string `hcl:"public_key,expr"`
 }

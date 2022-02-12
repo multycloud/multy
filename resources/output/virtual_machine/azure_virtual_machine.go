@@ -7,7 +7,7 @@ import (
 const AzureResourceName = "azurerm_linux_virtual_machine"
 
 type AzureVirtualMachine struct {
-	common.AzResource             `hcl:",squash"`
+	*common.AzResource            `hcl:",squash" default:"name=azurerm_linux_virtual_machine"`
 	Location                      string                    `hcl:"location"`
 	Size                          string                    `hcl:"size"`
 	NetworkInterfaceIds           []string                  `hcl:"network_interface_ids"`

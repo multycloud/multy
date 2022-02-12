@@ -7,7 +7,7 @@ import (
 )
 
 type AzureDbServer struct {
-	common.AzResource
+	*common.AzResource         `default:"name=azurerm_mysql_server"`
 	AdministratorLogin         string
 	AdministratorLoginPassword string
 	SkuName                    string
@@ -21,8 +21,7 @@ func NewAzureDatabase(server AzureDbServer) []any {
 	switch strings.ToLower(server.Engine) {
 	case "mysql":
 		mysqlServer := AzureMySqlServer{
-			AzResource: common.AzResource{
-				ResourceName:      "azurerm_mysql_server",
+			AzResource: &common.AzResource{
 				ResourceId:        server.ResourceId,
 				ResourceGroupName: server.ResourceGroupName,
 				Name:              server.Name,
@@ -38,16 +37,17 @@ func NewAzureDatabase(server AzureDbServer) []any {
 
 		resources := []any{mysqlServer}
 		for i, subnetId := range server.SubnetIds {
-			resources = append(resources, AzureMySqlVirtualNetworkRule{
-				AzResource: common.AzResource{
-					ResourceName:      "azurerm_mysql_virtual_network_rule",
-					ResourceId:        server.ResourceId + strconv.Itoa(i),
-					ResourceGroupName: server.ResourceGroupName,
-					Name:              server.Name + strconv.Itoa(i),
+			resources = append(
+				resources, AzureMySqlVirtualNetworkRule{
+					AzResource: &common.AzResource{
+						ResourceId:        server.ResourceId + strconv.Itoa(i),
+						ResourceGroupName: server.ResourceGroupName,
+						Name:              server.Name + strconv.Itoa(i),
+					},
+					ServerName: mysqlServer.GetServerName(),
+					SubnetId:   subnetId,
 				},
-				ServerName: mysqlServer.GetServerName(),
-				SubnetId:   subnetId,
-			})
+			)
 		}
 
 		return resources

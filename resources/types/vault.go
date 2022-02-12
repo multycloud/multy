@@ -16,23 +16,21 @@ type Vault struct {
 }
 
 type AzureClientConfig struct {
-	common.AzResource `hcl:",squash"`
+	*common.AzResource `hcl:",squash" default:"name=azurerm_client_config"`
 }
 
 func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		return []any{}
 	} else if cloud == common.AZURE {
-		config := output.DataSourceWrapper{R: AzureClientConfig{AzResource: common.AzResource{
-			ResourceName: "azurerm_client_config",
-			ResourceId:   r.GetTfResourceId(cloud),
+		config := output.DataSourceWrapper{R: AzureClientConfig{AzResource: &common.AzResource{
+			ResourceId: r.GetTfResourceId(cloud),
 		}}}
 
 		return []any{
 			config,
 			vault.AzureKeyVault{
-				AzResource: common.AzResource{
-					ResourceName:      vault.AzureResourceName,
+				AzResource: &common.AzResource{
 					ResourceId:        r.GetTfResourceId(cloud),
 					Name:              r.Name,
 					ResourceGroupName: rg.GetResourceGroupName(r.ResourceGroupId, cloud),
@@ -41,8 +39,12 @@ func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext
 				Sku:      "standard",
 				TenantId: fmt.Sprintf("data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud)),
 				AccessPolicy: []vault.AccessPolicy{{
-					TenantId:               fmt.Sprintf("data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud)),
-					ObjectId:               fmt.Sprintf("data.azurerm_client_config.%s.object_id", r.GetTfResourceId(cloud)),
+					TenantId: fmt.Sprintf(
+						"data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud),
+					),
+					ObjectId: fmt.Sprintf(
+						"data.azurerm_client_config.%s.object_id", r.GetTfResourceId(cloud),
+					),
 					CertificatePermissions: []string{},
 					KeyPermissions:         []string{},
 					SecretPermissions:      []string{"List", "Get", "Set", "Delete"},
