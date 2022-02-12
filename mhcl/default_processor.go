@@ -41,7 +41,7 @@ func (p *DefaultTagProcessor) Process(r any) {
 				case "name":
 					tValue.Field(i).Interface().(NameSetter).SetName(defaultVal)
 				default:
-					validate.LogInternalError("unknown key for tag default: ", key)
+					validate.LogInternalError("unknown key '%s' in tag %s", key, tagValue)
 				}
 			}
 		}

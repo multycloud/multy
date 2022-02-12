@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output"
@@ -64,10 +65,129 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		}
 		result = append(result, function)
 		result = append(
-			result, lambda.AwsIamRole{
+			result,
+			lambda.AwsIamRole{
 				AwsResource:      common.NewAwsResource(r.getAwsIamRoleName(), r.getAwsIamRoleName()),
 				Name:             r.getAwsIamRoleName(),
 				AssumeRolePolicy: lambda.DefaultLambdaPolicy,
+			},
+			// this gives permission to write cloudwatch logs
+			lambda.AwsIamRolePolicyAttachment{
+				AwsResource: &common.AwsResource{
+					ResourceId: r.GetTfResourceId(cloud),
+				},
+				Role: fmt.Sprintf(
+					"%s.%s.name", common.GetResourceName(lambda.AwsIamRole{}), r.getAwsIamRoleName(),
+				),
+				PolicyArn: lambda.LambdaBasicExecutionRole,
+			},
+			// https://registry.terraform.io/providers/hashicorp/aws/2.34.0/docs/guides/serverless-with-aws-lambda-and-api-gateway
+			lambda.AwsApiGatewayRestApi{
+				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.FunctionName),
+				Name:        r.FunctionName,
+			},
+			lambda.AwsApiGatewayResource{
+				AwsResource: &common.AwsResource{
+					ResourceId: fmt.Sprintf("%s_proxy", r.ResourceId),
+				},
+				RestApiId: r.getAwsRestApiId(),
+				ParentId:  r.getAwsRestRootId(),
+				PathPart:  "{proxy+}",
+			},
+			lambda.AwsApiGatewayMethod{
+				AwsResource: &common.AwsResource{
+					ResourceId: fmt.Sprintf("%s_proxy", r.ResourceId),
+				},
+				RestApiId: r.getAwsRestApiId(),
+				ResourceId: fmt.Sprintf(
+					"%s.%s.id", common.GetResourceName(lambda.AwsApiGatewayResource{}),
+					fmt.Sprintf("%s_proxy", r.ResourceId),
+				),
+				HttpMethod:    "ANY",
+				Authorization: "NONE",
+			},
+			lambda.AwsApiGatewayIntegration{
+				AwsResource: &common.AwsResource{
+					ResourceId: fmt.Sprintf("%s_proxy", r.ResourceId),
+				},
+				RestApiId: r.getAwsRestApiId(),
+				ResourceId: fmt.Sprintf(
+					"%s.%s.resource_id", common.GetResourceName(lambda.AwsApiGatewayMethod{}),
+					fmt.Sprintf("%s_proxy", r.ResourceId),
+				),
+				HttpMethod: fmt.Sprintf(
+					"%s.%s.http_method",
+					common.GetResourceName(lambda.AwsApiGatewayMethod{}),
+					fmt.Sprintf("%s_proxy", r.ResourceId),
+				),
+				IntegrationHttpMethod: "POST",
+				Type:                  "AWS_PROXY",
+				Uri: fmt.Sprintf(
+					"%s.%s.invoke_arn", common.GetResourceName(lambda.AwsLambdaFunction{}),
+					r.GetTfResourceId(cloud),
+				),
+			},
+			lambda.AwsApiGatewayMethod{
+				AwsResource: &common.AwsResource{
+					ResourceId: fmt.Sprintf("%s_proxy_root", r.ResourceId),
+				},
+				RestApiId:     r.getAwsRestApiId(),
+				ResourceId:    r.getAwsRestRootId(),
+				HttpMethod:    "ANY",
+				Authorization: "NONE",
+			},
+			lambda.AwsApiGatewayIntegration{
+				AwsResource: &common.AwsResource{
+					ResourceId: fmt.Sprintf("%s_proxy_root", r.ResourceId),
+				},
+				RestApiId: r.getAwsRestApiId(),
+				ResourceId: fmt.Sprintf(
+					"%s.%s.resource_id", common.GetResourceName(lambda.AwsApiGatewayMethod{}),
+					fmt.Sprintf("%s_proxy_root", r.ResourceId),
+				),
+				HttpMethod: fmt.Sprintf(
+					"%s.%s.http_method",
+					common.GetResourceName(lambda.AwsApiGatewayMethod{}),
+					fmt.Sprintf("%s_proxy_root", r.ResourceId),
+				),
+				IntegrationHttpMethod: "POST",
+				Type:                  "AWS_PROXY",
+				Uri: fmt.Sprintf(
+					"%s.%s.invoke_arn", common.GetResourceName(lambda.AwsLambdaFunction{}),
+					r.GetTfResourceId(cloud),
+				),
+			},
+			lambda.AwsApiGatewayDeployment{
+				AwsResource: &common.AwsResource{
+					ResourceId: r.GetTfResourceId(cloud),
+				},
+				RestApiId: r.getAwsRestApiId(),
+				StageName: "api",
+				DependsOn: []string{
+					fmt.Sprintf(
+						"%s.%s", common.GetResourceName(lambda.AwsApiGatewayIntegration{}),
+						r.ResourceId+"_proxy",
+					),
+					fmt.Sprintf(
+						"%s.%s", common.GetResourceName(lambda.AwsApiGatewayIntegration{}),
+						r.ResourceId+"_proxy_root",
+					),
+				},
+			},
+			lambda.AwsLambdaPermission{
+				AwsResource: &common.AwsResource{
+					ResourceId: r.GetTfResourceId(cloud),
+				},
+				StatementId:  "AllowAPIGatewayInvoke",
+				Action:       "lambda:InvokeFunction",
+				FunctionName: r.FunctionName,
+				Principal:    "apigateway.amazonaws.com",
+				SourceArn: fmt.Sprintf(
+					"${%s}/*/*", fmt.Sprintf(
+						"%s.%s.execution_arn", common.GetResourceName(lambda.AwsApiGatewayRestApi{}),
+						r.GetTfResourceId(common.AWS),
+					),
+				),
 			},
 		)
 		return result
@@ -192,6 +312,17 @@ func (r *Lambda) getAwsIamRoleName() string {
 	return fmt.Sprintf("iam_for_lambda_%s", r.ResourceId)
 }
 
+func (r *Lambda) getAwsRestApiId() string {
+	return fmt.Sprintf("%s.%s.id", common.GetResourceName(lambda.AwsApiGatewayRestApi{}), r.GetTfResourceId(common.AWS))
+}
+
+func (r *Lambda) getAwsRestRootId() string {
+	return fmt.Sprintf(
+		"%s.%s.root_resource_id", common.GetResourceName(lambda.AwsApiGatewayRestApi{}),
+		r.GetTfResourceId(common.AWS),
+	)
+}
+
 func (r *Lambda) getSourceCodeZip(cloud common.CloudProvider) string {
 	if r.SourceCodeDir == "" {
 		return ""
@@ -209,4 +340,30 @@ func (r *Lambda) GetMainResourceName(cloud common.CloudProvider) string {
 		validate.LogInternalError("unknown cloud %s", cloud)
 	}
 	return ""
+}
+
+func (r *Lambda) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
+	switch cloud {
+	case common.AWS:
+		return map[string]cty.Value{
+			"url": cty.StringVal(
+				fmt.Sprintf(
+					"${%s.%s.invoke_url}", common.GetResourceName(lambda.AwsApiGatewayDeployment{}),
+					r.GetTfResourceId(cloud),
+				),
+			),
+		}
+	case common.AZURE:
+		return map[string]cty.Value{
+			"url": cty.StringVal(
+				fmt.Sprintf(
+					"${%s.%s.default_hostname}",
+					common.GetResourceName(lambda.AzureFunctionApp{}), r.GetTfResourceId(cloud),
+				),
+			),
+		}
+	}
+
+	validate.LogInternalError("unknown cloud %s", cloud)
+	return nil
 }
