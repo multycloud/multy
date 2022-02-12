@@ -10,6 +10,7 @@ invocation.
 
 import logging
 import math
+import json
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -35,8 +36,30 @@ def lambda_handler(event, context):
     """
     logger.info('Event: %s', event)
 
-    result = ACTIONS[event['action']](event['number'])
-    logger.info('Calculated result of %s', result)
+    logging.info('Python HTTP trigger function processed a request.')
 
-    response = {'result': result}
-    return response
+    if event['path'] != "/":
+        return {
+            "statusCode": 404,
+            "headers": {
+                "Content-Type": "application/json",
+            },
+            "body": json.dumps(event, indent=4),
+        }
+
+    name = None
+    if event['queryStringParameters']:
+        name = event['queryStringParameters']['name']
+
+    logging.info('Processed name.')
+
+    if name:
+        return {
+                "statusCode": 200,
+            "body" : f"Hello, {name}. This HTTP triggered function executed successfully."
+            }
+    else:
+        return {
+            "statusCode": 200,
+            "body" : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
+        }

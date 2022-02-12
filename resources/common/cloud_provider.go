@@ -3,6 +3,8 @@ package common
 import (
 	"fmt"
 	"multy-go/validate"
+	"reflect"
+	"strings"
 )
 
 type CloudProvider string
@@ -157,4 +159,21 @@ func (r *AwsResource) SetName(name string) {
 
 func (r *AzResource) SetName(name string) {
 	r.ResourceName = name
+}
+
+func GetResourceName(r any) string {
+	t := reflect.TypeOf(r)
+	tagValue, ok := t.Field(0).Tag.Lookup("default")
+	if !ok {
+		validate.LogInternalError("no default resource name found")
+	}
+	tagValues := strings.Split(tagValue, ",")
+	for _, v := range tagValues {
+		keyVal := strings.SplitN(v, "=", 2)
+		if keyVal[0] == "name" {
+			return keyVal[1]
+		}
+	}
+	validate.LogInternalError("no default resource name found")
+	return ""
 }
