@@ -357,7 +357,7 @@ func (r *Lambda) GetOutputValues(cloud common.CloudProvider) map[string]cty.Valu
 		return map[string]cty.Value{
 			"url": cty.StringVal(
 				fmt.Sprintf(
-					"${%s.%s.default_hostname}",
+					"https://${%s.%s.default_hostname}",
 					common.GetResourceName(lambda.AzureFunctionApp{}), r.GetTfResourceId(cloud),
 				),
 			),
