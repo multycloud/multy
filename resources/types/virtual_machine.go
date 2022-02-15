@@ -57,9 +57,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		}
 
 		ec2 := virtual_machine.AwsEC2{
-			AwsResource: common.NewAwsResource(
-				virtual_machine.AwsResourceName, vm.GetTfResourceId(cloud), vm.Name,
-			),
+			AwsResource:              common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
 			Ami:                      "ami-09d4a659cdd8677be", // eu-west-2 "ami-0fc15d50d39e4503c", // https://cloud-images.ubuntu.com/locator/ec2/
 			InstanceType:             common.VMSIZE[common.MICRO][cloud],
 			AssociatePublicIpAddress: vm.PublicIp,
@@ -78,11 +76,9 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		// key pair will be added and referenced via key_name parameter
 		if vm.SshKeyFileName != "" {
 			keyPair := virtual_machine.AwsKeyPair{
-				AwsResource: common.NewAwsResource(
-					virtual_machine.AwsKeyPairResourceName, vm.GetTfResourceId(cloud), vm.Name,
-				),
-				KeyName:   fmt.Sprintf("%s_multy", vm.ResourceId),
-				PublicKey: fmt.Sprintf("file(\"%s\")", vm.SshKeyFileName),
+				AwsResource: common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
+				KeyName:     fmt.Sprintf("%s_multy", vm.ResourceId),
+				PublicKey:   fmt.Sprintf("file(\"%s\")", vm.SshKeyFileName),
 			}
 			ec2.KeyName = vm.GetAssociatedKeyPairName(cloud)
 			awsResources = append(awsResources, keyPair)
@@ -99,7 +95,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		if len(vm.NetworkInterfaceIds) == 0 {
 			nic := network_interface.AzureNetworkInterface{
 				AzResource: common.NewAzResource(
-					network_interface.AzureResourceName, vm.GetTfResourceId(cloud), vm.Name, rgName,
+					vm.GetTfResourceId(cloud), vm.Name, rgName,
 					ctx.GetLocationFromCommonParams(vm.CommonResourceParams, cloud),
 				),
 				IpConfigurations: []network_interface.AzureIpConfiguration{{
@@ -109,12 +105,11 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 					Primary:                    true,
 				}},
 			}
-			azResources = append(azResources, &nic)
 
 			if vm.PublicIp {
 				pIp := public_ip.AzurePublicIp{
 					AzResource: common.NewAzResource(
-						public_ip.AzureResourceName, vm.GetTfResourceId(cloud), vm.Name, rgName,
+						vm.GetTfResourceId(cloud), vm.Name, rgName,
 						ctx.GetLocationFromCommonParams(vm.CommonResourceParams, cloud),
 					),
 					AllocationMethod: "Static",
@@ -128,6 +123,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 				}}
 				azResources = append(azResources, &pIp)
 			}
+			azResources = append(azResources, nic)
 			nicIds = append(nicIds, nic.GetId(cloud))
 		}
 
@@ -162,7 +158,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			disablePassAuth = true
 		} else {
 			randomPassword := terraform.RandomPassword{
-				ResourceName: terraform.TerraformResourceName,
+				ResourceName: terraform.RandomPasswordResourceName,
 				ResourceId:   vm.GetTfResourceId(cloud),
 				Length:       16,
 				Special:      true,
@@ -176,8 +172,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 
 		azResources = append(
 			azResources, virtual_machine.AzureVirtualMachine{
-				AzResource: common.AzResource{
-					ResourceName:      virtual_machine.AzureResourceName,
+				AzResource: &common.AzResource{
 					ResourceId:        vm.GetTfResourceId(cloud),
 					ResourceGroupName: rgName,
 					Name:              vm.Name,

@@ -26,7 +26,7 @@ func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyCont
 	if cloud == common.AWS {
 		return []any{
 			public_ip.AwsElasticIp{
-				AwsResource:        common.NewAwsResource(public_ip.AwsResourceName, r.GetTfResourceId(cloud), r.Name),
+				AwsResource:        common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 				NetworkInterfaceId: r.NetworkInterfaceId,
 				//Vpc:        true,
 			},
@@ -35,8 +35,7 @@ func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyCont
 		return []any{
 			public_ip.AzurePublicIp{
 				AzResource: common.NewAzResource(
-					public_ip.AzureResourceName, r.GetTfResourceId(cloud), r.Name,
-					rg.GetResourceGroupName(r.ResourceGroupId, cloud),
+					r.GetTfResourceId(cloud), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, cloud),
 					ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 				),
 				AllocationMethod: "Static",

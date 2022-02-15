@@ -2,7 +2,7 @@ multy "virtual_network" "example_vn" {
   rg_vars    = {
     app = "backend"
   }
-  name       = "example_vn"
+  name       = "example_vn${var.name_suffix}"
   cidr_block = "10.0.0.0/16"
 }
 multy "subnet" "example_subnet" {
@@ -17,9 +17,8 @@ multy "public_ip" "example_ip" {
   name = "example_ip"
 }
 multy "object_storage" "obj_storage" {
-  name          = "test-storage"
+  name          = "test-storage-999999"
   random_suffix = false
-  location      = "uk"
 }
 multy "network_interface" "example_nic" {
   name      = "example_nic"
@@ -33,4 +32,8 @@ config {
 variable "location" {
   type    = string
   default = "ireland"
+}
+variable "name_suffix" {
+  type    = string
+  default = cloud_specific_value({aws: "_aws", azure: "_az"})
 }

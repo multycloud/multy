@@ -33,6 +33,10 @@ func InitResource(resourceType string, commonParams *resources.CommonResourcePar
 		return &types.ObjectStorage{CommonResourceParams: commonParams}, nil
 	case "object_storage_object":
 		return &types.ObjectStorageObject{CommonResourceParams: commonParams}, nil
+	case "vault":
+		return &types.Vault{CommonResourceParams: commonParams}, nil
+	case "vault_secret":
+		return &types.VaultSecret{CommonResourceParams: commonParams}, nil
 	case "lambda":
 		return &types.Lambda{CommonResourceParams: commonParams}, nil
 	default:

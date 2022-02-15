@@ -9,8 +9,8 @@ import (
 const AzureResourceName = "azurerm_network_interface"
 
 type AzureNetworkInterface struct {
-	common.AzResource `hcl:",squash"`
-	IpConfigurations  []AzureIpConfiguration `hcl:"ip_configuration,blocks"`
+	*common.AzResource `hcl:",squash" default:"name=azurerm_network_interface"`
+	IpConfigurations   []AzureIpConfiguration `hcl:"ip_configuration,blocks"`
 }
 
 func (nic AzureNetworkInterface) GetResourceId(cloud common.CloudProvider) string {

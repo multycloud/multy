@@ -9,8 +9,8 @@ import (
 const AzureResourceName = "azurerm_public_ip"
 
 type AzurePublicIp struct {
-	common.AzResource `hcl:",squash"`
-	AllocationMethod  string `hcl:"allocation_method"`
+	*common.AzResource `hcl:",squash" default:"name=azurerm_public_ip"`
+	AllocationMethod   string `hcl:"allocation_method"`
 }
 
 func (pIp AzurePublicIp) GetId(cloud common.CloudProvider) string {

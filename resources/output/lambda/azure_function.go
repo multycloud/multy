@@ -9,7 +9,7 @@ const AzureResourceName = "azurerm_function_app"
 const AzureAppServicePlanResourceName = "azurerm_app_service_plan"
 
 type AzureFunctionApp struct {
-	common.AzResource       `hcl:",squash"`
+	*common.AzResource      `hcl:",squash" default:"name=azurerm_function_app"`
 	StorageAccountName      string               `hcl:"storage_account_name,expr"`
 	StorageAccountAccessKey string               `hcl:"storage_account_access_key,expr"`
 	AppServicePlanId        string               `hcl:"app_service_plan_id,expr"`
@@ -19,10 +19,10 @@ type AzureFunctionApp struct {
 }
 
 type AzureAppServicePlan struct {
-	common.AzResource `hcl:",squash"`
-	Kind              string   `hcl:"kind"`
-	Reserved          bool     `hcl:"reserved"`
-	Sku               AzureSku `hcl:"sku"`
+	*common.AzResource `hcl:",squash" default:"name=azurerm_app_service_plan"`
+	Kind               string   `hcl:"kind"`
+	Reserved           bool     `hcl:"reserved"`
+	Sku                AzureSku `hcl:"sku"`
 }
 
 type AzureSku struct {

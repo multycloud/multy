@@ -5,6 +5,7 @@ type isTfBlock struct {
 
 type TerraformBlock interface {
 	isTerraformBlock()
+	GetR() any
 }
 
 func (*isTfBlock) isTerraformBlock() {
@@ -19,6 +20,14 @@ type ResourceWrapper struct {
 type DataSourceWrapper struct {
 	*isTfBlock `hcle:"omit"`
 	R          any `hcl:"data"`
+}
+
+func (r DataSourceWrapper) GetR() any {
+	return r.R
+}
+
+func (r ResourceWrapper) GetR() any {
+	return r.R
 }
 
 func IsTerraformBlock(r any) bool {

@@ -20,3 +20,9 @@ multy "object_storage_object" "file2_private" {
   object_storage      = obj_storage
   content_type        = "text/html"
 }
+multy "object_storage_object" "file3_source" {
+  name                = "index.html"
+  source              = "test.zip"
+  object_storage      = obj_storage
+  acl = "public_read"
+}

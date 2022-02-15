@@ -20,7 +20,7 @@ resource "aws_subnet" "example_subnet_aws" {
 }
 resource "aws_vpc" "example_vn_aws" {
   tags =  {
-    Name = "example_vn"
+    Name = "example_vn_aws"
   }
 
   cidr_block           = "10.0.0.0/16"
@@ -28,14 +28,14 @@ resource "aws_vpc" "example_vn_aws" {
 }
 resource "aws_internet_gateway" "example_vn_aws" {
   tags =  {
-    Name = "example_vn"
+    Name = "example_vn_aws"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
   tags =  {
-    Name = "example_vn"
+    Name = "example_vn_aws"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
@@ -57,8 +57,7 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_s3_bucket" "obj_storage_aws" {
-  bucket   = "test-storage"
-  provider = "aws.eu-west-2"
+  bucket   = "test-storage-999999"
 }
 resource "azurerm_public_ip" "example_ip_azure" {
   resource_group_name = azurerm_resource_group.pip-rg.name
@@ -90,13 +89,13 @@ resource "azurerm_subnet_route_table_association" "example_subnet_azure" {
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
-  name                = "example_vn"
+  name                = "example_vn_az"
   location            = "northeurope"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
-  name                = "example_vn"
+  name                = "example_vn_az"
   location            = "northeurope"
 
   route {
@@ -111,8 +110,8 @@ resource "azurerm_resource_group" "nic-rg" {
 }
 resource "azurerm_storage_account" "obj_storage_azure" {
   resource_group_name      = azurerm_resource_group.st-rg.name
-  name                     = "teststorage"
-  location                 = "ukwest"
+  name                     = "teststorage999999"
+  location                 = "northeurope"
   account_tier             = "Standard"
   account_replication_type = "GZRS"
   allow_blob_public_access = true
@@ -141,10 +140,6 @@ resource "azurerm_resource_group" "vn-rg" {
 }
 provider "aws" {
   region = "eu-west-1"
-}
-provider "aws" {
-  region = "eu-west-2"
-  alias  = "eu-west-2"
 }
 provider "azurerm" {
   features {}

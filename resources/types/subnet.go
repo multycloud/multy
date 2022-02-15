@@ -27,7 +27,7 @@ type Subnet struct {
 func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		return []any{subnet.AwsSubnet{
-			AwsResource:      common.NewAwsResource(subnet.AwsResourceName, s.GetTfResourceId(cloud), s.Name),
+			AwsResource:      common.NewAwsResource(s.GetTfResourceId(cloud), s.Name),
 			CidrBlock:        s.CidrBlock,
 			VpcId:            s.VirtualNetwork.GetVirtualNetworkId(cloud),
 			AvailabilityZone: common.GetAvailabilityZone(ctx.Location, s.AvailabilityZone, cloud),
@@ -35,8 +35,7 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 	} else if cloud == common.AZURE {
 		var azResources []any
 		azSubnet := subnet.AzureSubnet{
-			AzResource: common.AzResource{
-				ResourceName:      subnet.AzureResourceName,
+			AzResource: &common.AzResource{
 				ResourceId:        s.GetTfResourceId(cloud),
 				Name:              s.Name,
 				ResourceGroupName: rg.GetResourceGroupName(s.ResourceGroupId, cloud),
@@ -51,9 +50,8 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		if !checkSubnetRouteTableAssociated(ctx, resources.GetMainOutputId(s, cloud)) {
 			rt := s.VirtualNetwork.GetAssociatedRouteTableId(cloud)
 			rtAssociation := route_table_association.AzureRouteTableAssociation{
-				AzResource: common.AzResource{
-					ResourceName: route_table_association.AzureResourceName,
-					ResourceId:   s.GetTfResourceId(cloud),
+				AzResource: &common.AzResource{
+					ResourceId: s.GetTfResourceId(cloud),
 				},
 				SubnetId:     resources.GetMainOutputId(s, cloud),
 				RouteTableId: rt,

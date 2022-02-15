@@ -36,7 +36,7 @@ const (
 func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		rt := route_table.AwsRouteTable{
-			AwsResource: common.NewAwsResource(route_table.AwsResourceName, r.GetTfResourceId(cloud), r.Name),
+			AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 			VpcId:       resources.GetMainOutputId(r.VirtualNetwork, cloud),
 		}
 
@@ -57,8 +57,7 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 	} else if cloud == common.AZURE {
 		rt := route_table.AzureRouteTable{
 			AzResource: common.NewAzResource(
-				route_table.AzureResourceName, r.GetTfResourceId(cloud), r.Name,
-				rg.GetResourceGroupName(r.ResourceGroupId, cloud),
+				r.GetTfResourceId(cloud), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, cloud),
 				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 			),
 		}

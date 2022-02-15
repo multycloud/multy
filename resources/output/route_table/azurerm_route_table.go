@@ -5,8 +5,8 @@ import "multy-go/resources/common"
 const AzureResourceName = "azurerm_route_table"
 
 type AzureRouteTable struct {
-	common.AzResource `hcl:",squash"`
-	Routes            []AzureRouteTableRoute `hcl:"route,blocks"`
+	*common.AzResource `hcl:",squash" default:"name=azurerm_route_table"`
+	Routes             []AzureRouteTableRoute `hcl:"route,blocks"`
 }
 
 type AzureRouteTableRoute struct {
@@ -16,7 +16,7 @@ type AzureRouteTableRoute struct {
 }
 
 type AzureRouteTableAssociation struct {
-	common.AzResource `hcl:",squash"`
-	RouteTableId      string `hcl:"route_table_id,expr"`
-	SubnetId          string `hcl:"subnet_id"`
+	*common.AzResource `hcl:",squash"`
+	RouteTableId       string `hcl:"route_table_id,expr"`
+	SubnetId           string `hcl:"subnet_id"`
 }

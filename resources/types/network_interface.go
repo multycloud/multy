@@ -23,7 +23,7 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 	if cloud == common.AWS {
 		return []any{
 			network_interface.AwsNetworkInterface{
-				AwsResource: common.NewAwsResource(network_interface.AwsResourceName, r.GetTfResourceId(cloud), r.Name),
+				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 				SubnetId:    subnetId,
 			},
 		}
@@ -31,7 +31,7 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 		nic := network_interface.AzureNetworkInterface{
 			AzResource: common.NewAzResource(
-				network_interface.AzureResourceName, r.GetTfResourceId(cloud), r.Name, rgName,
+				r.GetTfResourceId(cloud), r.Name, rgName,
 				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 			),
 			// by default, virtual_machine will have a private ip
