@@ -144,3 +144,6 @@ provider "aws" {
 provider "azurerm" {
   features {}
 }
+output "aws_vn_name" {
+  value = "example_vn_aws"
+}

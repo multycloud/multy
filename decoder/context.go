@@ -27,6 +27,13 @@ func (c CloudSpecificContext) GetContext(cloud common.CloudProvider) *hcl.EvalCo
 	return result
 }
 
+func (c CloudSpecificContext) GetCloudAgnosticContext() *hcl.EvalContext {
+	result := c.cloudDependentCtx.NewChild()
+	result.Variables = map[string]cty.Value{}
+	result.Functions = functions.GetAllCloudAgnosticFunctions()
+	return result
+}
+
 func (c CloudSpecificContext) AddCloudDependentVar(key string, v cty.Value, cloud common.CloudProvider) {
 	c.AddCloudDependentVars(map[string]cty.Value{key: v}, cloud)
 }

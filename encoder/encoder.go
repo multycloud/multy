@@ -2,6 +2,7 @@ package encoder
 
 import (
 	"bytes"
+	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/multy-dev/hclencoder"
 	"log"
 	"multy-go/decoder"
@@ -63,6 +64,16 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 			b.Write(hcl)
 		}
 	}
+
+	// here we use the low-level api because we need to write cty.Values
+	f := hclwrite.NewEmptyFile()
+	rootBody := f.Body()
+	for outputId, outputVal := range decodedResources.Outputs {
+		block := hclwrite.NewBlock("output", []string{outputId})
+		block.Body().SetAttributeValue("value", outputVal)
+		rootBody.AppendBlock(block)
+	}
+	b.Write(f.Bytes())
 
 	return b.String()
 }
