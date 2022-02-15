@@ -37,3 +37,6 @@ variable "name_suffix" {
   type    = string
   default = cloud_specific_value({aws: "_aws", azure: "_az"})
 }
+output "aws_vn_name" {
+  value = aws.example_vn.name
+}

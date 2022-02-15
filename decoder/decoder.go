@@ -2,6 +2,7 @@ package decoder
 
 import (
 	"fmt"
+	"github.com/hashicorp/hcl/v2"
 	"multy-go/hclutil"
 	"multy-go/mhcl"
 	"multy-go/parser"
@@ -12,7 +13,6 @@ import (
 	"multy-go/validate"
 	"strings"
 
-	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -25,6 +25,7 @@ type DecodedGlobalConfig struct {
 
 type DecodedResources struct {
 	Resources    map[string]resources.CloudSpecificResource
+	Outputs      map[string]cty.Value
 	Providers    map[string]types.Provider
 	GlobalConfig DecodedGlobalConfig
 }
@@ -72,9 +73,19 @@ func Decode(config parser.ParsedConfig) *DecodedResources {
 		}
 	}
 
+	outputs := map[string]cty.Value{}
+	for _, output := range config.Outputs {
+		val, diags := output.Value.Value(cloudSpecificCtx.GetCloudAgnosticContext())
+		if diags != nil {
+			validate.LogFatalWithDiags(diags, "unable to parse output %s", output.ID)
+		}
+		outputs[output.ID] = val
+	}
+
 	return &DecodedResources{
 		Resources:    r,
 		GlobalConfig: globalConfig,
+		Outputs:      outputs,
 	}
 }
 
@@ -125,6 +136,10 @@ func topologicalSortHelper(positions map[*parser.MultyResource]int, pos int, r *
 }
 
 func decodeGlobalConfig(config parser.ParsedConfig, ctx *hcl.EvalContext) DecodedGlobalConfig {
+	if config.GlobalConfig == nil {
+		// TODO: here we should probably return nil and handle any attempted accesses gracefully
+		return DecodedGlobalConfig{}
+	}
 	type globalConfigHcl struct {
 		Location string   `hcl:"location"`
 		Clouds   []string `hcl:"clouds"`

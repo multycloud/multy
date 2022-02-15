@@ -6,9 +6,13 @@ import (
 )
 
 func GetAllFunctions(cloud common.CloudProvider) map[string]function.Function {
-	return map[string]function.Function{
-		"cloud_specific_value": GetCloudSpecificValueFunction(cloud, true),
-	}
+	functions := GetAllCloudAgnosticFunctions()
+	functions["cloud_specific_value"] = GetCloudSpecificValueFunction(cloud, true)
+	return functions
+}
+
+func GetAllCloudAgnosticFunctions() map[string]function.Function {
+	return map[string]function.Function{}
 }
 
 // GetAllFunctionsForVarEvaluation returns the only functions that are available when parsing variable blocks.
