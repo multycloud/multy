@@ -11,11 +11,12 @@ resource "aws_db_subnet_group" "example_db_aws" {
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
-  tags                 = {
+  tags = {
     Name = "exampledb"
   }
-  db_name              = "exampledb"
+
   allocated_storage    = 10
+  db_name              = "exampledb"
   engine               = "mysql"
   engine_version       = "5.7"
   username             = "multyadmin"
@@ -145,15 +146,16 @@ resource "aws_route_table_association" "rta_aws" {
 }
 resource "aws_subnet" "subnet1_aws" {
   tags = {
-    Name = "subnet1"
+    Name = "private-subnet1"
   }
 
-  cidr_block = "10.0.1.0/24"
-  vpc_id     = aws_vpc.example_vn_aws.id
+  cidr_block        = "10.0.1.0/24"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1a"
 }
 resource "aws_subnet" "subnet2_aws" {
   tags = {
-    Name = "subnet2"
+    Name = "private-subnet2"
   }
 
   cidr_block        = "10.0.2.0/24"
@@ -162,7 +164,7 @@ resource "aws_subnet" "subnet2_aws" {
 }
 resource "aws_subnet" "subnet3_aws" {
   tags = {
-    Name = "subnet3"
+    Name = "public-subnet3"
   }
 
   cidr_block = "10.0.3.0/24"
@@ -321,7 +323,7 @@ resource "azurerm_subnet_route_table_association" "rta_azure" {
 }
 resource "azurerm_subnet" "subnet1_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
-  name                 = "subnet1"
+  name                 = "private-subnet1"
   address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
   service_endpoints    = ["Microsoft.Sql"]
@@ -332,7 +334,7 @@ resource "azurerm_subnet_route_table_association" "subnet1_azure" {
 }
 resource "azurerm_subnet" "subnet2_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
-  name                 = "subnet2"
+  name                 = "private-subnet2"
   address_prefixes     = ["10.0.2.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
   service_endpoints    = ["Microsoft.Sql"]
@@ -343,7 +345,7 @@ resource "azurerm_subnet_route_table_association" "subnet2_azure" {
 }
 resource "azurerm_subnet" "subnet3_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
-  name                 = "subnet3"
+  name                 = "public-subnet3"
   address_prefixes     = ["10.0.3.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
