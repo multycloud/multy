@@ -24,6 +24,12 @@ type MultyResource struct {
 	DefinitionRange hcl.Range
 }
 
+type MultyOutput struct {
+	ID              string         `hcl:"id,label"`
+	Value           hcl.Expression `hcl:"value"`
+	DefinitionRange hcl.Range
+}
+
 type MultyResourceDependency struct {
 	From        *MultyResource
 	To          *MultyResource
@@ -39,6 +45,7 @@ type MultyConfig struct {
 type ParsedConfig struct {
 	Variables      []ParsedVariable
 	MultyResources []*MultyResource
+	Outputs        []*MultyOutput
 	GlobalConfig   hcl.Body
 }
 
@@ -55,6 +62,7 @@ type config struct {
 	Variables      []variables.Variable `hcl:"variable,block"`
 	MultyResources []*MultyResource     `hcl:"multy,block"`
 	MultyConfig    *multyConfig         `hcl:"config,block"`
+	Outputs        []*MultyOutput       `hcl:"output,block"`
 }
 
 func (p *Parser) Parse(filepaths []string) ParsedConfig {
@@ -87,7 +95,9 @@ func (p *Parser) Parse(filepaths []string) ParsedConfig {
 	result := ParsedConfig{
 		Variables:      convertVars(c.Variables, p.CliVars),
 		MultyResources: c.MultyResources,
+		Outputs:        c.Outputs,
 	}
+
 	if c.MultyConfig != nil {
 		result.GlobalConfig = c.MultyConfig.HCLBody
 	}
@@ -100,6 +110,7 @@ func mergeConfigs(configs []config) config {
 	for _, fileConfig := range configs {
 		c.MultyResources = append(c.MultyResources, fileConfig.MultyResources...)
 		c.Variables = append(c.Variables, fileConfig.Variables...)
+		c.Outputs = append(c.Outputs, fileConfig.Outputs...)
 		if fileConfig.MultyConfig != nil {
 			if c.MultyConfig != nil {
 				log.Fatalf("multiple multy configs found, but only one is allowed")
