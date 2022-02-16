@@ -11,7 +11,7 @@ const AwsResourceName = "aws_db_instance"
 type AwsDbInstance struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_db_instance"`
 	AllocatedStorage    int    `hcl:"allocated_storage"`
-	Name                string `hcl:"name"`
+	Name                string `hcl:"db_name"`
 	Engine              string `hcl:"engine"`
 	EngineVersion       string `hcl:"engine_version"`
 	Username            string `hcl:"username"`

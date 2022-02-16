@@ -1,5 +1,5 @@
 resource "aws_db_subnet_group" "example_db_aws" {
-  tags =  {
+  tags = {
     Name = "example-db"
   }
 
@@ -11,10 +11,10 @@ resource "aws_db_subnet_group" "example_db_aws" {
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
-  tags =  {
+  tags                 = {
     Name = "exampledb"
   }
-  name                 = "exampledb"
+  db_name              = "exampledb"
   allocated_storage    = 10
   engine               = "mysql"
   engine_version       = "5.7"

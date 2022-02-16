@@ -18,14 +18,16 @@ type Database struct {
 	Size          string   `hcl:"size"`
 	DbUsername    string   `hcl:"db_username"`
 	DbPassword    string   `hcl:"db_password"`
-	SubnetIds     []string `hcl:"subnet_ids,optional"`
+	SubnetIds     []string `hcl:"subnet_ids"`
 }
 
 func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		name := common.RemoveSpecialChars(db.Name)
+		// TODO validate subnet configuration (minimum 2 different AZs)
 		dbSubnetGroup := database.AwsDbSubnetGroup{
 			AwsResource: common.NewAwsResource(db.GetTfResourceId(cloud), db.Name),
+			Name:        db.Name,
 			SubnetIds:   db.SubnetIds,
 		}
 		return []any{
