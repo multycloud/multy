@@ -7,25 +7,26 @@ multy "virtual_network" "example_vn" {
   cidr_block = "10.0.0.0/16"
 }
 multy "subnet" "subnet1" {
-  name               = "subnet1"
-  cidr_block         = "10.0.1.0/24"
-  virtual_network = example_vn
+  name              = "private-subnet1"
+  cidr_block        = "10.0.1.0/24"
+  virtual_network   = example_vn
+  availability_zone = 1
 }
 multy "subnet" "subnet2" {
-  name               = "subnet2"
-  cidr_block         = "10.0.2.0/24"
-  virtual_network = example_vn
-  availability_zone  = 2
+  name              = "private-subnet2"
+  cidr_block        = "10.0.2.0/24"
+  virtual_network   = example_vn
+  availability_zone = 2
 }
 multy "subnet" "subnet3" {
-  name               = "subnet3"
-  cidr_block         = "10.0.3.0/24"
+  name            = "public-subnet3"
+  cidr_block      = "10.0.3.0/24"
   virtual_network = example_vn
 }
 multy route_table "rt" {
-  name               = "test-rt"
-  virtual_network    = example_vn
-  routes             = [
+  name            = "test-rt"
+  virtual_network = example_vn
+  routes          = [
     {
       cidr_block  = "0.0.0.0/0"
       destination = "internet"
@@ -61,9 +62,9 @@ multy "virtual_machine" "vm" {
   public_ip = true
 }
 multy "network_security_group" nsg2 {
-  name               = "test-nsg2"
+  name            = "test-nsg2"
   virtual_network = example_vn
-  rules              = [
+  rules           = [
     {
       protocol   = "tcp"
       priority   = "100"

@@ -5,11 +5,13 @@ import (
 	"multy-go/resources/common"
 )
 
+const AwsResourceName = "aws_db_instance"
+
 // aws_db_instance
 type AwsDbInstance struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_db_instance"`
 	AllocatedStorage    int    `hcl:"allocated_storage"`
-	Name                string `hcl:"name"`
+	Name                string `hcl:"db_name"`
 	Engine              string `hcl:"engine"`
 	EngineVersion       string `hcl:"engine_version"`
 	Username            string `hcl:"username"`
@@ -24,6 +26,7 @@ type AwsDbInstance struct {
 // aws_db_subnet_group
 type AwsDbSubnetGroup struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_db_subnet_group"`
+	Name                string   `hcl:"name"`
 	SubnetIds           []string `hcl:"subnet_ids"`
 }
 

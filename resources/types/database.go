@@ -9,13 +9,6 @@ import (
 	"multy-go/validate"
 )
 
-/*
-aws_db_instance
-aws_db_subnet_group
-
-azurerm_*_server
-*/
-
 type Database struct {
 	*resources.CommonResourceParams
 	Name          string   `hcl:"name"`
@@ -25,14 +18,16 @@ type Database struct {
 	Size          string   `hcl:"size"`
 	DbUsername    string   `hcl:"db_username"`
 	DbPassword    string   `hcl:"db_password"`
-	SubnetIds     []string `hcl:"subnet_ids,optional"`
+	SubnetIds     []string `hcl:"subnet_ids"`
 }
 
 func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if cloud == common.AWS {
 		name := common.RemoveSpecialChars(db.Name)
+		// TODO validate subnet configuration (minimum 2 different AZs)
 		dbSubnetGroup := database.AwsDbSubnetGroup{
 			AwsResource: common.NewAwsResource(db.GetTfResourceId(cloud), db.Name),
+			Name:        db.Name,
 			SubnetIds:   db.SubnetIds,
 		}
 		return []any{
@@ -53,7 +48,6 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 			},
 		}
 	} else if cloud == common.AZURE {
-
 		return database.NewAzureDatabase(
 			database.AzureDbServer{
 				AzResource: &common.AzResource{
@@ -91,9 +85,11 @@ func (db *Database) Validate(ctx resources.MultyContext) {
 func (db *Database) GetMainResourceName(cloud common.CloudProvider) string {
 	switch cloud {
 	case common.AWS:
-		return "aws_db_instance"
+		return database.AwsResourceName
 	case common.AZURE:
-		return "azurerm_mysql_server"
+		if db.Engine == "mysql" {
+			return database.AzureMysqlResourceName
+		}
 	default:
 		validate.LogInternalError("unknown cloud %s", cloud)
 	}
