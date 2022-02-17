@@ -1,9 +1,7 @@
 resource "aws_db_subnet_group" "example_db_aws" {
-  tags       = {
+  tags = {
     Name = "example-db"
   }
-
-  name = "example-db"
 
   subnet_ids = [
     "${aws_subnet.subnet1_aws.id}",
@@ -11,12 +9,12 @@ resource "aws_db_subnet_group" "example_db_aws" {
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
-  tags                 = {
+  tags = {
     Name = "exampledb"
   }
 
   allocated_storage    = 10
-  db_name              = "exampledb"
+  name                 = "exampledb"
   engine               = "mysql"
   engine_version       = "5.7"
   username             = "multyadmin"
@@ -146,7 +144,7 @@ resource "aws_route_table_association" "rta_aws" {
 }
 resource "aws_subnet" "subnet1_aws" {
   tags = {
-    Name = "private-subnet1"
+    Name = "subnet1"
   }
 
   cidr_block        = "10.0.1.0/24"
@@ -155,7 +153,7 @@ resource "aws_subnet" "subnet1_aws" {
 }
 resource "aws_subnet" "subnet2_aws" {
   tags = {
-    Name = "private-subnet2"
+    Name = "subnet2"
   }
 
   cidr_block        = "10.0.2.0/24"
@@ -164,11 +162,19 @@ resource "aws_subnet" "subnet2_aws" {
 }
 resource "aws_subnet" "subnet3_aws" {
   tags = {
-    Name = "public-subnet3"
+    Name = "subnet3"
   }
 
   cidr_block = "10.0.3.0/24"
   vpc_id     = aws_vpc.example_vn_aws.id
+}
+resource "aws_key_pair" "vm_aws" {
+  tags = {
+    Name = "test-vm"
+  }
+
+  key_name   = "vm_multy"
+  public_key = file("./ssh_key.pub")
 }
 resource "aws_instance" "vm_aws" {
   tags = {
@@ -180,6 +186,7 @@ resource "aws_instance" "vm_aws" {
   associate_public_ip_address = true
   subnet_id                   = "${aws_subnet.subnet3_aws.id}"
   user_data_base64            = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3U7IHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBlbmFibGUgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBV1M8L2gxPiIgPiAvdmFyL3d3dy9odG1sL2luZGV4Lmh0bWw="
+  key_name                    = aws_key_pair.vm_aws.key_name
 }
 resource "azurerm_resource_group" "db-rg" {
   name     = "db-rg"
@@ -323,7 +330,7 @@ resource "azurerm_subnet_route_table_association" "rta_azure" {
 }
 resource "azurerm_subnet" "subnet1_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
-  name                 = "private-subnet1"
+  name                 = "subnet1"
   address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
   service_endpoints    = ["Microsoft.Sql"]
@@ -334,7 +341,7 @@ resource "azurerm_subnet_route_table_association" "subnet1_azure" {
 }
 resource "azurerm_subnet" "subnet2_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
-  name                 = "private-subnet2"
+  name                 = "subnet2"
   address_prefixes     = ["10.0.2.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
   service_endpoints    = ["Microsoft.Sql"]
@@ -345,9 +352,15 @@ resource "azurerm_subnet_route_table_association" "subnet2_azure" {
 }
 resource "azurerm_subnet" "subnet3_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
-  name                 = "public-subnet3"
+  name                 = "subnet3"
   address_prefixes     = ["10.0.3.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
+}
+resource "azurerm_public_ip" "vm_azure" {
+  resource_group_name = azurerm_resource_group.vm-rg.name
+  name                = "test-vm"
+  location            = "northeurope"
+  allocation_method   = "Static"
 }
 resource "azurerm_network_interface" "vm_azure" {
   resource_group_name = azurerm_resource_group.vm-rg.name
@@ -361,19 +374,6 @@ resource "azurerm_network_interface" "vm_azure" {
     public_ip_address_id          = azurerm_public_ip.vm_azure.id
     primary                       = true
   }
-}
-resource "azurerm_public_ip" "vm_azure" {
-  resource_group_name = azurerm_resource_group.vm-rg.name
-  name                = "test-vm"
-  location            = "northeurope"
-  allocation_method   = "Static"
-}
-resource "random_password" "vm_azure" {
-  length  = 16
-  special = true
-  upper   = true
-  lower   = true
-  number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
@@ -389,7 +389,11 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   }
 
   admin_username = "adminuser"
-  admin_password = random_password.vm_azure.result
+
+  admin_ssh_key {
+    username   = "adminuser"
+    public_key = file("./ssh_key.pub")
+  }
 
   source_image_reference {
     publisher = "OpenLogic"
@@ -398,7 +402,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
     version   = "latest"
   }
 
-  disable_password_authentication = false
+  disable_password_authentication = true
 }
 resource "azurerm_resource_group" "vm-rg" {
   name     = "vm-rg"
