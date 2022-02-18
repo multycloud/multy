@@ -118,7 +118,7 @@ resource "aws_instance" "vm_aws" {
   instance_type               = "t2.nano"
   associate_public_ip_address = true
   subnet_id                   = "${aws_subnet.subnet1_aws.id}"
-  user_data_base64            = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3U7IHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBlbmFibGUgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBV1M8L2gxPiIgPiAvdmFyL3d3dy9odG1sL2luZGV4Lmh0bWw="
+  user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html")
 }
 resource "aws_instance" "vm2_aws" {
   tags = {
@@ -129,7 +129,7 @@ resource "aws_instance" "vm2_aws" {
   instance_type               = "t2.nano"
   associate_public_ip_address = true
   subnet_id                   = "${aws_subnet.subnet1_aws.id}"
-  user_data_base64            = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3U7IHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBlbmFibGUgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBV1M8L2gxPiIgPiAvdmFyL3d3dy9odG1sL2luZGV4Lmh0bWw="
+  user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html")
   vpc_security_group_ids      = ["${aws_security_group.nsg2_aws.id}"]
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
@@ -247,11 +247,11 @@ resource "azurerm_public_ip" "vm_azure" {
   allocation_method   = "Static"
 }
 resource "random_password" "vm_azure" {
-    length  = 16
-    special = true
-    upper   = true
-    lower   = true
-    number  = true
+  length  = 16
+  special = true
+  upper   = true
+  lower   = true
+  number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
@@ -259,7 +259,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   location              = "northeurope"
   size                  = "Standard_B1ls"
   network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
-  custom_data           = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3UKIHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBzdGF0dXMgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBenVyZTwvaDE+IiA+IC92YXIvd3d3L2h0bWwvaW5kZXguaHRtbA=="
+  custom_data           = base64encode("#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on Azure</h1>\" > /var/www/html/index.html")
 
   os_disk {
     caching              = "None"
@@ -318,7 +318,7 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   location              = "northeurope"
   size                  = "Standard_B1ls"
   network_interface_ids = ["${azurerm_network_interface.vm2_azure.id}"]
-  custom_data           = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3UKIHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBzdGF0dXMgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBenVyZTwvaDE+IiA+IC92YXIvd3d3L2h0bWwvaW5kZXguaHRtbA=="
+  custom_data           = base64encode("#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on Azure</h1>\" > /var/www/html/index.html")
 
   os_disk {
     caching              = "None"

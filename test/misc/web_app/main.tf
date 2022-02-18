@@ -3,6 +3,8 @@ resource "aws_db_subnet_group" "example_db_aws" {
     Name = "example-db"
   }
 
+  name = "example-db"
+
   subnet_ids = [
     "${aws_subnet.subnet1_aws.id}",
     "${aws_subnet.subnet2_aws.id}",
@@ -14,7 +16,7 @@ resource "aws_db_instance" "example_db_aws" {
   }
 
   allocated_storage    = 10
-  name                 = "exampledb"
+  db_name              = "exampledb"
   engine               = "mysql"
   engine_version       = "5.7"
   username             = "multyadmin"
@@ -142,6 +144,14 @@ resource "aws_route_table_association" "rta_aws" {
   subnet_id      = "${aws_subnet.subnet3_aws.id}"
   route_table_id = "${aws_route_table.rt_aws.id}"
 }
+resource "aws_route_table_association" "rta2_aws" {
+  subnet_id      = "${aws_subnet.subnet2_aws.id}"
+  route_table_id = "${aws_route_table.rt_aws.id}"
+}
+resource "aws_route_table_association" "rta3_aws" {
+  subnet_id      = "${aws_subnet.subnet1_aws.id}"
+  route_table_id = "${aws_route_table.rt_aws.id}"
+}
 resource "aws_subnet" "subnet1_aws" {
   tags = {
     Name = "subnet1"
@@ -149,7 +159,7 @@ resource "aws_subnet" "subnet1_aws" {
 
   cidr_block        = "10.0.1.0/24"
   vpc_id            = aws_vpc.example_vn_aws.id
-  availability_zone = "eu-west-1a"
+  availability_zone = "us-east-1a"
 }
 resource "aws_subnet" "subnet2_aws" {
   tags = {
@@ -158,7 +168,7 @@ resource "aws_subnet" "subnet2_aws" {
 
   cidr_block        = "10.0.2.0/24"
   vpc_id            = aws_vpc.example_vn_aws.id
-  availability_zone = "eu-west-1b"
+  availability_zone = "us-east-1b"
 }
 resource "aws_subnet" "subnet3_aws" {
   tags = {
@@ -181,50 +191,23 @@ resource "aws_instance" "vm_aws" {
     Name = "test-vm"
   }
 
-  ami                         = "ami-09d4a659cdd8677be"
+  ami                         = "ami-04ad2567c9e3d7893"
   instance_type               = "t2.nano"
   associate_public_ip_address = true
   subnet_id                   = "${aws_subnet.subnet3_aws.id}"
-  user_data_base64            = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3U7IHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBlbmFibGUgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBV1M8L2gxPiIgPiAvdmFyL3d3dy9odG1sL2luZGV4Lmh0bWw="
+  user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; curl --silent --location https://rpm.nodesource.com/setup_14.x | bash -; yum -y install git nodejs mysql; git clone https://github.com/FaztTech/nodejs-mysql-links.git; cd nodejs-mysql-links; export DATABASE_HOST='${aws_db_instance.example_db_aws.address}'; export DATABASE_USER='${aws_db_instance.example_db_aws.username}'; export DATABASE_PASSWORD='multy$Admin123!'; mysql -h $DATABASE_HOST -P 3306 -u $DATABASE_USER --password=$DATABASE_PASSWORD -e 'source database/db.sql'; npm i; npm run build; npm start")
   key_name                    = aws_key_pair.vm_aws.key_name
-}
-resource "azurerm_resource_group" "db-rg" {
-  name     = "db-rg"
-  location = "northeurope"
-}
-resource "azurerm_mysql_server" "example_db_azure" {
-  resource_group_name          = azurerm_resource_group.db-rg.name
-  name                         = "example-db"
-  location                     = "northeurope"
-  administrator_login          = "multyadmin"
-  administrator_login_password = "multy$Admin123!"
-  sku_name                     = "GP_Gen5_2"
-  storage_mb                   = 10240
-  version                      = "5.7"
-  ssl_enforcement_enabled      = false
-}
-resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
-  resource_group_name = azurerm_resource_group.db-rg.name
-  name                = "example-db0"
-  server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = "${azurerm_subnet.subnet1_azure.id}"
-}
-resource "azurerm_mysql_virtual_network_rule" "example_db_azure1" {
-  resource_group_name = azurerm_resource_group.db-rg.name
-  name                = "example-db1"
-  server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = "${azurerm_subnet.subnet2_azure.id}"
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
   name                = "example_vn"
-  location            = "northeurope"
+  location            = "eastus"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
   name                = "example_vn"
-  location            = "northeurope"
+  location            = "eastus"
 
   route {
     name           = "local"
@@ -234,12 +217,12 @@ resource "azurerm_route_table" "example_vn_azure" {
 }
 resource "azurerm_resource_group" "nsg-rg" {
   name     = "nsg-rg"
-  location = "northeurope"
+  location = "eastus"
 }
 resource "azurerm_network_security_group" "nsg2_azure" {
   resource_group_name = azurerm_resource_group.nsg-rg.name
   name                = "test-nsg2"
-  location            = "northeurope"
+  location            = "eastus"
 
   security_rule {
     name                       = "0"
@@ -316,7 +299,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
 resource "azurerm_route_table" "rt_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
   name                = "test-rt"
-  location            = "northeurope"
+  location            = "eastus"
 
   route {
     name           = "internet"
@@ -328,27 +311,25 @@ resource "azurerm_subnet_route_table_association" "rta_azure" {
   subnet_id      = "${azurerm_subnet.subnet3_azure.id}"
   route_table_id = "${azurerm_route_table.rt_azure.id}"
 }
+resource "azurerm_subnet_route_table_association" "rta2_azure" {
+  subnet_id      = "${azurerm_subnet.subnet2_azure.id}"
+  route_table_id = "${azurerm_route_table.rt_azure.id}"
+}
+resource "azurerm_subnet_route_table_association" "rta3_azure" {
+  subnet_id      = "${azurerm_subnet.subnet1_azure.id}"
+  route_table_id = "${azurerm_route_table.rt_azure.id}"
+}
 resource "azurerm_subnet" "subnet1_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
   name                 = "subnet1"
   address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
-  service_endpoints    = ["Microsoft.Sql"]
-}
-resource "azurerm_subnet_route_table_association" "subnet1_azure" {
-  subnet_id      = "${azurerm_subnet.subnet1_azure.id}"
-  route_table_id = "${azurerm_route_table.example_vn_azure.id}"
 }
 resource "azurerm_subnet" "subnet2_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
   name                 = "subnet2"
   address_prefixes     = ["10.0.2.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
-  service_endpoints    = ["Microsoft.Sql"]
-}
-resource "azurerm_subnet_route_table_association" "subnet2_azure" {
-  subnet_id      = "${azurerm_subnet.subnet2_azure.id}"
-  route_table_id = "${azurerm_route_table.example_vn_azure.id}"
 }
 resource "azurerm_subnet" "subnet3_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
@@ -359,13 +340,13 @@ resource "azurerm_subnet" "subnet3_azure" {
 resource "azurerm_public_ip" "vm_azure" {
   resource_group_name = azurerm_resource_group.vm-rg.name
   name                = "test-vm"
-  location            = "northeurope"
+  location            = "eastus"
   allocation_method   = "Static"
 }
 resource "azurerm_network_interface" "vm_azure" {
   resource_group_name = azurerm_resource_group.vm-rg.name
   name                = "test-vm"
-  location            = "northeurope"
+  location            = "eastus"
 
   ip_configuration {
     name                          = "external"
@@ -378,10 +359,10 @@ resource "azurerm_network_interface" "vm_azure" {
 resource "azurerm_linux_virtual_machine" "vm_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
   name                  = "test-vm"
-  location              = "northeurope"
+  location              = "eastus"
   size                  = "Standard_B1ls"
   network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
-  custom_data           = "IyEvYmluL2Jhc2ggLXhlCnN1ZG8gc3UKIHl1bSB1cGRhdGUgLXk7IHl1bSBpbnN0YWxsIC15IGh0dHBkLng4Nl82NDsgc3lzdGVtY3RsIHN0YXJ0IGh0dHBkLnNlcnZpY2U7IHN5c3RlbWN0bCBzdGF0dXMgaHR0cGQuc2VydmljZTsgdG91Y2ggL3Zhci93d3cvaHRtbC9pbmRleC5odG1sOyBlY2hvICI8aDE+SGVsbG8gZnJvbSBNdWx0eSBvbiBBenVyZTwvaDE+IiA+IC92YXIvd3d3L2h0bWwvaW5kZXguaHRtbA=="
+  custom_data           = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; curl --silent --location https://rpm.nodesource.com/setup_14.x | bash -; yum -y install git nodejs mysql; git clone https://github.com/FaztTech/nodejs-mysql-links.git; cd nodejs-mysql-links; export DATABASE_HOST='${aws_db_instance.example_db_aws.address}'; export DATABASE_USER='${aws_db_instance.example_db_aws.username}'; export DATABASE_PASSWORD='multy$Admin123!'; mysql -h $DATABASE_HOST -P 3306 -u $DATABASE_USER --password=$DATABASE_PASSWORD -e 'source database/db.sql'; npm i; npm run build; npm start")
 
   os_disk {
     caching              = "None"
@@ -406,14 +387,14 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
 }
 resource "azurerm_resource_group" "vm-rg" {
   name     = "vm-rg"
-  location = "northeurope"
+  location = "eastus"
 }
 resource "azurerm_resource_group" "vn-rg" {
   name     = "vn-rg"
-  location = "northeurope"
+  location = "eastus"
 }
 provider "aws" {
-  region = "eu-west-1"
+  region = "us-east-1"
 }
 provider "azurerm" {
   features {}

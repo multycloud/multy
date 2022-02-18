@@ -1,5 +1,5 @@
 config {
-  location = "ireland"
+  location = "us-east"
   clouds   = ["aws", "azure"]
 }
 multy "virtual_network" "example_vn" {
@@ -37,6 +37,14 @@ multy route_table_association rta {
   route_table_id = rt.id
   subnet_id      = subnet3.id
 }
+multy route_table_association rta2 {
+  route_table_id = rt.id
+  subnet_id      = subnet2.id
+}
+multy route_table_association rta3 {
+  route_table_id = rt.id
+  subnet_id      = subnet1.id
+}
 multy "database" "example_db" {
   name           = "example-db"
   size           = "nano"
@@ -49,15 +57,16 @@ multy "database" "example_db" {
     subnet1.id,
     subnet2.id,
   ]
+  clouds         = ["aws"]
 }
+
+# [if hosting db on azure]
+# FIXME while this adds a dependency to example_db, this is not dependent on azurerm_mysql_virtual_network_rule and azure_mysq_server firewall rules are blocked by default
 multy "virtual_machine" "vm" {
   name              = "test-vm"
   os                = "linux"
   size              = "micro"
-  user_data         = cloud_specific_value({
-    aws : "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html",
-    azure : "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on Azure</h1>\" > /var/www/html/index.html",
-  })
+  user_data         = "#!/bin/bash -xe\nsudo su; yum update -y; curl --silent --location https://rpm.nodesource.com/setup_14.x | bash -; yum -y install git nodejs mysql; git clone https://github.com/FaztTech/nodejs-mysql-links.git; cd nodejs-mysql-links; export DATABASE_HOST='${aws.example_db.host}'; export DATABASE_USER='${aws.example_db.username}'; export DATABASE_PASSWORD='${aws.example_db.password}'; mysql -h $DATABASE_HOST -P 3306 -u $DATABASE_USER --password=$DATABASE_PASSWORD -e 'source database/db.sql'; npm i; npm run build; npm start"
   subnet_id         = subnet3.id
   ssh_key_file_path = "./ssh_key.pub"
   public_ip         = true
