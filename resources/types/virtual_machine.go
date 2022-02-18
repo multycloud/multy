@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/base64"
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
@@ -39,7 +38,7 @@ type VirtualMachine struct {
 
 func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
 	if vm.UserData != "" {
-		vm.UserData = base64.StdEncoding.EncodeToString([]byte(vm.UserData))
+		vm.UserData = fmt.Sprintf("%s(%q)", "base64encode", []byte(vm.UserData))
 	}
 
 	var subnetId = vm.SubnetId
@@ -58,7 +57,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 
 		ec2 := virtual_machine.AwsEC2{
 			AwsResource:              common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
-			Ami:                      "ami-09d4a659cdd8677be", // eu-west-2 "ami-0fc15d50d39e4503c", // https://cloud-images.ubuntu.com/locator/ec2/
+			Ami:                      common.AMIMAP[ctx.GetLocationFromCommonParams(vm.CommonResourceParams, cloud)],
 			InstanceType:             common.VMSIZE[common.MICRO][cloud],
 			AssociatePublicIpAddress: vm.PublicIp,
 			UserDataBase64:           vm.UserData,

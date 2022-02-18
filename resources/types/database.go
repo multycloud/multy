@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output/database"
@@ -94,4 +95,41 @@ func (db *Database) GetMainResourceName(cloud common.CloudProvider) string {
 		validate.LogInternalError("unknown cloud %s", cloud)
 	}
 	return ""
+}
+
+func (db *Database) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
+	switch cloud {
+	case common.AWS:
+		return map[string]cty.Value{
+			"password": cty.StringVal(db.DbPassword),
+			"host": cty.StringVal(
+				fmt.Sprintf(
+					"${%s.%s.address}", common.GetResourceName(database.AwsDbInstance{}),
+					db.GetTfResourceId(cloud),
+				),
+			),
+			"username": cty.StringVal(
+				fmt.Sprintf(
+					"${%s.%s.username}", common.GetResourceName(database.AwsDbInstance{}),
+					db.GetTfResourceId(cloud),
+				),
+			),
+		}
+	case common.AZURE:
+		return map[string]cty.Value{
+			"password": cty.StringVal(db.DbPassword),
+			"host": cty.StringVal(
+				fmt.Sprintf(
+					"${%s.%s.fqdn}", common.GetResourceName(database.AzureMySqlServer{}),
+					db.GetTfResourceId(cloud),
+				),
+			),
+			"username": cty.StringVal(
+				fmt.Sprintf("%s@%s", db.DbUsername, db.Name),
+			),
+		}
+	}
+
+	validate.LogInternalError("unknown cloud %s", cloud)
+	return nil
 }

@@ -30,6 +30,7 @@ func AsCloudProvider(s string) (CloudProvider, bool) {
 const (
 	IRELAND = "ireland"
 	UK      = "uk"
+	USEAST  = "us-east"
 )
 
 var LOCATION = map[string]map[CloudProvider]string{
@@ -41,15 +42,23 @@ var LOCATION = map[string]map[CloudProvider]string{
 		AWS:   "eu-west-1",
 		AZURE: "northeurope",
 	},
+	USEAST: {
+		AWS:   "us-east-1",
+		AZURE: "eastus",
+	},
 }
 
 var AVAILABILITY_ZONES = map[string]map[CloudProvider][]string{
 	UK: {
-		AWS:   []string{"eu-west-2a", "eu-west-2b", "eu-west2c"},
+		AWS:   []string{"eu-west-2a", "eu-west-2b", "eu-west-2c"},
 		AZURE: []string{"1", "2", "3"},
 	},
 	IRELAND: {
-		AWS:   []string{"eu-west-1a", "eu-west-1b", "eu-west1c"},
+		AWS:   []string{"eu-west-1a", "eu-west-1b", "eu-west-1c"},
+		AZURE: []string{"1", "2", "3"},
+	},
+	USEAST: {
+		AWS:   []string{"us-east-1a", "us-east-1b", "us-east-1c"},
 		AZURE: []string{"1", "2", "3"},
 	},
 }
@@ -88,6 +97,14 @@ var RESOURCETYPES = map[string]string{
 	"vault":                  "kv",
 	"vault_secret":           "kv",
 	"lambda":                 "fun",
+}
+
+// eu-west-2 "ami-0fc15d50d39e4503c"
+// amzn2-ami-hvm-2.0.20211103.0-x86_64-gp2
+//https://cloud-images.ubuntu.com/locator/ec2/
+var AMIMAP = map[string]string{
+	"eu-west-1": "ami-09d4a659cdd8677be",
+	"us-east-1": "ami-04ad2567c9e3d7893",
 }
 
 func GetResourceTypeAbbreviation(t string) string {
