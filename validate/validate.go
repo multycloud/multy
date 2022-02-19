@@ -27,12 +27,12 @@ func NewResourceValidationInfoFromContent(content *hcl.BodyContent, definitionRa
 func (info *ResourceValidationInfo) LogFatal(resourceId string, fieldName string, errorMessage string) {
 	if _, ok := info.SourceRanges[fieldName]; ok {
 		sourceRange := info.SourceRanges[fieldName]
-		printToStdErr(
+		printToStdErrLn(
 			"Validation error when parsing resource %s: %s\n  on %s\n", resourceId, errorMessage, sourceRange,
 		)
 		printLinesInRange(sourceRange)
 	} else {
-		printToStdErr(
+		printToStdErrLn(
 			"Validation error when parsing resource %s (%s): %s\n", resourceId, info.BlockDefRange, errorMessage,
 		)
 	}
@@ -41,14 +41,14 @@ func (info *ResourceValidationInfo) LogFatal(resourceId string, fieldName string
 }
 
 func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...any) {
-	printToStdErr(format, a...)
+	printToStdErrLn(format, a...)
 
 	for _, diag := range diags {
 		if diag.Detail == "Unsuitable value: value must be known" {
 			// useless diagnostic that always shows up
 			continue
 		}
-		printToStdErr(diag.Error())
+		printToStdErrLn(diag.Error())
 		if diag.Subject != nil {
 			printLinesInRange(*diag.Subject)
 		}
@@ -57,14 +57,14 @@ func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...any) {
 }
 
 func LogFatalWithSourceRange(sourceRange hcl.Range, format string, a ...any) {
-	printToStdErr(format, a...)
-	printToStdErr("  on %s\n", sourceRange)
+	printToStdErr("%s: ", sourceRange)
+	printToStdErrLn(format, a...)
 	printLinesInRange(sourceRange)
 	os.Exit(1)
 }
 
 func LogInternalError(format string, a ...any) {
-	printToStdErr(format, a...)
+	printToStdErrLn(format, a...)
 	exitAndPrintStackTrace()
 }
 
@@ -77,14 +77,21 @@ func printLinesInRange(sourceRange hcl.Range) {
 	lines, err := ReadLinesForRange(sourceRange)
 	if err == nil {
 		for _, line := range lines {
-			printToStdErr("  %s", line.String())
+			printToStdErrLn("  %s", line.String())
 		}
-		printToStdErr("")
+		printToStdErrLn("")
+	}
+}
+
+func printToStdErrLn(format string, a ...any) {
+	_, err := fmt.Fprintf(os.Stderr, format+"\n", a...)
+	if err != nil {
+		panic(err)
 	}
 }
 
 func printToStdErr(format string, a ...any) {
-	_, err := fmt.Fprintf(os.Stderr, format+"\n", a...)
+	_, err := fmt.Fprintf(os.Stderr, format, a...)
 	if err != nil {
 		panic(err)
 	}
