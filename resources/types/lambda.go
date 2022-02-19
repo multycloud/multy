@@ -25,18 +25,17 @@ type Lambda struct {
 }
 
 type lambdaZip struct {
-	ResourceName string `hcl:",key"`
-	ResourceId   string `hcl:",key"`
-	Type         string `hcl:"type"`
-	SourceDir    string `hcl:"source_dir"`
-	OutputPath   string `hcl:"output_path"`
+	*output.TerraformDataSource `hcl:",squash"`
+	Type                        string `hcl:"type"`
+	SourceDir                   string `hcl:"source_dir"`
+	OutputPath                  string `hcl:"output_path"`
 }
 
 const SasExpirationDuration = time.Hour * 24 * 365
 
-func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AWS {
-		var result []any
+		var result []output.TfBlock
 
 		function := lambda.AwsLambdaFunction{
 			AwsResource:  common.NewAwsResource(r.GetTfResourceId(cloud), r.FunctionName),
@@ -48,14 +47,16 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 
 		if r.SourceCodeDir != "" {
 			result = append(
-				result, output.DataSourceWrapper{R: lambdaZip{
-					ResourceName: "archive_file",
-					ResourceId:   r.GetTfResourceId(cloud),
+				result, lambdaZip{
+					TerraformDataSource: &output.TerraformDataSource{
+						ResourceName: "archive_file",
+						ResourceId:   r.GetTfResourceId(cloud),
+					},
 
 					Type:       "zip",
 					SourceDir:  r.SourceCodeDir,
 					OutputPath: r.getSourceCodeZip(cloud),
-				}},
+				},
 			)
 			function.SourceCodeHash = fmt.Sprintf("data.archive_file.%s.output_base64sha256", r.GetTfResourceId(cloud))
 			function.Filename = r.getSourceCodeZip(cloud)
@@ -73,9 +74,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			},
 			// this gives permission to write cloudwatch logs
 			lambda.AwsIamRolePolicyAttachment{
-				AwsResource: &common.AwsResource{
-					ResourceId: r.GetTfResourceId(cloud),
-				},
+				AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)}},
 				Role: fmt.Sprintf(
 					"%s.%s.name", common.GetResourceName(lambda.AwsIamRole{}), r.getAwsIamRoleName(),
 				),
@@ -87,17 +86,17 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				Name:        r.FunctionName,
 			},
 			lambda.AwsApiGatewayResource{
-				AwsResource: &common.AwsResource{
-					ResourceId: fmt.Sprintf("%s_proxy", r.ResourceId),
-				},
+				AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: fmt.Sprintf(
+					"%s_proxy", r.ResourceId,
+				)}},
 				RestApiId: r.getAwsRestApiId(),
 				ParentId:  r.getAwsRestRootId(),
 				PathPart:  "{proxy+}",
 			},
 			lambda.AwsApiGatewayMethod{
-				AwsResource: &common.AwsResource{
-					ResourceId: fmt.Sprintf("%s_proxy", r.ResourceId),
-				},
+				AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: fmt.Sprintf(
+					"%s_proxy", r.ResourceId,
+				)}},
 				RestApiId: r.getAwsRestApiId(),
 				ResourceId: fmt.Sprintf(
 					"%s.%s.id", common.GetResourceName(lambda.AwsApiGatewayResource{}),
@@ -107,9 +106,9 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				Authorization: "NONE",
 			},
 			lambda.AwsApiGatewayIntegration{
-				AwsResource: &common.AwsResource{
-					ResourceId: fmt.Sprintf("%s_proxy", r.ResourceId),
-				},
+				AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: fmt.Sprintf(
+					"%s_proxy", r.ResourceId,
+				)}},
 				RestApiId: r.getAwsRestApiId(),
 				ResourceId: fmt.Sprintf(
 					"%s.%s.resource_id", common.GetResourceName(lambda.AwsApiGatewayMethod{}),
@@ -128,18 +127,18 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				),
 			},
 			lambda.AwsApiGatewayMethod{
-				AwsResource: &common.AwsResource{
-					ResourceId: fmt.Sprintf("%s_proxy_root", r.ResourceId),
-				},
+				AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: fmt.Sprintf(
+					"%s_proxy_root", r.ResourceId,
+				)}},
 				RestApiId:     r.getAwsRestApiId(),
 				ResourceId:    r.getAwsRestRootId(),
 				HttpMethod:    "ANY",
 				Authorization: "NONE",
 			},
 			lambda.AwsApiGatewayIntegration{
-				AwsResource: &common.AwsResource{
-					ResourceId: fmt.Sprintf("%s_proxy_root", r.ResourceId),
-				},
+				AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: fmt.Sprintf(
+					"%s_proxy_root", r.ResourceId,
+				)}},
 				RestApiId: r.getAwsRestApiId(),
 				ResourceId: fmt.Sprintf(
 					"%s.%s.resource_id", common.GetResourceName(lambda.AwsApiGatewayMethod{}),
@@ -158,11 +157,9 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				),
 			},
 			lambda.AwsApiGatewayDeployment{
-				AwsResource: &common.AwsResource{
-					ResourceId: r.GetTfResourceId(cloud),
-				},
-				RestApiId: r.getAwsRestApiId(),
-				StageName: "api",
+				AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)}},
+				RestApiId:   r.getAwsRestApiId(),
+				StageName:   "api",
 				DependsOn: []string{
 					fmt.Sprintf(
 						"%s.%s", common.GetResourceName(lambda.AwsApiGatewayIntegration{}),
@@ -175,9 +172,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				},
 			},
 			lambda.AwsLambdaPermission{
-				AwsResource: &common.AwsResource{
-					ResourceId: r.GetTfResourceId(cloud),
-				},
+				AwsResource:  &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)}},
 				StatementId:  "AllowAPIGatewayInvoke",
 				Action:       "lambda:InvokeFunction",
 				FunctionName: r.FunctionName,
@@ -193,7 +188,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		return result
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
-		var result []any
+		var result []output.TfBlock
 		function := lambda.AzureFunctionApp{
 			AzResource: common.NewAzResource(
 				r.GetTfResourceId(cloud), common.AlphanumericFormatFunc(r.FunctionName), rgName,
@@ -205,13 +200,15 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		}
 		if r.SourceCodeDir != "" {
 			result = append(
-				result, output.DataSourceWrapper{R: lambdaZip{
-					ResourceName: "archive_file",
-					ResourceId:   r.GetTfResourceId(cloud),
-					Type:         "zip",
-					SourceDir:    r.SourceCodeDir,
-					OutputPath:   r.getSourceCodeZip(cloud),
-				}},
+				result, lambdaZip{
+					TerraformDataSource: &output.TerraformDataSource{
+						ResourceName: "archive_file",
+						ResourceId:   r.GetTfResourceId(cloud),
+					},
+					Type:       "zip",
+					SourceDir:  r.SourceCodeDir,
+					OutputPath: r.getSourceCodeZip(cloud),
+				},
 			)
 			result = append(
 				result, object_storage.AzureStorageAccount{
@@ -247,9 +244,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			)
 			if r.SourceCodeObject.IsPrivate() {
 				sas := object_storage_object.AzureStorageAccountBlobSas{
-					AzResource: &common.AzResource{
-						ResourceId: r.GetTfResourceId(cloud),
-					},
+					TerraformDataSource: &output.TerraformDataSource{ResourceId: r.GetTfResourceId(cloud)},
 					ConnectionString: fmt.Sprintf(
 						"azurerm_storage_account.%s.primary_connection_string",
 						r.SourceCodeObject.ObjectStorage.GetTfResourceId(cloud),
@@ -261,7 +256,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 						Read: true,
 					},
 				}
-				result = append(result, output.DataSourceWrapper{R: sas})
+				result = append(result, sas)
 				function.AppSettings = map[string]string{
 					"WEBSITE_RUN_FROM_PACKAGE": sas.GetSignedUrl(
 						r.SourceCodeObject.ObjectStorage.GetResourceName(cloud),

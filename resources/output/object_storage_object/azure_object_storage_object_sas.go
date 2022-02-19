@@ -2,11 +2,11 @@ package object_storage_object
 
 import (
 	"fmt"
-	"multy-go/resources/common"
+	"multy-go/resources/output"
 )
 
 type AzureStorageAccountBlobSas struct {
-	*common.AzResource                    `hcl:",squash" default:"name=azurerm_storage_account_blob_container_sas"`
+	*output.TerraformDataSource           `hcl:",squash" default:"name=azurerm_storage_account_blob_container_sas"`
 	ConnectionString                      string `hcl:"connection_string,expr"`
 	ContainerName                         string `hcl:"container_name,expr"`
 	Start                                 string `hcl:"start"`

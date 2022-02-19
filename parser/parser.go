@@ -34,9 +34,10 @@ type MultyOutput struct {
 }
 
 type MultyResourceDependency struct {
-	From        *MultyResource
-	To          *MultyResource
-	SourceRange hcl.Range
+	From         *MultyResource
+	To           *MultyResource
+	SourceRange  hcl.Range
+	UserDeclared bool
 }
 
 type MultyConfig struct {
@@ -180,9 +181,10 @@ func findDependencies(resource *MultyResource, resourcesById map[string]*MultyRe
 			}
 			result = append(
 				result, MultyResourceDependency{
-					From:        resource,
-					To:          resourcesById[dependencyId],
-					SourceRange: expr.Range(),
+					From:         resource,
+					To:           resourcesById[dependencyId],
+					SourceRange:  expr.Range(),
+					UserDeclared: true,
 				},
 			)
 		}
@@ -200,9 +202,10 @@ func findDependencies(resource *MultyResource, resourcesById map[string]*MultyRe
 					if _, ok := resourcesById[traverseAttr.Name]; ok {
 						result = append(
 							result, MultyResourceDependency{
-								From:        resource,
-								To:          resourcesById[traverseAttr.Name],
-								SourceRange: v.SourceRange(),
+								From:         resource,
+								To:           resourcesById[traverseAttr.Name],
+								SourceRange:  v.SourceRange(),
+								UserDeclared: false,
 							},
 						)
 					}
@@ -215,9 +218,10 @@ func findDependencies(resource *MultyResource, resourcesById map[string]*MultyRe
 				if _, ok := resourcesById[v.RootName()]; ok {
 					result = append(
 						result, MultyResourceDependency{
-							From:        resource,
-							To:          resourcesById[v.RootName()],
-							SourceRange: v.SourceRange(),
+							From:         resource,
+							To:           resourcesById[v.RootName()],
+							SourceRange:  v.SourceRange(),
+							UserDeclared: false,
 						},
 					)
 				}

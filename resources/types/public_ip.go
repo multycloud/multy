@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/public_ip"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
@@ -21,10 +22,10 @@ type PublicIp struct {
 	NetworkInterfaceId string `hcl:"network_interface_id,optional"`
 }
 
-func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 
 	if cloud == common.AWS {
-		return []any{
+		return []output.TfBlock{
 			public_ip.AwsElasticIp{
 				AwsResource:        common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 				NetworkInterfaceId: r.NetworkInterfaceId,
@@ -32,7 +33,7 @@ func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyCont
 			},
 		}
 	} else if cloud == common.AZURE {
-		return []any{
+		return []output.TfBlock{
 			public_ip.AzurePublicIp{
 				AzResource: common.NewAzResource(
 					r.GetTfResourceId(cloud), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, cloud),

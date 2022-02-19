@@ -1,25 +1,17 @@
 package output
 
-type isTfBlock struct {
-}
-
-type TerraformBlock interface {
-	isTerraformBlock()
-	GetR() any
-}
-
-func (*isTfBlock) isTerraformBlock() {
-}
+import (
+	"fmt"
+	"multy-go/validate"
+)
 
 // ResourceWrapper just to add a resource {} around when encoding into hcl
 type ResourceWrapper struct {
-	*isTfBlock `hcle:"omit"`
-	R          any `hcl:"resource"`
+	R any `hcl:"resource"`
 }
 
 type DataSourceWrapper struct {
-	*isTfBlock `hcle:"omit"`
-	R          any `hcl:"data"`
+	R any `hcl:"data"`
 }
 
 func (r DataSourceWrapper) GetR() any {
@@ -30,9 +22,63 @@ func (r ResourceWrapper) GetR() any {
 	return r.R
 }
 
-func IsTerraformBlock(r any) bool {
-	if _, ok := r.(TerraformBlock); ok {
-		return true
+type TfBlock interface {
+	GetFullResourceRef() string
+	GetBlockType() string
+	AddDependency(string)
+}
+
+type TerraformResource struct {
+	ResourceName string   `hcl:",key"`
+	ResourceId   string   `hcl:",key"`
+	DependsOn    []string `hcl:"depends_on,expr" hcle:"omitempty"`
+}
+
+func (t TerraformResource) GetFullResourceRef() string {
+	return fmt.Sprintf("%s.%s", t.ResourceName, t.ResourceId)
+}
+
+func (t TerraformResource) GetBlockType() string {
+	return "resource"
+}
+
+func (t *TerraformResource) AddDependency(dep string) {
+	t.DependsOn = append(t.DependsOn, dep)
+}
+
+func (t *TerraformResource) SetName(name string) {
+	t.ResourceName = name
+}
+
+type TerraformDataSource struct {
+	ResourceName string   `hcl:",key"`
+	ResourceId   string   `hcl:",key"`
+	DependsOn    []string `hcl:"depends_on,expr"  hcle:"omitempty"`
+}
+
+func (t TerraformDataSource) GetFullResourceRef() string {
+	return fmt.Sprintf("data.%s.%s", t.ResourceName, t.ResourceId)
+}
+
+func (t TerraformDataSource) GetBlockType() string {
+	return "data"
+}
+
+func (t *TerraformDataSource) AddDependency(dep string) {
+	t.DependsOn = append(t.DependsOn, dep)
+}
+
+func (t *TerraformDataSource) SetName(name string) {
+	t.ResourceName = name
+}
+
+func WrapWithBlockType(block TfBlock) any {
+	if block.GetBlockType() == "resource" {
+		return ResourceWrapper{R: block}
 	}
-	return false
+	if block.GetBlockType() == "data" {
+		return DataSourceWrapper{R: block}
+	}
+	validate.LogInternalError("unknown block type %T", block)
+	return nil
 }

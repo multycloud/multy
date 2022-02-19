@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 )
 
 func GetCloudSpecificResourceId(r Resource, cloud common.CloudProvider) string {
@@ -24,12 +25,12 @@ func (c *CloudSpecificResource) GetLocation(ctx MultyContext) string {
 	return c.Resource.GetLocation(c.Cloud, ctx)
 }
 
-func (c *CloudSpecificResource) Translate(ctx MultyContext) []any {
+func (c *CloudSpecificResource) Translate(ctx MultyContext) []output.TfBlock {
 	return c.Resource.Translate(c.Cloud, ctx)
 }
 
 type Resource interface {
-	Translate(cloud common.CloudProvider, ctx MultyContext) []any
+	Translate(cloud common.CloudProvider, ctx MultyContext) []output.TfBlock
 	// GetOutputValues returns values that should be passed around when parsing the remainder of the config file.
 	GetOutputValues(cloud common.CloudProvider) map[string]cty.Value
 
@@ -40,6 +41,8 @@ type Resource interface {
 	Validate(ctx MultyContext)
 
 	GetMainResourceName(cloud common.CloudProvider) string
+
+	GetDependencies(ctx MultyContext) []CloudSpecificResource
 }
 
 func getTfResourceId(resourceId string, cloud common.CloudProvider) string {

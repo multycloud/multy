@@ -38,8 +38,7 @@ type AzureSubnetNsgAssociation struct {
 const AzureNicNsgAssociation = "azurerm_network_interface_security_group_association"
 
 type AzureNetworkInterfaceSecurityGroupAssociation struct {
-	ResourceName           string `hcl:",key"`
-	ResourceId             string `hcl:",key"`
+	*common.AzResource     `hcl:",squash" default:"name=azurerm_network_interface_security_group_association"`
 	NetworkInterfaceId     string `hcl:"network_interface_id"`
 	NetworkSecurityGroupId string `hcl:"network_security_group_id"`
 }

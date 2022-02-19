@@ -2,6 +2,7 @@ package database
 
 import (
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"strconv"
 	"strings"
 )
@@ -17,12 +18,12 @@ type AzureDbServer struct {
 	SubnetIds                  []string
 }
 
-func NewAzureDatabase(server AzureDbServer) []any {
+func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 	switch strings.ToLower(server.Engine) {
 	case "mysql":
 		mysqlServer := AzureMySqlServer{
 			AzResource: &common.AzResource{
-				ResourceId:        server.ResourceId,
+				TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
 				ResourceGroupName: server.ResourceGroupName,
 				Name:              server.Name,
 				Location:          server.Location,
@@ -35,12 +36,12 @@ func NewAzureDatabase(server AzureDbServer) []any {
 			//SslEnforcementEnabled:      true,
 		}
 
-		resources := []any{mysqlServer}
+		resources := []output.TfBlock{mysqlServer}
 		for i, subnetId := range server.SubnetIds {
 			resources = append(
 				resources, AzureMySqlVirtualNetworkRule{
 					AzResource: &common.AzResource{
-						ResourceId:        server.ResourceId + strconv.Itoa(i),
+						TerraformResource: output.TerraformResource{ResourceId: server.ResourceId + strconv.Itoa(i)},
 						ResourceGroupName: server.ResourceGroupName,
 						Name:              server.Name + strconv.Itoa(i),
 					},

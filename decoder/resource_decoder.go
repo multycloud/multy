@@ -8,6 +8,7 @@ import (
 	"multy-go/resources"
 	"multy-go/resources/common"
 	rg "multy-go/resources/resource_group"
+	"multy-go/util"
 	"multy-go/validate"
 
 	"github.com/hashicorp/hcl/v2"
@@ -93,6 +94,14 @@ func decode(resource parser.MultyResource, ctx *hcl.EvalContext, rgId string, mh
 	commonParams := &resources.CommonResourceParams{
 		ResourceId:      resource.ID,
 		ResourceGroupId: rgId,
+		DependsOn: util.FlatMapSliceValues(
+			resource.Dependencies, func(dep parser.MultyResourceDependency) []string {
+				if !dep.UserDeclared {
+					return nil
+				}
+				return []string{dep.To.ID}
+			},
+		),
 	}
 	body := hclutil.PartialDecode(resource.HCLBody, ctx, commonParams)
 

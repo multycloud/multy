@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/network_interface"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
@@ -15,13 +16,13 @@ type NetworkInterface struct {
 	SubnetId string `hcl:"subnet_id,optional"`
 }
 
-func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	var subnetId string
 
 	subnetId = r.SubnetId
 
 	if cloud == common.AWS {
-		return []any{
+		return []output.TfBlock{
 			network_interface.AwsNetworkInterface{
 				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 				SubnetId:    subnetId,
@@ -46,7 +47,7 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 		if publicIpReference := getPublicIpReferences(ctx, subnetId); len(publicIpReference) != 0 {
 			nic.IpConfigurations = publicIpReference
 		}
-		return []any{nic}
+		return []output.TfBlock{nic}
 	}
 
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)

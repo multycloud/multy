@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/network_interface"
 	"multy-go/resources/output/network_security_group"
 	"multy-go/resources/output/public_ip"
@@ -36,7 +37,7 @@ type VirtualMachine struct {
 	PublicIp bool `hcl:"public_ip,optional"`
 }
 
-func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if vm.UserData != "" {
 		vm.UserData = fmt.Sprintf("%s(%q)", "base64encode", []byte(vm.UserData))
 	}
@@ -44,7 +45,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 	var subnetId = vm.SubnetId
 
 	if cloud == common.AWS {
-		var awsResources []any
+		var awsResources []output.TfBlock
 		var ec2NicIds []virtual_machine.AwsEc2NetworkInterface
 		for i, id := range vm.NetworkInterfaceIds {
 			ec2NicIds = append(
@@ -87,7 +88,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		return awsResources
 	} else if cloud == common.AZURE {
 		// TODO validate that NIC is on the same VNET
-		var azResources []any
+		var azResources []output.TfBlock
 		rgName := rg.GetResourceGroupName(vm.ResourceGroupId, cloud)
 		nicIds := vm.NetworkInterfaceIds
 
@@ -132,8 +133,11 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 				for _, nicId := range nicIds {
 					azResources = append(
 						azResources, network_security_group.AzureNetworkInterfaceSecurityGroupAssociation{
-							ResourceName:           network_security_group.AzureNicNsgAssociation,
-							ResourceId:             vm.GetTfResourceId(cloud),
+							AzResource: &common.AzResource{
+								TerraformResource: output.TerraformResource{
+									ResourceId: vm.GetTfResourceId(cloud),
+								},
+							},
 							NetworkInterfaceId:     nicId,
 							NetworkSecurityGroupId: nsgId,
 						},
@@ -157,13 +161,14 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			disablePassAuth = true
 		} else {
 			randomPassword := terraform.RandomPassword{
-				ResourceName: terraform.RandomPasswordResourceName,
-				ResourceId:   vm.GetTfResourceId(cloud),
-				Length:       16,
-				Special:      true,
-				Upper:        true,
-				Lower:        true,
-				Number:       true,
+				TerraformResource: &output.TerraformResource{
+					ResourceId: vm.GetTfResourceId(cloud),
+				},
+				Length:  16,
+				Special: true,
+				Upper:   true,
+				Lower:   true,
+				Number:  true,
 			}
 			vmPassword = randomPassword.GetResult()
 			azResources = append(azResources, randomPassword)
@@ -172,7 +177,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		azResources = append(
 			azResources, virtual_machine.AzureVirtualMachine{
 				AzResource: &common.AzResource{
-					ResourceId:        vm.GetTfResourceId(cloud),
+					TerraformResource: output.TerraformResource{ResourceId: vm.GetTfResourceId(cloud)},
 					ResourceGroupName: rgName,
 					Name:              vm.Name,
 				},

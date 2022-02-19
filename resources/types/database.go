@@ -5,6 +5,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/database"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
@@ -22,7 +23,7 @@ type Database struct {
 	SubnetIds     []string `hcl:"subnet_ids"`
 }
 
-func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AWS {
 		name := common.RemoveSpecialChars(db.Name)
 		// TODO validate subnet configuration (minimum 2 different AZs)
@@ -31,7 +32,7 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 			Name:        db.Name,
 			SubnetIds:   db.SubnetIds,
 		}
-		return []any{
+		return []output.TfBlock{
 			dbSubnetGroup,
 			database.AwsDbInstance{
 				AwsResource:        common.NewAwsResource(db.GetTfResourceId(cloud), name),
@@ -52,7 +53,7 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 		return database.NewAzureDatabase(
 			database.AzureDbServer{
 				AzResource: &common.AzResource{
-					ResourceId:        db.GetTfResourceId(cloud),
+					TerraformResource: output.TerraformResource{ResourceId: db.GetTfResourceId(cloud)},
 					Name:              db.Name,
 					ResourceGroupName: rg.GetResourceGroupName(db.ResourceGroupId, cloud),
 					Location:          ctx.GetLocationFromCommonParams(db.CommonResourceParams, cloud),

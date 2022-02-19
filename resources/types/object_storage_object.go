@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/object_storage_object"
 	"multy-go/util"
 	"multy-go/validate"
@@ -24,7 +25,7 @@ type ObjectStorageObject struct {
 	Source        string         `hcl:"source,optional"`
 }
 
-func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	var acl string
 	if r.Acl == "public_read" {
 		acl = "public-read"
@@ -32,9 +33,9 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 		acl = "private"
 	}
 	if cloud == common.AWS {
-		return []any{object_storage_object.AwsS3BucketObject{
+		return []output.TfBlock{object_storage_object.AwsS3BucketObject{
 			AwsResource: &common.AwsResource{
-				ResourceId: r.GetTfResourceId(cloud),
+				TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 			},
 			Bucket:      r.ObjectStorage.GetResourceName(cloud),
 			Key:         r.Name,
@@ -50,11 +51,11 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 		} else {
 			containerName = r.ObjectStorage.GetAssociatedPrivateContainerResourceName(cloud)
 		}
-		return []any{
+		return []output.TfBlock{
 			object_storage_object.AzureStorageAccountBlob{
 				AzResource: &common.AzResource{
-					ResourceId: r.GetTfResourceId(cloud),
-					Name:       r.Name,
+					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
+					Name:              r.Name,
 				},
 				StorageAccountName:   r.ObjectStorage.GetResourceName(cloud),
 				StorageContainerName: containerName,

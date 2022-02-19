@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/network_security_group"
 	"multy-go/resources/output/route_table"
 	"multy-go/resources/output/virtual_network"
@@ -25,7 +26,7 @@ type VirtualNetwork struct {
 	CidrBlock                       string `hcl:"cidr_block"`
 }
 
-func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AWS {
 		vpc := virtual_network.AwsVpc{
 			AwsResource:        common.NewAwsResource(vn.GetTfResourceId(cloud), vn.Name),
@@ -50,13 +51,13 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 			Ingress:     allowAllSgRule,
 			Egress:      allowAllSgRule,
 		}
-		return []any{
+		return []output.TfBlock{
 			vpc,
 			igw,
 			sg,
 		}
 	} else if cloud == common.AZURE {
-		return []any{virtual_network.AzureVnet{
+		return []output.TfBlock{virtual_network.AzureVnet{
 			AzResource: common.NewAzResource(
 				vn.GetTfResourceId(cloud), vn.Name, rg.GetResourceGroupName(vn.ResourceGroupId, cloud),
 				ctx.GetLocationFromCommonParams(vn.CommonResourceParams, cloud),
