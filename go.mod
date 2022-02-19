@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/hc-install v0.3.1
 	github.com/hashicorp/hcl/v2 v2.10.1
 	github.com/hashicorp/terraform-exec v0.15.0
-	github.com/multy-dev/hclencoder v0.0.7
+	github.com/multy-dev/hclencoder v0.0.9
 	github.com/stretchr/testify v1.7.0
 	github.com/zclconf/go-cty v1.9.1
 )

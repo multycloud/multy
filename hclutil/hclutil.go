@@ -2,10 +2,10 @@ package hclutil
 
 import (
 	"fmt"
+	"github.com/hashicorp/hcl/v2"
 	"multy-go/validate"
 	"reflect"
 
-	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclparse"
 )
@@ -44,6 +44,9 @@ func StringToUnquotedHclExpression(s string) (hcl.Expression, error) {
 }
 
 func GetOptionalAttributeAsExpr(hclBody hcl.Body, key string) *hcl.Expression {
+	if hclBody == nil {
+		return nil
+	}
 	attrs, diags := hclBody.JustAttributes()
 	if diags != nil {
 		validate.LogFatalWithDiags(diags, "error while decoding hcl body")

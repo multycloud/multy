@@ -6,8 +6,19 @@ const AwsResourceName = "aws_lambda_function"
 
 const AwsIamRoleResourceName = "aws_iam_role"
 
-// TODO: support multiline strings in hclencoder
-const DefaultLambdaPolicy = `{\"Version\": \"2012-10-17\",\"Statement\": [{\"Action\": \"sts:AssumeRole\",\"Principal\": {\"Service\": \"lambda.amazonaws.com\"},\"Effect\": \"Allow\",\"Sid\": \"\"}]}`
+const DefaultLambdaPolicy = `{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}`
 const LambdaBasicExecutionRole = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 
 type AwsLambdaFunction struct {
