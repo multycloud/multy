@@ -16,7 +16,7 @@ resource "aws_iam_role" "iam_for_lambda_function2" {
   }
 
   name               = "iam_for_lambda_function2"
-  assume_role_policy = "{\"Version\": \"2012-10-17\",\"Statement\": [{\"Action\": \"sts:AssumeRole\",\"Principal\": {\"Service\": \"lambda.amazonaws.com\"},\"Effect\": \"Allow\",\"Sid\": \"\"}]}"
+  assume_role_policy =  "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"lambda.amazonaws.com\"\n      },\n      \"Effect\": \"Allow\",\n      \"Sid\": \"\"\n    }\n  ]\n}"
 }
 resource "aws_iam_role_policy_attachment" "function2_aws" {
   role       = aws_iam_role.iam_for_lambda_function2.name

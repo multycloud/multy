@@ -153,6 +153,8 @@ github.com/mitchellh/reflectwalk v1.0.0/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/multy-dev/hclencoder v0.0.7 h1:/EoYArvjSKIg56GhjgSKO7KJyDyHHCxDWL0vvRn6HaQ=
 github.com/multy-dev/hclencoder v0.0.7/go.mod h1:Lo/VVgqddAEZILnelJf5snWcOcYGtHzmbeMPhY+/GKI=
+github.com/multy-dev/hclencoder v0.0.9 h1:VYndTLj9mdCQU1viw7XxuBJNKlMyVsfyIn8k0D+MbUs=
+github.com/multy-dev/hclencoder v0.0.9/go.mod h1:Lo/VVgqddAEZILnelJf5snWcOcYGtHzmbeMPhY+/GKI=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
