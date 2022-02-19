@@ -7,7 +7,9 @@ import (
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/zclconf/go-cty/cty"
 	"log"
+	"multy-go/hclutil"
 	"multy-go/resources/common"
+	"multy-go/util"
 	"multy-go/validate"
 	"multy-go/variables"
 )
@@ -17,9 +19,10 @@ type Parser struct {
 }
 
 type MultyResource struct {
-	Type            string   `hcl:"type,label"`
-	ID              string   `hcl:"id,label"`
-	HCLBody         hcl.Body `hcl:",remain"`
+	Type            string         `hcl:"type,label"`
+	ID              string         `hcl:"id,label"`
+	DependsOn       hcl.Expression `hcl:"depends_on,optional"`
+	HCLBody         hcl.Body       `hcl:",remain"`
 	Dependencies    []MultyResourceDependency
 	DefinitionRange hcl.Range
 }
@@ -147,6 +150,45 @@ func (p *Parser) parseSingleFile(filepath string, parser *hclparse.Parser, c *co
 
 func findDependencies(resource *MultyResource, resourcesById map[string]*MultyResource) []MultyResourceDependency {
 	var result []MultyResourceDependency
+
+	// evaluate the explicit dependencies declared in depends_on
+	if !hclutil.IsNullExpr(resource.DependsOn) {
+		context := hcl.EvalContext{Variables: util.MapValues(
+			resourcesById, func(r *MultyResource) cty.Value {
+				return cty.StringVal(r.ID)
+			},
+		), Functions: nil}
+		exprList, diags := hcl.ExprList(resource.DependsOn)
+		if diags != nil {
+			validate.LogFatalWithDiags(diags, "unable to resolve dependencies of resource %s", resource.ID)
+		}
+		for _, expr := range exprList {
+			v, diags := expr.Value(&context)
+			if diags != nil {
+				validate.LogFatalWithDiags(diags, "unable to resolve dependencies of resource %s", resource.ID)
+			}
+
+			if !v.Type().Equals(cty.String) {
+				validate.LogFatalWithSourceRange(
+					expr.Range(), "depends_on expects multy resources but found %s",
+					v.Type().FriendlyName(),
+				)
+			}
+			dependencyId := v.AsString()
+			if _, ok := resourcesById[dependencyId]; !ok {
+				validate.LogFatalWithSourceRange(expr.Range(), "unknown resource %s", dependencyId)
+			}
+			result = append(
+				result, MultyResourceDependency{
+					From:        resource,
+					To:          resourcesById[dependencyId],
+					SourceRange: expr.Range(),
+				},
+			)
+		}
+	}
+
+	// look for implicit dependencies
 	attrs, diags := resource.HCLBody.JustAttributes()
 	if diags != nil {
 		validate.LogFatalWithDiags(diags, "unable to get attributes %s")

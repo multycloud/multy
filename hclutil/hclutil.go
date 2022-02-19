@@ -67,11 +67,13 @@ func PartialDecode(hclBody hcl.Body, ctx *hcl.EvalContext, val any) hcl.Body {
 			fields = append(fields, t.Field(i))
 		}
 	}
-	fields = append(fields, reflect.StructField{
-		Name: "HclBody",
-		Type: reflect.TypeOf((*hcl.Body)(nil)).Elem(),
-		Tag:  `hcl:",remain"`,
-	})
+	fields = append(
+		fields, reflect.StructField{
+			Name: "HclBody",
+			Type: reflect.TypeOf((*hcl.Body)(nil)).Elem(),
+			Tag:  `hcl:",remain"`,
+		},
+	)
 	newT := reflect.StructOf(fields)
 	newTInstance := reflect.New(newT)
 	diags := gohcl.DecodeBody(hclBody, ctx, newTInstance.Interface())
@@ -87,4 +89,9 @@ func PartialDecode(hclBody hcl.Body, ctx *hcl.EvalContext, val any) hcl.Body {
 	}
 
 	return newTInstance.Elem().FieldByName("HclBody").Interface().(hcl.Body)
+}
+
+func IsNullExpr(expression hcl.Expression) bool {
+	v, diags := expression.Value(nil)
+	return v.IsNull() && diags == nil
 }

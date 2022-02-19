@@ -56,3 +56,19 @@ func Keys[K comparable, V any](m map[K]V) []K {
 	}
 	return keys
 }
+
+func MapValues[K comparable, V any, V2 any](m map[K]V, mapper func(V) V2) map[K]V2 {
+	result := map[K]V2{}
+	for k, v := range m {
+		result[k] = mapper(v)
+	}
+	return result
+}
+
+func MapSliceValues[V any, V2 any](values []V, mapper func(V) V2) []V2 {
+	var result []V2
+	for _, v := range values {
+		result = append(result, mapper(v))
+	}
+	return result
+}
