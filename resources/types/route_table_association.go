@@ -3,6 +3,7 @@ package types
 import (
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/route_table_association"
 	"multy-go/validate"
 )
@@ -14,22 +15,22 @@ type RouteTableAssociation struct {
 	RouteTableId string `hcl:"route_table_id"`
 }
 
-func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AWS {
-		return []any{
+		return []output.TfBlock{
 			route_table_association.AwsRouteTableAssociation{
 				AwsResource: &common.AwsResource{
-					ResourceId:   r.GetTfResourceId(cloud),
+					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 				},
 				RouteTableId: r.RouteTableId,
 				SubnetId:     r.SubnetId,
 			},
 		}
 	} else if cloud == common.AZURE {
-		return []any{
+		return []output.TfBlock{
 			route_table_association.AzureRouteTableAssociation{
 				AzResource: &common.AzResource{
-					ResourceId:   r.GetTfResourceId(cloud),
+					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 				},
 				RouteTableId: r.RouteTableId,
 				SubnetId:     r.SubnetId,

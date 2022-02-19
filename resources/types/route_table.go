@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/route_table"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
@@ -33,7 +34,7 @@ const (
 	VIRTUALNETWORK = "VirtualNetwork"
 )
 
-func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AWS {
 		rt := route_table.AwsRouteTable{
 			AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
@@ -53,7 +54,7 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 		}
 		rt.Routes = routes
 
-		return []any{rt}
+		return []output.TfBlock{rt}
 	} else if cloud == common.AZURE {
 		rt := route_table.AzureRouteTable{
 			AzResource: common.NewAzResource(
@@ -75,7 +76,7 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 			}
 		}
 		rt.Routes = routes
-		return []any{rt}
+		return []output.TfBlock{rt}
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return nil

@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"multy-go/resources/output"
 	"multy-go/validate"
 	"reflect"
 	"strings"
@@ -144,26 +145,26 @@ func ValidateVmSize(s string) bool {
 }
 
 type AwsResource struct {
-	ResourceName string            `hcl:",key"`
-	ResourceId   string            `hcl:",key"`
-	Tags         map[string]string `hcl:"tags" hcle:"omitempty"`
+	output.TerraformResource `hcl:",squash"`
+	Tags                     map[string]string `hcl:"tags" hcle:"omitempty"`
 }
 
 type AzResource struct {
-	ResourceName      string `hcl:",key"`
-	ResourceId        string `hcl:",key"`
-	ResourceGroupName string `hcl:"resource_group_name,expr" hcle:"omitempty"`
-	Name              string `hcl:"name" hcle:"omitempty"`
-	Location          string `hcl:"location" hcle:"omitempty"`
+	output.TerraformResource `hcl:",squash"`
+	ResourceGroupName        string `hcl:"resource_group_name,expr" hcle:"omitempty"`
+	Name                     string `hcl:"name" hcle:"omitempty"`
+	Location                 string `hcl:"location" hcle:"omitempty"`
 }
 
 func NewAwsResource(resourceId string, name string) *AwsResource {
-	return &AwsResource{ResourceId: resourceId, Tags: map[string]string{"Name": name}}
+	return &AwsResource{
+		TerraformResource: output.TerraformResource{ResourceId: resourceId},
+		Tags:              map[string]string{"Name": name}}
 }
 
 func NewAzResource(resourceId string, name string, rgName string, location string) *AzResource {
 	return &AzResource{
-		ResourceId:        resourceId,
+		TerraformResource: output.TerraformResource{ResourceId: resourceId},
 		Name:              name,
 		ResourceGroupName: rgName,
 		Location:          location,
@@ -171,11 +172,12 @@ func NewAzResource(resourceId string, name string, rgName string, location strin
 }
 
 func (r *AwsResource) SetName(name string) {
-	r.ResourceName = name
+	//r.ResourceName = name
+	r.TerraformResource.ResourceName = name
 }
 
 func (r *AzResource) SetName(name string) {
-	r.ResourceName = name
+	r.TerraformResource.ResourceName = name
 }
 
 func GetResourceName(r any) string {

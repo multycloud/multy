@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/network_security_group"
 	rg "multy-go/resources/resource_group"
 	"multy-go/validate"
@@ -41,7 +42,7 @@ const (
 	DENY    = "deny"
 )
 
-func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AWS {
 		awsRules := translateAwsNsgRules(r, r.Rules)
 
@@ -55,7 +56,7 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 		awsRules[INGRESS] = append(awsRules[INGRESS], allowVpcTraffic)
 		awsRules[EGRESS] = append(awsRules[EGRESS], allowVpcTraffic)
 
-		return []any{
+		return []output.TfBlock{
 			network_security_group.AwsSecurityGroup{
 				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 				VpcId:       resources.GetMainOutputId(r.VirtualNetwork, cloud),
@@ -64,7 +65,7 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 			},
 		}
 	} else if cloud == common.AZURE {
-		return []any{
+		return []output.TfBlock{
 			network_security_group.AzureNsg{
 				AzResource: common.NewAzResource(
 					r.GetTfResourceId(cloud), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, cloud),

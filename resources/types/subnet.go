@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/route_table_association"
 	"multy-go/resources/output/subnet"
 	rg "multy-go/resources/resource_group"
@@ -24,19 +25,19 @@ type Subnet struct {
 	AvailabilityZone int             `hcl:"availability_zone,optional"`
 }
 
-func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AWS {
-		return []any{subnet.AwsSubnet{
+		return []output.TfBlock{subnet.AwsSubnet{
 			AwsResource:      common.NewAwsResource(s.GetTfResourceId(cloud), s.Name),
 			CidrBlock:        s.CidrBlock,
 			VpcId:            s.VirtualNetwork.GetVirtualNetworkId(cloud),
 			AvailabilityZone: common.GetAvailabilityZone(ctx.Location, s.AvailabilityZone, cloud),
 		}}
 	} else if cloud == common.AZURE {
-		var azResources []any
+		var azResources []output.TfBlock
 		azSubnet := subnet.AzureSubnet{
 			AzResource: &common.AzResource{
-				ResourceId:        s.GetTfResourceId(cloud),
+				TerraformResource: output.TerraformResource{ResourceId: s.GetTfResourceId(cloud)},
 				Name:              s.Name,
 				ResourceGroupName: rg.GetResourceGroupName(s.ResourceGroupId, cloud),
 			},
@@ -51,7 +52,7 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			rt := s.VirtualNetwork.GetAssociatedRouteTableId(cloud)
 			rtAssociation := route_table_association.AzureRouteTableAssociation{
 				AzResource: &common.AzResource{
-					ResourceId: s.GetTfResourceId(cloud),
+					TerraformResource: output.TerraformResource{ResourceId: s.GetTfResourceId(cloud)},
 				},
 				SubnetId:     resources.GetMainOutputId(s, cloud),
 				RouteTableId: rt,

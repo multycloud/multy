@@ -1,7 +1,6 @@
 package mhcl
 
 import (
-	"multy-go/resources/output"
 	"multy-go/validate"
 	"reflect"
 	"strings"
@@ -15,9 +14,6 @@ type NameSetter interface {
 }
 
 func (p *DefaultTagProcessor) Process(r any) {
-	if output.IsTerraformBlock(r) {
-		r = r.(output.TerraformBlock).GetR()
-	}
 	t := reflect.TypeOf(r)
 	tValue := reflect.ValueOf(r)
 

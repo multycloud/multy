@@ -5,6 +5,7 @@ import (
 	"multy-go/hclutil"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/validate"
 
 	"github.com/hashicorp/hcl/v2"
@@ -36,12 +37,12 @@ type ResourceGroup struct {
 
 const AzureResourceName = "azurerm_resource_group"
 
-func (rg *Type) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (rg *Type) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AZURE {
-		return []any{ResourceGroup{
+		return []output.TfBlock{ResourceGroup{
 			AzResource: &common.AzResource{
-				ResourceId: rg.ResourceId,
-				Name:       rg.Name,
+				TerraformResource: output.TerraformResource{ResourceId: rg.ResourceId},
+				Name:              rg.Name,
 			},
 			Location: ctx.GetLocation(rg.Location, cloud),
 		}}
@@ -103,4 +104,8 @@ func (rg *Type) GetMainResourceName(cloud common.CloudProvider) string {
 		validate.LogInternalError("unknown cloud %s", cloud)
 	}
 	return ""
+}
+
+func (rg *Type) GetDependencies(ctx resources.MultyContext) []resources.CloudSpecificResource {
+	return nil
 }

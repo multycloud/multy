@@ -16,22 +16,18 @@ type Vault struct {
 }
 
 type AzureClientConfig struct {
-	*common.AzResource `hcl:",squash" default:"name=azurerm_client_config"`
+	*output.TerraformDataSource `hcl:",squash" default:"name=azurerm_client_config"`
 }
 
-func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AWS {
-		return []any{}
+		return []output.TfBlock{}
 	} else if cloud == common.AZURE {
-		config := output.DataSourceWrapper{R: AzureClientConfig{AzResource: &common.AzResource{
-			ResourceId: r.GetTfResourceId(cloud),
-		}}}
-
-		return []any{
-			config,
+		return []output.TfBlock{
+			AzureClientConfig{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.GetTfResourceId(cloud)}},
 			vault.AzureKeyVault{
 				AzResource: &common.AzResource{
-					ResourceId:        r.GetTfResourceId(cloud),
+					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 					Name:              r.Name,
 					ResourceGroupName: rg.GetResourceGroupName(r.ResourceGroupId, cloud),
 					Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
