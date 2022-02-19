@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/vault_secret"
 	"multy-go/validate"
 )
@@ -15,12 +16,12 @@ type VaultSecret struct {
 	Vault *Vault `mhcl:"ref=vault"`
 }
 
-func (r *VaultSecret) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []interface{} {
+func (r *VaultSecret) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AWS {
-		return []interface{}{
+		return []output.TfBlock{
 			vault_secret.AwsSsmParameter{
 				AwsResource: &common.AwsResource{
-					ResourceId: r.GetTfResourceId(cloud),
+					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 				},
 				Name:  fmt.Sprintf("/%s/%s", r.Vault.Name, r.Name),
 				Type:  "SecureString",
@@ -28,11 +29,11 @@ func (r *VaultSecret) Translate(cloud common.CloudProvider, ctx resources.MultyC
 			},
 		}
 	} else if cloud == common.AZURE {
-		return []interface{}{
+		return []output.TfBlock{
 			vault_secret.AzureKeyVaultSecret{
 				AzResource: &common.AzResource{
-					ResourceId: r.GetTfResourceId(cloud),
-					Name:       r.Name,
+					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
+					Name:              r.Name,
 				},
 				KeyVaultId: r.Vault.GetVaultId(cloud),
 				Value:      r.Value,

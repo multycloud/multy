@@ -3,6 +3,7 @@ package resources
 import (
 	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources/common"
+	"multy-go/util"
 	"multy-go/validate"
 )
 
@@ -12,6 +13,7 @@ type CommonResourceParams struct {
 	Location        string            `hcl:"location,optional"`
 	Clouds          []string          `hcl:"clouds,optional"`
 	RgVars          map[string]string `hcl:"rg_vars,optional"`
+	DependsOn       []string
 	*validate.ResourceValidationInfo
 }
 
@@ -29,4 +31,20 @@ func (c *CommonResourceParams) GetTfResourceId(cloud common.CloudProvider) strin
 
 func (c *CommonResourceParams) GetLocation(cloud common.CloudProvider, ctx MultyContext) string {
 	return ctx.GetLocationFromCommonParams(c, cloud)
+}
+
+func (c *CommonResourceParams) GetDependencies(ctx MultyContext) []CloudSpecificResource {
+	var result []CloudSpecificResource
+	for _, r := range ctx.Resources {
+		// we add all clouds because id specified by user is cloud-agnostic
+		if util.Contains(c.DependsOn, r.Resource.GetResourceId()) {
+			result = append(result, r)
+		}
+	}
+
+	return util.SortResourcesById(
+		result, func(t CloudSpecificResource) string {
+			return t.GetResourceId()
+		},
+	)
 }

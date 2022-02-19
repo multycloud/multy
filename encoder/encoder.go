@@ -15,8 +15,20 @@ import (
 )
 
 type WithProvider struct {
-	Resource      any    `hcl:",squash"`
-	ProviderAlias string `hcl:"provider" hcle:"omitempty"`
+	Resource      output.TfBlock `hcl:",squash"`
+	ProviderAlias string         `hcl:"provider" hcle:"omitempty"`
+}
+
+func (w WithProvider) GetFullResourceRef() string {
+	return w.Resource.GetFullResourceRef()
+}
+
+func (w WithProvider) GetBlockType() string {
+	return w.Resource.GetBlockType()
+}
+
+func (w WithProvider) AddDependency(s string) {
+	w.Resource.AddDependency(s)
 }
 
 func Encode(decodedResources *decoder.DecodedResources) string {
@@ -26,23 +38,33 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 
 	providers := buildProviders(decodedResources, ctx)
 
+	translationCache := map[resources.CloudSpecificResource][]output.TfBlock{}
+
 	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
-		r.Resource.Validate(ctx)
-		providerAlias := getProvider(providers, r, ctx).GetResourceId()
-		for _, translated := range r.Translate(ctx) {
+		translationCache[r] = r.Translate(ctx)
+		for _, translated := range translationCache[r] {
 			defaultTagProcessor.Process(translated)
-			var result any
+		}
+		r.Resource.Validate(ctx)
+	}
+
+	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
+		providerAlias := getProvider(providers, r, ctx).GetResourceId()
+		for _, translated := range translationCache[r] {
+			var result output.TfBlock
 			result = WithProvider{
 				Resource:      translated,
 				ProviderAlias: providerAlias,
 			}
-			// If not already wrapped in a tf block, assume it's a resource.
-			if !output.IsTerraformBlock(translated) {
-				result = output.ResourceWrapper{
-					R: result,
+
+			for _, dep := range r.Resource.GetDependencies(ctx) {
+				for _, translatedDep := range translationCache[dep] {
+					translated.AddDependency(translatedDep.GetFullResourceRef())
 				}
 			}
-			hcl, err := hclencoder.Encode(result)
+
+			// If not already wrapped in a tf block, assume it's a resource.
+			hcl, err := hclencoder.Encode(output.WrapWithBlockType(result))
 			if err != nil {
 				log.Fatal("unable to encode: ", err)
 			}

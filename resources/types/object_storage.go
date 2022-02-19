@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"multy-go/resources"
 	"multy-go/resources/common"
+	"multy-go/resources/output"
 	"multy-go/resources/output/object_storage"
 	"multy-go/resources/output/object_storage_object"
 	rg "multy-go/resources/resource_group"
@@ -48,16 +49,17 @@ type ObjectStorage struct {
 
 type AclRules struct{}
 
-func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []any {
+func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	name := r.Name
 	if r.RandomSuffix {
 		name += fmt.Sprintf("-%s", common.RandomString(6))
 	}
 	if cloud == common.AWS {
-		return []any{object_storage.AwsS3Bucket{
+		return []output.TfBlock{object_storage.AwsS3Bucket{
 			AwsResource: &common.AwsResource{
-				ResourceId: r.GetTfResourceId(cloud),
-			}, Bucket: name}}
+				TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
+			},
+			Bucket: name}}
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 
@@ -71,19 +73,23 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 			AllowBlobPublicAccess:  true,
 		}
 
-		return []any{
+		return []output.TfBlock{
 			storageAccount,
 			object_storage_object.AzureStorageContainer{
 				AzResource: &common.AzResource{
-					ResourceId: fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "public"),
-					Name:       "public",
+					TerraformResource: output.TerraformResource{
+						ResourceId: fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "public"),
+					},
+					Name: "public",
 				},
 				StorageAccountName:  storageAccount.GetResourceName(),
 				ContainerAccessType: "blob",
 			}, object_storage_object.AzureStorageContainer{
 				AzResource: &common.AzResource{
-					ResourceId: fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "private"),
-					Name:       "private",
+					TerraformResource: output.TerraformResource{
+						ResourceId: fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "private"),
+					},
+					Name: "private",
 				},
 				StorageAccountName:  storageAccount.GetResourceName(),
 				ContainerAccessType: "private",
