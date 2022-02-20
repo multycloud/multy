@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output"
@@ -246,4 +247,29 @@ func (vm *VirtualMachine) GetMainResourceName(cloud common.CloudProvider) string
 		validate.LogInternalError("unknown cloud %s", cloud)
 	}
 	return ""
+}
+
+func (vm *VirtualMachine) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
+	if vm.PublicIp {
+		if cloud == common.AWS {
+			return map[string]cty.Value{
+				"public_ip": cty.StringVal(
+					fmt.Sprintf(
+						"${%s.%s.public_ip}", common.GetResourceName(virtual_machine.AwsEC2{}),
+						vm.GetTfResourceId(cloud),
+					),
+				),
+			}
+		} else if cloud == common.AZURE {
+			return map[string]cty.Value{
+				"public_ip": cty.StringVal(
+					fmt.Sprintf(
+						"${%s.%s.ip_address}", common.GetResourceName(public_ip.AzurePublicIp{}),
+						vm.GetTfResourceId(cloud),
+					),
+				),
+			}
+		}
+	}
+	return map[string]cty.Value{}
 }

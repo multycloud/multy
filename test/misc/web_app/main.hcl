@@ -99,6 +99,20 @@ multy "network_security_group" nsg2 {
       to_port    = "443"
       cidr_block = "0.0.0.0/0"
       direction  = "both"
+    }, {
+      protocol   = "tcp"
+      priority   = "160"
+      action     = "allow"
+      from_port  = "4000"
+      to_port    = "4000"
+      cidr_block = "0.0.0.0/0"
+      direction  = "both"
     }
   ]
+}
+output "aws_endpoint" {
+  value = "http://${aws.vm.public_ip}:4000"
+}
+output "azure_endpoint" {
+  value = "http://${azure.vm.public_ip}:4000"
 }
