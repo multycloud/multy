@@ -1,5 +1,5 @@
 resource "aws_db_subnet_group" "example_db_aws" {
-  tags = {
+  tags =  {
     Name = "example-db"
   }
 
@@ -11,7 +11,7 @@ resource "aws_db_subnet_group" "example_db_aws" {
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
-  tags = {
+  tags =  {
     Name = "exampledb"
   }
 
@@ -28,7 +28,7 @@ resource "aws_db_instance" "example_db_aws" {
   publicly_accessible  = true
 }
 resource "aws_vpc" "example_vn_aws" {
-  tags = {
+  tags =  {
     Name = "example_vn"
   }
 
@@ -36,14 +36,14 @@ resource "aws_vpc" "example_vn_aws" {
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags = {
+  tags =  {
     Name = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags = {
+  tags =  {
     Name = "example_vn"
   }
 
@@ -66,7 +66,7 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_security_group" "nsg2_aws" {
-  tags = {
+  tags =  {
     Name = "test-nsg2"
   }
 
@@ -94,6 +94,13 @@ resource "aws_security_group" "nsg2_aws" {
   }
 
   ingress {
+    protocol    = "tcp"
+    from_port   = 4000
+    to_port     = 4000
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
@@ -122,6 +129,13 @@ resource "aws_security_group" "nsg2_aws" {
   }
 
   egress {
+    protocol    = "tcp"
+    from_port   = 4000
+    to_port     = 4000
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
@@ -129,7 +143,7 @@ resource "aws_security_group" "nsg2_aws" {
   }
 }
 resource "aws_route_table" "rt_aws" {
-  tags = {
+  tags =  {
     Name = "test-rt"
   }
 
@@ -153,7 +167,7 @@ resource "aws_route_table_association" "rta3_aws" {
   route_table_id = "${aws_route_table.rt_aws.id}"
 }
 resource "aws_subnet" "subnet1_aws" {
-  tags = {
+  tags =  {
     Name = "subnet1"
   }
 
@@ -162,7 +176,7 @@ resource "aws_subnet" "subnet1_aws" {
   availability_zone = "us-east-1a"
 }
 resource "aws_subnet" "subnet2_aws" {
-  tags = {
+  tags =  {
     Name = "subnet2"
   }
 
@@ -171,7 +185,7 @@ resource "aws_subnet" "subnet2_aws" {
   availability_zone = "us-east-1b"
 }
 resource "aws_subnet" "subnet3_aws" {
-  tags = {
+  tags =  {
     Name = "subnet3"
   }
 
@@ -179,7 +193,7 @@ resource "aws_subnet" "subnet3_aws" {
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 resource "aws_key_pair" "vm_aws" {
-  tags = {
+  tags =  {
     Name = "test-vm"
   }
 
@@ -187,7 +201,7 @@ resource "aws_key_pair" "vm_aws" {
   public_key = file("./ssh_key.pub")
 }
 resource "aws_instance" "vm_aws" {
-  tags = {
+  tags =  {
     Name = "test-vm"
   }
 
@@ -295,6 +309,30 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     destination_address_prefix = "*"
     direction                  = "Outbound"
   }
+
+  security_rule {
+    name                       = "6"
+    protocol                   = "tcp"
+    priority                   = 160
+    access                     = "Allow"
+    source_port_range          = "*"
+    source_address_prefix      = "*"
+    destination_port_range     = "4000-4000"
+    destination_address_prefix = "*"
+    direction                  = "Inbound"
+  }
+
+  security_rule {
+    name                       = "7"
+    protocol                   = "tcp"
+    priority                   = 160
+    access                     = "Allow"
+    source_port_range          = "*"
+    source_address_prefix      = "*"
+    destination_port_range     = "4000-4000"
+    destination_address_prefix = "*"
+    direction                  = "Outbound"
+  }
 }
 resource "azurerm_route_table" "rt_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
@@ -398,4 +436,10 @@ provider "aws" {
 }
 provider "azurerm" {
   features {}
+}
+output "aws_endpoint" {
+  value = "http://${aws_instance.vm_aws.public_ip}:4000"
+}
+output "azure_endpoint" {
+  value = "http://${azurerm_public_ip.vm_azure.ip_address}:4000"
 }

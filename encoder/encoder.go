@@ -2,8 +2,8 @@ package encoder
 
 import (
 	"bytes"
-	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/multy-dev/hclencoder"
+	"github.com/zclconf/go-cty/cty"
 	"log"
 	"multy-go/decoder"
 	"multy-go/mhcl"
@@ -87,15 +87,28 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 		}
 	}
 
-	// here we use the low-level api because we need to write cty.Values
-	f := hclwrite.NewEmptyFile()
-	rootBody := f.Body()
-	for outputId, outputVal := range decodedResources.Outputs {
-		block := hclwrite.NewBlock("output", []string{outputId})
-		block.Body().SetAttributeValue("value", outputVal)
-		rootBody.AppendBlock(block)
+	type outputStruct struct {
+		ResourceId string `hcl:",key"`
+		Value      string `hcl:"value"`
 	}
-	b.Write(f.Bytes())
+
+	for outputId, outputVal := range decodedResources.Outputs {
+		if outputVal.Type() != cty.String {
+			log.Fatalf("non-string outputs are currently not supported")
+		}
+		hcl, err := hclencoder.Encode(
+			outputWrapper{
+				O: outputStruct{
+					ResourceId: outputId,
+					Value:      outputVal.AsString(),
+				},
+			},
+		)
+		if err != nil {
+			log.Fatal("unable to encode: ", err)
+		}
+		b.Write(hcl)
+	}
 
 	return b.String()
 }
@@ -147,4 +160,7 @@ func flatten(p map[common.CloudProvider]map[string]*types.Provider) []*types.Pro
 
 type providerWrapper struct {
 	P any `hcl:"provider"`
+}
+type outputWrapper struct {
+	O any `hcl:"output"`
 }
