@@ -1,7 +1,7 @@
 package util
 
 import (
-	"constraints"
+	"golang.org/x/exp/constraints"
 	"sort"
 )
 
