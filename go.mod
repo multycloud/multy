@@ -9,6 +9,7 @@ require (
 	github.com/multy-dev/hclencoder v0.0.9
 	github.com/stretchr/testify v1.7.0
 	github.com/zclconf/go-cty v1.9.1
+	golang.org/x/exp v0.0.0-20220218215828-6cf2b201936e
 )
 
 require (
@@ -22,7 +23,7 @@ require (
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
-	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
 
