@@ -1,6 +1,6 @@
 resource "aws_vpc" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   cidr_block           = "10.0.0.0/16"
@@ -8,14 +8,14 @@ resource "aws_vpc" "example_vn_aws" {
 }
 resource "aws_internet_gateway" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
@@ -38,7 +38,7 @@ resource "aws_default_security_group" "example_vn_aws" {
 }
 resource "aws_route_table" "rt_aws" {
   tags = {
-    Name = "test-rt"
+    "Name" = "test-rt"
   }
 
   vpc_id = "${aws_vpc.example_vn_aws.id}"
@@ -50,7 +50,7 @@ resource "aws_route_table" "rt_aws" {
 }
 resource "aws_subnet" "subnet1_aws" {
   tags = {
-    Name = "subnet1"
+    "Name" = "subnet1"
   }
 
   cidr_block = "10.0.1.0/24"
@@ -58,7 +58,7 @@ resource "aws_subnet" "subnet1_aws" {
 }
 resource "aws_subnet" "subnet2_aws" {
   tags = {
-    Name = "subnet2"
+    "Name" = "subnet2"
   }
 
   cidr_block        = "10.0.2.0/24"

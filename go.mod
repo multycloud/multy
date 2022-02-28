@@ -4,9 +4,9 @@ go 1.18
 
 require (
 	github.com/hashicorp/hc-install v0.3.1
-	github.com/hashicorp/hcl/v2 v2.10.1
+	github.com/hashicorp/hcl/v2 v2.11.1
 	github.com/hashicorp/terraform-exec v0.15.0
-	github.com/multy-dev/hclencoder v0.0.9
+	github.com/multy-dev/hclencoder v0.1.1
 	github.com/stretchr/testify v1.7.0
 	github.com/zclconf/go-cty v1.9.1
 	golang.org/x/exp v0.0.0-20220218215828-6cf2b201936e

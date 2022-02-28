@@ -1,6 +1,6 @@
 resource "aws_db_subnet_group" "example_db_aws" {
   tags = {
-    Name = "example-db"
+    "Name" = "example-db"
   }
 
   name = "example-db"
@@ -12,7 +12,7 @@ resource "aws_db_subnet_group" "example_db_aws" {
 }
 resource "aws_db_instance" "example_db_aws" {
   tags = {
-    Name = "exampledb"
+    "Name" = "exampledb"
   }
 
   allocated_storage    = 10
@@ -29,7 +29,7 @@ resource "aws_db_instance" "example_db_aws" {
 }
 resource "aws_vpc" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   cidr_block           = "10.0.0.0/16"
@@ -37,14 +37,14 @@ resource "aws_vpc" "example_vn_aws" {
 }
 resource "aws_internet_gateway" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
@@ -67,7 +67,7 @@ resource "aws_default_security_group" "example_vn_aws" {
 }
 resource "aws_security_group" "nsg2_aws" {
   tags = {
-    Name = "test-nsg2"
+    "Name" = "test-nsg2"
   }
 
   vpc_id = "${aws_vpc.example_vn_aws.id}"
@@ -130,7 +130,7 @@ resource "aws_security_group" "nsg2_aws" {
 }
 resource "aws_route_table" "rt_aws" {
   tags = {
-    Name = "test-rt"
+    "Name" = "test-rt"
   }
 
   vpc_id = "${aws_vpc.example_vn_aws.id}"
@@ -146,7 +146,7 @@ resource "aws_route_table_association" "rta_aws" {
 }
 resource "aws_subnet" "subnet1_aws" {
   tags = {
-    Name = "private-subnet1"
+    "Name" = "private-subnet1"
   }
 
   cidr_block        = "10.0.1.0/24"
@@ -155,7 +155,7 @@ resource "aws_subnet" "subnet1_aws" {
 }
 resource "aws_subnet" "subnet2_aws" {
   tags = {
-    Name = "private-subnet2"
+    "Name" = "private-subnet2"
   }
 
   cidr_block        = "10.0.2.0/24"
@@ -164,7 +164,7 @@ resource "aws_subnet" "subnet2_aws" {
 }
 resource "aws_subnet" "subnet3_aws" {
   tags = {
-    Name = "public-subnet3"
+    "Name" = "public-subnet3"
   }
 
   cidr_block = "10.0.3.0/24"
@@ -172,7 +172,7 @@ resource "aws_subnet" "subnet3_aws" {
 }
 resource "aws_instance" "vm_aws" {
   tags = {
-    Name = "test-vm"
+    "Name" = "test-vm"
   }
 
   ami                         = "ami-09d4a659cdd8677be"

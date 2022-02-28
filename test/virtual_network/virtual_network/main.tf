@@ -1,6 +1,6 @@
 resource "aws_vpc" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   cidr_block           = "10.0.0.0/16"
@@ -8,14 +8,14 @@ resource "aws_vpc" "example_vn_aws" {
 }
 resource "aws_internet_gateway" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id

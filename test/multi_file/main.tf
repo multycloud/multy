@@ -1,41 +1,41 @@
 resource "aws_eip" "example_ip_aws" {
-  tags =  {
-    Name = "example_ip"
+  tags = {
+    "Name" = "example_ip"
   }
 }
 resource "aws_network_interface" "example_nic_aws" {
-  tags =  {
-    Name = "example_nic"
+  tags = {
+    "Name" = "example_nic"
   }
 
   subnet_id = "${aws_subnet.example_subnet_aws.id}"
 }
 resource "aws_subnet" "example_subnet_aws" {
-  tags =  {
-    Name = "example_subnet"
+  tags = {
+    "Name" = "example_subnet"
   }
 
   cidr_block = "10.0.0.0/24"
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 resource "aws_vpc" "example_vn_aws" {
-  tags =  {
-    Name = "example_vn"
+  tags = {
+    "Name" = "example_vn"
   }
 
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags =  {
-    Name = "example_vn"
+  tags = {
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags =  {
-    Name = "example_vn"
+  tags = {
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id

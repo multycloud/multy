@@ -11,8 +11,8 @@ data "archive_file" "lambda_aws" {
   output_path = ".multy/tmp/multy_function_aws.zip"
 }
 resource "aws_lambda_function" "lambda_aws" {
-  tags =  {
-    Name = "multy_function"
+  tags = {
+    "Name" = "multy_function"
   }
 
   function_name    = "multy_function"
@@ -23,8 +23,8 @@ resource "aws_lambda_function" "lambda_aws" {
   handler          = "lambda_function.lambda_handler"
 }
 resource "aws_iam_role" "iam_for_lambda_lambda" {
-  tags =  {
-    Name = "iam_for_lambda_lambda"
+  tags = {
+    "Name" = "iam_for_lambda_lambda"
   }
 
   name               = "iam_for_lambda_lambda"
@@ -35,8 +35,8 @@ resource "aws_iam_role_policy_attachment" "lambda_aws" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 resource "aws_api_gateway_rest_api" "lambda_aws" {
-  tags =  {
-    Name = "multy_function"
+  tags = {
+    "Name" = "multy_function"
   }
 
   name        = "multy_function"

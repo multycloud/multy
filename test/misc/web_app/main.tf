@@ -1,6 +1,6 @@
 resource "aws_db_subnet_group" "example_db_aws" {
-  tags =  {
-    Name = "example-db"
+  tags = {
+    "Name" = "example-db"
   }
 
   name = "example-db"
@@ -11,8 +11,8 @@ resource "aws_db_subnet_group" "example_db_aws" {
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
-  tags =  {
-    Name = "exampledb"
+  tags = {
+    "Name" = "exampledb"
   }
 
   allocated_storage    = 10
@@ -28,23 +28,23 @@ resource "aws_db_instance" "example_db_aws" {
   publicly_accessible  = true
 }
 resource "aws_vpc" "example_vn_aws" {
-  tags =  {
-    Name = "example_vn"
+  tags = {
+    "Name" = "example_vn"
   }
 
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags =  {
-    Name = "example_vn"
+  tags = {
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags =  {
-    Name = "example_vn"
+  tags = {
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
@@ -66,8 +66,8 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_security_group" "nsg2_aws" {
-  tags =  {
-    Name = "test-nsg2"
+  tags = {
+    "Name" = "test-nsg2"
   }
 
   vpc_id = "${aws_vpc.example_vn_aws.id}"
@@ -143,8 +143,8 @@ resource "aws_security_group" "nsg2_aws" {
   }
 }
 resource "aws_route_table" "rt_aws" {
-  tags =  {
-    Name = "test-rt"
+  tags = {
+    "Name" = "test-rt"
   }
 
   vpc_id = "${aws_vpc.example_vn_aws.id}"
@@ -167,8 +167,8 @@ resource "aws_route_table_association" "rta3_aws" {
   route_table_id = "${aws_route_table.rt_aws.id}"
 }
 resource "aws_subnet" "subnet1_aws" {
-  tags =  {
-    Name = "subnet1"
+  tags = {
+    "Name" = "subnet1"
   }
 
   cidr_block        = "10.0.1.0/24"
@@ -176,8 +176,8 @@ resource "aws_subnet" "subnet1_aws" {
   availability_zone = "us-east-1a"
 }
 resource "aws_subnet" "subnet2_aws" {
-  tags =  {
-    Name = "subnet2"
+  tags = {
+    "Name" = "subnet2"
   }
 
   cidr_block        = "10.0.2.0/24"
@@ -185,24 +185,24 @@ resource "aws_subnet" "subnet2_aws" {
   availability_zone = "us-east-1b"
 }
 resource "aws_subnet" "subnet3_aws" {
-  tags =  {
-    Name = "subnet3"
+  tags = {
+    "Name" = "subnet3"
   }
 
   cidr_block = "10.0.3.0/24"
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 resource "aws_key_pair" "vm_aws" {
-  tags =  {
-    Name = "test-vm"
+  tags = {
+    "Name" = "test-vm"
   }
 
   key_name   = "vm_multy"
   public_key = file("./ssh_key.pub")
 }
 resource "aws_instance" "vm_aws" {
-  tags =  {
-    Name = "test-vm"
+  tags = {
+    "Name" = "test-vm"
   }
 
   ami                         = "ami-04ad2567c9e3d7893"

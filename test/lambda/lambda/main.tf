@@ -4,8 +4,8 @@ data "archive_file" "super_long_function_aws" {
   output_path = ".multy/tmp/super_long_function_aws.zip"
 }
 resource "aws_lambda_function" "super_long_function_aws" {
-  tags =  {
-    Name = "super_long_function"
+  tags = {
+    "Name" = "super_long_function"
   }
 
   function_name    = "super_long_function"
@@ -16,8 +16,8 @@ resource "aws_lambda_function" "super_long_function_aws" {
   handler          = "lambda_function.lambda_handler"
 }
 resource "aws_iam_role" "iam_for_lambda_super_long_function" {
-  tags =  {
-    Name = "iam_for_lambda_super_long_function"
+  tags = {
+    "Name" = "iam_for_lambda_super_long_function"
   }
 
   name               = "iam_for_lambda_super_long_function"
@@ -28,8 +28,8 @@ resource "aws_iam_role_policy_attachment" "super_long_function_aws" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 resource "aws_api_gateway_rest_api" "super_long_function_aws" {
-  tags =  {
-    Name = "super_long_function"
+  tags = {
+    "Name" = "super_long_function"
   }
 
   name        = "super_long_function"

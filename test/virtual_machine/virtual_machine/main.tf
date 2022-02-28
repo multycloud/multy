@@ -1,6 +1,6 @@
 resource "aws_vpc" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   cidr_block           = "10.0.0.0/16"
@@ -8,14 +8,14 @@ resource "aws_vpc" "example_vn_aws" {
 }
 resource "aws_internet_gateway" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
@@ -38,7 +38,7 @@ resource "aws_default_security_group" "example_vn_aws" {
 }
 resource "aws_subnet" "subnet_aws" {
   tags = {
-    Name = "subnet"
+    "Name" = "subnet"
   }
 
   cidr_block        = "10.0.2.0/24"
@@ -47,7 +47,7 @@ resource "aws_subnet" "subnet_aws" {
 }
 resource "aws_instance" "vm_aws" {
   tags = {
-    Name = "test-vm"
+    "Name" = "test-vm"
   }
 
   ami              = "ami-09d4a659cdd8677be"
@@ -57,7 +57,7 @@ resource "aws_instance" "vm_aws" {
 }
 resource "aws_instance" "vm2_aws" {
   tags = {
-    Name = "test-vm"
+    "Name" = "test-vm"
   }
 
   ami           = "ami-09d4a659cdd8677be"
