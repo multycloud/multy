@@ -96,7 +96,7 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 		if outputVal.Type() != cty.String {
 			log.Fatalf("non-string outputs are currently not supported")
 		}
-		hcl, err := hclencoder.Encode(
+		hclOutput, err := hclencoder.Encode(
 			outputWrapper{
 				O: outputStruct{
 					ResourceId: outputId,
@@ -107,7 +107,7 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 		if err != nil {
 			log.Fatal("unable to encode: ", err)
 		}
-		b.Write(hcl)
+		b.Write(hclOutput)
 	}
 
 	return b.String()

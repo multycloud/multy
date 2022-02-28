@@ -12,7 +12,9 @@ func GetAllFunctions(cloud common.CloudProvider) map[string]function.Function {
 }
 
 func GetAllCloudAgnosticFunctions() map[string]function.Function {
-	return map[string]function.Function{}
+	return map[string]function.Function{
+		"file": getTerraformFunction("file"),
+	}
 }
 
 // GetAllFunctionsForVarEvaluation returns the only functions that are available when parsing variable blocks.

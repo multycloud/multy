@@ -1,6 +1,6 @@
 resource "aws_lambda_function" "function2_aws" {
-  tags =  {
-    Name = "publicmultyfun"
+  tags = {
+    "Name" = "publicmultyfun"
   }
 
   function_name = "publicmultyfun"
@@ -11,8 +11,8 @@ resource "aws_lambda_function" "function2_aws" {
   s3_key        = aws_s3_bucket_object.public_source_code_aws.key
 }
 resource "aws_iam_role" "iam_for_lambda_function2" {
-  tags =  {
-    Name = "iam_for_lambda_function2"
+  tags = {
+    "Name" = "iam_for_lambda_function2"
   }
 
   name               = "iam_for_lambda_function2"
@@ -23,8 +23,8 @@ resource "aws_iam_role_policy_attachment" "function2_aws" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 resource "aws_api_gateway_rest_api" "function2_aws" {
-  tags =  {
-    Name = "publicmultyfun"
+  tags = {
+    "Name" = "publicmultyfun"
   }
 
   name        = "publicmultyfun"
@@ -102,7 +102,7 @@ resource "azurerm_function_app" "function2_azure" {
   os_type                    = "linux"
 
   app_settings =  {
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.public_source_code_azure.url}"
+    "WEBSITE_RUN_FROM_PACKAGE" = "${azurerm_storage_blob.public_source_code_azure.url}"
   }
 }
 resource "azurerm_app_service_plan" "function2_azure" {

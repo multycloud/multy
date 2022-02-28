@@ -1,6 +1,6 @@
 resource "aws_vpc" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   cidr_block           = "10.0.0.0/16"
@@ -8,14 +8,14 @@ resource "aws_vpc" "example_vn_aws" {
 }
 resource "aws_internet_gateway" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
   tags = {
-    Name = "example_vn"
+    "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
@@ -38,28 +38,28 @@ resource "aws_default_security_group" "example_vn_aws" {
 }
 resource "aws_eip" "ip_aws" {
   tags = {
-    Name = "test-ip"
+    "Name" = "test-ip"
   }
 
   network_interface = "${aws_network_interface.public-nic_aws.id}"
 }
 resource "aws_network_interface" "private-nic_aws" {
   tags = {
-    Name = "test-private-nic"
+    "Name" = "test-private-nic"
   }
 
   subnet_id = "${aws_subnet.subnet_aws.id}"
 }
 resource "aws_network_interface" "public-nic_aws" {
   tags = {
-    Name = "test-public-nic"
+    "Name" = "test-public-nic"
   }
 
   subnet_id = "${aws_subnet.subnet_aws.id}"
 }
 resource "aws_subnet" "subnet_aws" {
   tags = {
-    Name = "subnet"
+    "Name" = "subnet"
   }
 
   cidr_block        = "10.0.2.0/24"

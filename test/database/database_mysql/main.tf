@@ -1,6 +1,6 @@
 resource "aws_db_subnet_group" "example_db_aws" {
   tags = {
-    Name = "example-db"
+    "Name" = "example-db"
   }
 
   name = "example-db"
@@ -12,7 +12,7 @@ resource "aws_db_subnet_group" "example_db_aws" {
 }
 resource "aws_db_instance" "example_db_aws" {
   tags = {
-    Name = "exampledb"
+    "Name" = "exampledb"
   }
 
   allocated_storage    = 10
@@ -29,7 +29,7 @@ resource "aws_db_instance" "example_db_aws" {
 }
 resource "aws_subnet" "subnet1_aws" {
   tags = {
-    Name = "subnet1"
+    "Name" = "subnet1"
   }
 
   cidr_block        = "10.0.0.0/24"
@@ -38,7 +38,7 @@ resource "aws_subnet" "subnet1_aws" {
 }
 resource "aws_subnet" "subnet2_aws" {
   tags = {
-    Name = "subnet2"
+    "Name" = "subnet2"
   }
 
   cidr_block        = "10.0.1.0/24"
@@ -47,7 +47,7 @@ resource "aws_subnet" "subnet2_aws" {
 }
 resource "aws_route_table" "rt_aws" {
   tags = {
-    Name = "test-rt"
+    "Name" = "test-rt"
   }
 
   vpc_id = "${aws_vpc.vn_aws.id}"
@@ -67,7 +67,7 @@ resource "aws_route_table_association" "rta2_aws" {
 }
 resource "aws_vpc" "vn_aws" {
   tags = {
-    Name = "vn"
+    "Name" = "vn"
   }
 
   cidr_block           = "10.0.0.0/16"
@@ -75,14 +75,14 @@ resource "aws_vpc" "vn_aws" {
 }
 resource "aws_internet_gateway" "vn_aws" {
   tags = {
-    Name = "vn"
+    "Name" = "vn"
   }
 
   vpc_id = aws_vpc.vn_aws.id
 }
 resource "aws_default_security_group" "vn_aws" {
   tags = {
-    Name = "vn"
+    "Name" = "vn"
   }
 
   vpc_id = aws_vpc.vn_aws.id
