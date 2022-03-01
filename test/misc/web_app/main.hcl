@@ -66,7 +66,11 @@ multy "virtual_machine" "vm" {
   name              = "test-vm"
   os                = "linux"
   size              = "micro"
-  user_data         = "#!/bin/bash -xe\nsudo su; yum update -y; curl --silent --location https://rpm.nodesource.com/setup_14.x | bash -; yum -y install git nodejs mysql; git clone https://github.com/FaztTech/nodejs-mysql-links.git; cd nodejs-mysql-links; export DATABASE_HOST='${aws.example_db.host}'; export DATABASE_USER='${aws.example_db.username}'; export DATABASE_PASSWORD='${aws.example_db.password}'; mysql -h $DATABASE_HOST -P 3306 -u $DATABASE_USER --password=$DATABASE_PASSWORD -e 'source database/db.sql'; npm i; npm run build; npm start"
+  user_data         = templatefile("init.sh", {
+    db_host: aws.example_db.host,
+    db_username: aws.example_db.username,
+    db_password: aws.example_db.password
+  })
   subnet_id         = subnet3.id
   ssh_key_file_path = "./ssh_key.pub"
   public_ip         = true

@@ -12,7 +12,7 @@ multy "object_storage" "obj_storage" {
 multy "object_storage_object" "file1_public" {
   clouds = ["aws"]
   name                = "index.html"
-  content             = "<button onclick='lambda(\"${aws.lambda.url}\")'>Call aws</button><button onclick='lambda(\"${azure.lambda.url}/trigger\")'>Call azure</button><script>function lambda(url) {fetch(url).then(data => data.text()).then(data => alert(data));}</script>"
+  content             = templatefile("index.html", {aws_url = aws.lambda.url, azure_url = "${azure.lambda.url}/trigger"})
   object_storage      = obj_storage
   content_type        = "text/html"
   acl = "public_read"
