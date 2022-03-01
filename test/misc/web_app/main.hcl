@@ -52,7 +52,7 @@ multy "database" "example_db" {
   engine_version = "5.7"
   storage        = 10
   db_username    = "multyadmin"
-  db_password    = "multy$Admin123!"
+  db_password    = "multy-Admin123!"
   subnet_ids     = [
     subnet1.id,
     subnet2.id,
@@ -101,14 +101,6 @@ multy "network_security_group" nsg2 {
       action     = "allow"
       from_port  = "443"
       to_port    = "443"
-      cidr_block = "0.0.0.0/0"
-      direction  = "both"
-    }, {
-      protocol   = "tcp"
-      priority   = "160"
-      action     = "allow"
-      from_port  = "4000"
-      to_port    = "4000"
       cidr_block = "0.0.0.0/0"
       direction  = "both"
     }
