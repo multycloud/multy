@@ -25,9 +25,15 @@ type DecodedGlobalConfig struct {
 
 type DecodedResources struct {
 	Resources    map[string]resources.CloudSpecificResource
-	Outputs      map[string]cty.Value
+	Outputs      map[string]DecodedOutput
 	Providers    map[string]types.Provider
 	GlobalConfig DecodedGlobalConfig
+}
+
+type DecodedOutput struct {
+	OutputId        string
+	Value           cty.Value
+	DefinitionRange hcl.Range
 }
 
 func Decode(config parser.ParsedConfig) *DecodedResources {
@@ -73,13 +79,17 @@ func Decode(config parser.ParsedConfig) *DecodedResources {
 		}
 	}
 
-	outputs := map[string]cty.Value{}
+	outputs := map[string]DecodedOutput{}
 	for _, output := range config.Outputs {
 		val, diags := output.Value.Value(cloudSpecificCtx.GetCloudAgnosticContext())
 		if diags != nil {
 			validate.LogFatalWithDiags(diags, "unable to parse output %s", output.ID)
 		}
-		outputs[output.ID] = val
+		outputs[output.ID] = DecodedOutput{
+			OutputId:        output.ID,
+			Value:           val,
+			DefinitionRange: output.DefinitionRange,
+		}
 	}
 
 	return &DecodedResources{

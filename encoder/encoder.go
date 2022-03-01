@@ -12,6 +12,7 @@ import (
 	"multy-go/resources/output"
 	"multy-go/resources/types"
 	"multy-go/util"
+	"multy-go/validate"
 )
 
 type WithProvider struct {
@@ -88,24 +89,21 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 	}
 
 	type outputStruct struct {
-		ResourceId string `hcl:",key"`
-		Value      string `hcl:"value"`
+		ResourceId string    `hcl:",key"`
+		Value      cty.Value `hcl:"value"`
 	}
 
-	for outputId, outputVal := range decodedResources.Outputs {
-		if outputVal.Type() != cty.String {
-			log.Fatalf("non-string outputs are currently not supported")
-		}
+	for _, outputVal := range util.GetSortedMapValues(decodedResources.Outputs) {
 		hclOutput, err := hclencoder.Encode(
 			outputWrapper{
 				O: outputStruct{
-					ResourceId: outputId,
-					Value:      outputVal.AsString(),
+					ResourceId: outputVal.OutputId,
+					Value:      outputVal.Value,
 				},
 			},
 		)
 		if err != nil {
-			log.Fatal("unable to encode: ", err)
+			validate.LogFatalWithSourceRange(outputVal.DefinitionRange, "unable to encode output: %s", err.Error())
 		}
 		b.Write(hclOutput)
 	}
