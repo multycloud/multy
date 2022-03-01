@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/multy-dev/hclencoder"
 	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
@@ -40,7 +41,7 @@ type VirtualMachine struct {
 
 func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if vm.UserData != "" {
-		vm.UserData = fmt.Sprintf("%s(%q)", "base64encode", []byte(vm.UserData))
+		vm.UserData = fmt.Sprintf("%s(\"%s\")", "base64encode", []byte(hclencoder.EscapeString(vm.UserData)))
 	}
 
 	var subnetId = vm.SubnetId

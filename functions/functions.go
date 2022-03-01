@@ -13,7 +13,8 @@ func GetAllFunctions(cloud common.CloudProvider) map[string]function.Function {
 
 func GetAllCloudAgnosticFunctions() map[string]function.Function {
 	return map[string]function.Function{
-		"file": getTerraformFunction("file"),
+		"file":         getTerraformFunction("file"),
+		"templatefile": getTerraformFunction("templatefile"),
 	}
 }
 

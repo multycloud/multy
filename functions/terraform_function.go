@@ -11,14 +11,14 @@ import (
 func getTerraformFunction(functionName string) function.Function {
 	return function.New(
 		&function.Spec{
-			Params: []function.Parameter{{
+			VarParam: &function.Parameter{
 				Name:             "values",
 				Type:             cty.DynamicPseudoType,
 				AllowNull:        false,
 				AllowUnknown:     false,
 				AllowDynamicType: false,
 				AllowMarked:      false,
-			}},
+			},
 			Type: func(args []cty.Value) (cty.Type, error) {
 				return cty.DynamicPseudoType, nil
 			},
