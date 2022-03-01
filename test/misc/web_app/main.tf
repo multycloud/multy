@@ -10,7 +10,7 @@ resource "aws_db_instance" "example_db_aws" {
   engine               = "mysql"
   engine_version       = "5.7"
   username             = "multyadmin"
-  password             = "multy$Admin123!"
+  password             = "multy-Admin123!"
   instance_class       = "db.t2.micro"
   identifier           = "example-db"
   skip_final_snapshot  = true
@@ -66,12 +66,6 @@ resource "aws_security_group" "nsg2_aws" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    protocol    = "tcp"
-    from_port   = 4000
-    to_port     = 4000
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
@@ -93,12 +87,6 @@ resource "aws_security_group" "nsg2_aws" {
     protocol    = "tcp"
     from_port   = 443
     to_port     = 443
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    protocol    = "tcp"
-    from_port   = 4000
-    to_port     = 4000
     cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
@@ -156,7 +144,7 @@ resource "aws_instance" "vm_aws" {
   instance_type               = "t2.nano"
   associate_public_ip_address = true
   subnet_id                   = "${aws_subnet.subnet3_aws.id}"
-  user_data_base64            = base64encode("${templatefile("init.sh", { "db_host" = "${aws_db_instance.example_db_aws.address}", "db_password" = "multy$Admin123!", "db_username" = "${aws_db_instance.example_db_aws.username}" })}")
+  user_data_base64            = base64encode("${templatefile("init.sh", { "db_host" = "${aws_db_instance.example_db_aws.address}", "db_password" = "multy-Admin123!", "db_username" = "${aws_db_instance.example_db_aws.username}" })}")
   key_name                    = aws_key_pair.vm_aws.key_name
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
@@ -249,28 +237,6 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     destination_address_prefix = "*"
     direction                  = "Outbound"
   }
-  security_rule {
-    name                       = "6"
-    protocol                   = "tcp"
-    priority                   = 160
-    access                     = "Allow"
-    source_port_range          = "*"
-    source_address_prefix      = "*"
-    destination_port_range     = "4000-4000"
-    destination_address_prefix = "*"
-    direction                  = "Inbound"
-  }
-  security_rule {
-    name                       = "7"
-    protocol                   = "tcp"
-    priority                   = 160
-    access                     = "Allow"
-    source_port_range          = "*"
-    source_address_prefix      = "*"
-    destination_port_range     = "4000-4000"
-    destination_address_prefix = "*"
-    direction                  = "Outbound"
-  }
 }
 resource "azurerm_route_table" "rt_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
@@ -336,7 +302,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   location              = "eastus"
   size                  = "Standard_B1ls"
   network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
-  custom_data           = base64encode("${templatefile("init.sh", { "db_host" = "${aws_db_instance.example_db_aws.address}", "db_password" = "multy$Admin123!", "db_username" = "${aws_db_instance.example_db_aws.username}" })}")
+  custom_data           = base64encode("${templatefile("init.sh", { "db_host" = "${aws_db_instance.example_db_aws.address}", "db_password" = "multy-Admin123!", "db_username" = "${aws_db_instance.example_db_aws.username}" })}")
   os_disk {
     caching              = "None"
     storage_account_type = "Standard_LRS"
