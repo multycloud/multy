@@ -17,6 +17,9 @@ jobs:
           - goarch: arm64
             goos: windows
     steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
       - uses: actions/checkout@v2
       - uses: wangyoucao577/go-release-action@v1.22
         with:
@@ -27,3 +30,4 @@ jobs:
           asset_name: multy-${{ matrix.goos }}-${{ matrix.goarch }}
           extra_files: LICENSE README.md
           overwrite: TRUE
+          ldflags: "-X 'multy-go/cli.Version=${{ steps.get_version.outputs.VERSION }}'"
