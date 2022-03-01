@@ -12,7 +12,7 @@ import (
 )
 
 func StartCli() {
-	commands := []Command{&TranslateCommand{}, &ApplyCommand{}, &DestroyCommand{}}
+	commands := []Command{&TranslateCommand{}, &ApplyCommand{}, &DestroyCommand{}, &VersionCommand{}}
 
 	flagset := flag.NewFlagSet("cmd", flag.ContinueOnError)
 	flagset.SetOutput(ioutil.Discard)
