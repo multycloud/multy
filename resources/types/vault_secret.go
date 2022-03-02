@@ -44,8 +44,8 @@ func (r *VaultSecret) Translate(cloud common.CloudProvider, ctx resources.MultyC
 	return nil
 }
 
-func (r *VaultSecret) Validate(ctx resources.MultyContext) {
-	return
+func (r *VaultSecret) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	return errs
 }
 
 func (r *VaultSecret) GetMainResourceName(cloud common.CloudProvider) string {

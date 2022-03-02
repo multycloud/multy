@@ -86,22 +86,22 @@ func (r *ObjectStorageObject) IsPrivate() bool {
 	return r.Acl == "private"
 }
 
-func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) {
+func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	if len(r.Content) > 0 && len(r.Source) > 0 {
-		r.LogFatal(r.ResourceId, "content", "content can't be set if source is already set")
+		errs = append(errs, r.NewError("content", "content can't be set if source is already set"))
 	}
 	if len(r.Content) == 0 && len(r.Source) == 0 {
-		r.LogFatal(r.ResourceId, "", "content or source must be set")
+		errs = append(errs, r.NewError("", "content or source must be set"))
 	}
 	if len(r.Content) > 0 {
 		if !util.Contains(SUPPORTED_CONTENT_TYPES, r.ContentType) {
-			r.LogFatal(r.ResourceId, "content_type", fmt.Sprintf("%s not a valid content_type", r.ContentType))
+			errs = append(errs, r.NewError("content_type", fmt.Sprintf("%s not a valid content_type", r.ContentType)))
 		}
 	}
 	if r.Acl != "" && r.Acl != "public_read" && r.Acl != "private" {
-		r.LogFatal(r.ResourceId, "acl", fmt.Sprintf("%s not a valid acl", r.Acl))
+		errs = append(errs, r.NewError("acl", fmt.Sprintf("%s not a valid acl", r.Acl)))
 	}
-	return
+	return errs
 }
 
 func (r *ObjectStorageObject) GetMainResourceName(cloud common.CloudProvider) string {

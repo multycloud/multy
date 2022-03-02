@@ -94,16 +94,16 @@ func checkSubnetRouteTableAssociated(ctx resources.MultyContext, sId string) boo
 	return false
 }
 
-func (s *Subnet) Validate(ctx resources.MultyContext) {
+func (s *Subnet) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
 	//if vn.CidrBlock valid CIDR { return false }
 	//if vn.AvailbilityZone valid { return false }
 	if len(s.CidrBlock) == 0 { // max len?
-		s.LogFatal(s.ResourceId, "cidr_block", fmt.Sprintf("%s cidr_block length is invalid", s.ResourceId))
+		s.NewError("cidr_block", fmt.Sprintf("%s cidr_block length is invalid", s.ResourceId))
 	}
 
-	return
+	return errs
 }
 
 func (s *Subnet) GetMainResourceName(cloud common.CloudProvider) string {

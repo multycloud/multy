@@ -12,16 +12,23 @@ import (
 type ResourceValidationInfo struct {
 	SourceRanges  map[string]hcl.Range
 	BlockDefRange hcl.Range
+	ResourceId    string
 }
 
-func NewResourceValidationInfoFromContent(content *hcl.BodyContent, definitionRange hcl.Range) *ResourceValidationInfo {
+type ValidationError struct {
+	SourceRange  hcl.Range
+	ErrorMessage string
+	ResourceId   string
+}
+
+func NewResourceValidationInfoFromContent(content *hcl.BodyContent, definitionRange hcl.Range, id string) *ResourceValidationInfo {
 	result := map[string]hcl.Range{}
 	for _, attr := range content.Attributes {
 		result[attr.Name] = attr.Range
 	}
 	// TODO: also map blocks
 
-	return &ResourceValidationInfo{result, definitionRange}
+	return &ResourceValidationInfo{SourceRanges: result, BlockDefRange: definitionRange, ResourceId: id}
 }
 
 func (info *ResourceValidationInfo) LogFatal(resourceId string, fieldName string, errorMessage string) {
@@ -38,6 +45,30 @@ func (info *ResourceValidationInfo) LogFatal(resourceId string, fieldName string
 	}
 
 	exitAndPrintStackTrace()
+}
+
+func (e ValidationError) Print() {
+	if !e.SourceRange.Empty() {
+		printToStdErrLn("error when parsing resource %s: %s\n  on %s\n", e.ResourceId, e.ErrorMessage, e.SourceRange)
+		printLinesInRange(e.SourceRange)
+	} else {
+		printToStdErrLn("error when parsing resource %s: %s\n", e.ResourceId, e.ErrorMessage)
+	}
+}
+
+func (info *ResourceValidationInfo) NewError(fieldName string, errorMessage string) ValidationError {
+	if _, ok := info.SourceRanges[fieldName]; ok {
+		sourceRange := info.SourceRanges[fieldName]
+		return ValidationError{
+			SourceRange:  sourceRange,
+			ErrorMessage: errorMessage,
+			ResourceId:   info.ResourceId,
+		}
+	}
+	return ValidationError{
+		ErrorMessage: "",
+		ResourceId:   info.ResourceId,
+	}
 }
 
 func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...any) {
@@ -131,4 +162,12 @@ func ReadLines(sourceRange hcl.Range, bytes []byte) ([]Line, error) {
 		return nil, scanner.Err()
 	}
 	return matchingLines, nil
+}
+
+func PrintAllAndExit(errs []ValidationError) {
+	printToStdErrLn("%d validation errors were found", len(errs))
+	for _, err := range errs {
+		err.Print()
+	}
+	os.Exit(1)
 }

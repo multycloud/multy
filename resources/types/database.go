@@ -72,16 +72,16 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 	return nil
 }
 
-func (db *Database) Validate(ctx resources.MultyContext) {
+func (db *Database) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	if db.Engine != "mysql" {
-		db.LogFatal(db.ResourceId, "engine", fmt.Sprintf("\"%s\" is not valid a valid Engine", db.Engine))
+		errs = append(errs, db.NewError("engine", fmt.Sprintf("\"%s\" is not valid a valid Engine", db.Engine)))
 	}
-	if db.Storage < 10 && db.Storage < 20 {
-		db.LogFatal(db.ResourceId, "storage", "storage must be between 10 and 20")
+	if db.Storage < 10 || db.Storage > 20 {
+		errs = append(errs, db.NewError("storage", "storage must be between 10 and 20"))
 	}
 	// TODO regex validate db username && password
 	// TODO validate DB Size
-	return
+	return errs
 }
 
 func (db *Database) GetMainResourceName(cloud common.CloudProvider) string {

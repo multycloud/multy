@@ -126,8 +126,8 @@ func (r *ObjectStorage) GetResourceName(cloud common.CloudProvider) string {
 	return ""
 }
 
-func (r *ObjectStorage) Validate(ctx resources.MultyContext) {
-	return
+func (r *ObjectStorage) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	return errs
 }
 
 func (r *ObjectStorage) GetMainResourceName(cloud common.CloudProvider) string {

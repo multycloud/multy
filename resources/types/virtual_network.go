@@ -115,14 +115,14 @@ func (vn *VirtualNetwork) GetAssociatedInternetGateway(cloud common.CloudProvide
 }
 
 // TODO validate commonparams
-func (vn *VirtualNetwork) Validate(ctx resources.MultyContext) {
+func (vn *VirtualNetwork) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
 	//if vn.CidrBlock valid CIDR { return false }
 	if len(vn.CidrBlock) == 0 { // max len?
-		vn.LogFatal(vn.ResourceId, "cidr_block", "cidr_block length is invalid")
+		vn.NewError("cidr_block", "cidr_block length is invalid")
 	}
-	return
+	return errs
 }
 
 func (vn *VirtualNetwork) GetMainResourceName(cloud common.CloudProvider) string {
