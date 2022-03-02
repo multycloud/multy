@@ -42,7 +42,7 @@ jobs:
           golint .
 
       - name: Test
-        run: go1.18rc1 test -v -plan .
+        run: go1.18rc1 test ./test -v --tags=plan .
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

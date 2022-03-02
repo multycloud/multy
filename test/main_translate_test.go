@@ -1,4 +1,4 @@
-package main
+package test
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ func TestTranslate(t *testing.T) {
 
 	allTests := map[string]*TestFiles{}
 
-	root := "./test"
+	root := "_configs"
 	err := filepath.WalkDir(
 		root, func(path string, info os.DirEntry, err error) error {
 			if info.IsDir() || (filepath.Ext(path) != ".tf" && filepath.Ext(path) != ".hcl") || strings.HasPrefix(

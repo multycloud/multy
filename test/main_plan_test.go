@@ -1,7 +1,9 @@
-package main
+//go:build plan
+// +build plan
+
+package test
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -13,14 +15,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var plan = flag.Bool("plan", false, "plan")
-
 func TestPlan(t *testing.T) {
 	log.SetFlags(log.Lshortfile)
 
 	allTests := map[string]string{}
 
-	root := "./test"
+	root := "_configs"
 	err := filepath.WalkDir(root, func(path string, info os.DirEntry, err error) error {
 		if info.IsDir() || filepath.Ext(path) != ".tf" || strings.HasPrefix(filepath.Base(path), ".") {
 			return nil
@@ -40,11 +40,9 @@ func TestPlan(t *testing.T) {
 	}
 
 	for _, outfile := range allTests {
-		if *plan {
-			t.Run(filepath.Base(filepath.Dir(outfile)), func(t *testing.T) {
-				testPlan(outfile, t)
-			})
-		}
+		t.Run(filepath.Base(filepath.Dir(outfile)), func(t *testing.T) {
+			testPlan(outfile, t)
+		})
 	}
 }
 
