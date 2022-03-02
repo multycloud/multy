@@ -5,6 +5,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources/common"
 	"multy-go/resources/output"
+	"multy-go/validate"
 )
 
 func GetCloudSpecificResourceId(r Resource, cloud common.CloudProvider) string {
@@ -38,7 +39,7 @@ type Resource interface {
 
 	GetLocation(cloud common.CloudProvider, ctx MultyContext) string
 
-	Validate(ctx MultyContext)
+	Validate(ctx MultyContext) []validate.ValidationError
 
 	GetMainResourceName(cloud common.CloudProvider) string
 

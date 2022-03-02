@@ -61,8 +61,8 @@ func (r *Vault) GetVaultId(cloud common.CloudProvider) string {
 	return ""
 }
 
-func (r *Vault) Validate(ctx resources.MultyContext) {
-	return
+func (r *Vault) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	return errs
 }
 
 func (r *Vault) GetMainResourceName(cloud common.CloudProvider) string {

@@ -219,23 +219,23 @@ func (vm *VirtualMachine) GetAssociatedKeyPairName(cloud common.CloudProvider) s
 	return ""
 }
 
-func (vm *VirtualMachine) Validate(ctx resources.MultyContext) {
+func (vm *VirtualMachine) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
 	//if vn.Size valid { return false }
 	if vm.OperatingSystem != "linux" { // max len?
-		vm.LogFatal(vm.ResourceId, "os", "invalid operating system")
+		vm.NewError("os", "invalid operating system")
 	}
 	if vm.PublicIp && len(vm.NetworkInterfaceIds) != 0 {
-		vm.LogFatal(vm.ResourceId, "public_ip", "public ip can't be set with network interface ids")
+		vm.NewError("public_ip", "public ip can't be set with network interface ids")
 	}
 	if vm.PublicIp && vm.PublicIpId != "" {
-		vm.LogFatal(vm.ResourceId, "public_ip", "conflict between public_ip and public_ip_id")
+		vm.NewError("public_ip", "conflict between public_ip and public_ip_id")
 	}
 	if common.ValidateVmSize(vm.Size) {
-		vm.LogFatal(vm.ResourceId, "size", fmt.Sprintf("\"%s\" is not []", vm.Size))
+		vm.NewError("size", fmt.Sprintf("\"%s\" is not []", vm.Size))
 	}
-	return
+	return errs
 }
 
 func (vm *VirtualMachine) GetMainResourceName(cloud common.CloudProvider) string {

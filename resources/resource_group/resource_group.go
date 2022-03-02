@@ -90,8 +90,8 @@ func (rg *Type) GetLocation(cloud common.CloudProvider, ctx resources.MultyConte
 	return ctx.GetLocation(rg.Location, cloud)
 }
 
-func (rg *Type) Validate(ctx resources.MultyContext) {
-	return
+func (rg *Type) Validate(ctx resources.MultyContext) []validate.ValidationError {
+	return nil
 }
 
 func (rg *Type) GetMainResourceName(cloud common.CloudProvider) string {

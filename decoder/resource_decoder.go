@@ -112,20 +112,20 @@ func decode(resource parser.MultyResource, ctx *hcl.EvalContext, rgId string, mh
 
 	body = mhclProcessor.Process(body, r, ctx, cloud)
 
-	validationInfo, diags := decodeBody(r, body, ctx, resource.DefinitionRange)
+	validationInfo, diags := decodeBody(r, body, ctx, resource.DefinitionRange, resource.ID)
 	commonParams.ResourceValidationInfo = validationInfo
 
 	return r, diags
 }
 
-func decodeBody(t any, body hcl.Body, ctx *hcl.EvalContext, definitionRange hcl.Range) (*validate.ResourceValidationInfo, hcl.Diagnostics) {
+func decodeBody(t any, body hcl.Body, ctx *hcl.EvalContext, definitionRange hcl.Range, resourceId string) (*validate.ResourceValidationInfo, hcl.Diagnostics) {
 	schema, _ := gohcl.ImpliedBodySchema(t)
 	content, diags := body.Content(schema)
 	if diags != nil {
 		return nil, diags
 	}
 	diags = gohcl.DecodeBody(body, ctx, t)
-	return validate.NewResourceValidationInfoFromContent(content, definitionRange), diags
+	return validate.NewResourceValidationInfoFromContent(content, definitionRange, resourceId), diags
 }
 
 func getRgId(defaultRgId hcl.Expression, attrs hcl.Attributes, ctx *hcl.EvalContext, resource parser.MultyResource) (string, bool) {

@@ -293,14 +293,14 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 	return nil
 }
 
-func (r *Lambda) Validate(ctx resources.MultyContext) {
+func (r *Lambda) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	if r.SourceCodeDir == "" && r.SourceCodeObject == nil {
-		r.LogFatal(r.ResourceId, "", "one of source_code_dir or source_code_object must be set")
+		errs = append(errs, r.NewError("", "one of source_code_dir or source_code_object must be set"))
 	}
 	if r.SourceCodeDir != "" && r.SourceCodeObject != nil {
-		r.LogFatal(r.ResourceId, "source_code_dir", "only one of source_code_dir or source_code_object can be set")
+		errs = append(errs, r.NewError("source_code_dir", "only one of source_code_dir or source_code_object can be set"))
 	}
-	return
+	return errs
 }
 
 func (r *Lambda) getAwsIamRoleName() string {

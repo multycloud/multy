@@ -87,17 +87,17 @@ func (r *RouteTable) GetId(cloud common.CloudProvider) string {
 	return fmt.Sprintf("%s.%s.id", types[cloud], r.GetTfResourceId(cloud))
 }
 
-func (r *RouteTable) Validate(ctx resources.MultyContext) {
+func (r *RouteTable) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	if len(r.Routes) > 20 {
-		r.LogFatal(r.ResourceId, "routes", fmt.Sprintf("\"%d\" exceeds routes limit is 20", len(r.Routes)))
+		errs = append(errs, r.NewError("routes", fmt.Sprintf("\"%d\" exceeds routes limit is 20", len(r.Routes))))
 	}
 	for _, route := range r.Routes {
 		if !strings.EqualFold(route.Destination, INTERNET) {
-			r.LogFatal(r.ResourceId, "route", fmt.Sprintf("\"%s\" must be Internet", route.Destination))
+			errs = append(errs, r.NewError("route", fmt.Sprintf("\"%s\" must be Internet", route.Destination)))
 		}
 		//	if route.CidrBlock valid CIDR
 	}
-	return
+	return errs
 }
 
 func (r *RouteTable) GetMainResourceName(cloud common.CloudProvider) string {

@@ -226,28 +226,26 @@ func validatePort(s string) bool {
 	return true
 }
 
-func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext) {
+func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	for _, rule := range r.Rules {
 		// TODO: get better source ranges
 		if !validateRuleDirection(rule.Direction) {
-			r.LogFatal(
-				r.ResourceId, "rules", fmt.Sprintf(
-					"rule direction \"%s\" is not valid. direction must be \"%s\", \"%s\" or \"%s\"", rule.Direction,
-					INGRESS, EGRESS, BOTH,
-				),
-			)
+			r.NewError("rules", fmt.Sprintf(
+				"rule direction \"%s\" is not valid. direction must be \"%s\", \"%s\" or \"%s\"", rule.Direction,
+				INGRESS, EGRESS, BOTH,
+			))
 		}
 		if !validatePort(rule.ToPort) {
-			r.LogFatal(r.ResourceId, "rules", fmt.Sprintf("rule to_port \"%s\" is not valid", rule.ToPort))
+			errs = append(errs, r.NewError("rules", fmt.Sprintf("rule to_port \"%s\" is not valid", rule.ToPort)))
 		}
 		if !validatePort(rule.FromPort) {
-			r.LogFatal(r.ResourceId, "rules", fmt.Sprintf("rule from_port \"%s\" is not valid", rule.FromPort))
+			errs = append(errs, r.NewError("rules", fmt.Sprintf("rule from_port \"%s\" is not valid", rule.FromPort)))
 		}
 		// TODO validate CIDR
 		//		validate protocol
 	}
 	// TODO validate location matches with VN location
-	return
+	return errs
 }
 
 func (r *NetworkSecurityGroup) GetMainResourceName(cloud common.CloudProvider) string {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/multy-dev/hclencoder"
 	"github.com/zclconf/go-cty/cty"
+	"golang.org/x/exp/maps"
 	"log"
 	"multy-go/decoder"
 	"multy-go/mhcl"
@@ -41,12 +42,20 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 
 	translationCache := map[resources.CloudSpecificResource][]output.TfBlock{}
 
+	errors := map[validate.ValidationError]bool{}
 	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
 		translationCache[r] = r.Translate(ctx)
 		for _, translated := range translationCache[r] {
 			defaultTagProcessor.Process(translated)
 		}
-		r.Resource.Validate(ctx)
+		// we need to use a set here because errors are duplicated for multiple clouds
+		for _, err := range r.Resource.Validate(ctx) {
+			errors[err] = true
+		}
+	}
+
+	if len(errors) != 0 {
+		validate.PrintAllAndExit(maps.Keys(errors))
 	}
 
 	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
