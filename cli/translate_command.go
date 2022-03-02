@@ -57,8 +57,11 @@ func (c *TranslateCommand) Execute(args []string, ctx context.Context) error {
 
 	hclOutput := encoder.Encode(r)
 
-	d1 := []byte(hclOutput)
-	err := os.WriteFile(c.OutputFile, d1, 0644)
+	err := os.MkdirAll(filepath.Dir(c.OutputFile), os.ModeDir|(os.ModePerm&0775))
+	if err != nil {
+		return fmt.Errorf("error creating output file: %s", err.Error())
+	}
+	err = os.WriteFile(c.OutputFile, []byte(hclOutput), os.ModePerm&0664)
 	if err != nil {
 		return fmt.Errorf("error creating output file: %s", err.Error())
 	}
