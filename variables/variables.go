@@ -107,3 +107,7 @@ func (i *CommandLineVariables) Set(value string) error {
 	)
 	return nil
 }
+
+func (i *CommandLineVariables) Type() string {
+	return "string"
+}

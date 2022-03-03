@@ -2,8 +2,8 @@ package cli
 
 import (
 	"context"
-	"flag"
 	"fmt"
+	flag "github.com/spf13/pflag"
 	"io/ioutil"
 	"log"
 	"multy-go/decoder"
@@ -18,22 +18,28 @@ import (
 type TranslateCommand struct {
 	CommandLineVars variables.CommandLineVariables
 	OutputFile      string
+	ConfigFiles     []string
 }
 
-func (c *TranslateCommand) Name() string {
-	return "translate"
+func (c *TranslateCommand) ParseFlags(f *flag.FlagSet, args []string) {
+	f.Var(&c.CommandLineVars, "var", "Variables to be passed to configuration")
+	f.StringVar(&c.OutputFile, "output", "main.tf", "Name of the output file")
+	_ = f.Parse(args)
+	c.ConfigFiles = f.Args()
 }
 
-func (c *TranslateCommand) Init() {
-	flag.Var(&c.CommandLineVars, "var", "Variables to be passed to configuration")
-	flag.StringVar(&c.OutputFile, "output", "main.tf", "Name of the output file")
+func (c *TranslateCommand) Description() CommandDesc {
+	return CommandDesc{
+		Name:        "translate",
+		Description: "translates the multy configuration file(s) to a terraform file",
+		Usage:       "multy translate [files...] [options]",
+	}
 }
 
-func (c *TranslateCommand) Execute(args []string, ctx context.Context) error {
+func (c *TranslateCommand) Execute(ctx context.Context) error {
 	start := time.Now()
-	configFiles := args
 
-	if len(configFiles) == 0 {
+	if len(c.ConfigFiles) == 0 {
 		files, err := ioutil.ReadDir(".")
 		if err != nil {
 			return fmt.Errorf("error while reading current directory: %s", err.Error())
@@ -41,17 +47,17 @@ func (c *TranslateCommand) Execute(args []string, ctx context.Context) error {
 		for _, file := range files {
 			if !file.IsDir() && filepath.Ext(file.Name()) == ".mt" {
 				log.Println("config file found:", file.Name())
-				configFiles = append(configFiles, file.Name())
+				c.ConfigFiles = append(c.ConfigFiles, file.Name())
 			}
 		}
 	}
 
-	if len(configFiles) == 0 {
+	if len(c.ConfigFiles) == 0 {
 		return fmt.Errorf("no .mt config files found")
 	}
 
 	p := parser.Parser{CliVars: c.CommandLineVars}
-	parsedConfig := p.Parse(configFiles)
+	parsedConfig := p.Parse(c.ConfigFiles)
 
 	r := decoder.Decode(parsedConfig)
 

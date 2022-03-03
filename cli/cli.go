@@ -2,9 +2,8 @@ package cli
 
 import (
 	"context"
-	"flag"
 	"fmt"
-	"io/ioutil"
+	flag "github.com/spf13/pflag"
 	"log"
 	"os"
 	"os/signal"
@@ -12,32 +11,41 @@ import (
 )
 
 func StartCli() {
-	commands := []Command{&TranslateCommand{}, &ApplyCommand{}, &DestroyCommand{}, &VersionCommand{}}
+	helpCmd := &HelpCommand{}
+	commands := []Command{&TranslateCommand{}, &ApplyCommand{}, &DestroyCommand{}, &VersionCommand{}, helpCmd}
+	helpCmd.AvailableCommands = commands
 
-	flagset := flag.NewFlagSet("cmd", flag.ContinueOnError)
-	flagset.SetOutput(ioutil.Discard)
-	_ = flagset.Parse(os.Args[1:])
+	if len(os.Args) < 2 {
+		err := helpCmd.Execute(nil)
+		if err != nil {
+			log.Fatalf("unable to show help command: %s", err.Error())
 
-	args := flagset.Args()
-	if len(args) == 0 {
-		log.Fatalf("no command was specified")
+		}
+		return
 	}
 
 	var selected Command
 	for _, c := range commands {
-		if c.Name() == args[0] {
+		if c.Description().Name == os.Args[1] {
 			selected = c
 			break
 		}
 	}
 
 	if selected == nil {
-		log.Fatalf("command not found: %s", args[0])
+		log.Fatalf("command not found: %s", os.Args[1])
 	}
 
-	selected.Init()
-	flag.Parse()
-	args = flag.Args()
+	f := flag.NewFlagSet(selected.Description().Name, flag.ExitOnError)
+	f.Usage = func() {
+		_, _ = fmt.Fprintf(os.Stderr, "%s: %s\n", selected.Description().Name, selected.Description().Description)
+		if selected.Description().Usage != "" {
+			_, _ = fmt.Fprintf(os.Stderr, "Usage: %s\n", selected.Description().Usage)
+		}
+		f.PrintDefaults()
+	}
+
+	selected.ParseFlags(f, os.Args[2:])
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -61,9 +69,8 @@ func StartCli() {
 		}
 	}()
 
-	err := selected.Execute(args[1:], ctx)
+	err := selected.Execute(ctx)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
-
 }
