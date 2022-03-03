@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-exec/tfexec"
+	flag "github.com/spf13/pflag"
 	"io/ioutil"
 	"os"
 )
@@ -12,17 +13,21 @@ type ApplyCommand struct {
 	Translate *TranslateCommand
 }
 
-func (c *ApplyCommand) Name() string {
-	return "apply"
-}
-
-func (c *ApplyCommand) Init() {
+func (c *ApplyCommand) ParseFlags(f *flag.FlagSet, args []string) {
 	c.Translate = &TranslateCommand{}
-	c.Translate.Init()
+	c.Translate.ParseFlags(f, args)
 }
 
-func (c *ApplyCommand) Execute(args []string, ctx context.Context) error {
-	err := c.Translate.Execute(args, nil)
+func (c *ApplyCommand) Description() CommandDesc {
+	return CommandDesc{
+		Name:        "apply",
+		Description: "deploys or updates infrastructure according to the config file(s)",
+		Usage:       "multy apply [files...] [options]",
+	}
+}
+
+func (c *ApplyCommand) Execute(ctx context.Context) error {
+	err := c.Translate.Execute(nil)
 
 	if err != nil {
 		return err
