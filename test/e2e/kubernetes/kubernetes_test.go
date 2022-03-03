@@ -1,10 +1,11 @@
 //go:build e2e
 // +build e2e
 
-package database
+package kubernetes
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	flag "github.com/spf13/pflag"
@@ -40,26 +41,42 @@ output "db_host" {
 }
 `
 
-var config = fmt.Sprintf(`
-multy virtual_network vn {
-  name       = "db-vn"
+var config = `
+multy "kubernetes_service" "kubernetes_test" {
+    name = "example"
+    subnet_ids = [subnet1.id, subnet2.id]
+}
+
+multy "kubernetes_node_pool" "example_pool" {
+  name = "example"
+  cluster_name = example.name
+  subnet_ids = [subnet1.id, subnet2.id]
+  starting_node_count = 1
+  max_node_count = 1
+  min_node_count = 1
+}
+
+
+multy "virtual_network" "example_vn" {
+  name       = "example_vn"
   cidr_block = "10.0.0.0/16"
 }
-multy subnet subnet1 {
-  name              = "db-subnet1"
-  cidr_block        = "10.0.0.0/24"
-  virtual_network   = vn
+multy "subnet" "subnet1" {
+  name              = "private-subnet"
+  cidr_block        = "10.0.1.0/24"
+  virtual_network   = example_vn
   availability_zone = 1
 }
-multy subnet subnet2 {
-  name              = "db-subnet2"
-  cidr_block        = "10.0.1.0/24"
-  virtual_network   = vn
+multy "subnet" "subnet2" {
+  name              = "public-subnet"
+  cidr_block        = "10.0.2.0/24"
+  virtual_network   = example_vn
   availability_zone = 2
 }
+
 multy route_table "rt" {
-  name            = "db-rt"
-  virtual_network = vn
+  name            = "test-rt"
+  virtual_network = example_vn
   routes          = [
     {
       cidr_block  = "0.0.0.0/0"
@@ -67,34 +84,31 @@ multy route_table "rt" {
     }
   ]
 }
-
 multy route_table_association rta {
-  route_table_id = rt.id
-  subnet_id      = subnet1.id
-}
-multy route_table_association rta2 {
   route_table_id = rt.id
   subnet_id      = subnet2.id
 }
-multy "database" "db" {
-  name           = "dbhlmzapdo"
-  size           = "nano"
-  engine         = "mysql"
-  engine_version = "5.7"
-  storage        = 10
-  db_username    = "%s"
-  db_password    = "%s"
-  subnet_ids     = [
-    subnet1.id,
-    subnet2.id,
-  ]
+`
+
+type GetNodesOutput struct {
+	Items []Node `json:"items"`
 }
-`, db_username, db_passwd)
+
+type NodeStatusCondition struct {
+	Type   string `json:"type,omitempty"`
+	Status bool   `json:"status,omitempty"`
+}
+
+type Node struct {
+	Status struct {
+		Conditions []NodeStatusCondition `json:"conditions,omitempty"`
+	} `json:"status"`
+}
 
 func testDb(t *testing.T, cloudSpecificConfig string, cloudName string) {
 	t.Parallel()
 
-	multyFileName := fmt.Sprintf("database_%s.hcl", cloudName)
+	multyFileName := fmt.Sprintf("kubernetes%s.hcl", cloudName)
 	tfDir := fmt.Sprintf("terraform_%s", cloudName)
 
 	err := os.WriteFile(multyFileName, []byte(cloudSpecificConfig+config), 0664)
@@ -126,21 +140,29 @@ func testDb(t *testing.T, cloudSpecificConfig string, cloudName string) {
 		}
 	}()
 
-	host := terraform.Output(t, tfOptions, "db_host")
-
-	var username = db_username
-	// TODO: fix this. azure and aws should have similar databases and able to be accessed the same way
-	if cloudName == "azure" {
-		username = fmt.Sprintf("%s@%s", db_username, host)
+	// aws eks --region eu-west-1 update-kubeconfig --name kubernetes_test
+	out, err := exec.Command("/usr/bin/aws", "eks", "--region", "eu-west-1", "update-kubeconfig", "--name", "kubernetes_test").CombinedOutput()
+	if err != nil {
+		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
-
-	// TODO: fix Client with IP address '188.154.29.237' is not allowed to connect to this MySQL server in azure
-	out, err := exec.Command("/usr/bin/mysql", "-h", host, "-P", "3306", "-u", username, "--password="+db_passwd, "-e", "select 12+34;").CombinedOutput()
+	// kubectl get nodes -o json
+	out, err = exec.Command("/usr/local/bin/kubectl", "get", "nodes", "-o", "json").CombinedOutput()
 	if err != nil {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
 
-	assert.Contains(t, string(out), "46")
+	o := GetNodesOutput{}
+
+	err = json.Unmarshal(out, &o)
+	if err != nil {
+		t.Fatal(fmt.Errorf("output cant be parsed: %s", err.Error()))
+	}
+
+	assert.Len(t, o.Items, 1)
+	assert.Contains(t, o.Items[0].Status.Conditions, NodeStatusCondition{
+		Type:   "Ready",
+		Status: true,
+	})
 }
 
 func TestAwsDb(t *testing.T) {

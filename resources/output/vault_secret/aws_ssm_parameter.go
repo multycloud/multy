@@ -1,6 +1,8 @@
 package vault_secret
 
-import "multy-go/resources/common"
+import (
+	"multy-go/resources/common"
+)
 
 const AwsResourceName = "aws_ssm_parameter"
 

@@ -1,6 +1,8 @@
 package network_security_group
 
-import "multy-go/resources/common"
+import (
+	"multy-go/resources/common"
+)
 
 type AwsAcl struct {
 	*common.AwsResource `hcl:",squash"`

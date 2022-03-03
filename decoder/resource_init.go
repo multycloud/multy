@@ -39,6 +39,10 @@ func InitResource(resourceType string, commonParams *resources.CommonResourcePar
 		return &types.VaultSecret{CommonResourceParams: commonParams}, nil
 	case "lambda":
 		return &types.Lambda{CommonResourceParams: commonParams}, nil
+	case "kubernetes_service":
+		return &types.ManagedKubernetesService{CommonResourceParams: commonParams}, nil
+	case "kubernetes_node_pool":
+		return &types.KubernetesServiceNodePool{CommonResourceParams: commonParams}, nil
 	default:
 		return nil, fmt.Errorf("unknown resource type %s", resourceType)
 	}

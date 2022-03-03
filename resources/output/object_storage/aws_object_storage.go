@@ -1,6 +1,8 @@
 package object_storage
 
-import "multy-go/resources/common"
+import (
+	"multy-go/resources/common"
+)
 
 // aws_s3_bucket
 type AwsS3Bucket struct {

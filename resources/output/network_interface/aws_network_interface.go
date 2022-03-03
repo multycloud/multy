@@ -1,6 +1,8 @@
 package network_interface
 
-import "multy-go/resources/common"
+import (
+	"multy-go/resources/common"
+)
 
 const AwsResourceName = "aws_network_interface"
 
