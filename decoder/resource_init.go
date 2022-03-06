@@ -40,7 +40,7 @@ func InitResource(resourceType string, commonParams *resources.CommonResourcePar
 	case "lambda":
 		return &types.Lambda{CommonResourceParams: commonParams}, nil
 	case "kubernetes_service":
-		return &types.ManagedKubernetesService{CommonResourceParams: commonParams}, nil
+		return &types.KubernetesService{CommonResourceParams: commonParams}, nil
 	case "kubernetes_node_pool":
 		return &types.KubernetesServiceNodePool{CommonResourceParams: commonParams}, nil
 	default:

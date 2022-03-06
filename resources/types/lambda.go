@@ -6,6 +6,7 @@ import (
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output"
+	"multy-go/resources/output/iam"
 	"multy-go/resources/output/lambda"
 	"multy-go/resources/output/local_exec"
 	"multy-go/resources/output/object_storage"
@@ -67,16 +68,16 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		result = append(result, function)
 		result = append(
 			result,
-			lambda.AwsIamRole{
+			iam.AwsIamRole{
 				AwsResource:      common.NewAwsResource(r.getAwsIamRoleName(), r.getAwsIamRoleName()),
 				Name:             r.getAwsIamRoleName(),
 				AssumeRolePolicy: lambda.DefaultLambdaPolicy,
 			},
 			// this gives permission to write cloudwatch logs
-			lambda.AwsIamRolePolicyAttachment{
+			iam.AwsIamRolePolicyAttachment{
 				AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)}},
 				Role: fmt.Sprintf(
-					"%s.%s.name", common.GetResourceName(lambda.AwsIamRole{}), r.getAwsIamRoleName(),
+					"%s.%s.name", common.GetResourceName(iam.AwsIamRole{}), r.getAwsIamRoleName(),
 				),
 				PolicyArn: lambda.LambdaBasicExecutionRole,
 			},

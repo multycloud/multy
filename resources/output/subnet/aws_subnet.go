@@ -11,5 +11,5 @@ type AwsSubnet struct {
 	CidrBlock           string `hcl:"cidr_block"`
 	VpcId               string `hcl:"vpc_id,expr"`
 	AvailabilityZone    string `hcl:"availability_zone,optional" hcle:"omitempty"`
-	MapPublicIpOnLaunch string `hcl:"map_public_ip_on_launch"  hcle:"omitempty"`
+	MapPublicIpOnLaunch bool   `hcl:"map_public_ip_on_launch"  hcle:"omitempty"`
 }

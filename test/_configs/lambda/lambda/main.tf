@@ -21,7 +21,7 @@ resource "aws_iam_role" "iam_for_lambda_super_long_function" {
   }
 
   name               = "iam_for_lambda_super_long_function"
-  assume_role_policy =  "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"lambda.amazonaws.com\"\n      },\n      \"Effect\": \"Allow\",\n      \"Sid\": \"\"\n    }\n  ]\n}"
+  assume_role_policy = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "super_long_function_aws" {
   role       = aws_iam_role.iam_for_lambda_super_long_function.name

@@ -6,7 +6,7 @@ import (
 	"multy-go/resources/common"
 	"multy-go/resources/output"
 	"multy-go/resources/output/iam"
-	"multy-go/resources/output/kuerbenetes_node_pool"
+	"multy-go/resources/output/kubernetes_node_pool"
 	"multy-go/validate"
 )
 
@@ -20,7 +20,7 @@ type KubernetesServiceNodePool struct {
 	StartingNodeCount int               `hcl:"starting_node_count,optional"`
 	MaxNodeCount      int               `hcl:"max_node_count"`
 	MinNodeCount      int               `hcl:"min_node_count"`
-	Tags              map[string]string `hcl:"tags,optional"`
+	Labels            map[string]string `hcl:"labels,optional"`
 	VmSize            string            `hcl:"vm_size,optional"`
 	DiskSizeGiB       int               `hcl:"disk_size_gib,optional"`
 }
@@ -31,7 +31,7 @@ func (r *KubernetesServiceNodePool) Validate(ctx resources.MultyContext) []valid
 
 func (r *KubernetesServiceNodePool) GetMainResourceName(cloud common.CloudProvider) string {
 	if cloud == common.AWS {
-		return common.GetResourceName(kuerbenetes_node_pool.AwsKubernetesNodeGroup{})
+		return common.GetResourceName(kubernetes_node_pool.AwsKubernetesNodeGroup{})
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return ""
@@ -64,18 +64,18 @@ func (r *KubernetesServiceNodePool) Translate(cloud common.CloudProvider, ctx re
 				Role:        fmt.Sprintf("aws_iam_role.%s.name", r.GetTfResourceId(cloud)),
 				PolicyArn:   "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
 			},
-			&kuerbenetes_node_pool.AwsKubernetesNodeGroup{
+			&kubernetes_node_pool.AwsKubernetesNodeGroup{
 				AwsResource:   common.NewAwsResourceWithIdOnly(r.ResourceId),
 				ClusterName:   r.ClusterName,
 				NodeGroupName: r.Name,
 				NodeRoleArn:   fmt.Sprintf("aws_iam_role.%s.arn", r.GetTfResourceId(cloud)),
 				SubnetIds:     r.SubnetIds,
-				ScalingConfig: kuerbenetes_node_pool.ScalingConfig{
+				ScalingConfig: kubernetes_node_pool.ScalingConfig{
 					DesiredSize: r.StartingNodeCount,
 					MaxSize:     r.MaxNodeCount,
 					MinSize:     r.MinNodeCount,
 				},
-				Tags: r.Tags,
+				Labels: r.Labels,
 			},
 		}
 	}

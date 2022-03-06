@@ -10,6 +10,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	flag "github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/maps"
 	"multy-go/cli"
 	"os"
 	"os/exec"
@@ -18,65 +19,50 @@ import (
 
 const DestroyAfter = true
 
-const db_username = "multy"
-const db_passwd = "passwd1778!"
-
 const aws_global_config = `
 config {
   clouds   = ["aws"]
   location = "ireland"
 }
-output "db_host" {
-  value = aws.db.host
-}
-`
-
-const azure_global_config = `
-config {
-  clouds   = ["azure"]
-  location = "us-east"
-}
-output "db_host" {
-  value = azure.db.host
-}
 `
 
 var config = `
 multy "kubernetes_service" "kubernetes_test" {
-    name = "example"
+    name = "kbn_test"
     subnet_ids = [subnet1.id, subnet2.id]
 }
 
-multy "kubernetes_node_pool" "example_pool" {
-  name = "example"
-  cluster_name = example.name
+multy "kubernetes_node_pool" "kbn_test_pool" {
+  name = "kbn_test"
+  cluster_name = kubernetes_test.name
   subnet_ids = [subnet1.id, subnet2.id]
   starting_node_count = 1
   max_node_count = 1
   min_node_count = 1
+  labels = { "multy.dev/env": "test" }
 }
 
 
-multy "virtual_network" "example_vn" {
-  name       = "example_vn"
+multy "virtual_network" "kbn_test_vn" {
+  name       = "kbn_test_vn"
   cidr_block = "10.0.0.0/16"
 }
 multy "subnet" "subnet1" {
   name              = "private-subnet"
   cidr_block        = "10.0.1.0/24"
-  virtual_network   = example_vn
+  virtual_network   = kbn_test_vn
   availability_zone = 1
 }
 multy "subnet" "subnet2" {
   name              = "public-subnet"
   cidr_block        = "10.0.2.0/24"
-  virtual_network   = example_vn
+  virtual_network   = kbn_test_vn
   availability_zone = 2
 }
 
 multy route_table "rt" {
   name            = "test-rt"
-  virtual_network = example_vn
+  virtual_network = kbn_test_vn
   routes          = [
     {
       cidr_block  = "0.0.0.0/0"
@@ -96,19 +82,20 @@ type GetNodesOutput struct {
 
 type NodeStatusCondition struct {
 	Type   string `json:"type,omitempty"`
-	Status bool   `json:"status,omitempty"`
+	Status string `json:"status,omitempty"`
 }
 
 type Node struct {
 	Status struct {
 		Conditions []NodeStatusCondition `json:"conditions,omitempty"`
 	} `json:"status"`
+	Metadata struct {
+		Labels map[string]string `json:"labels"`
+	} `json:"metadata"`
 }
 
-func testDb(t *testing.T, cloudSpecificConfig string, cloudName string) {
-	t.Parallel()
-
-	multyFileName := fmt.Sprintf("kubernetes%s.hcl", cloudName)
+func testKubernetes(t *testing.T, cloudSpecificConfig string, cloudName string) {
+	multyFileName := fmt.Sprintf("kubernetes_%s.hcl", cloudName)
 	tfDir := fmt.Sprintf("terraform_%s", cloudName)
 
 	err := os.WriteFile(multyFileName, []byte(cloudSpecificConfig+config), 0664)
@@ -119,9 +106,12 @@ func testDb(t *testing.T, cloudSpecificConfig string, cloudName string) {
 	defer os.Remove(multyFileName)
 
 	cmd := cli.TranslateCommand{}
-	cmd.OutputFile = tfDir + "/main.tf"
 	f := flag.NewFlagSet("test", flag.ContinueOnError)
 	cmd.ParseFlags(f, []string{multyFileName})
+	err = f.Set("output", tfDir+"/main.tf")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 
 	ctx := context.Background()
 	err = cmd.Execute(ctx)
@@ -129,19 +119,24 @@ func testDb(t *testing.T, cloudSpecificConfig string, cloudName string) {
 		t.Fatal(err.Error())
 	}
 
-	tfOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{TerraformDir: tfDir})
-	terraform.Init(t, tfOptions)
-	terraform.Apply(t, tfOptions)
-
 	defer func() {
 		if DestroyAfter {
-			terraform.Destroy(t, tfOptions)
 			os.RemoveAll(tfDir)
 		}
 	}()
 
+	tfOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{TerraformDir: tfDir})
+	terraform.InitAndApply(t, tfOptions)
+
+	defer func() {
+		if DestroyAfter {
+			terraform.Destroy(t, tfOptions)
+		}
+	}()
+
+	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
 	// aws eks --region eu-west-1 update-kubeconfig --name kubernetes_test
-	out, err := exec.Command("/usr/bin/aws", "eks", "--region", "eu-west-1", "update-kubeconfig", "--name", "kubernetes_test").CombinedOutput()
+	out, err := exec.Command("/usr/bin/aws", "eks", "--region", "eu-west-1", "update-kubeconfig", "--name", "kbn_test").CombinedOutput()
 	if err != nil {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
@@ -161,14 +156,14 @@ func testDb(t *testing.T, cloudSpecificConfig string, cloudName string) {
 	assert.Len(t, o.Items, 1)
 	assert.Contains(t, o.Items[0].Status.Conditions, NodeStatusCondition{
 		Type:   "Ready",
-		Status: true,
+		Status: "True",
 	})
+
+	labels := o.Items[0].Metadata.Labels
+	assert.Contains(t, maps.Keys(labels), "multy.dev/env")
+	assert.Equal(t, labels["multy.dev/env"], "test")
 }
 
-func TestAwsDb(t *testing.T) {
-	testDb(t, aws_global_config, "aws")
-}
-
-func TestAzureDb(t *testing.T) {
-	testDb(t, azure_global_config, "azure")
+func TestAwsKubernetes(t *testing.T) {
+	testKubernetes(t, aws_global_config, "aws")
 }

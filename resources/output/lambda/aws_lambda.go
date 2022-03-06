@@ -1,24 +1,16 @@
 package lambda
 
-import "multy-go/resources/common"
+import (
+	"multy-go/resources/common"
+	"multy-go/resources/output/iam"
+)
 
 const AwsResourceName = "aws_lambda_function"
 
 const AwsIamRoleResourceName = "aws_iam_role"
 
-const DefaultLambdaPolicy = `{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}`
+var DefaultLambdaPolicy = iam.NewAssumeRolePolicy("lambda.amazonaws.com")
+
 const LambdaBasicExecutionRole = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 
 type AwsLambdaFunction struct {
@@ -31,18 +23,6 @@ type AwsLambdaFunction struct {
 	Handler             string `hcl:"handler"  hcle:"omitempty"`
 	S3Bucket            string `hcl:"s3_bucket,expr" hcle:"omitempty"`
 	S3Key               string `hcl:"s3_key,expr" hcle:"omitempty"`
-}
-
-type AwsIamRole struct {
-	*common.AwsResource `hcl:",squash" default:"name=aws_iam_role"`
-	Name                string `hcl:"name"`
-	AssumeRolePolicy    string `hcl:"assume_role_policy"`
-}
-
-type AwsIamRolePolicyAttachment struct {
-	*common.AwsResource `hcl:",squash" default:"name=aws_iam_role_policy_attachment"`
-	Role                string `hcl:"role,expr"`
-	PolicyArn           string `hcl:"policy_arn"`
 }
 
 type AwsApiGatewayRestApi struct {

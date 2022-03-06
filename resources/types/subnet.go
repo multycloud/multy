@@ -27,12 +27,21 @@ type Subnet struct {
 
 func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if cloud == common.AWS {
-		return []output.TfBlock{subnet.AwsSubnet{
+		awsSubnet := subnet.AwsSubnet{
 			AwsResource:      common.NewAwsResource(s.GetTfResourceId(cloud), s.Name),
 			CidrBlock:        s.CidrBlock,
 			VpcId:            s.VirtualNetwork.GetVirtualNetworkId(cloud),
 			AvailabilityZone: common.GetAvailabilityZone(ctx.Location, s.AvailabilityZone, cloud),
-		}}
+		}
+		// This flag needs to be set so that eks nodes can connect to the kubernetes cluster
+		// https://aws.amazon.com/blogs/containers/upcoming-changes-to-ip-assignment-for-eks-managed-node-groups/
+		// How to tell if this subnet is private?
+		for _, resource := range resources.GetAllResources[*KubernetesServiceNodePool](ctx) {
+			if util.Contains(resource.SubnetIds, resources.GetMainOutputId(s, cloud)) {
+				awsSubnet.MapPublicIpOnLaunch = true
+			}
+		}
+		return []output.TfBlock{awsSubnet}
 	} else if cloud == common.AZURE {
 		var azResources []output.TfBlock
 		azSubnet := subnet.AzureSubnet{

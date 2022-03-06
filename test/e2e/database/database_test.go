@@ -105,9 +105,12 @@ func testDb(t *testing.T, cloudSpecificConfig string, cloudName string) {
 	defer os.Remove(multyFileName)
 
 	cmd := cli.TranslateCommand{}
-	cmd.OutputFile = tfDir + "/main.tf"
 	f := flag.NewFlagSet("test", flag.ContinueOnError)
 	cmd.ParseFlags(f, []string{multyFileName})
+	err = f.Set("output", tfDir+"/main.tf")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 
 	ctx := context.Background()
 	err = cmd.Execute(ctx)
@@ -115,14 +118,18 @@ func testDb(t *testing.T, cloudSpecificConfig string, cloudName string) {
 		t.Fatal(err.Error())
 	}
 
+	defer func() {
+		if DestroyAfter {
+			os.RemoveAll(tfDir)
+		}
+	}()
+
 	tfOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{TerraformDir: tfDir})
-	terraform.Init(t, tfOptions)
-	terraform.Apply(t, tfOptions)
+	terraform.InitAndApply(t, tfOptions)
 
 	defer func() {
 		if DestroyAfter {
 			terraform.Destroy(t, tfOptions)
-			os.RemoveAll(tfDir)
 		}
 	}()
 
