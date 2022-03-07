@@ -98,6 +98,8 @@ var RESOURCETYPES = map[string]string{
 	"vault":                  "kv",
 	"vault_secret":           "kv",
 	"lambda":                 "fun",
+	"kubernetes_service":     "ks",
+	"kubernetes_node_pool":   "ks",
 }
 
 // eu-west-2 "ami-0fc15d50d39e4503c"
@@ -112,7 +114,7 @@ func GetResourceTypeAbbreviation(t string) string {
 	if val, ok := RESOURCETYPES[t]; ok {
 		return val
 	}
-	validate.LogInternalError("unexpected resource type name: %s", t)
+	validate.LogInternalError("no resource abbreviation for: %s", t)
 	return ""
 }
 
@@ -144,11 +146,6 @@ func ValidateVmSize(s string) bool {
 	return ok
 }
 
-type AwsResource struct {
-	output.TerraformResource `hcl:",squash"`
-	Tags                     map[string]string `hcl:"tags" hcle:"omitempty"`
-}
-
 type AzResource struct {
 	output.TerraformResource `hcl:",squash"`
 	ResourceGroupName        string `hcl:"resource_group_name,expr" hcle:"omitempty"`
@@ -160,6 +157,11 @@ func NewAwsResource(resourceId string, name string) *AwsResource {
 	return &AwsResource{
 		TerraformResource: output.TerraformResource{ResourceId: resourceId},
 		Tags:              map[string]string{"Name": name}}
+}
+
+func NewAwsResourceWithIdOnly(resourceId string) *AwsResource {
+	return &AwsResource{
+		TerraformResource: output.TerraformResource{ResourceId: resourceId}}
 }
 
 func NewAzResource(resourceId string, name string, rgName string, location string) *AzResource {
@@ -195,4 +197,9 @@ func GetResourceName(r any) string {
 	}
 	validate.LogInternalError("no default resource name found")
 	return ""
+}
+
+type AwsResource struct {
+	output.TerraformResource `hcl:",squash"`
+	Tags                     map[string]string `hcl:"tags" hcle:"omitempty"`
 }
