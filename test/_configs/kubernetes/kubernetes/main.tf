@@ -11,7 +11,7 @@ resource "aws_iam_role_policy_attachment" "example_aws_AmazonEKSVPCResourceContr
   role       = aws_iam_role.example_aws.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
 }
-resource "aws_eks_cluster" "example" {
+resource "aws_eks_cluster" "example_aws" {
   tags     = { "Name" = "example" }
   role_arn = aws_iam_role.example_aws.arn
   vpc_config {
@@ -36,8 +36,8 @@ resource "aws_iam_role_policy_attachment" "example_pool_aws_AmazonEC2ContainerRe
   role       = aws_iam_role.example_pool_aws.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
-resource "aws_eks_node_group" "example_pool" {
-  cluster_name    = "example"
+resource "aws_eks_node_group" "example_pool_aws" {
+  cluster_name    = "${aws_eks_cluster.example_aws.id}"
   node_group_name = "example"
   node_role_arn   = aws_iam_role.example_pool_aws.arn
   subnet_ids      = ["${aws_subnet.subnet1_aws.id}", "${aws_subnet.subnet2_aws.id}"]
@@ -46,6 +46,7 @@ resource "aws_eks_node_group" "example_pool" {
     max_size     = 1
     min_size     = 1
   }
+  instance_types = ["t2.medium"]
 }
 resource "aws_vpc" "example_vn_aws" {
   tags                 = { "Name" = "example_vn" }
@@ -100,6 +101,81 @@ resource "aws_subnet" "subnet2_aws" {
   availability_zone       = "eu-west-1b"
   map_public_ip_on_launch = true
 }
+resource "azurerm_kubernetes_cluster" "example_azure" {
+  resource_group_name = azurerm_resource_group.ks-rg.name
+  name                = "example"
+  location            = "northeurope"
+  default_node_pool {
+    name                = "example"
+    node_count          = 1
+    max_count           = 1
+    min_count           = 1
+    enable_auto_scaling = true
+    vm_size             = "Standard_A2_v2"
+  }
+  dns_prefix = "example"
+  identity {
+    type = "SystemAssigned"
+  }
+}
+resource "azurerm_virtual_network" "example_vn_azure" {
+  resource_group_name = azurerm_resource_group.vn-rg.name
+  name                = "example_vn"
+  location            = "northeurope"
+  address_space       = ["10.0.0.0/16"]
+}
+resource "azurerm_route_table" "example_vn_azure" {
+  resource_group_name = azurerm_resource_group.vn-rg.name
+  name                = "example_vn"
+  location            = "northeurope"
+  route {
+    name           = "local"
+    address_prefix = "0.0.0.0/0"
+    next_hop_type  = "VnetLocal"
+  }
+}
+resource "azurerm_resource_group" "ks-rg" {
+  name     = "ks-rg"
+  location = "northeurope"
+}
+resource "azurerm_route_table" "rt_azure" {
+  resource_group_name = azurerm_resource_group.vn-rg.name
+  name                = "test-rt"
+  location            = "northeurope"
+  route {
+    name           = "internet"
+    address_prefix = "0.0.0.0/0"
+    next_hop_type  = "Internet"
+  }
+}
+resource "azurerm_subnet_route_table_association" "rta_azure" {
+  subnet_id      = "${azurerm_subnet.subnet2_azure.id}"
+  route_table_id = "${azurerm_route_table.rt_azure.id}"
+}
+resource "azurerm_subnet" "subnet1_azure" {
+  resource_group_name  = azurerm_resource_group.vn-rg.name
+  name                 = "private-subnet"
+  address_prefixes     = ["10.0.1.0/24"]
+  virtual_network_name = azurerm_virtual_network.example_vn_azure.name
+}
+resource "azurerm_subnet_route_table_association" "subnet1_azure" {
+  subnet_id      = "${azurerm_subnet.subnet1_azure.id}"
+  route_table_id = "${azurerm_route_table.example_vn_azure.id}"
+}
+resource "azurerm_subnet" "subnet2_azure" {
+  resource_group_name  = azurerm_resource_group.vn-rg.name
+  name                 = "public-subnet"
+  address_prefixes     = ["10.0.2.0/24"]
+  virtual_network_name = azurerm_virtual_network.example_vn_azure.name
+}
+resource "azurerm_resource_group" "vn-rg" {
+  name     = "vn-rg"
+  location = "northeurope"
+}
 provider "aws" {
   region = "eu-west-1"
+}
+provider "azurerm" {
+  features {
+  }
 }

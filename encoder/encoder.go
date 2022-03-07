@@ -49,7 +49,7 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 			defaultTagProcessor.Process(translated)
 		}
 		// we need to use a set here because errors are duplicated for multiple clouds
-		for _, err := range r.Resource.Validate(ctx) {
+		for _, err := range r.Resource.Validate(ctx, r.Cloud) {
 			errors[err] = true
 		}
 	}

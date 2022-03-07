@@ -66,7 +66,7 @@ func (info *ResourceValidationInfo) NewError(fieldName string, errorMessage stri
 		}
 	}
 	return ValidationError{
-		ErrorMessage: "",
+		ErrorMessage: errorMessage,
 		ResourceId:   info.ResourceId,
 	}
 }

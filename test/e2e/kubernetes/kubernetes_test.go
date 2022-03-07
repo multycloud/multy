@@ -26,20 +26,29 @@ config {
 }
 `
 
+const azure_global_config = `
+config {
+  clouds   = ["azure"]
+  location = "us-east"
+}
+`
+
 var config = `
 multy "kubernetes_service" "kubernetes_test" {
-    name = "kbn_test"
+    name = "kbn-test"
     subnet_ids = [subnet1.id, subnet2.id]
 }
 
 multy "kubernetes_node_pool" "kbn_test_pool" {
-  name = "kbn_test"
-  cluster_name = kubernetes_test.name
+  name = "kbntestpool"
+  cluster_id = kubernetes_test.id
   subnet_ids = [subnet1.id, subnet2.id]
   starting_node_count = 1
   max_node_count = 1
   min_node_count = 1
   labels = { "multy.dev/env": "test" }
+  vm_size = "medium"
+  is_default_pool = true
 }
 
 
@@ -135,13 +144,21 @@ func testKubernetes(t *testing.T, cloudSpecificConfig string, cloudName string) 
 	}()
 
 	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
-	// aws eks --region eu-west-1 update-kubeconfig --name kubernetes_test
-	out, err := exec.Command("/usr/bin/aws", "eks", "--region", "eu-west-1", "update-kubeconfig", "--name", "kbn_test").CombinedOutput()
-	if err != nil {
-		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
+	if cloudName == "aws" {
+		// aws eks --region eu-west-1 update-kubeconfig --name kubernetes_test
+		out, err := exec.Command("/usr/bin/aws", "eks", "--region", "eu-west-1", "update-kubeconfig", "--name", "kbn-test").CombinedOutput()
+		if err != nil {
+			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
+		}
+	} else {
+		// az aks get-credentials --resource-group ks-rg --name example
+		out, err := exec.Command("/usr/bin/az", "aks", "get-credentials", "--resource-group", "ks-rg", "--name", "kbn-test").CombinedOutput()
+		if err != nil {
+			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
+		}
 	}
 	// kubectl get nodes -o json
-	out, err = exec.Command("/usr/local/bin/kubectl", "get", "nodes", "-o", "json").CombinedOutput()
+	out, err := exec.Command("/usr/local/bin/kubectl", "get", "nodes", "-o", "json").CombinedOutput()
 	if err != nil {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
@@ -166,4 +183,7 @@ func testKubernetes(t *testing.T, cloudSpecificConfig string, cloudName string) 
 
 func TestAwsKubernetes(t *testing.T) {
 	testKubernetes(t, aws_global_config, "aws")
+}
+func TestAzureKubernetes(t *testing.T) {
+	testKubernetes(t, azure_global_config, "azure")
 }

@@ -87,7 +87,7 @@ func (r *RouteTable) GetId(cloud common.CloudProvider) string {
 	return fmt.Sprintf("%s.%s.id", types[cloud], r.GetTfResourceId(cloud))
 }
 
-func (r *RouteTable) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+func (r *RouteTable) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	if len(r.Routes) > 20 {
 		errs = append(errs, r.NewError("routes", fmt.Sprintf("\"%d\" exceeds routes limit is 20", len(r.Routes))))
 	}
