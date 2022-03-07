@@ -86,7 +86,7 @@ func (r *ObjectStorageObject) IsPrivate() bool {
 	return r.Acl == "private"
 }
 
-func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+func (r *ObjectStorageObject) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	if len(r.Content) > 0 && len(r.Source) > 0 {
 		errs = append(errs, r.NewError("content", "content can't be set if source is already set"))
 	}

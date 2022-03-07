@@ -67,7 +67,10 @@ var AVAILABILITY_ZONES = map[string]map[CloudProvider][]string{
 type Size string
 
 const (
+	// MICRO - 1 core and 0.5 gb ram
 	MICRO = "nano"
+	// MEDIUM - 2 cores and 4 gb ram
+	MEDIUM = "medium"
 )
 
 var DBSIZE = map[string]map[CloudProvider]string{
@@ -81,6 +84,10 @@ var VMSIZE = map[string]map[CloudProvider]string{
 	MICRO: {
 		AWS:   "t2.nano",
 		AZURE: "Standard_B1ls",
+	},
+	MEDIUM: {
+		AWS:   "t2.medium",
+		AZURE: "Standard_A2_v2",
 	},
 }
 

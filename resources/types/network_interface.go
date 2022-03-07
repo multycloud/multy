@@ -77,7 +77,7 @@ func getPublicIpReferences(ctx resources.MultyContext, subnetId string) []networ
 	return ipConfigurations
 }
 
-func (r *NetworkInterface) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+func (r *NetworkInterface) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	return errs
 }
 

@@ -39,7 +39,7 @@ type Resource interface {
 
 	GetLocation(cloud common.CloudProvider, ctx MultyContext) string
 
-	Validate(ctx MultyContext) []validate.ValidationError
+	Validate(ctx MultyContext, cloud common.CloudProvider) []validate.ValidationError
 
 	GetMainResourceName(cloud common.CloudProvider) string
 

@@ -52,7 +52,7 @@ func (r *PublicIp) GetId(cloud common.CloudProvider) string {
 	return fmt.Sprintf("%s.%s.id", types[cloud], r.GetTfResourceId(cloud))
 }
 
-func (r *PublicIp) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+func (r *PublicIp) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	//if r.NetworkInterfaceId != "" && r.InstanceId != "" {
 	//	errs = append(errs, r.NewError(r.ResourceId, "instance_id", "cannot set both network_interface_id and instance_id"))
 	//}

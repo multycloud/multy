@@ -1,6 +1,6 @@
 config {
   location = "ireland"
-  clouds   = ["aws"]
+  clouds   = ["aws", "azure"]
 }
 
 multy "kubernetes_service" "example" {
@@ -10,11 +10,13 @@ multy "kubernetes_service" "example" {
 
 multy "kubernetes_node_pool" "example_pool" {
   name                = "example"
-  cluster_name        = example.name
+  cluster_id          = example.id
   subnet_ids          = [subnet1.id, subnet2.id]
   starting_node_count = 1
   max_node_count      = 1
   min_node_count      = 1
+  is_default_pool     = true
+  vm_size             = "medium"
 }
 
 

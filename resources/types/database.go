@@ -72,7 +72,7 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 	return nil
 }
 
-func (db *Database) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+func (db *Database) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	if db.Engine != "mysql" {
 		errs = append(errs, db.NewError("engine", fmt.Sprintf("\"%s\" is not valid a valid Engine", db.Engine)))
 	}

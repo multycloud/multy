@@ -115,7 +115,7 @@ func (vn *VirtualNetwork) GetAssociatedInternetGateway(cloud common.CloudProvide
 }
 
 // TODO validate commonparams
-func (vn *VirtualNetwork) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+func (vn *VirtualNetwork) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
 	//if vn.CidrBlock valid CIDR { return false }

@@ -294,7 +294,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 	return nil
 }
 
-func (r *Lambda) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+func (r *Lambda) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	if r.SourceCodeDir == "" && r.SourceCodeObject == nil {
 		errs = append(errs, r.NewError("", "one of source_code_dir or source_code_object must be set"))
 	}

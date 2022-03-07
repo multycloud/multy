@@ -226,7 +226,7 @@ func validatePort(s string) bool {
 	return true
 }
 
-func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	for _, rule := range r.Rules {
 		// TODO: get better source ranges
 		if !validateRuleDirection(rule.Direction) {

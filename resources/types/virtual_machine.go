@@ -219,7 +219,7 @@ func (vm *VirtualMachine) GetAssociatedKeyPairName(cloud common.CloudProvider) s
 	return ""
 }
 
-func (vm *VirtualMachine) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+func (vm *VirtualMachine) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
 	//if vn.Size valid { return false }
