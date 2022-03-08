@@ -82,3 +82,11 @@ func FlatMapSliceValues[V any, V2 any](values []V, mapper func(V) []V2) []V2 {
 	}
 	return result
 }
+
+func GetOrDefault[V any](v *V, defaultValue V) V {
+	if v == nil {
+		return defaultValue
+	}
+
+	return *v
+}
