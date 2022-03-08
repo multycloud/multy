@@ -11,6 +11,7 @@ import (
 	"multy-go/validate"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
@@ -149,7 +150,8 @@ func test(testFiles TestFiles, t *testing.T) {
 		t.Fatal(diags)
 	}
 
-	actualBlocks, errRange, err := groupAllLabels(actualContent)
+	actualContentBlockPrinter := NewBlockPrinter(actualContent, []byte(hclOutput))
+	actualBlocks, errRange, err := groupByTypeAndId(actualContent)
 	if err != nil {
 		errorMessage := "found error in generated file\n" + err.Error()
 		actualLines, err := validate.ReadLines(*errRange, []byte(hclOutput))
@@ -161,7 +163,8 @@ func test(testFiles TestFiles, t *testing.T) {
 		}
 		t.Fatal(errorMessage)
 	}
-	expectedBlocks, errRange, err := groupAllLabels(expectedContent)
+	expectedContentBlockPrinter := NewBlockPrinter(expectedContent, expectedOutput)
+	expectedBlocks, errRange, err := groupByTypeAndId(expectedContent)
 	if err != nil {
 		errorMessage := fmt.Sprintf("[%s] found error in expected file\n", errRange) + err.Error()
 		actualLines, err := validate.ReadLines(*errRange, expectedOutput)
@@ -176,36 +179,24 @@ func test(testFiles TestFiles, t *testing.T) {
 	for typ, blocks := range actualBlocks {
 		for id, block := range blocks {
 			if _, ok := expectedBlocks[typ][id]; !ok {
-				attrs, diags := block.Body.JustAttributes()
-				if diags.HasErrors() {
-					panic(diags.Error())
-				}
-				errorMessage := "unexpected block\n"
-				errorMessage += printBlock(block, attrs, []byte(hclOutput))
-				t.Error(errorMessage)
+				t.Errorf("unexpected block:\n%s", actualContentBlockPrinter.PrintBlock(block))
 				continue
 			}
-			compare(expectedBlocks[typ][id], block, t, hclOutput)
+			compare(t, expectedBlocks[typ][id], expectedContentBlockPrinter, actualContentBlockPrinter, block)
 		}
 	}
 
 	for typ, blocks := range expectedBlocks {
 		for id, block := range blocks {
 			if _, ok := actualBlocks[typ][id]; !ok {
-				attrs, diags := block.Body.JustAttributes()
-				if diags.HasErrors() {
-					panic(diags.Error())
-				}
-				errorMessage := fmt.Sprintf("missing block %s\nexpected (%s):\n", id, block.DefRange)
-				errorMessage += printBlock(block, attrs, expectedOutput)
-				t.Error(errorMessage)
+				t.Errorf("missing block %s\nexpected (%s):\n%s", id, block.DefRange, expectedContentBlockPrinter.PrintBlock(block))
 			}
 		}
 	}
 
 }
 
-func groupAllLabels(content *hcl.BodyContent) (map[string]map[string]*hcl.Block, *hcl.Range, error) {
+func groupByTypeAndId(content *hcl.BodyContent) (map[string]map[string]*hcl.Block, *hcl.Range, error) {
 	result := map[string]map[string]*hcl.Block{}
 	for t, blocks := range content.Blocks.ByType() {
 		if result[t] == nil {
@@ -226,23 +217,7 @@ func groupAllLabels(content *hcl.BodyContent) (map[string]map[string]*hcl.Block,
 	return result, nil, nil
 }
 
-func printBlock(b *hcl.Block, attrs hcl.Attributes, bytes []byte) string {
-	blockRange := b.DefRange
-	for _, attr := range attrs {
-		blockRange = hcl.RangeOver(blockRange, attr.Range)
-	}
-	actualLines, err := validate.ReadLines(blockRange, bytes)
-	if err != nil {
-		panic(err)
-	}
-	message := ""
-	for _, line := range actualLines {
-		message += line.String() + "\n"
-	}
-	return message
-}
-
-func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile string) {
+func compare(t *testing.T, expected *hcl.Block, expectedPrinter *BlockPrinter, actualPrinter *BlockPrinter, actual *hcl.Block) {
 	failed := false
 	expectedAttrs, _ := expected.Body.JustAttributes()
 	actualAttrs, _ := actual.Body.JustAttributes()
@@ -255,10 +230,10 @@ func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile st
 	for name, attr := range actualAttrs {
 		if _, ok := expectedAttrs[name]; !ok {
 			errorMessage := fmt.Sprintf("in resouce '%s'\n", strings.Join(actual.Labels, "."))
-			errorMessage += printBlock(actual, actualAttrs, []byte(actualFile))
+			errorMessage += actualPrinter.PrintBlock(actual)
 
 			errorMessage += fmt.Sprintf("\nunexpected attribute '%s' \n", name)
-			actualLines, err := validate.ReadLines(attr.Range, []byte(actualFile))
+			actualLines, err := validate.ReadLines(attr.Range, actualPrinter.rawContent)
 			if err != nil {
 				panic(err)
 			}
@@ -279,7 +254,7 @@ func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile st
 			cmpopts.IgnoreUnexported(hcl.TraverseRoot{}, hcl.TraverseAttr{}, hcl.TraverseIndex{}, hcl.TraverseSplat{}),
 			cmpopts.IgnoreTypes(hcl.Range{}),
 		) {
-			actualLines, err := validate.ReadLines(attr.Range, []byte(actualFile))
+			actualLines, err := validate.ReadLines(attr.Range, actualPrinter.rawContent)
 			if err != nil {
 				panic(err)
 			}
@@ -335,9 +310,69 @@ func compare(expected *hcl.Block, actual *hcl.Block, t *testing.T, actualFile st
 			hclsyntax.Body{}, hcl.TraverseRoot{}, hcl.TraverseAttr{}, hcl.TraverseIndex{}, hcl.TraverseSplat{},
 		), cmpopts.IgnoreTypes(hcl.Range{}),
 	) {
-		t.Errorf(
-			"some nested blocks differ within this block,\nactual:%s\nexpected:%s\n", actual.DefRange,
-			expected.DefRange,
-		)
+		t.Errorf("some nested blocks differ within this block,\nexpected:%sactual:%s\n",
+			expectedPrinter.PrintBlock(expected), actualPrinter.PrintBlock(actual))
 	}
+}
+
+type BlockPrinter struct {
+	allRanges  map[*hcl.Block]hcl.Range
+	rawContent []byte
+}
+
+func (b *BlockPrinter) PrintBlock(block *hcl.Block) string {
+	fmt.Println(b.allRanges[block])
+	actualLines, err := validate.ReadLines(b.allRanges[block], b.rawContent)
+	if err != nil {
+		panic(err)
+	}
+	message := ""
+	for _, line := range actualLines {
+		message += line.String() + "\n"
+	}
+	return message
+}
+
+func NewBlockPrinter(content *hcl.BodyContent, rawContent []byte) *BlockPrinter {
+	allPositions := []hcl.Pos{
+		{
+			Line:   0,
+			Column: 0,
+			Byte:   len(rawContent),
+		},
+	}
+	for _, attr := range content.Attributes {
+		allPositions = append(allPositions, attr.Range.Start)
+	}
+	for _, block := range content.Blocks {
+		allPositions = append(allPositions, block.DefRange.Start)
+	}
+	sort.Slice(allPositions, func(i, j int) bool {
+		return allPositions[i].Byte < allPositions[j].Byte
+	})
+	result := map[*hcl.Block]hcl.Range{}
+	for _, block := range content.Blocks {
+		// TODO: replace with binary search
+		i := 0
+		for i = range allPositions {
+			if allPositions[i] == block.DefRange.Start {
+				break
+			}
+		}
+		result[block] = hcl.Range{
+			Filename: block.DefRange.Filename,
+			Start:    block.DefRange.Start,
+			End: hcl.Pos{
+				Line:   allPositions[i+1].Line - 1,
+				Column: 0,
+				Byte:   allPositions[i+1].Byte - 1,
+			},
+		}
+	}
+
+	return &BlockPrinter{
+		allRanges:  result,
+		rawContent: rawContent,
+	}
+
 }
