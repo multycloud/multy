@@ -12,7 +12,7 @@ import (
 
 func StartCli() {
 	helpCmd := &HelpCommand{}
-	commands := []Command{&TranslateCommand{}, &ApplyCommand{}, &DestroyCommand{}, &VersionCommand{}, helpCmd}
+	commands := []Command{&TranslateCommand{}, &CheckCommand{}, &ApplyCommand{}, &DestroyCommand{}, &VersionCommand{}, helpCmd}
 	helpCmd.AvailableCommands = commands
 
 	if len(os.Args) < 2 {
