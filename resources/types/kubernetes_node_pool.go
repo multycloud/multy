@@ -8,17 +8,17 @@ import (
 	"multy-go/resources/output/iam"
 	"multy-go/resources/output/kubernetes_node_pool"
 	rg "multy-go/resources/resource_group"
+	"multy-go/util"
 	"multy-go/validate"
 )
 
 type KubernetesServiceNodePool struct {
 	*resources.CommonResourceParams
-	Name          string   `hcl:"name"`
-	ClusterId     string   `hcl:"cluster_id"`
-	IsDefaultPool bool     `hcl:"is_default_pool,optional"`
-	SubnetIds     []string `hcl:"subnet_ids"` // azure??
-	// TODO: check if this is set
-	StartingNodeCount int               `hcl:"starting_node_count,optional"`
+	Name              string            `hcl:"name"`
+	ClusterId         string            `hcl:"cluster_id"`
+	IsDefaultPool     bool              `hcl:"is_default_pool,optional"`
+	SubnetIds         []string          `hcl:"subnet_ids"` // azure??
+	StartingNodeCount *int              `hcl:"starting_node_count,optional"`
 	MaxNodeCount      int               `hcl:"max_node_count"`
 	MinNodeCount      int               `hcl:"min_node_count"`
 	Labels            map[string]string `hcl:"labels,optional"`
@@ -26,8 +26,25 @@ type KubernetesServiceNodePool struct {
 	DiskSizeGiB       int               `hcl:"disk_size_gib,optional"`
 }
 
-func (r *KubernetesServiceNodePool) Validate(ctx resources.MultyContext, cloud common.CloudProvider) []validate.ValidationError {
-	return nil
+func (r *KubernetesServiceNodePool) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	if r.MinNodeCount < 1 {
+		errs = append(errs, r.NewError("min_node_count", "node pool must have a min node count of at least 1"))
+	}
+	if r.MaxNodeCount < 1 {
+		errs = append(errs, r.NewError("max_node_count", "node pool must have a max node count of at least 1"))
+	}
+	if r.MinNodeCount > r.MaxNodeCount {
+		errs = append(errs, r.NewError("min_node_count", "min_node_count must be lower or equal to max_node_count"))
+	}
+	startingNodeCount := util.GetOrDefault(r.StartingNodeCount, r.MinNodeCount)
+	if startingNodeCount < r.MinNodeCount || startingNodeCount > r.MaxNodeCount {
+		errs = append(errs, r.NewError("starting_node_count", "starting_node_count must be between min and max node count"))
+	}
+	if err := common.CheckIfSizeIsValid(r.VmSize); err != nil {
+		errs = append(errs, r.NewError("vm_size", err.Error()))
+	}
+
+	return errs
 }
 
 func (r *KubernetesServiceNodePool) GetMainResourceName(cloud common.CloudProvider) string {
@@ -73,7 +90,7 @@ func (r *KubernetesServiceNodePool) Translate(cloud common.CloudProvider, ctx re
 				NodeRoleArn:   fmt.Sprintf("aws_iam_role.%s.arn", r.GetTfResourceId(cloud)),
 				SubnetIds:     r.SubnetIds,
 				ScalingConfig: kubernetes_node_pool.ScalingConfig{
-					DesiredSize: r.StartingNodeCount,
+					DesiredSize: util.GetOrDefault(r.StartingNodeCount, r.MinNodeCount),
 					MaxSize:     r.MaxNodeCount,
 					MinSize:     r.MinNodeCount,
 				},
@@ -100,7 +117,7 @@ func (r *KubernetesServiceNodePool) translateAzNodePool(ctx resources.MultyConte
 	return &kubernetes_node_pool.AzureKubernetesNodePool{
 		AzResource:        common.NewAzResource(r.GetTfResourceId(common.AZURE), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, common.AZURE), ctx.GetLocationFromCommonParams(r.CommonResourceParams, common.AZURE)),
 		ClusterId:         r.ClusterId,
-		NodeCount:         r.StartingNodeCount,
+		NodeCount:         util.GetOrDefault(r.StartingNodeCount, r.MinNodeCount),
 		MaxSize:           r.MaxNodeCount,
 		MinSize:           r.MinNodeCount,
 		Labels:            r.Labels,
