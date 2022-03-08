@@ -72,7 +72,7 @@ func (c *TranslateCommand) Execute(ctx context.Context) error {
 		return fmt.Errorf("error creating output file: %s", err.Error())
 	}
 
-	log.Printf("multy finished translating: %s\n", time.Since(start).Round(time.Second))
-	log.Println("output file:", c.OutputFile)
+	fmt.Printf("multy finished translating: %s\n", time.Since(start).Round(time.Second))
+	fmt.Println("output file:", c.OutputFile)
 	return nil
 }
