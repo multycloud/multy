@@ -1,9 +1,10 @@
 config {
-  clouds   = ["aws", "azure"]
-  location = "ireland"
+  clouds                      = ["aws", "azure"]
+  location                    = "us-east"
+  default_resource_group_name = "dbt-${resource_type}-rg"
 }
 multy virtual_network vn {
-  name       = "vn"
+  name       = "db-vn"
   cidr_block = "10.0.0.0/16"
 }
 multy subnet subnet1 {
@@ -19,7 +20,7 @@ multy subnet subnet2 {
   availability_zone = 2
 }
 multy route_table "rt" {
-  name            = "test-rt"
+  name            = "db-rt"
   virtual_network = vn
   routes          = [
     {

@@ -23,6 +23,13 @@ type AzureMySqlVirtualNetworkRule struct {
 	SubnetId           string `hcl:"subnet_id"`
 }
 
+type AzureDbFirewallRule struct {
+	*common.AzResource `hcl:",squash" default:"name=azurerm_mysql_firewall_rule"`
+	ServerName         string `hcl:"server_name,expr"`
+	StartIpAddress     string `hcl:"start_ip_address"`
+	EndIpAddress       string `hcl:"end_ip_address"`
+}
+
 func (db AzureMySqlServer) GetServerName() string {
 	return fmt.Sprintf("azurerm_mysql_server.%s.name", db.ResourceId)
 }
