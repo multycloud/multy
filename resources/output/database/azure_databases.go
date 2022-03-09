@@ -51,6 +51,17 @@ func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 			)
 		}
 
+		resources = append(resources, AzureDbFirewallRule{
+			AzResource: &common.AzResource{
+				TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
+				ResourceGroupName: server.ResourceGroupName,
+				Name:              "public",
+			},
+			ServerName:     mysqlServer.GetServerName(),
+			StartIpAddress: "0.0.0.0",
+			EndIpAddress:   "255.255.255.255",
+		})
+
 		return resources
 	}
 	return nil
