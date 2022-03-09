@@ -179,3 +179,11 @@ provider "azurerm" {
   features {
   }
 }
+output "kubernetes_outputs" {
+  value = {
+    "aws_ca_certificate"   = "${aws_eks_cluster.example_aws.certificate_authority[0].data}",
+    "aws_endpoint"         = "${aws_eks_cluster.example_aws.endpoint}",
+    "azure_ca_certificate" = "${azurerm_kubernetes_cluster.example_azure.kube_config.0.cluster_ca_certificate}",
+    "azure_endpoint"       = "${azurerm_kubernetes_cluster.example_azure.kube_config.0.host}"
+  }
+}
