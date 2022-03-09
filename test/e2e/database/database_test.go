@@ -136,13 +136,11 @@ func testDb(t *testing.T, cloudSpecificConfig string, cloudName string) {
 	host := terraform.Output(t, tfOptions, "db_host")
 
 	var username = db_username
-	// TODO: fix this. azure and aws should have similar databases and able to be accessed the same way
 	if cloudName == "azure" {
 		username = fmt.Sprintf("%s@%s", db_username, host)
 	}
 
-	// TODO: fix Client with IP address '188.154.29.237' is not allowed to connect to this MySQL server in azure
-	out, err := exec.Command("/usr/bin/mysql", "-h", host, "-P", "3306", "-u", username, "--password="+db_passwd, "-e", "select 12+34;").CombinedOutput()
+	out, err := exec.Command("mysql", "-h", host, "-P", "3306", "-u", username, "--password="+db_passwd, "-e", "select 12+34;").CombinedOutput()
 	if err != nil {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
