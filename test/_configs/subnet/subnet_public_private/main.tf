@@ -196,6 +196,13 @@ resource "azurerm_mysql_server" "example_db_azure" {
   version                      = "5.7"
   ssl_enforcement_enabled      = false
 }
+resource "azurerm_mysql_firewall_rule" "example_db_azure" {
+  resource_group_name = azurerm_resource_group.db-rg.name
+  name                = "public"
+  server_name         = azurerm_mysql_server.example_db_azure.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "255.255.255.255"
+}
 resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
   resource_group_name = azurerm_resource_group.db-rg.name
   name                = "example-db0"
