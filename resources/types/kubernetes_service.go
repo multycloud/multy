@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output"
@@ -91,5 +92,43 @@ func (r *KubernetesService) Translate(cloud common.CloudProvider, ctx resources.
 		}
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
+	return nil
+}
+
+func (r *KubernetesService) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
+	switch cloud {
+	case common.AWS:
+		return map[string]cty.Value{
+			"endpoint": cty.StringVal(
+				fmt.Sprintf(
+					"${%s.%s.endpoint}", common.GetResourceName(kubernetes_service.AwsEksCluster{}),
+					r.GetTfResourceId(cloud),
+				),
+			),
+			"ca_certificate": cty.StringVal(
+				fmt.Sprintf(
+					"${%s.%s.certificate_authority[0].data}", common.GetResourceName(kubernetes_service.AwsEksCluster{}),
+					r.GetTfResourceId(cloud),
+				),
+			),
+		}
+	case common.AZURE:
+		return map[string]cty.Value{
+			"endpoint": cty.StringVal(
+				fmt.Sprintf(
+					"${%s.%s.kube_config.0.host}", common.GetResourceName(kubernetes_service.AzureEksCluster{}),
+					r.GetTfResourceId(cloud),
+				),
+			),
+			"ca_certificate": cty.StringVal(
+				fmt.Sprintf(
+					"${%s.%s.kube_config.0.cluster_ca_certificate}", common.GetResourceName(kubernetes_service.AzureEksCluster{}),
+					r.GetTfResourceId(cloud),
+				),
+			),
+		}
+	}
+
+	validate.LogInternalError("unknown cloud %s", cloud)
 	return nil
 }
