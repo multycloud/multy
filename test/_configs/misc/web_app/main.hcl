@@ -57,23 +57,23 @@ multy "database" "example_db" {
     subnet1.id,
     subnet2.id,
   ]
-  clouds         = ["aws"]
+  clouds         = ["azure"]
 }
 
-# [if hosting db on azure]
-# FIXME while this adds a dependency to example_db, this is not dependent on azurerm_mysql_virtual_network_rule and azure_mysq_server firewall rules are blocked by default
 multy "virtual_machine" "vm" {
   name              = "test-vm"
   os                = "linux"
   size              = "micro"
   user_data         = templatefile("init.sh", {
-    db_host: aws.example_db.host,
-    db_username: aws.example_db.username,
-    db_password: aws.example_db.password
+    db_host : azure.example_db.host,
+    db_username : azure.example_db.username,
+    db_password : azure.example_db.password
   })
   subnet_id         = subnet3.id
   ssh_key_file_path = "./ssh_key.pub"
   public_ip         = true
+
+  depends_on = [example_db]
 }
 multy "network_security_group" nsg2 {
   name            = "test-nsg2"

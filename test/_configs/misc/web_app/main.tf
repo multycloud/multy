@@ -1,22 +1,3 @@
-resource "aws_db_subnet_group" "example_db_aws" {
-  tags       = { "Name" = "example-db" }
-  name       = "example-db"
-  subnet_ids = ["${aws_subnet.subnet1_aws.id}", "${aws_subnet.subnet2_aws.id}"]
-}
-resource "aws_db_instance" "example_db_aws" {
-  tags                 = { "Name" = "exampledb" }
-  allocated_storage    = 10
-  db_name              = "exampledb"
-  engine               = "mysql"
-  engine_version       = "5.7"
-  username             = "multyadmin"
-  password             = "multy-Admin123!"
-  instance_class       = "db.t2.micro"
-  identifier           = "example-db"
-  skip_final_snapshot  = true
-  db_subnet_group_name = aws_db_subnet_group.example_db_aws.name
-  publicly_accessible  = true
-}
 resource "aws_vpc" "example_vn_aws" {
   tags                 = { "Name" = "example_vn" }
   cidr_block           = "10.0.0.0/16"
@@ -134,18 +115,60 @@ resource "aws_subnet" "subnet3_aws" {
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 resource "aws_key_pair" "vm_aws" {
+  depends_on = [
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
+  ]
   tags       = { "Name" = "test-vm" }
   key_name   = "vm_multy"
   public_key = file("./ssh_key.pub")
 }
 resource "aws_instance" "vm_aws" {
+  depends_on                  = [
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
+  ]
   tags                        = { "Name" = "test-vm" }
   ami                         = "ami-04ad2567c9e3d7893"
   instance_type               = "t2.nano"
   associate_public_ip_address = true
   subnet_id                   = "${aws_subnet.subnet3_aws.id}"
-  user_data_base64            = base64encode("${templatefile("init.sh", { "db_host" = "${aws_db_instance.example_db_aws.address}", "db_password" = "multy-Admin123!", "db_username" = "${aws_db_instance.example_db_aws.username}" })}")
+  user_data_base64            = base64encode("${templatefile("init.sh", { "db_host" = "${azurerm_mysql_server.example_db_azure.fqdn}", "db_password" = "multy-Admin123!", "db_username" = "multyadmin@example-db" })}")
   key_name                    = aws_key_pair.vm_aws.key_name
+}
+resource "azurerm_resource_group" "db-rg" {
+  name     = "db-rg"
+  location = "eastus"
+}
+resource "azurerm_mysql_server" "example_db_azure" {
+  resource_group_name          = azurerm_resource_group.db-rg.name
+  name                         = "example-db"
+  location                     = "eastus"
+  administrator_login          = "multyadmin"
+  administrator_login_password = "multy-Admin123!"
+  sku_name                     = "GP_Gen5_2"
+  storage_mb                   = 10240
+  version                      = "5.7"
+  ssl_enforcement_enabled      = false
+}
+resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
+  resource_group_name = azurerm_resource_group.db-rg.name
+  name                = "example-db0"
+  server_name         = azurerm_mysql_server.example_db_azure.name
+  subnet_id           = "${azurerm_subnet.subnet1_azure.id}"
+}
+resource "azurerm_mysql_virtual_network_rule" "example_db_azure1" {
+  resource_group_name = azurerm_resource_group.db-rg.name
+  name                = "example-db1"
+  server_name         = azurerm_mysql_server.example_db_azure.name
+  subnet_id           = "${azurerm_subnet.subnet2_azure.id}"
+}
+resource "azurerm_mysql_firewall_rule" "example_db_azure" {
+  resource_group_name = azurerm_resource_group.db-rg.name
+  name                = "public"
+  server_name         = azurerm_mysql_server.example_db_azure.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "255.255.255.255"
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
@@ -265,12 +288,14 @@ resource "azurerm_subnet" "subnet1_azure" {
   name                 = "subnet1"
   address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
+  service_endpoints    = ["Microsoft.Sql"]
 }
 resource "azurerm_subnet" "subnet2_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
   name                 = "subnet2"
   address_prefixes     = ["10.0.2.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
+  service_endpoints    = ["Microsoft.Sql"]
 }
 resource "azurerm_subnet" "subnet3_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
@@ -279,12 +304,20 @@ resource "azurerm_subnet" "subnet3_azure" {
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_public_ip" "vm_azure" {
+  depends_on          = [
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
+  ]
   resource_group_name = azurerm_resource_group.vm-rg.name
   name                = "test-vm"
   location            = "eastus"
   allocation_method   = "Static"
 }
 resource "azurerm_network_interface" "vm_azure" {
+  depends_on          = [
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
+  ]
   resource_group_name = azurerm_resource_group.vm-rg.name
   name                = "test-vm"
   location            = "eastus"
@@ -297,17 +330,21 @@ resource "azurerm_network_interface" "vm_azure" {
   }
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
-  resource_group_name   = azurerm_resource_group.vm-rg.name
-  name                  = "test-vm"
-  location              = "eastus"
-  size                  = "Standard_B1ls"
-  network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
-  custom_data           = base64encode("${templatefile("init.sh", { "db_host" = "${aws_db_instance.example_db_aws.address}", "db_password" = "multy-Admin123!", "db_username" = "${aws_db_instance.example_db_aws.username}" })}")
+  depends_on                      = [
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
+  ]
+  resource_group_name             = azurerm_resource_group.vm-rg.name
+  name                            = "test-vm"
+  location                        = "eastus"
+  size                            = "Standard_B1ls"
+  network_interface_ids           = ["${azurerm_network_interface.vm_azure.id}"]
+  custom_data                     = base64encode("${templatefile("init.sh", { "db_host" = "${azurerm_mysql_server.example_db_azure.fqdn}", "db_password" = "multy-Admin123!", "db_username" = "multyadmin@example-db" })}")
   os_disk {
     caching              = "None"
     storage_account_type = "Standard_LRS"
   }
-  admin_username = "adminuser"
+  admin_username                  = "adminuser"
   admin_ssh_key {
     username   = "adminuser"
     public_key = file("./ssh_key.pub")
