@@ -6,7 +6,9 @@ export DATABASE_USER='${db_username}'
 export DATABASE_PASSWORD='${db_password}'
 sudo yum update -y
 curl --silent --location https://rpm.nodesource.com/setup_14.x | sudo bash
-sudo yum -y install git nodejs mysql
+sudo yum -y install git
+sudo yum -y install nodejs
+sudo yum -y install mysql
 sudo chmod a+rwx .
 git clone https://github.com/FaztTech/nodejs-mysql-links.git
 cd nodejs-mysql-links
