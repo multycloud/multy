@@ -12,10 +12,7 @@ resource "azurerm_key_vault" "example_azure" {
 
     certificate_permissions = []
     secret_permissions      = [
-      "List",
-      "Get",
-      "Set",
-      "Delete",
+      "List", "Get", "Set", "Delete", "Recover", "Backup", "Restore", "Purge"
     ]
     key_permissions         = []
   }

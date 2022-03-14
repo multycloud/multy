@@ -77,6 +77,7 @@ var RESOURCETYPES = map[string]string{
 	"network_interface":      "nic",
 	"vault":                  "kv",
 	"vault_secret":           "kv",
+	"vault_access_policy":    "kv",
 	"lambda":                 "fun",
 	"kubernetes_service":     "ks",
 	"kubernetes_node_pool":   "ks",

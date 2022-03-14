@@ -1,12 +1,14 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/multy-dev/hclencoder"
 	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output"
+	"multy-go/resources/output/iam"
 	"multy-go/resources/output/network_interface"
 	"multy-go/resources/output/network_security_group"
 	"multy-go/resources/output/public_ip"
@@ -73,6 +75,54 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			ec2.SubnetId = ""
 			ec2.AssociatePublicIpAddress = false
 		}
+
+		iamRole := iam.AwsIamRole{
+			AwsResource:      common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
+			Name:             vm.getAwsIamRoleName(),
+			AssumeRolePolicy: iam.NewAssumeRolePolicy("ec2.amazonaws.com"),
+		}
+
+		if vault, check := getVaultAssociatedIdentity(ctx, iamRole.GetId()); check {
+			policy, err := json.Marshal(iam.AwsIamPolicy{
+				Statement: []iam.AwsIamPolicyStatement{{
+					Action: []string{"ssm:GetParameter*"},
+					Effect: "Allow",
+					// arn:aws:ssm:us-east-1:033721306154:parameter/web-app-vault-test/*
+					Resource: fmt.Sprintf("arn:aws:ssm:us-east-1:033721306154:parameter/%s/*", vault.Name),
+				}, {
+					Action:   []string{"ssm:DescribeParameters"},
+					Effect:   "Allow",
+					Resource: "*",
+				}},
+				Version: "2012-10-17",
+			})
+
+			if err != nil {
+				validate.LogInternalError("unable to encode aws policy: %s", err.Error())
+			}
+
+			iamRole.InlinePolicy = iam.AwsIamRoleInlinePolicy{
+				Name:   "vault_policy",
+				Policy: string(policy),
+			}
+		}
+
+		iamInstanceProfile := iam.AwsIamInstanceProfile{
+			AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: vm.GetTfResourceId(cloud)}},
+			Name:        vm.getAwsIamRoleName(),
+			Role: fmt.Sprintf(
+				"%s.%s.name", common.GetResourceName(iam.AwsIamRole{}), iamRole.ResourceId,
+			),
+		}
+
+		ec2.IamInstanceProfile = iamInstanceProfile.GetId()
+
+		awsResources = append(awsResources,
+			iamInstanceProfile,
+			iamRole,
+		)
+
+		// this gives permission to write cloudwatch logs
 
 		// adding ssh key to vm requires aws key pair resource
 		// key pair will be added and referenced via key_name parameter
@@ -201,6 +251,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 					Version:   "latest",
 				},
 				DisablePasswordAuthentication: disablePassAuth,
+				Identity:                      virtual_machine.AzureIdentity{Type: "SystemAssigned"},
 			},
 		)
 
@@ -217,6 +268,17 @@ func (vm *VirtualMachine) GetAssociatedKeyPairName(cloud common.CloudProvider) s
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return ""
+}
+
+// check if VM identity is associated with vault (vault_access_policy)
+// get Vault name by vault_access_policy that uses VM identity
+func getVaultAssociatedIdentity(ctx resources.MultyContext, identity string) (Vault, bool) {
+	for _, resource := range resources.GetAllResources[*VaultAccessPolicy](ctx) {
+		if identity == resource.Identity {
+			return *resource.Vault, true
+		}
+	}
+	return Vault{}, false
 }
 
 func (vm *VirtualMachine) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
@@ -260,6 +322,12 @@ func (vm *VirtualMachine) GetOutputValues(cloud common.CloudProvider) map[string
 						vm.GetTfResourceId(cloud),
 					),
 				),
+				"identity": cty.StringVal(
+					fmt.Sprintf(
+						"${%s.%s.id}", common.GetResourceName(iam.AwsIamRole{}),
+						vm.GetTfResourceId(cloud),
+					),
+				),
 			}
 		} else if cloud == common.AZURE {
 			return map[string]cty.Value{
@@ -269,8 +337,18 @@ func (vm *VirtualMachine) GetOutputValues(cloud common.CloudProvider) map[string
 						vm.GetTfResourceId(cloud),
 					),
 				),
+				"identity": cty.StringVal(
+					fmt.Sprintf(
+						"${%s.%s.identity[0].principal_id}", common.GetResourceName(virtual_machine.AzureVirtualMachine{}),
+						vm.GetTfResourceId(cloud),
+					),
+				),
 			}
 		}
 	}
 	return map[string]cty.Value{}
+}
+
+func (vm *VirtualMachine) getAwsIamRoleName() string {
+	return fmt.Sprintf("iam_for_vm_%s", vm.ResourceId)
 }

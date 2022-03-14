@@ -138,7 +138,9 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
     sku       = "7_9-gen2"
     version   = "latest"
   }
-
+  identity {
+    type = "SystemAssigned"
+  }
   disable_password_authentication = false
 }
 resource "azurerm_resource_group" "vm-rg" {
