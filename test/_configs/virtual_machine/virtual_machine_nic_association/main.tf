@@ -52,6 +52,15 @@ resource "aws_subnet" "subnet_aws" {
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "eu-west-1b"
 }
+resource "aws_iam_role" "vm_aws" {
+  tags               = { "Name" = "test-vm" }
+  name               = "iam_for_vm_vm"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+}
+resource "aws_iam_instance_profile" "vm_aws" {
+  name = "iam_for_vm_vm"
+  role = aws_iam_role.vm_aws.name
+}
 resource "aws_instance" "vm_aws" {
   tags = {
     "Name" = "test-vm"
@@ -65,6 +74,7 @@ resource "aws_instance" "vm_aws" {
     network_interface_id = "${aws_network_interface.nic_aws.id}"
     device_index         = 0
   }
+  iam_instance_profile = aws_iam_instance_profile.vm_aws.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name

@@ -45,24 +45,44 @@ resource "aws_subnet" "subnet_aws" {
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "eu-west-1b"
 }
+resource "aws_iam_role" "vm_aws" {
+  tags               = { "Name" = "test-vm" }
+  name               = "iam_for_vm_vm"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+}
+resource "aws_iam_instance_profile" "vm_aws" {
+  name = "iam_for_vm_vm"
+  role = aws_iam_role.vm_aws.name
+}
 resource "aws_instance" "vm_aws" {
   tags = {
     "Name" = "test-vm"
   }
 
-  ami              = "ami-09d4a659cdd8677be"
-  instance_type    = "t2.nano"
-  subnet_id        = "${aws_subnet.subnet_aws.id}"
-  user_data_base64 = base64encode("echo 'Hello World'")
+  ami                  = "ami-09d4a659cdd8677be"
+  instance_type        = "t2.nano"
+  subnet_id            = "${aws_subnet.subnet_aws.id}"
+  user_data_base64     = base64encode("echo 'Hello World'")
+  iam_instance_profile = aws_iam_instance_profile.vm_aws.id
+}
+resource "aws_iam_role" "vm2_aws" {
+  tags               = { "Name" = "test-vm" }
+  name               = "iam_for_vm_vm2"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+}
+resource "aws_iam_instance_profile" "vm2_aws" {
+  name = "iam_for_vm_vm2"
+  role = aws_iam_role.vm2_aws.name
 }
 resource "aws_instance" "vm2_aws" {
   tags = {
     "Name" = "test-vm"
   }
 
-  ami           = "ami-09d4a659cdd8677be"
-  instance_type = "t2.nano"
-  subnet_id     = "${aws_subnet.subnet_aws.id}"
+  ami                  = "ami-09d4a659cdd8677be"
+  instance_type        = "t2.nano"
+  subnet_id            = "${aws_subnet.subnet_aws.id}"
+  iam_instance_profile = aws_iam_instance_profile.vm2_aws.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name

@@ -170,6 +170,15 @@ resource "aws_subnet" "subnet3_aws" {
   cidr_block = "10.0.3.0/24"
   vpc_id     = aws_vpc.example_vn_aws.id
 }
+resource "aws_iam_role" "vm_aws" {
+  tags               = { "Name" = "test-vm" }
+  name               = "iam_for_vm_vm"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+}
+resource "aws_iam_instance_profile" "vm_aws" {
+  name = "iam_for_vm_vm"
+  role = aws_iam_role.vm_aws.name
+}
 resource "aws_instance" "vm_aws" {
   tags = {
     "Name" = "test-vm"
@@ -180,6 +189,7 @@ resource "aws_instance" "vm_aws" {
   associate_public_ip_address = true
   subnet_id                   = "${aws_subnet.subnet3_aws.id}"
   user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html")
+  iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
 }
 resource "azurerm_resource_group" "db-rg" {
   name     = "db-rg"
