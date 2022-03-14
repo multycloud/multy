@@ -57,14 +57,14 @@ multy "database" "example_db" {
     subnet1.id,
     subnet2.id,
   ]
-  clouds         = ["azure"]
+  clouds = ["azure"]
 }
 
 multy "virtual_machine" "vm" {
-  name              = "test-vm"
-  os                = "linux"
-  size              = "micro"
-  user_data         = cloud_specific_value({
+  name      = "test-vm"
+  os        = "linux"
+  size      = "micro"
+  user_data = cloud_specific_value({
     aws : templatefile("init.sh", {
       db_host : azure.example_db.host,
       db_username : azure.example_db.username,
@@ -132,7 +132,6 @@ multy "vault_secret" "db_password" {
   vault = web_app_vault
   value = azure.example_db.password
 }
-# https://stackoverflow.com/questions/68018819/reuse-iam-instance-profile
 multy "vault_access_policy" "kv_ap" {
   vault    = web_app_vault
   identity = vm.identity

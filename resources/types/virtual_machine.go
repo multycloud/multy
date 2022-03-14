@@ -41,6 +41,14 @@ type VirtualMachine struct {
 	PublicIp bool `hcl:"public_ip,optional"`
 }
 
+type AwsCallerIdentityData struct {
+	*output.TerraformDataSource `hcl:",squash" default:"name=aws_caller_identity"`
+}
+
+type AwsRegionData struct {
+	*output.TerraformDataSource `hcl:",squash" default:"name=aws_region"`
+}
+
 func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 	if vm.UserData != "" {
 		vm.UserData = fmt.Sprintf("%s(\"%s\")", "base64encode", []byte(hclencoder.EscapeString(vm.UserData)))
@@ -83,12 +91,15 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		}
 
 		if vault := getVaultAssociatedIdentity(ctx, iamRole.GetId()); vault != nil {
+			awsResources = append(awsResources,
+				AwsCallerIdentityData{TerraformDataSource: &output.TerraformDataSource{ResourceId: vm.GetTfResourceId(cloud)}},
+				AwsRegionData{TerraformDataSource: &output.TerraformDataSource{ResourceId: vm.GetTfResourceId(cloud)}})
+
 			policy, err := json.Marshal(iam.AwsIamPolicy{
 				Statement: []iam.AwsIamPolicyStatement{{
-					Action: []string{"ssm:GetParameter*"},
-					Effect: "Allow",
-					// arn:aws:ssm:us-east-1:033721306154:parameter/web-app-vault-test/*
-					Resource: fmt.Sprintf("arn:aws:ssm:us-east-1:033721306154:parameter/%s/*", vault.Name),
+					Action:   []string{"ssm:GetParameter*"},
+					Effect:   "Allow",
+					Resource: fmt.Sprintf("arn:aws:ssm:${data.aws_region.%s.name}:${data.aws_caller_identity.%s.account_id}:parameter/%s/*", vm.GetTfResourceId(cloud), vm.GetTfResourceId(cloud), vault.Name),
 				}, {
 					Action:   []string{"ssm:DescribeParameters"},
 					Effect:   "Allow",

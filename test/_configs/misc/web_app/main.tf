@@ -129,16 +129,28 @@ resource "aws_subnet" "subnet3_aws" {
   cidr_block = "10.0.3.0/24"
   vpc_id     = aws_vpc.example_vn_aws.id
 }
+data "aws_caller_identity" "vm_aws" {
+  depends_on = [
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
+  ]
+}
+data "aws_region" "vm_aws" {
+  depends_on = [
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
+  ]
+}
 resource "aws_iam_instance_profile" "vm_aws" {
   depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
-  name       = "iam_for_vm_vm"
-  role       = aws_iam_role.vm_aws.name
+  name = "iam_for_vm_vm"
+  role = aws_iam_role.vm_aws.name
 }
 resource "aws_iam_role" "vm_aws" {
-  depends_on         = [
+  depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
@@ -147,7 +159,7 @@ resource "aws_iam_role" "vm_aws" {
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   inline_policy {
     name   = "vault_policy"
-    policy = "{\"Statement\":[{\"Action\":[\"ssm:GetParameter*\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:ssm:us-east-1:033721306154:parameter/web-app-vault-test/*\"},{\"Action\":[\"ssm:DescribeParameters\"],\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}"
+    policy = "{\"Statement\":[{\"Action\":[\"ssm:GetParameter*\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:ssm:${data.aws_region.vm_aws.name}:${data.aws_caller_identity.vm_aws.account_id}:parameter/web-app-vault-test/*\"},{\"Action\":[\"ssm:DescribeParameters\"],\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}"
   }
 }
 resource "aws_key_pair" "vm_aws" {
@@ -160,7 +172,7 @@ resource "aws_key_pair" "vm_aws" {
   public_key = file("./ssh_key.pub")
 }
 resource "aws_instance" "vm_aws" {
-  depends_on                  = [
+  depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
@@ -370,7 +382,7 @@ resource "azurerm_subnet" "subnet3_azure" {
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_public_ip" "vm_azure" {
-  depends_on          = [
+  depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
@@ -380,7 +392,7 @@ resource "azurerm_public_ip" "vm_azure" {
   allocation_method   = "Static"
 }
 resource "azurerm_network_interface" "vm_azure" {
-  depends_on          = [
+  depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
@@ -396,21 +408,21 @@ resource "azurerm_network_interface" "vm_azure" {
   }
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
-  depends_on                      = [
+  depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
-  resource_group_name             = azurerm_resource_group.vm-rg.name
-  name                            = "test-vm"
-  location                        = "eastus"
-  size                            = "Standard_B1ls"
-  network_interface_ids           = ["${azurerm_network_interface.vm_azure.id}"]
-  custom_data                     = base64encode("${templatefile("azure_init.sh", { "db_host_secret_name" = "db-host", "db_password_secret_name" = "db-password", "db_username_secret_name" = "db-username", "vault_name" = "web-app-vault-test" })}")
+  resource_group_name   = azurerm_resource_group.vm-rg.name
+  name                  = "test-vm"
+  location              = "eastus"
+  size                  = "Standard_B1ls"
+  network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
+  custom_data           = base64encode("${templatefile("azure_init.sh", { "db_host_secret_name" = "db-host", "db_password_secret_name" = "db-password", "db_username_secret_name" = "db-username", "vault_name" = "web-app-vault-test" })}")
   os_disk {
     caching              = "None"
     storage_account_type = "Standard_LRS"
   }
-  admin_username                  = "adminuser"
+  admin_username = "adminuser"
   admin_ssh_key {
     username   = "adminuser"
     public_key = file("./ssh_key.pub")
