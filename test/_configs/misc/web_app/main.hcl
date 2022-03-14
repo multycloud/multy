@@ -57,7 +57,7 @@ multy "database" "example_db" {
     subnet1.id,
     subnet2.id,
   ]
-  #  clouds         = ["azure"]
+  clouds         = ["azure"]
 }
 
 multy "virtual_machine" "vm" {

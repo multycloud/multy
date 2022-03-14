@@ -120,7 +120,7 @@ func (vn *VirtualNetwork) Validate(ctx resources.MultyContext, cloud common.Clou
 	//if vn.Name length? { return false }
 	//if vn.CidrBlock valid CIDR { return false }
 	if len(vn.CidrBlock) == 0 { // max len?
-		vn.NewError("cidr_block", "cidr_block length is invalid")
+		errs = append(errs, vn.NewError("cidr_block", "cidr_block length is invalid"))
 	}
 	return errs
 }

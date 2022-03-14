@@ -78,13 +78,3 @@ func (r *Vault) GetMainResourceName(cloud common.CloudProvider) string {
 	}
 	return ""
 }
-
-//func (r *Vault) GetCloudId(cloud common.CloudProvider) string {
-//	switch cloud {
-//	case common.AWS:
-//		return fmt.Sprintf("%s.%s.arn", common.GetResourceName(), r.ResourceId)
-//	default:
-//		validate.LogInternalError("unknown cloud %s", cloud)
-//	}
-//	return ""
-//}

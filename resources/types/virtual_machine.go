@@ -82,7 +82,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("ec2.amazonaws.com"),
 		}
 
-		if vault, check := getVaultAssociatedIdentity(ctx, iamRole.GetId()); check {
+		if vault := getVaultAssociatedIdentity(ctx, iamRole.GetId()); vault != nil {
 			policy, err := json.Marshal(iam.AwsIamPolicy{
 				Statement: []iam.AwsIamPolicyStatement{{
 					Action: []string{"ssm:GetParameter*"},
@@ -272,13 +272,13 @@ func (vm *VirtualMachine) GetAssociatedKeyPairName(cloud common.CloudProvider) s
 
 // check if VM identity is associated with vault (vault_access_policy)
 // get Vault name by vault_access_policy that uses VM identity
-func getVaultAssociatedIdentity(ctx resources.MultyContext, identity string) (Vault, bool) {
+func getVaultAssociatedIdentity(ctx resources.MultyContext, identity string) *Vault {
 	for _, resource := range resources.GetAllResources[*VaultAccessPolicy](ctx) {
 		if identity == resource.Identity {
-			return *resource.Vault, true
+			return resource.Vault
 		}
 	}
-	return Vault{}, false
+	return nil
 }
 
 func (vm *VirtualMachine) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
@@ -286,16 +286,16 @@ func (vm *VirtualMachine) Validate(ctx resources.MultyContext, cloud common.Clou
 	//if vn.Name length? { return false }
 	//if vn.Size valid { return false }
 	if vm.OperatingSystem != "linux" { // max len?
-		vm.NewError("os", "invalid operating system")
+		errs = append(errs, vm.NewError("os", "invalid operating system"))
 	}
 	if vm.PublicIp && len(vm.NetworkInterfaceIds) != 0 {
-		vm.NewError("public_ip", "public ip can't be set with network interface ids")
+		errs = append(errs, vm.NewError("public_ip", "public ip can't be set with network interface ids"))
 	}
 	if vm.PublicIp && vm.PublicIpId != "" {
-		vm.NewError("public_ip", "conflict between public_ip and public_ip_id")
+		errs = append(errs, vm.NewError("public_ip", "conflict between public_ip and public_ip_id"))
 	}
 	if common.ValidateVmSize(vm.Size) {
-		vm.NewError("size", fmt.Sprintf("\"%s\" is not []", vm.Size))
+		errs = append(errs, vm.NewError("size", fmt.Sprintf("\"%s\" is not []", vm.Size)))
 	}
 	return errs
 }

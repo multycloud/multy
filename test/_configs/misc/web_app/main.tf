@@ -13,25 +13,6 @@ resource "aws_ssm_parameter" "db_username_aws" {
   type  = "SecureString"
   value = "multyadmin@example-db"
 }
-resource "aws_db_subnet_group" "example_db_aws" {
-  tags       = { "Name" = "example-db" }
-  name       = "example-db"
-  subnet_ids = ["${aws_subnet.subnet1_aws.id}", "${aws_subnet.subnet2_aws.id}"]
-}
-resource "aws_db_instance" "example_db_aws" {
-  tags                 = { "Name" = "exampledb" }
-  allocated_storage    = 10
-  db_name              = "exampledb"
-  engine               = "mysql"
-  engine_version       = "5.7"
-  username             = "multyadmin"
-  password             = "multy-Admin123!"
-  instance_class       = "db.t2.micro"
-  identifier           = "example-db"
-  skip_final_snapshot  = true
-  db_subnet_group_name = aws_db_subnet_group.example_db_aws.name
-  publicly_accessible  = true
-}
 resource "aws_vpc" "example_vn_aws" {
   tags                 = { "Name" = "example_vn" }
   cidr_block           = "10.0.0.0/16"
@@ -150,18 +131,16 @@ resource "aws_subnet" "subnet3_aws" {
 }
 resource "aws_iam_instance_profile" "vm_aws" {
   depends_on = [
-    aws_db_subnet_group.example_db_aws, aws_db_instance.example_db_aws, azurerm_mysql_server.example_db_azure,
-    azurerm_mysql_virtual_network_rule.example_db_azure0, azurerm_mysql_virtual_network_rule.example_db_azure1,
-    azurerm_mysql_firewall_rule.example_db_azure
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
   name       = "iam_for_vm_vm"
   role       = aws_iam_role.vm_aws.name
 }
 resource "aws_iam_role" "vm_aws" {
   depends_on         = [
-    aws_db_subnet_group.example_db_aws, aws_db_instance.example_db_aws, azurerm_mysql_server.example_db_azure,
-    azurerm_mysql_virtual_network_rule.example_db_azure0, azurerm_mysql_virtual_network_rule.example_db_azure1,
-    azurerm_mysql_firewall_rule.example_db_azure
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
   tags               = { "Name" = "test-vm" }
   name               = "iam_for_vm_vm"
@@ -173,9 +152,8 @@ resource "aws_iam_role" "vm_aws" {
 }
 resource "aws_key_pair" "vm_aws" {
   depends_on = [
-    aws_db_subnet_group.example_db_aws, aws_db_instance.example_db_aws, azurerm_mysql_server.example_db_azure,
-    azurerm_mysql_virtual_network_rule.example_db_azure0, azurerm_mysql_virtual_network_rule.example_db_azure1,
-    azurerm_mysql_firewall_rule.example_db_azure
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
   tags       = { "Name" = "test-vm" }
   key_name   = "vm_multy"
@@ -183,9 +161,8 @@ resource "aws_key_pair" "vm_aws" {
 }
 resource "aws_instance" "vm_aws" {
   depends_on                  = [
-    aws_db_subnet_group.example_db_aws, aws_db_instance.example_db_aws, azurerm_mysql_server.example_db_azure,
-    azurerm_mysql_virtual_network_rule.example_db_azure0, azurerm_mysql_virtual_network_rule.example_db_azure1,
-    azurerm_mysql_firewall_rule.example_db_azure
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
   tags                        = { "Name" = "test-vm" }
   ami                         = "ami-04ad2567c9e3d7893"
@@ -394,9 +371,8 @@ resource "azurerm_subnet" "subnet3_azure" {
 }
 resource "azurerm_public_ip" "vm_azure" {
   depends_on          = [
-    aws_db_subnet_group.example_db_aws, aws_db_instance.example_db_aws, azurerm_mysql_server.example_db_azure,
-    azurerm_mysql_virtual_network_rule.example_db_azure0, azurerm_mysql_virtual_network_rule.example_db_azure1,
-    azurerm_mysql_firewall_rule.example_db_azure
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
   resource_group_name = azurerm_resource_group.vm-rg.name
   name                = "test-vm"
@@ -405,9 +381,8 @@ resource "azurerm_public_ip" "vm_azure" {
 }
 resource "azurerm_network_interface" "vm_azure" {
   depends_on          = [
-    aws_db_subnet_group.example_db_aws, aws_db_instance.example_db_aws, azurerm_mysql_server.example_db_azure,
-    azurerm_mysql_virtual_network_rule.example_db_azure0, azurerm_mysql_virtual_network_rule.example_db_azure1,
-    azurerm_mysql_firewall_rule.example_db_azure
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
   resource_group_name = azurerm_resource_group.vm-rg.name
   name                = "test-vm"
@@ -422,9 +397,8 @@ resource "azurerm_network_interface" "vm_azure" {
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
   depends_on                      = [
-    aws_db_subnet_group.example_db_aws, aws_db_instance.example_db_aws, azurerm_mysql_server.example_db_azure,
-    azurerm_mysql_virtual_network_rule.example_db_azure0, azurerm_mysql_virtual_network_rule.example_db_azure1,
-    azurerm_mysql_firewall_rule.example_db_azure
+    azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
+    azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
   resource_group_name             = azurerm_resource_group.vm-rg.name
   name                            = "test-vm"

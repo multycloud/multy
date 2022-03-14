@@ -25,33 +25,6 @@ const (
 )
 
 func (r *VaultAccessPolicy) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
-	/*
-		{
-		    "Version": "2012-10-17",
-		    "Statement": [
-		        {
-		            "Sid": "VisualEditor0",
-		            "Effect": "Allow",
-		            "Action": [
-		                "ssm:PutParameter",
-		                "ssm:DeleteParameter",
-		                "ssm:GetParameterHistory",
-		                "ssm:GetParametersByPath",
-		                "ssm:GetParameters",
-		                "ssm:GetParameter",
-		                "ssm:DeleteParameters"
-		            ],
-		            "Resource": "arn:aws:ssm:us-east-1:033721306154:parameter/web-app-vault-test/*"
-		        },
-		        {
-		            "Sid": "VisualEditor1",
-		            "Effect": "Allow",
-		            "Action": "ssm:DescribeParameters",
-		            "Resource": "*"
-		        }
-		    ]
-		}
-	*/
 	if cloud == common.AWS {
 		//return []output.TfBlock{
 		//	vault_secret.AwsSsmParameter{
@@ -128,7 +101,7 @@ func (r *VaultAccessPolicy) GetAccessPolicyRules(cloud common.CloudProvider) *va
 
 func (r *VaultAccessPolicy) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	if r.Access != READ && r.Access != OWNER && r.Access != WRITE {
-		r.NewError("access", fmt.Sprintf("%s access is invalid", r.ResourceId))
+		errs = append(errs, r.NewError("access", fmt.Sprintf("%s access is invalid", r.ResourceId)))
 	}
 	return errs
 }
