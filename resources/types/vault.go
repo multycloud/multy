@@ -34,16 +34,18 @@ func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext
 				},
 				Sku:      "standard",
 				TenantId: fmt.Sprintf("data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud)),
-				AccessPolicy: []vault.AccessPolicy{{
+				AccessPolicy: []vault.AzureKeyVaultAccessPolicyInline{{
 					TenantId: fmt.Sprintf(
 						"data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud),
 					),
 					ObjectId: fmt.Sprintf(
 						"data.azurerm_client_config.%s.object_id", r.GetTfResourceId(cloud),
 					),
-					CertificatePermissions: []string{},
-					KeyPermissions:         []string{},
-					SecretPermissions:      []string{"List", "Get", "Set", "Delete"},
+					AzureKeyVaultPermissions: &vault.AzureKeyVaultPermissions{
+						CertificatePermissions: []string{},
+						KeyPermissions:         []string{},
+						SecretPermissions:      []string{"List", "Get", "Set", "Delete", "Recover", "Backup", "Restore", "Purge"},
+					},
 				}},
 			}}
 	}

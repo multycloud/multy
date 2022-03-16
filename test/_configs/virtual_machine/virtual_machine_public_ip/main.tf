@@ -69,6 +69,15 @@ resource "aws_key_pair" "vm_aws" {
   key_name   = "vm_multy"
   public_key = file("./ssh_key.pub")
 }
+resource "aws_iam_role" "vm_aws" {
+  tags               = { "Name" = "test-vm" }
+  name               = "iam_for_vm_vm"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+}
+resource "aws_iam_instance_profile" "vm_aws" {
+  name = "iam_for_vm_vm"
+  role = aws_iam_role.vm_aws.name
+}
 resource "aws_instance" "vm_aws" {
   tags = {
     "Name" = "test-vm"
@@ -80,6 +89,7 @@ resource "aws_instance" "vm_aws" {
   subnet_id                   = "${aws_subnet.subnet_aws.id}"
   user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html")
   key_name                    = aws_key_pair.vm_aws.key_name
+  iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
@@ -164,7 +174,9 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
     sku       = "7_9-gen2"
     version   = "latest"
   }
-
+  identity {
+    type = "SystemAssigned"
+  }
   disable_password_authentication = true
 }
 resource "azurerm_resource_group" "vm-rg" {

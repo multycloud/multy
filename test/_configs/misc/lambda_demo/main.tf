@@ -22,7 +22,7 @@ resource "aws_lambda_function" "lambda_aws" {
 resource "aws_iam_role" "iam_for_lambda_lambda" {
   tags               = { "Name" = "iam_for_lambda_lambda" }
   name               = "iam_for_lambda_lambda"
-  assume_role_policy = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "lambda_aws" {
   role       = aws_iam_role.iam_for_lambda_lambda.name

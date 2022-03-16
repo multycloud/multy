@@ -57,17 +57,25 @@ multy "database" "example_db" {
     subnet1.id,
     subnet2.id,
   ]
-  clouds         = ["azure"]
+  clouds = ["azure"]
 }
 
 multy "virtual_machine" "vm" {
-  name              = "test-vm"
-  os                = "linux"
-  size              = "micro"
-  user_data         = templatefile("init.sh", {
-    db_host : azure.example_db.host,
-    db_username : azure.example_db.username,
-    db_password : azure.example_db.password
+  name      = "test-vm"
+  os        = "linux"
+  size      = "micro"
+  user_data = cloud_specific_value({
+    aws : templatefile("init.sh", {
+      db_host : azure.example_db.host,
+      db_username : azure.example_db.username,
+      db_password : azure.example_db.password
+    }),
+    azure : templatefile("azure_init.sh", {
+      vault_name : web_app_vault.name,
+      db_host_secret_name : db_host.name,
+      db_username_secret_name : db_username.name,
+      db_password_secret_name : db_password.name
+    })
   })
   subnet_id         = subnet3.id
   ssh_key_file_path = "./ssh_key.pub"
@@ -105,6 +113,29 @@ multy "network_security_group" nsg2 {
       direction  = "both"
     }
   ]
+}
+multy "vault" "web_app_vault" {
+  name = "web-app-vault-test"
+}
+multy "vault_secret" "db_host" {
+  name  = "db-host"
+  vault = web_app_vault
+  value = azure.example_db.host
+}
+multy "vault_secret" "db_username" {
+  name  = "db-username"
+  vault = web_app_vault
+  value = azure.example_db.username
+}
+multy "vault_secret" "db_password" {
+  name  = "db-password"
+  vault = web_app_vault
+  value = azure.example_db.password
+}
+multy "vault_access_policy" "kv_ap" {
+  vault    = web_app_vault
+  identity = vm.identity
+  access   = "owner"
 }
 output "aws_endpoint" {
   value = "http://${aws.vm.public_ip}:4000"

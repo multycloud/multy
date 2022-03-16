@@ -1,7 +1,7 @@
 resource "aws_iam_role" "example_aws" {
   tags               = { "Name" = "iam_for_k8cluster_example" }
   name               = "iam_for_k8cluster_example"
-  assume_role_policy = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"eks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"eks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "example_aws_AmazonEKSClusterPolicy" {
   role       = aws_iam_role.example_aws.name
@@ -17,12 +17,12 @@ resource "aws_eks_cluster" "example_aws" {
   vpc_config {
     subnet_ids = ["${aws_subnet.subnet1_aws.id}", "${aws_subnet.subnet2_aws.id}"]
   }
-  name = "example"
+  name     = "example"
 }
 resource "aws_iam_role" "example_pool_aws" {
   tags               = { "Name" = "iam_for_k8nodepool_example" }
   name               = "iam_for_k8nodepool_example"
-  assume_role_policy = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "example_pool_aws_AmazonEKSWorkerNodePolicy" {
   role       = aws_iam_role.example_pool_aws.name
@@ -46,7 +46,7 @@ resource "aws_eks_node_group" "example_pool_aws" {
     max_size     = 1
     min_size     = 1
   }
-  instance_types = ["t2.medium"]
+  instance_types  = ["t2.medium"]
 }
 resource "aws_vpc" "example_vn_aws" {
   tags                 = { "Name" = "example_vn" }
@@ -113,7 +113,7 @@ resource "azurerm_kubernetes_cluster" "example_azure" {
     enable_auto_scaling = true
     vm_size             = "Standard_A2_v2"
   }
-  dns_prefix = "example"
+  dns_prefix          = "example"
   identity {
     type = "SystemAssigned"
   }

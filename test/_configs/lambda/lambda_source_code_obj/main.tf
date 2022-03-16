@@ -16,7 +16,7 @@ resource "aws_iam_role" "iam_for_lambda_function2" {
   }
 
   name               = "iam_for_lambda_function2"
-  assume_role_policy =  "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "function2_aws" {
   role       = aws_iam_role.iam_for_lambda_function2.name
@@ -101,7 +101,7 @@ resource "azurerm_function_app" "function2_azure" {
   app_service_plan_id        = azurerm_app_service_plan.function2_azure.id
   os_type                    = "linux"
 
-  app_settings =  {
+  app_settings = {
     "WEBSITE_RUN_FROM_PACKAGE" = "${azurerm_storage_blob.public_source_code_azure.url}"
   }
 }
