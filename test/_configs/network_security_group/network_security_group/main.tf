@@ -109,6 +109,15 @@ resource "aws_subnet" "subnet1_aws" {
   cidr_block = "10.0.1.0/24"
   vpc_id     = aws_vpc.example_vn_aws.id
 }
+resource "aws_iam_role" "vm_aws" {
+  tags               = { "Name" = "test-vm" }
+  name               = "iam_for_vm_vm"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+}
+resource "aws_iam_instance_profile" "vm_aws" {
+  name = "iam_for_vm_vm"
+  role = aws_iam_role.vm_aws.name
+}
 resource "aws_instance" "vm_aws" {
   tags = {
     "Name" = "test-vm"
@@ -119,6 +128,16 @@ resource "aws_instance" "vm_aws" {
   associate_public_ip_address = true
   subnet_id                   = "${aws_subnet.subnet1_aws.id}"
   user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html")
+  iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
+}
+resource "aws_iam_role" "vm2_aws" {
+  tags               = { "Name" = "test-vm2" }
+  name               = "iam_for_vm_vm2"
+  assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+}
+resource "aws_iam_instance_profile" "vm2_aws" {
+  name = "iam_for_vm_vm2"
+  role = aws_iam_role.vm2_aws.name
 }
 resource "aws_instance" "vm2_aws" {
   tags = {
@@ -131,6 +150,7 @@ resource "aws_instance" "vm2_aws" {
   subnet_id                   = "${aws_subnet.subnet1_aws.id}"
   user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html")
   vpc_security_group_ids      = ["${aws_security_group.nsg2_aws.id}"]
+  iam_instance_profile        = aws_iam_instance_profile.vm2_aws.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
@@ -275,7 +295,9 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
     sku       = "7_9-gen2"
     version   = "latest"
   }
-
+  identity {
+    type = "SystemAssigned"
+  }
   disable_password_authentication = false
 }
 resource "azurerm_resource_group" "vm-rg" {
@@ -334,7 +356,9 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
     sku       = "7_9-gen2"
     version   = "latest"
   }
-
+  identity {
+    type = "SystemAssigned"
+  }
   disable_password_authentication = false
 }
 resource "azurerm_resource_group" "vn-rg" {

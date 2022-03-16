@@ -1,12 +1,14 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/multy-dev/hclencoder"
 	"github.com/zclconf/go-cty/cty"
 	"multy-go/resources"
 	"multy-go/resources/common"
 	"multy-go/resources/output"
+	"multy-go/resources/output/iam"
 	"multy-go/resources/output/network_interface"
 	"multy-go/resources/output/network_security_group"
 	"multy-go/resources/output/public_ip"
@@ -37,6 +39,14 @@ type VirtualMachine struct {
 	PublicIpId              string   `hcl:"public_ip_id,optional"`
 	// PublicIp auto-generate public IP
 	PublicIp bool `hcl:"public_ip,optional"`
+}
+
+type AwsCallerIdentityData struct {
+	*output.TerraformDataSource `hcl:",squash" default:"name=aws_caller_identity"`
+}
+
+type AwsRegionData struct {
+	*output.TerraformDataSource `hcl:",squash" default:"name=aws_region"`
 }
 
 func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
@@ -73,6 +83,57 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			ec2.SubnetId = ""
 			ec2.AssociatePublicIpAddress = false
 		}
+
+		iamRole := iam.AwsIamRole{
+			AwsResource:      common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
+			Name:             vm.getAwsIamRoleName(),
+			AssumeRolePolicy: iam.NewAssumeRolePolicy("ec2.amazonaws.com"),
+		}
+
+		if vault := getVaultAssociatedIdentity(ctx, iamRole.GetId()); vault != nil {
+			awsResources = append(awsResources,
+				AwsCallerIdentityData{TerraformDataSource: &output.TerraformDataSource{ResourceId: vm.GetTfResourceId(cloud)}},
+				AwsRegionData{TerraformDataSource: &output.TerraformDataSource{ResourceId: vm.GetTfResourceId(cloud)}})
+
+			policy, err := json.Marshal(iam.AwsIamPolicy{
+				Statement: []iam.AwsIamPolicyStatement{{
+					Action:   []string{"ssm:GetParameter*"},
+					Effect:   "Allow",
+					Resource: fmt.Sprintf("arn:aws:ssm:${data.aws_region.%s.name}:${data.aws_caller_identity.%s.account_id}:parameter/%s/*", vm.GetTfResourceId(cloud), vm.GetTfResourceId(cloud), vault.Name),
+				}, {
+					Action:   []string{"ssm:DescribeParameters"},
+					Effect:   "Allow",
+					Resource: "*",
+				}},
+				Version: "2012-10-17",
+			})
+
+			if err != nil {
+				validate.LogInternalError("unable to encode aws policy: %s", err.Error())
+			}
+
+			iamRole.InlinePolicy = iam.AwsIamRoleInlinePolicy{
+				Name:   "vault_policy",
+				Policy: string(policy),
+			}
+		}
+
+		iamInstanceProfile := iam.AwsIamInstanceProfile{
+			AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: vm.GetTfResourceId(cloud)}},
+			Name:        vm.getAwsIamRoleName(),
+			Role: fmt.Sprintf(
+				"%s.%s.name", common.GetResourceName(iam.AwsIamRole{}), iamRole.ResourceId,
+			),
+		}
+
+		ec2.IamInstanceProfile = iamInstanceProfile.GetId()
+
+		awsResources = append(awsResources,
+			iamInstanceProfile,
+			iamRole,
+		)
+
+		// this gives permission to write cloudwatch logs
 
 		// adding ssh key to vm requires aws key pair resource
 		// key pair will be added and referenced via key_name parameter
@@ -201,6 +262,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 					Version:   "latest",
 				},
 				DisablePasswordAuthentication: disablePassAuth,
+				Identity:                      virtual_machine.AzureIdentity{Type: "SystemAssigned"},
 			},
 		)
 
@@ -219,21 +281,32 @@ func (vm *VirtualMachine) GetAssociatedKeyPairName(cloud common.CloudProvider) s
 	return ""
 }
 
+// check if VM identity is associated with vault (vault_access_policy)
+// get Vault name by vault_access_policy that uses VM identity
+func getVaultAssociatedIdentity(ctx resources.MultyContext, identity string) *Vault {
+	for _, resource := range resources.GetAllResources[*VaultAccessPolicy](ctx) {
+		if identity == resource.Identity {
+			return resource.Vault
+		}
+	}
+	return nil
+}
+
 func (vm *VirtualMachine) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
 	//if vn.Size valid { return false }
 	if vm.OperatingSystem != "linux" { // max len?
-		vm.NewError("os", "invalid operating system")
+		errs = append(errs, vm.NewError("os", "invalid operating system"))
 	}
 	if vm.PublicIp && len(vm.NetworkInterfaceIds) != 0 {
-		vm.NewError("public_ip", "public ip can't be set with network interface ids")
+		errs = append(errs, vm.NewError("public_ip", "public ip can't be set with network interface ids"))
 	}
 	if vm.PublicIp && vm.PublicIpId != "" {
-		vm.NewError("public_ip", "conflict between public_ip and public_ip_id")
+		errs = append(errs, vm.NewError("public_ip", "conflict between public_ip and public_ip_id"))
 	}
 	if common.ValidateVmSize(vm.Size) {
-		vm.NewError("size", fmt.Sprintf("\"%s\" is not []", vm.Size))
+		errs = append(errs, vm.NewError("size", fmt.Sprintf("\"%s\" is not []", vm.Size)))
 	}
 	return errs
 }
@@ -260,6 +333,12 @@ func (vm *VirtualMachine) GetOutputValues(cloud common.CloudProvider) map[string
 						vm.GetTfResourceId(cloud),
 					),
 				),
+				"identity": cty.StringVal(
+					fmt.Sprintf(
+						"${%s.%s.id}", common.GetResourceName(iam.AwsIamRole{}),
+						vm.GetTfResourceId(cloud),
+					),
+				),
 			}
 		} else if cloud == common.AZURE {
 			return map[string]cty.Value{
@@ -269,8 +348,18 @@ func (vm *VirtualMachine) GetOutputValues(cloud common.CloudProvider) map[string
 						vm.GetTfResourceId(cloud),
 					),
 				),
+				"identity": cty.StringVal(
+					fmt.Sprintf(
+						"${%s.%s.identity[0].principal_id}", common.GetResourceName(virtual_machine.AzureVirtualMachine{}),
+						vm.GetTfResourceId(cloud),
+					),
+				),
 			}
 		}
 	}
 	return map[string]cty.Value{}
+}
+
+func (vm *VirtualMachine) getAwsIamRoleName() string {
+	return fmt.Sprintf("iam_for_vm_%s", vm.ResourceId)
 }

@@ -18,6 +18,11 @@ type AzureVirtualMachine struct {
 	AdminSshKey                   AzureAdminSshKey          `hcl:"admin_ssh_key" hcle:"omitempty"`
 	SourceImageReference          AzureSourceImageReference `hcl:"source_image_reference"`
 	DisablePasswordAuthentication bool                      `hcl:"disable_password_authentication"`
+	Identity                      AzureIdentity             `hcl:"identity"`
+}
+
+type AzureIdentity struct {
+	Type string `hcl:"type"`
 }
 
 type AzureAdminSshKey struct {
