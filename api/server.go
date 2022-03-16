@@ -19,8 +19,8 @@ func (s *server) CreateVirtualNetwork(ctx context.Context, in *resources.CreateV
 	return nil, fmt.Errorf("unimplemented")
 }
 
-func RunServer(ctx context.Context) {
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8000))
+func RunServer(ctx context.Context, port int) {
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
