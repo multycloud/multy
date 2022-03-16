@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option go_package = "multy-go/api/proto/common";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.common";
+option java_outer_classname = "MultyProto";
+
+package multy.common;
+
+enum Location {
+  UNKNOWN_LOCATION = 0;
+  US_EAST = 1;
+  IRELAND = 2;
+}
+
+enum CloudProvider {
+  UNKNOWN_PROVIDER = 0;
+  AWS = 1;
+  AZURE = 2;
+}
+
+
+// Common messages for READ requests
+message CommonResourceParameters {
+  string resource_id = 1;
+}
+
+message CloudSpecificCommonResourceParameters {
+  string resource_group_id = 1;
+  Location location = 2;
+  CloudProvider cloud_provider = 3;
+  bool needs_update = 4;
+}
+
+// Common messages for CREATE and UPDATE requests
+message CloudSpecificCreateResourceCommonParameters {
+  string resource_group_id = 1;
+  Location location = 2;
+  CloudProvider cloud_provider = 3;
+}
+
+// Common messages for DELETE requests
+message Empty {
+
+}

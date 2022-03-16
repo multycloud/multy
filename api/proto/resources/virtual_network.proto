@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option go_package = "multy-go/api/proto/resources";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.resources";
+option java_outer_classname = "ResourcesProto";
+
+import "api/proto/common/common.proto";
+
+package multy.resources;
+
+message CreateVirtualNetworkRequest {
+  repeated CloudSpecificCreateVirtualNetworkRequest resources = 1;
+}
+
+message ReadVirtualNetworkRequest {
+  string resource_id = 1;
+}
+
+message UpdateVirtualNetworkRequest {
+  string resource_id = 1;
+  repeated CloudSpecificCreateVirtualNetworkRequest resources = 2;
+}
+
+message DeleteVirtualNetworkRequest {
+  string resource_id = 1;
+}
+
+
+
+message CloudSpecificCreateVirtualNetworkRequest {
+  common.CloudSpecificCreateResourceCommonParameters common_parameters = 1;
+  string name = 2;
+  string cidr_block = 3;
+}
+
+
+message CloudSpecificVirtualNetworkResource {
+  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+  string name = 2;
+  string cidr_block = 3;
+}
+
+message VirtualNetworkResource {
+  common.CommonResourceParameters common_parameters = 1;
+  repeated CloudSpecificVirtualNetworkResource resources = 2;
+}

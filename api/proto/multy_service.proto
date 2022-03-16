@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "multy-go/api/proto";
+option java_multiple_files = true;
+option java_package = "dev.multy.api";
+option java_outer_classname = "MultyProto";
+
+import "api/proto/resources/virtual_network.proto";
+import "api/proto/common/common.proto";
+
+package multy;
+
+service MultyResourceService {
+  rpc CreateVirtualNetwork (resources.CreateVirtualNetworkRequest) returns (resources.VirtualNetworkResource) {}
+  rpc ReadVirtualNetwork (resources.ReadVirtualNetworkRequest) returns (resources.VirtualNetworkResource) {}
+  rpc UpdateVirtualNetwork (resources.UpdateVirtualNetworkRequest) returns (resources.VirtualNetworkResource) {}
+  rpc DeleteVirtualNetwork (resources.DeleteVirtualNetworkRequest) returns (common.Empty) {}
+}

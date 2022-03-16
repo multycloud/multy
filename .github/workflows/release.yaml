@@ -17,17 +17,20 @@ jobs:
           - goarch: arm64
             goos: windows
     steps:
+      - uses: arduino/setup-protoc@v1
+
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
       - uses: actions/checkout@v2
       - uses: wangyoucao577/go-release-action@v1.22
         with:
-          goversion: "https://go.dev/dl/go1.18rc1.linux-amd64.tar.gz"
+          goversion: "1.18"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
           asset_name: multy-${{ matrix.goos }}-${{ matrix.goarch }}
           extra_files: LICENSE README.md
           overwrite: TRUE
+          pre_command: "make build"
           ldflags: "-X 'multy-go/cli.Version=${{ steps.get_version.outputs.VERSION }}'"
