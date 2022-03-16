@@ -5,5 +5,9 @@ terraform.*
 **/*.lock.hcl
 .multy
 ssh_key
+<<<<<<< HEAD
 /test/main.tf
+/main.tf
 /main.hcl
+**/*.pb.go
+>>>>>>> Skeleton for rpc server
