@@ -6,10 +6,10 @@ import (
 	flag "github.com/spf13/pflag"
 	"io/ioutil"
 	"log"
-	"multy-go/decoder"
-	"multy-go/encoder"
-	"multy-go/parser"
-	"multy-go/resources"
+	"multy/decoder"
+	"multy/encoder"
+	"multy/parser"
+	"multy/resources"
 	"path/filepath"
 )
 

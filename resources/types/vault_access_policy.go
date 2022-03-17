@@ -2,13 +2,13 @@ package types
 
 import (
 	"fmt"
-	"multy-go/resources"
-	"multy-go/resources/common"
-	"multy-go/resources/output"
-	"multy-go/resources/output/vault"
-	"multy-go/resources/output/vault_access_policy"
-	"multy-go/resources/output/vault_secret"
-	"multy-go/validate"
+	"multy/resources"
+	"multy/resources/common"
+	"multy/resources/output"
+	"multy/resources/output/vault"
+	"multy/resources/output/vault_access_policy"
+	"multy/resources/output/vault_secret"
+	"multy/validate"
 )
 
 type VaultAccessPolicy struct {

@@ -2,9 +2,9 @@ package resources
 
 import (
 	"github.com/zclconf/go-cty/cty"
-	"multy-go/resources/common"
-	"multy-go/util"
-	"multy-go/validate"
+	"multy/resources/common"
+	"multy/util"
+	"multy/validate"
 )
 
 type CommonResourceParams struct {

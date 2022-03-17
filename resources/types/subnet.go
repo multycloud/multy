@@ -2,14 +2,14 @@ package types
 
 import (
 	"fmt"
-	"multy-go/resources"
-	"multy-go/resources/common"
-	"multy-go/resources/output"
-	"multy-go/resources/output/route_table_association"
-	"multy-go/resources/output/subnet"
-	rg "multy-go/resources/resource_group"
-	"multy-go/util"
-	"multy-go/validate"
+	"multy/resources"
+	"multy/resources/common"
+	"multy/resources/output"
+	"multy/resources/output/route_table_association"
+	"multy/resources/output/subnet"
+	rg "multy/resources/resource_group"
+	"multy/util"
+	"multy/validate"
 )
 
 /*

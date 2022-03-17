@@ -1,8 +1,8 @@
 package database
 
 import (
-	"multy-go/resources/common"
-	"multy-go/resources/output"
+	"multy/resources/common"
+	"multy/resources/output"
 	"strconv"
 	"strings"
 )

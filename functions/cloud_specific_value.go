@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/function"
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 func getCloudSpecificValFunction(cloud common.CloudProvider, throwOnMissingVal bool) function.Function {

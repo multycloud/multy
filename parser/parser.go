@@ -7,11 +7,11 @@ import (
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/zclconf/go-cty/cty"
 	"log"
-	"multy-go/hclutil"
-	"multy-go/resources/common"
-	"multy-go/util"
-	"multy-go/validate"
-	"multy-go/variables"
+	"multy/hclutil"
+	"multy/resources/common"
+	"multy/util"
+	"multy/validate"
+	"multy/variables"
 )
 
 type Parser struct {

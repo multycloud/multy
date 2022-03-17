@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 const AzureMysqlResourceName = "azurerm_mysql_server"

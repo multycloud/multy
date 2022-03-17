@@ -1,10 +1,10 @@
 package decoder
 
 import (
-	"multy-go/functions"
-	"multy-go/parser"
-	"multy-go/resources/common"
-	"multy-go/validate"
+	"multy/functions"
+	"multy/parser"
+	"multy/resources/common"
+	"multy/validate"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/zclconf/go-cty/cty"

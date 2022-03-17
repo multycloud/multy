@@ -2,12 +2,12 @@ package types
 
 import (
 	"fmt"
-	"multy-go/resources"
-	"multy-go/resources/common"
-	"multy-go/resources/output"
-	"multy-go/resources/output/vault"
-	rg "multy-go/resources/resource_group"
-	"multy-go/validate"
+	"multy/resources"
+	"multy/resources/common"
+	"multy/resources/output"
+	"multy/resources/output/vault"
+	rg "multy/resources/resource_group"
+	"multy/validate"
 )
 
 type Vault struct {

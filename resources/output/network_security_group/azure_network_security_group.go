@@ -1,7 +1,7 @@
 package network_security_group
 
 import (
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 const AzureNetworkSecurityGroupResourceName = "azurerm_network_security_group"

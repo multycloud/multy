@@ -1,7 +1,7 @@
 package main
 
 import (
-	"multy-go/cli"
+	"multy/cli"
 )
 
 func main() {

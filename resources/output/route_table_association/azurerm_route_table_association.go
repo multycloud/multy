@@ -1,6 +1,6 @@
 package route_table_association
 
-import "multy-go/resources/common"
+import "multy/resources/common"
 
 const AzureResourceName = "azurerm_subnet_route_table_association"
 

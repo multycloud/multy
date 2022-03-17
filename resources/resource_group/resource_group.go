@@ -2,11 +2,11 @@ package rg
 
 import (
 	"fmt"
-	"multy-go/hclutil"
-	"multy-go/resources"
-	"multy-go/resources/common"
-	"multy-go/resources/output"
-	"multy-go/validate"
+	"multy/hclutil"
+	"multy/resources"
+	"multy/resources/common"
+	"multy/resources/output"
+	"multy/validate"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/zclconf/go-cty/cty"
