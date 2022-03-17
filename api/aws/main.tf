@@ -225,5 +225,5 @@ provider "aws" {
   region = "eu-west-2"
 }
 output "aws_endpoint" {
-  value = aws_instance.vm.public_ip
+  value = aws_eip.ip_aws.public_ip
 }
