@@ -37,6 +37,3 @@ output "test_var" {
 output "test_output_var" {
   value = "${file("${aws_vpc.example_vn_aws.id}.txt")}\n"
 }
-output "test_quotes" {
-  value = "${file("\"")}"
-}
