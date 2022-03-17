@@ -1,8 +1,8 @@
 package resources
 
 import (
-	"multy-go/resources/common"
-	"multy-go/validate"
+	"multy/resources/common"
+	"multy/validate"
 )
 
 type MultyContext struct {

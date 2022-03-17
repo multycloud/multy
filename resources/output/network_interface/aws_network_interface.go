@@ -1,7 +1,7 @@
 package network_interface
 
 import (
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 const AwsResourceName = "aws_network_interface"

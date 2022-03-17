@@ -1,7 +1,7 @@
 package virtual_machine
 
 import (
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 const AwsResourceName = "aws_instance"

@@ -1,7 +1,7 @@
 package kubernetes_service
 
 import (
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 type AwsEksCluster struct {

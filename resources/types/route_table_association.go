@@ -1,11 +1,11 @@
 package types
 
 import (
-	"multy-go/resources"
-	"multy-go/resources/common"
-	"multy-go/resources/output"
-	"multy-go/resources/output/route_table_association"
-	"multy-go/validate"
+	"multy/resources"
+	"multy/resources/common"
+	"multy/resources/output"
+	"multy/resources/output/route_table_association"
+	"multy/validate"
 )
 
 // route_table_association

@@ -2,8 +2,8 @@ package network_interface
 
 import (
 	"fmt"
-	"multy-go/resources/common"
-	"multy-go/validate"
+	"multy/resources/common"
+	"multy/validate"
 )
 
 const AzureResourceName = "azurerm_network_interface"

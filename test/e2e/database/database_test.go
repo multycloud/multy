@@ -9,7 +9,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	flag "github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
-	"multy-go/cli"
+	"multy/cli"
 	"os"
 	"os/exec"
 	"testing"

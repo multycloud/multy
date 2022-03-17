@@ -1,8 +1,8 @@
 package lambda
 
 import (
-	"multy-go/resources/common"
-	"multy-go/resources/output/local_exec"
+	"multy/resources/common"
+	"multy/resources/output/local_exec"
 )
 
 const AzureResourceName = "azurerm_function_app"

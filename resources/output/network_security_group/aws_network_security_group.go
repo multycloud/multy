@@ -1,7 +1,7 @@
 package network_security_group
 
 import (
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 type AwsAcl struct {

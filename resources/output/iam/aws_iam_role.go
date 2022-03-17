@@ -3,9 +3,9 @@ package iam
 import (
 	"encoding/json"
 	"fmt"
-	"multy-go/resources/common"
-	"multy-go/util"
-	"multy-go/validate"
+	"multy/resources/common"
+	"multy/util"
+	"multy/validate"
 )
 
 type AwsIamRole struct {

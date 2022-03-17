@@ -2,8 +2,8 @@ package kubernetes_service
 
 import (
 	"fmt"
-	"multy-go/resources/common"
-	"multy-go/resources/output/kubernetes_node_pool"
+	"multy/resources/common"
+	"multy/resources/output/kubernetes_node_pool"
 )
 
 type AzureIdentity struct {

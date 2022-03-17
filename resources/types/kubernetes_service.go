@@ -3,14 +3,14 @@ package types
 import (
 	"fmt"
 	"github.com/zclconf/go-cty/cty"
-	"multy-go/resources"
-	"multy-go/resources/common"
-	"multy-go/resources/output"
-	"multy-go/resources/output/iam"
-	"multy-go/resources/output/kubernetes_node_pool"
-	"multy-go/resources/output/kubernetes_service"
-	rg "multy-go/resources/resource_group"
-	"multy-go/validate"
+	"multy/resources"
+	"multy/resources/common"
+	"multy/resources/output"
+	"multy/resources/output/iam"
+	"multy/resources/output/kubernetes_node_pool"
+	"multy/resources/output/kubernetes_service"
+	rg "multy/resources/resource_group"
+	"multy/validate"
 )
 
 type KubernetesService struct {

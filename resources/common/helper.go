@@ -4,7 +4,7 @@ import (
 	"hash/fnv"
 	"log"
 	"math/rand"
-	"multy-go/validate"
+	"multy/validate"
 	"regexp"
 )
 

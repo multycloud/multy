@@ -2,14 +2,14 @@ package decoder
 
 import (
 	"fmt"
-	"multy-go/hclutil"
-	"multy-go/mhcl"
-	"multy-go/parser"
-	"multy-go/resources"
-	"multy-go/resources/common"
-	rg "multy-go/resources/resource_group"
-	"multy-go/util"
-	"multy-go/validate"
+	"multy/hclutil"
+	"multy/mhcl"
+	"multy/parser"
+	"multy/resources"
+	"multy/resources/common"
+	rg "multy/resources/resource_group"
+	"multy/util"
+	"multy/validate"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"

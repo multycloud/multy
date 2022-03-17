@@ -3,9 +3,9 @@ package variables
 import (
 	"bytes"
 	"fmt"
-	"multy-go/functions"
-	"multy-go/resources/common"
-	"multy-go/validate"
+	"multy/functions"
+	"multy/resources/common"
+	"multy/validate"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"

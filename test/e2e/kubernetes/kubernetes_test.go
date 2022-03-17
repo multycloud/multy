@@ -11,7 +11,7 @@ import (
 	flag "github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/maps"
-	"multy-go/cli"
+	"multy/cli"
 	"os"
 	"os/exec"
 	"testing"

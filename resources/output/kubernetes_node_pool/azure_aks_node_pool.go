@@ -1,6 +1,6 @@
 package kubernetes_node_pool
 
-import "multy-go/resources/common"
+import "multy/resources/common"
 
 type AzureKubernetesNodePool struct {
 	*common.AzResource `hcl:",squash" default:"name=azurerm_kubernetes_cluster_node_pool"`

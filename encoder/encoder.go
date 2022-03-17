@@ -5,11 +5,11 @@ import (
 	"github.com/multy-dev/hclencoder"
 	"github.com/zclconf/go-cty/cty"
 	"log"
-	"multy-go/decoder"
-	"multy-go/resources"
-	"multy-go/resources/output"
-	"multy-go/util"
-	"multy-go/validate"
+	"multy/decoder"
+	"multy/resources"
+	"multy/resources/output"
+	"multy/util"
+	"multy/validate"
 )
 
 type WithProvider struct {

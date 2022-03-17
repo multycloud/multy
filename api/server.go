@@ -10,11 +10,11 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/anypb"
 	"log"
-	"multy-go/api/proto"
-	"multy-go/api/proto/common"
-	"multy-go/api/proto/config"
-	"multy-go/api/proto/resources"
-	"multy-go/db"
+	"multy/api/proto"
+	"multy/api/proto/common"
+	"multy/api/proto/config"
+	"multy/api/proto/resources"
+	"multy/db"
 	"net"
 )
 
