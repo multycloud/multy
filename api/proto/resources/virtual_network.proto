@@ -7,7 +7,7 @@ option java_outer_classname = "ResourcesProto";
 
 import "api/proto/common/common.proto";
 
-package multy.resources;
+package dev.multy.resources;
 
 message CreateVirtualNetworkRequest {
   repeated CloudSpecificCreateVirtualNetworkRequest resources = 1;
