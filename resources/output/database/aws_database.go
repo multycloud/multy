@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"multy/resources/common"
+	"github.com/multycloud/multy/resources/common"
 )
 
 const AwsResourceName = "aws_db_instance"

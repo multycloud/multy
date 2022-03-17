@@ -1,8 +1,8 @@
 package lambda
 
 import (
-	"multy/resources/common"
-	"multy/resources/output/iam"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output/iam"
 )
 
 const AwsResourceName = "aws_lambda_function"

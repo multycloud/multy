@@ -3,12 +3,12 @@ package variables
 import (
 	"bytes"
 	"fmt"
-	"multy/functions"
-	"multy/resources/common"
-	"multy/validate"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/multycloud/multy/functions"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/validate"
 	"strings"
 
-	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/ext/typeexpr"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/json"

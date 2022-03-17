@@ -2,8 +2,8 @@ package types
 
 import (
 	"fmt"
-	"multy/resources/common"
-	"multy/resources/output/provider"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output/provider"
 )
 
 type Provider struct {

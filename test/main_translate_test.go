@@ -2,13 +2,14 @@ package test
 
 import (
 	"fmt"
+	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/multycloud/multy/decoder"
+	"github.com/multycloud/multy/encoder"
+	"github.com/multycloud/multy/parser"
+	"github.com/multycloud/multy/validate"
 	"io/ioutil"
 	"log"
-	"multy/decoder"
-	"multy/encoder"
-	"multy/parser"
-	"multy/validate"
 	"os"
 	"path/filepath"
 	"sort"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/zclconf/go-cty/cty"
 )

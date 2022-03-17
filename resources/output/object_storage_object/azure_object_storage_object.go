@@ -2,7 +2,7 @@ package object_storage_object
 
 import (
 	"fmt"
-	"multy/resources/common"
+	"github.com/multycloud/multy/resources/common"
 )
 
 // azurerm_storage_blob

@@ -1,8 +1,8 @@
 package vault_access_policy
 
 import (
-	"multy/resources/common"
-	"multy/resources/output/vault"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output/vault"
 )
 
 type AzureKeyVaultAccessPolicy struct {

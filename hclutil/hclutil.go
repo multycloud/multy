@@ -3,7 +3,7 @@ package hclutil
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
-	"multy/validate"
+	"github.com/multycloud/multy/validate"
 	"reflect"
 
 	"github.com/hashicorp/hcl/v2/gohcl"

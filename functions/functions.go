@@ -1,8 +1,8 @@
 package functions
 
 import (
+	"github.com/multycloud/multy/resources/common"
 	"github.com/zclconf/go-cty/cty/function"
-	"multy/resources/common"
 )
 
 func GetAllFunctions(cloud common.CloudProvider) map[string]function.Function {

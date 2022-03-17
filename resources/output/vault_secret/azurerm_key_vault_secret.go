@@ -1,6 +1,6 @@
 package vault_secret
 
-import "multy/resources/common"
+import "github.com/multycloud/multy/resources/common"
 
 const AzureResourceName = "azurerm_key_vault_secret"
 

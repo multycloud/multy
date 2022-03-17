@@ -9,7 +9,7 @@ package resources
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	common "multy/api/proto/common"
+	common "github.com/multycloud/multy/api/proto/common"
 	reflect "reflect"
 	sync "sync"
 )

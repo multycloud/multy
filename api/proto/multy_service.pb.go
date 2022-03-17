@@ -9,8 +9,8 @@ package proto
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	common "multy/api/proto/common"
-	resources "multy/api/proto/resources"
+	common "github.com/multycloud/multy/api/proto/common"
+	resources "github.com/multycloud/multy/api/proto/resources"
 	reflect "reflect"
 )
 

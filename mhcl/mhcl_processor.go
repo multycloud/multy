@@ -2,9 +2,9 @@ package mhcl
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"multy/resources"
-	"multy/resources/common"
-	"multy/validate"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/validate"
 	"reflect"
 	"strings"
 )

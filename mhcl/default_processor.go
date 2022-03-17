@@ -1,7 +1,7 @@
 package mhcl
 
 import (
-	"multy/validate"
+	"github.com/multycloud/multy/validate"
 	"reflect"
 	"strings"
 )

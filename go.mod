@@ -1,4 +1,4 @@
-module multy
+module github.com/multycloud/multy
 
 go 1.18
 

@@ -3,9 +3,9 @@ package iam
 import (
 	"encoding/json"
 	"fmt"
-	"multy/resources/common"
-	"multy/util"
-	"multy/validate"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/util"
+	"github.com/multycloud/multy/validate"
 )
 
 type AwsIamRole struct {

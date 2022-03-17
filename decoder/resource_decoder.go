@@ -2,16 +2,16 @@ package decoder
 
 import (
 	"fmt"
-	"multy/hclutil"
-	"multy/mhcl"
-	"multy/parser"
-	"multy/resources"
-	"multy/resources/common"
-	rg "multy/resources/resource_group"
-	"multy/util"
-	"multy/validate"
-
 	"github.com/hashicorp/hcl/v2"
+	"github.com/multycloud/multy/hclutil"
+	"github.com/multycloud/multy/mhcl"
+	"github.com/multycloud/multy/parser"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/util"
+	"github.com/multycloud/multy/validate"
+
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/zclconf/go-cty/cty"
 )

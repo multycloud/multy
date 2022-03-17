@@ -1,10 +1,10 @@
 package resources
 
 import (
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/util"
+	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
-	"multy/resources/common"
-	"multy/util"
-	"multy/validate"
 )
 
 type CommonResourceParams struct {
