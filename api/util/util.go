@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/multycloud/multy/api/proto/common"
@@ -45,7 +46,7 @@ func StoreResourceInDb(ctx context.Context, in proto.Message, database *db.Datab
 		return nil, err
 	}
 	resource := config.Resource{
-		ResourceId: uuid.NewString(),
+		ResourceId: base64.StdEncoding.EncodeToString([]byte(uuid.New().String())),
 		Resource:   a,
 	}
 
