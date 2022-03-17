@@ -3,12 +3,12 @@ package types
 import (
 	"fmt"
 	"github.com/zclconf/go-cty/cty"
-	"multy-go/resources"
-	"multy-go/resources/common"
-	"multy-go/resources/output"
-	"multy-go/resources/output/database"
-	rg "multy-go/resources/resource_group"
-	"multy-go/validate"
+	"multy/resources"
+	"multy/resources/common"
+	"multy/resources/output"
+	"multy/resources/output/database"
+	rg "multy/resources/resource_group"
+	"multy/validate"
 )
 
 type Database struct {

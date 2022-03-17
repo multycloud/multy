@@ -1,6 +1,6 @@
 package route_table
 
-import "multy-go/resources/common"
+import "multy/resources/common"
 
 const AzureResourceName = "azurerm_route_table"
 

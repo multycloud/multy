@@ -44,4 +44,4 @@ jobs:
           extra_files: LICENSE README.md
           overwrite: TRUE
           pre_command: "make build"
-          ldflags: "-X 'multy-go/cli.Version=${{ steps.get_version.outputs.VERSION }}'"
+          ldflags: "-X 'multy/cli.Version=${{ steps.get_version.outputs.VERSION }}'"

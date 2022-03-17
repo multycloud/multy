@@ -2,10 +2,10 @@ package types
 
 import (
 	"fmt"
-	"multy-go/resources"
-	"multy-go/resources/common"
-	rg "multy-go/resources/resource_group"
-	"multy-go/validate"
+	"multy/resources"
+	"multy/resources/common"
+	rg "multy/resources/resource_group"
+	"multy/validate"
 
 	"github.com/zclconf/go-cty/cty"
 )

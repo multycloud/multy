@@ -1,7 +1,7 @@
 package route_table_association
 
 import (
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 const AwsResourceName = "aws_route_table_association"

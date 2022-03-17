@@ -2,7 +2,7 @@ package virtual_network
 
 import (
 	"fmt"
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 const AwsResourceName = "aws_vpc"

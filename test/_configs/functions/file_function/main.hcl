@@ -20,6 +20,3 @@ output "test_var" {
 output "test_output_var" {
   value = "${file("${aws.example_vn.id}.txt")}\n"
 }
-output "test_quotes" {
-  value = "${file("\"")}"
-}

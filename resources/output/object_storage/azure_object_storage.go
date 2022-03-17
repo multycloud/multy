@@ -2,7 +2,7 @@ package object_storage
 
 import (
 	"fmt"
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 const AzureResourceName = "azurerm_storage_account"

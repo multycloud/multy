@@ -2,8 +2,8 @@ package common
 
 import (
 	"fmt"
-	"multy-go/resources/output"
-	"multy-go/validate"
+	"multy/resources/output"
+	"multy/validate"
 	"reflect"
 	"strings"
 )

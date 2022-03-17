@@ -3,7 +3,7 @@ package cli
 import (
 	"context"
 	flag "github.com/spf13/pflag"
-	"multy-go/api"
+	"multy/api"
 )
 
 // ServeCommand - Temporary command to start the grpc server. Eventually we won't have a CLI / it will live in a diff repo.

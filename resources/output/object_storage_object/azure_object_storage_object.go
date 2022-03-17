@@ -2,7 +2,7 @@ package object_storage_object
 
 import (
 	"fmt"
-	"multy-go/resources/common"
+	"multy/resources/common"
 )
 
 // azurerm_storage_blob

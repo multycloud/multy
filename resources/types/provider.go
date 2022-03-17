@@ -2,8 +2,8 @@ package types
 
 import (
 	"fmt"
-	"multy-go/resources/common"
-	"multy-go/resources/output/provider"
+	"multy/resources/common"
+	"multy/resources/output/provider"
 )
 
 type Provider struct {

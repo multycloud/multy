@@ -1,4 +1,4 @@
-module multy-go
+module multy
 
 go 1.18
 

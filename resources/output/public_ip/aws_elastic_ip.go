@@ -2,8 +2,8 @@ package public_ip
 
 import (
 	"fmt"
-	"multy-go/resources/common"
-	"multy-go/validate"
+	"multy/resources/common"
+	"multy/validate"
 )
 
 const AwsResourceName = "aws_eip"

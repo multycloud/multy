@@ -1,7 +1,7 @@
 package mhcl
 
 import (
-	"multy-go/validate"
+	"multy/validate"
 	"reflect"
 	"strings"
 )

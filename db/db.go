@@ -2,8 +2,8 @@ package db
 
 import (
 	"github.com/golang/protobuf/jsonpb"
-	"multy-go/api/proto"
-	"multy-go/api/proto/config"
+	"multy/api/proto"
+	"multy/api/proto/config"
 )
 
 type Database struct {

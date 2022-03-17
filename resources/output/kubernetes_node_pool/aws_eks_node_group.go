@@ -1,6 +1,6 @@
 package kubernetes_node_pool
 
-import "multy-go/resources/common"
+import "multy/resources/common"
 
 type ScalingConfig struct {
 	DesiredSize int `hcl:"desired_size"`

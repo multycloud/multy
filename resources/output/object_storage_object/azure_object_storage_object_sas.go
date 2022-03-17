@@ -2,7 +2,7 @@ package object_storage_object
 
 import (
 	"fmt"
-	"multy-go/resources/output"
+	"multy/resources/output"
 )
 
 type AzureStorageAccountBlobSas struct {
