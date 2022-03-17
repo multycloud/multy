@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/golang/protobuf/ptypes/any"
+	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/util"
@@ -15,7 +16,19 @@ type VnService struct {
 }
 
 func (s VnService) Create(ctx context.Context, in *resources.CreateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error) {
+	userId, err := util.ExtractUserId(ctx)
+	if err != nil {
+		return nil, err
+	}
 	resource, err := util.StoreResourceInDb(ctx, in, s.Db)
+	if err != nil {
+		return nil, err
+	}
+	c, err := s.Db.Load(userId)
+	if err != nil {
+		return nil, err
+	}
+	err = deploy.Deploy(c, resource.ResourceId)
 	if err != nil {
 		return nil, err
 	}
