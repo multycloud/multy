@@ -8,7 +8,7 @@ option java_outer_classname = "MultyProto";
 import "api/proto/resources/virtual_network.proto";
 import "api/proto/common/common.proto";
 
-package multy;
+package dev.multy;
 
 service MultyResourceService {
   rpc CreateVirtualNetwork (resources.CreateVirtualNetworkRequest) returns (resources.VirtualNetworkResource) {}
