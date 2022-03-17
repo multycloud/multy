@@ -38,7 +38,19 @@ func (s VnService) Create(ctx context.Context, in *resources.CreateVirtualNetwor
 }
 
 func (s VnService) Update(ctx context.Context, in *resources.UpdateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error) {
-	err := util.UpdateResourceInDb(ctx, in.ResourceId, &resources.CreateVirtualNetworkRequest{Resources: in.Resources}, s.Db)
+	userId, err := util.ExtractUserId(ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = util.UpdateResourceInDb(ctx, in.ResourceId, &resources.CreateVirtualNetworkRequest{Resources: in.Resources}, s.Db)
+	if err != nil {
+		return nil, err
+	}
+	c, err := s.Db.Load(userId)
+	if err != nil {
+		return nil, err
+	}
+	err = deploy.Deploy(c, in.ResourceId)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +61,19 @@ func (s VnService) Update(ctx context.Context, in *resources.UpdateVirtualNetwor
 }
 
 func (s VnService) Delete(ctx context.Context, in *resources.DeleteVirtualNetworkRequest) (*common.Empty, error) {
-	err := util.DeleteResourceFromDb(ctx, in.ResourceId, s.Db)
+	userId, err := util.ExtractUserId(ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = util.DeleteResourceFromDb(ctx, in.ResourceId, s.Db)
+	if err != nil {
+		return nil, err
+	}
+	c, err := s.Db.Load(userId)
+	if err != nil {
+		return nil, err
+	}
+	err = deploy.Deploy(c, in.ResourceId)
 	if err != nil {
 		return nil, err
 	}
