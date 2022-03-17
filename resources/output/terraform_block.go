@@ -2,7 +2,7 @@ package output
 
 import (
 	"fmt"
-	"multy/validate"
+	"github.com/multycloud/multy/validate"
 )
 
 // ResourceWrapper just to add a resource {} around when encoding into hcl

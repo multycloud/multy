@@ -2,13 +2,13 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/database"
+	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
-	"multy/resources"
-	"multy/resources/common"
-	"multy/resources/output"
-	"multy/resources/output/database"
-	rg "multy/resources/resource_group"
-	"multy/validate"
 )
 
 type Database struct {

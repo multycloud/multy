@@ -1,7 +1,7 @@
 package virtual_machine
 
 import (
-	"multy/resources/common"
+	"github.com/multycloud/multy/resources/common"
 )
 
 const AwsResourceName = "aws_instance"

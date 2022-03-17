@@ -2,9 +2,9 @@ package functions
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/function"
-	"multy/resources/common"
 )
 
 func getCloudSpecificValFunction(cloud common.CloudProvider, throwOnMissingVal bool) function.Function {

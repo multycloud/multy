@@ -2,17 +2,17 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/iam"
+	"github.com/multycloud/multy/resources/output/lambda"
+	"github.com/multycloud/multy/resources/output/local_exec"
+	"github.com/multycloud/multy/resources/output/object_storage"
+	"github.com/multycloud/multy/resources/output/object_storage_object"
+	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
-	"multy/resources"
-	"multy/resources/common"
-	"multy/resources/output"
-	"multy/resources/output/iam"
-	"multy/resources/output/lambda"
-	"multy/resources/output/local_exec"
-	"multy/resources/output/object_storage"
-	"multy/resources/output/object_storage_object"
-	rg "multy/resources/resource_group"
-	"multy/validate"
 	"time"
 )
 

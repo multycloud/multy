@@ -1,7 +1,7 @@
 package vault_secret
 
 import (
-	"multy/resources/common"
+	"github.com/multycloud/multy/resources/common"
 )
 
 const AwsResourceName = "aws_ssm_parameter"

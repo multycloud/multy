@@ -3,13 +3,13 @@ package encoder
 import (
 	"bytes"
 	"github.com/multy-dev/hclencoder"
+	"github.com/multycloud/multy/decoder"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/util"
+	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 	"log"
-	"multy/decoder"
-	"multy/resources"
-	"multy/resources/output"
-	"multy/util"
-	"multy/validate"
 )
 
 type WithProvider struct {

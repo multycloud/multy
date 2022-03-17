@@ -1,7 +1,7 @@
 package main
 
 import (
-	"multy/cli"
+	"github.com/multycloud/multy/cli"
 )
 
 func main() {

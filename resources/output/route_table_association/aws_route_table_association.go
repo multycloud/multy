@@ -1,7 +1,7 @@
 package route_table_association
 
 import (
-	"multy/resources/common"
+	"github.com/multycloud/multy/resources/common"
 )
 
 const AwsResourceName = "aws_route_table_association"

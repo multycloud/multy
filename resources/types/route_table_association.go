@@ -1,11 +1,11 @@
 package types
 
 import (
-	"multy/resources"
-	"multy/resources/common"
-	"multy/resources/output"
-	"multy/resources/output/route_table_association"
-	"multy/validate"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/route_table_association"
+	"github.com/multycloud/multy/validate"
 )
 
 // route_table_association

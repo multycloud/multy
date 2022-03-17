@@ -3,13 +3,13 @@ package cli
 import (
 	"context"
 	"fmt"
+	"github.com/multycloud/multy/decoder"
+	"github.com/multycloud/multy/encoder"
+	"github.com/multycloud/multy/parser"
+	"github.com/multycloud/multy/resources"
 	flag "github.com/spf13/pflag"
 	"io/ioutil"
 	"log"
-	"multy/decoder"
-	"multy/encoder"
-	"multy/parser"
-	"multy/resources"
 	"path/filepath"
 )
 

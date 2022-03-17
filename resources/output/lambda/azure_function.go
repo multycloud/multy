@@ -1,8 +1,8 @@
 package lambda
 
 import (
-	"multy/resources/common"
-	"multy/resources/output/local_exec"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output/local_exec"
 )
 
 const AzureResourceName = "azurerm_function_app"

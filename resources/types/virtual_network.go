@@ -2,14 +2,14 @@ package types
 
 import (
 	"fmt"
-	"multy/resources"
-	"multy/resources/common"
-	"multy/resources/output"
-	"multy/resources/output/network_security_group"
-	"multy/resources/output/route_table"
-	"multy/resources/output/virtual_network"
-	rg "multy/resources/resource_group"
-	"multy/validate"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/network_security_group"
+	"github.com/multycloud/multy/resources/output/route_table"
+	"github.com/multycloud/multy/resources/output/virtual_network"
+	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/validate"
 )
 
 /*

@@ -5,13 +5,13 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclparse"
+	"github.com/multycloud/multy/hclutil"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/util"
+	"github.com/multycloud/multy/validate"
+	"github.com/multycloud/multy/variables"
 	"github.com/zclconf/go-cty/cty"
 	"log"
-	"multy/hclutil"
-	"multy/resources/common"
-	"multy/util"
-	"multy/validate"
-	"multy/variables"
 )
 
 type Parser struct {

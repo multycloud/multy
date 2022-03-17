@@ -1,7 +1,7 @@
 package virtual_network
 
 import (
-	"multy/resources/common"
+	"github.com/multycloud/multy/resources/common"
 )
 
 const AzureResourceName = "azurerm_virtual_network"

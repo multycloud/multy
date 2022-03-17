@@ -2,10 +2,10 @@ package resources
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
-	"multy/resources/common"
-	"multy/resources/output"
-	"multy/validate"
 )
 
 func GetCloudSpecificResourceId(r Resource, cloud common.CloudProvider) string {

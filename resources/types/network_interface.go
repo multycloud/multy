@@ -2,12 +2,12 @@ package types
 
 import (
 	"fmt"
-	"multy/resources"
-	"multy/resources/common"
-	"multy/resources/output"
-	"multy/resources/output/network_interface"
-	rg "multy/resources/resource_group"
-	"multy/validate"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/network_interface"
+	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/validate"
 )
 
 type NetworkInterface struct {

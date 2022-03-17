@@ -2,7 +2,7 @@ package terraform
 
 import (
 	"fmt"
-	"multy/resources/output"
+	"github.com/multycloud/multy/resources/output"
 )
 
 const RandomPasswordResourceName = "random_password"

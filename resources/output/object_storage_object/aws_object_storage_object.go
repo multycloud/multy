@@ -1,7 +1,7 @@
 package object_storage_object
 
 import (
-	"multy/resources/common"
+	"github.com/multycloud/multy/resources/common"
 )
 
 // aws_s3_bucket_object

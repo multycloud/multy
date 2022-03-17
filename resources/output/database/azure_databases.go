@@ -1,8 +1,8 @@
 package database
 
 import (
-	"multy/resources/common"
-	"multy/resources/output"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
 	"strconv"
 	"strings"
 )
