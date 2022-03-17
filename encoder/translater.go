@@ -1,15 +1,15 @@
 package encoder
 
 import (
+	"github.com/multycloud/multy/decoder"
+	"github.com/multycloud/multy/mhcl"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/types"
+	"github.com/multycloud/multy/util"
+	"github.com/multycloud/multy/validate"
 	"golang.org/x/exp/maps"
-	"multy/decoder"
-	"multy/mhcl"
-	"multy/resources"
-	"multy/resources/common"
-	"multy/resources/output"
-	"multy/resources/types"
-	"multy/util"
-	"multy/validate"
 )
 
 func TranslateResources(decodedResources *decoder.DecodedResources, ctx resources.MultyContext) map[resources.CloudSpecificResource][]output.TfBlock {

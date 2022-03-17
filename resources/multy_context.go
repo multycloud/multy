@@ -1,8 +1,8 @@
 package resources
 
 import (
-	"multy/resources/common"
-	"multy/validate"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/validate"
 )
 
 type MultyContext struct {

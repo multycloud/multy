@@ -1,7 +1,7 @@
 package subnet
 
 import (
-	"multy/resources/common"
+	"github.com/multycloud/multy/resources/common"
 )
 
 const AwsResourceName = "aws_subnet"

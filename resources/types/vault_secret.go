@@ -2,11 +2,11 @@ package types
 
 import (
 	"fmt"
-	"multy/resources"
-	"multy/resources/common"
-	"multy/resources/output"
-	"multy/resources/output/vault_secret"
-	"multy/validate"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/vault_secret"
+	"github.com/multycloud/multy/validate"
 )
 
 type VaultSecret struct {

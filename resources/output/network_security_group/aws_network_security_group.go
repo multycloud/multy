@@ -1,7 +1,7 @@
 package network_security_group
 
 import (
-	"multy/resources/common"
+	"github.com/multycloud/multy/resources/common"
 )
 
 type AwsAcl struct {

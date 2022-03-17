@@ -1,10 +1,10 @@
 package common
 
 import (
+	"github.com/multycloud/multy/validate"
 	"hash/fnv"
 	"log"
 	"math/rand"
-	"multy/validate"
 	"regexp"
 )
 

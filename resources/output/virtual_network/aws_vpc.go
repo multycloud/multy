@@ -2,7 +2,7 @@ package virtual_network
 
 import (
 	"fmt"
-	"multy/resources/common"
+	"github.com/multycloud/multy/resources/common"
 )
 
 const AwsResourceName = "aws_vpc"

@@ -2,12 +2,12 @@ package types
 
 import (
 	"fmt"
-	"multy/resources"
-	"multy/resources/common"
-	"multy/resources/output"
-	"multy/resources/output/object_storage_object"
-	"multy/util"
-	"multy/validate"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/object_storage_object"
+	"github.com/multycloud/multy/util"
+	"github.com/multycloud/multy/validate"
 )
 
 // AWS: aws_s3_bucket_object

@@ -2,13 +2,13 @@ package types
 
 import (
 	"fmt"
-	"multy/resources"
-	"multy/resources/common"
-	"multy/resources/output"
-	"multy/resources/output/object_storage"
-	"multy/resources/output/object_storage_object"
-	rg "multy/resources/resource_group"
-	"multy/validate"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/object_storage"
+	"github.com/multycloud/multy/resources/output/object_storage_object"
+	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/validate"
 )
 
 /*

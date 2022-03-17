@@ -2,9 +2,9 @@ package decoder
 
 import (
 	"fmt"
-	"multy/resources"
-	rg "multy/resources/resource_group"
-	"multy/resources/types"
+	"github.com/multycloud/multy/resources"
+	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/resources/types"
 )
 
 func InitResource(resourceType string, commonParams *resources.CommonResourceParams) (resources.Resource, error) {

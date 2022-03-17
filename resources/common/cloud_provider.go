@@ -2,8 +2,8 @@ package common
 
 import (
 	"fmt"
-	"multy/resources/output"
-	"multy/validate"
+	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/validate"
 	"reflect"
 	"strings"
 )
