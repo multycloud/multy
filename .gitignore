@@ -8,5 +8,4 @@ ssh_key
 /test/main.tf
 /main.tf
 /main.hcl
-**/*.pb.go
 !api/aws/terraform.tfstate
