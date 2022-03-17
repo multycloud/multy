@@ -184,21 +184,22 @@ resource "aws_key_pair" "vm" {
   public_key = file("./ssh_key.pub")
 }
 resource "aws_instance" "vm" {
-  tags                        = { "Name" = "test-vm" }
-  ami                         = "ami-0015a39e4b7c0966f" # Ubuntu Server 20.04 LTS (HVM), SSD Volume Type
-  instance_type               = "t2.nano"
-  associate_public_ip_address = true
-  subnet_id                   = aws_subnet.subnet.id
-  user_data_base64            = base64encode(templatefile("init.sh", {
+  tags             = { "Name" = "backend" }
+  ami              = "ami-0015a39e4b7c0966f" # Ubuntu Server 20.04 LTS (HVM), SSD Volume Type
+  instance_type    = "t2.nano"
+  subnet_id        = aws_subnet.subnet.id
+  user_data_base64 = base64encode(templatefile("init.sh", {
     "s3_bucket_name" = var.bucket_name
   }))
   key_name             = aws_key_pair.vm.key_name
   iam_instance_profile = aws_iam_instance_profile.iam_instance_profile.id
 }
 resource "aws_s3_bucket" "tfstate_bucket" {
+  tags   = { "Name" = "backend" }
   bucket = var.bucket_name
 }
 resource "aws_dynamodb_table" "user_ddb" {
+  tags         = { "Name" = "backend" }
   name         = "user_table"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "user_id"
@@ -207,6 +208,10 @@ resource "aws_dynamodb_table" "user_ddb" {
     name = "user_id"
     type = "S"
   }
+}
+resource "aws_eip" "ip_aws" {
+  tags     = { "Name" = "backend" }
+  instance = aws_instance.vm.id
 }
 terraform {
   required_providers {

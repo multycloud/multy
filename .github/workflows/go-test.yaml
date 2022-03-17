@@ -54,3 +54,17 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+
+      - name: Deploy
+        run: |
+          cd api/aws
+          terraform init
+          terraform taint aws_instance.vm
+          terraform apply --auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
