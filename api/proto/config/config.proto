@@ -17,5 +17,9 @@ message Config {
 
 message Resource {
   string resource_id = 1;
-  google.protobuf.Any resource = 2;
+  ResourceArgs resource_args = 2;
+}
+
+message ResourceArgs {
+  repeated google.protobuf.Any resource_args = 2;
 }

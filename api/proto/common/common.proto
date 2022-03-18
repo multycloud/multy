@@ -33,7 +33,7 @@ message CloudSpecificCommonResourceParameters {
 }
 
 // Common messages for CREATE and UPDATE requests
-message CloudSpecificCreateResourceCommonParameters {
+message CloudSpecificResourceCommonArgs {
   string resource_group_id = 1;
   Location location = 2;
   CloudProvider cloud_provider = 3;
