@@ -9,7 +9,11 @@ import (
 )
 
 func GetCloudSpecificResourceId(r Resource, cloud common.CloudProvider) string {
-	return fmt.Sprintf("%s.%s", cloud, r.GetResourceId())
+	return GetResourceIdForCloud(r.GetResourceId(), cloud)
+}
+
+func GetResourceIdForCloud(resourceId string, cloud common.CloudProvider) string {
+	return fmt.Sprintf("%s.%s", cloud, resourceId)
 }
 
 type CloudSpecificResource struct {

@@ -37,16 +37,18 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
-
-	resource, err := util.StoreResourceInDb(ctx, in.GetResources(), s.Db)
-	if err != nil {
-		return s.Converters.Nil(), err
-	}
 	c, err := s.Db.Load(userId)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
+	resource, err := util.InsertIntoConfig(in.GetResources(), c)
+	if err != nil {
+		return s.Converters.Nil(), err
+	}
+
 	err = deploy.Deploy(c, resource.ResourceId)
+
+	err = s.Db.Store(c)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
@@ -85,15 +87,21 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
-	err = util.UpdateResourceInDb(ctx, in.GetResourceId(), in.GetResources(), s.Db)
-	if err != nil {
-		return s.Converters.Nil(), err
-	}
 	c, err := s.Db.Load(userId)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
+	err = util.UpdateInConfig(c, in.GetResourceId(), in.GetResources())
+	if err != nil {
+		return s.Converters.Nil(), err
+	}
+
 	err = deploy.Deploy(c, in.GetResourceId())
+	if err != nil {
+		return s.Converters.Nil(), err
+	}
+
+	err = s.Db.Store(c)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
@@ -105,15 +113,21 @@ func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*com
 	if err != nil {
 		return nil, err
 	}
-	err = util.DeleteResourceFromDb(ctx, in.GetResourceId(), s.Db)
-	if err != nil {
-		return nil, err
-	}
 	c, err := s.Db.Load(userId)
 	if err != nil {
 		return nil, err
 	}
+	err = util.DeleteResourceFromConfig(c, in.GetResourceId())
+	if err != nil {
+		return nil, err
+	}
+
 	err = deploy.Deploy(c, in.GetResourceId())
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.Db.Store(c)
 	if err != nil {
 		return nil, err
 	}
