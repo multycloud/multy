@@ -6,11 +6,17 @@ option java_package = "dev.multy.api";
 option java_outer_classname = "MultyProto";
 
 import "api/proto/resources/virtual_network.proto";
+import "api/proto/resources/subnet.proto";
 import "api/proto/common/common.proto";
 
 package dev.multy;
 
 service MultyResourceService {
+  rpc CreateSubnet (resources.CreateSubnetRequest) returns (resources.SubnetResource) {}
+  rpc ReadSubnet (resources.ReadSubnetRequest) returns (resources.SubnetResource) {}
+  rpc UpdateSubnet (resources.UpdateSubnetRequest) returns (resources.SubnetResource) {}
+  rpc DeleteSubnet (resources.DeleteSubnetRequest) returns (common.Empty) {}
+
   rpc CreateVirtualNetwork (resources.CreateVirtualNetworkRequest) returns (resources.VirtualNetworkResource) {}
   rpc ReadVirtualNetwork (resources.ReadVirtualNetworkRequest) returns (resources.VirtualNetworkResource) {}
   rpc UpdateVirtualNetwork (resources.UpdateVirtualNetworkRequest) returns (resources.VirtualNetworkResource) {}

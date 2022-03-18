@@ -6,6 +6,7 @@ import (
 	"github.com/multycloud/multy/api/proto"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/services/subnet"
 	"github.com/multycloud/multy/api/services/virtual_network"
 	"github.com/multycloud/multy/db"
 	"google.golang.org/grpc"
@@ -16,6 +17,7 @@ import (
 type Server struct {
 	proto.UnimplementedMultyResourceServiceServer
 	virtual_network.VnService
+	subnet.SubnetService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -37,6 +39,7 @@ func RunServer(ctx context.Context, port int) {
 	server := Server{
 		proto.UnimplementedMultyResourceServiceServer{},
 		virtual_network.NewVnService(d),
+		subnet.NewSubnetServiceService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -57,4 +60,17 @@ func (s *Server) UpdateVirtualNetwork(ctx context.Context, in *resources.UpdateV
 }
 func (s *Server) DeleteVirtualNetwork(ctx context.Context, in *resources.DeleteVirtualNetworkRequest) (*common.Empty, error) {
 	return s.VnService.Delete(ctx, in)
+}
+
+func (s *Server) CreateSubnet(ctx context.Context, in *resources.CreateSubnetRequest) (*resources.SubnetResource, error) {
+	return s.SubnetService.Create(ctx, in)
+}
+func (s *Server) ReadSubnet(ctx context.Context, in *resources.ReadSubnetRequest) (*resources.SubnetResource, error) {
+	return s.SubnetService.Read(ctx, in)
+}
+func (s *Server) UpdateSubnet(ctx context.Context, in *resources.UpdateSubnetRequest) (*resources.SubnetResource, error) {
+	return s.SubnetService.Update(ctx, in)
+}
+func (s *Server) DeleteSubnet(ctx context.Context, in *resources.DeleteSubnetRequest) (*common.Empty, error) {
+	return s.SubnetService.Delete(ctx, in)
 }

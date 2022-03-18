@@ -20,6 +20,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MultyResourceServiceClient interface {
+	CreateSubnet(ctx context.Context, in *resources.CreateSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error)
+	ReadSubnet(ctx context.Context, in *resources.ReadSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error)
+	UpdateSubnet(ctx context.Context, in *resources.UpdateSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error)
+	DeleteSubnet(ctx context.Context, in *resources.DeleteSubnetRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	CreateVirtualNetwork(ctx context.Context, in *resources.CreateVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error)
 	ReadVirtualNetwork(ctx context.Context, in *resources.ReadVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error)
 	UpdateVirtualNetwork(ctx context.Context, in *resources.UpdateVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error)
@@ -32,6 +36,42 @@ type multyResourceServiceClient struct {
 
 func NewMultyResourceServiceClient(cc grpc.ClientConnInterface) MultyResourceServiceClient {
 	return &multyResourceServiceClient{cc}
+}
+
+func (c *multyResourceServiceClient) CreateSubnet(ctx context.Context, in *resources.CreateSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error) {
+	out := new(resources.SubnetResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateSubnet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadSubnet(ctx context.Context, in *resources.ReadSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error) {
+	out := new(resources.SubnetResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadSubnet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateSubnet(ctx context.Context, in *resources.UpdateSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error) {
+	out := new(resources.SubnetResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateSubnet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteSubnet(ctx context.Context, in *resources.DeleteSubnetRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteSubnet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *multyResourceServiceClient) CreateVirtualNetwork(ctx context.Context, in *resources.CreateVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error) {
@@ -74,6 +114,10 @@ func (c *multyResourceServiceClient) DeleteVirtualNetwork(ctx context.Context, i
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
 type MultyResourceServiceServer interface {
+	CreateSubnet(context.Context, *resources.CreateSubnetRequest) (*resources.SubnetResource, error)
+	ReadSubnet(context.Context, *resources.ReadSubnetRequest) (*resources.SubnetResource, error)
+	UpdateSubnet(context.Context, *resources.UpdateSubnetRequest) (*resources.SubnetResource, error)
+	DeleteSubnet(context.Context, *resources.DeleteSubnetRequest) (*common.Empty, error)
 	CreateVirtualNetwork(context.Context, *resources.CreateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error)
 	ReadVirtualNetwork(context.Context, *resources.ReadVirtualNetworkRequest) (*resources.VirtualNetworkResource, error)
 	UpdateVirtualNetwork(context.Context, *resources.UpdateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error)
@@ -85,6 +129,18 @@ type MultyResourceServiceServer interface {
 type UnimplementedMultyResourceServiceServer struct {
 }
 
+func (UnimplementedMultyResourceServiceServer) CreateSubnet(context.Context, *resources.CreateSubnetRequest) (*resources.SubnetResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSubnet not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadSubnet(context.Context, *resources.ReadSubnetRequest) (*resources.SubnetResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadSubnet not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateSubnet(context.Context, *resources.UpdateSubnetRequest) (*resources.SubnetResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSubnet not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteSubnet(context.Context, *resources.DeleteSubnetRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSubnet not implemented")
+}
 func (UnimplementedMultyResourceServiceServer) CreateVirtualNetwork(context.Context, *resources.CreateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateVirtualNetwork not implemented")
 }
@@ -108,6 +164,78 @@ type UnsafeMultyResourceServiceServer interface {
 
 func RegisterMultyResourceServiceServer(s grpc.ServiceRegistrar, srv MultyResourceServiceServer) {
 	s.RegisterService(&MultyResourceService_ServiceDesc, srv)
+}
+
+func _MultyResourceService_CreateSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateSubnetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateSubnet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateSubnet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateSubnet(ctx, req.(*resources.CreateSubnetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadSubnetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadSubnet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadSubnet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadSubnet(ctx, req.(*resources.ReadSubnetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateSubnetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateSubnet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateSubnet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateSubnet(ctx, req.(*resources.UpdateSubnetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteSubnetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteSubnet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteSubnet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteSubnet(ctx, req.(*resources.DeleteSubnetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateVirtualNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -189,6 +317,22 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "dev.multy.MultyResourceService",
 	HandlerType: (*MultyResourceServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateSubnet",
+			Handler:    _MultyResourceService_CreateSubnet_Handler,
+		},
+		{
+			MethodName: "ReadSubnet",
+			Handler:    _MultyResourceService_ReadSubnet_Handler,
+		},
+		{
+			MethodName: "UpdateSubnet",
+			Handler:    _MultyResourceService_UpdateSubnet_Handler,
+		},
+		{
+			MethodName: "DeleteSubnet",
+			Handler:    _MultyResourceService_DeleteSubnet_Handler,
+		},
 		{
 			MethodName: "CreateVirtualNetwork",
 			Handler:    _MultyResourceService_CreateVirtualNetwork_Handler,
