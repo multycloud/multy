@@ -107,7 +107,10 @@ func addMultyResource(r *config.Resource, translated map[string]common_resources
 		allResources = append(allResources, m)
 	}
 	for _, cloudR := range allResources {
-		translatedResource := c.ConvertToMultyResource(r.ResourceId, cloudR, translated)
+		translatedResource, err := c.ConvertToMultyResource(r.ResourceId, cloudR, translated)
+		if err != nil {
+			return err
+		}
 		translated[translatedResource.GetResourceId()] = translatedResource
 	}
 	return nil
