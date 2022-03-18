@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option go_package = "github.com/multycloud/multy/api/proto/resources";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.resources";
+option java_outer_classname = "ResourcesProto";
+
+import "api/proto/common/common.proto";
+
+package dev.multy.resources;
+
+message CreateSubnetRequest {
+  repeated CloudSpecificSubnetArgs resources = 1;
+}
+
+message ReadSubnetRequest {
+  string resource_id = 1;
+}
+
+message UpdateSubnetRequest {
+  string resource_id = 1;
+  repeated CloudSpecificSubnetArgs resources = 2;
+}
+
+message DeleteSubnetRequest {
+  string resource_id = 1;
+}
+
+message CloudSpecificSubnetArgs {
+  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+  string name = 2;
+  string cidr_block = 3;
+  string virtual_network_id = 4;
+  int32 availability_zone = 5;
+}
+
+message CloudSpecificSubnetResource {
+  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+  string name = 2;
+  string cidr_block = 3;
+  string virtual_network_id = 4;
+  int32 availability_zone = 5;
+}
+
+message SubnetResource {
+  common.CommonResourceParameters common_parameters = 1;
+  repeated CloudSpecificSubnetResource resources = 2;
+}
