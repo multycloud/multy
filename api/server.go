@@ -36,7 +36,7 @@ func RunServer(ctx context.Context, port int) {
 	}
 	server := Server{
 		proto.UnimplementedMultyResourceServiceServer{},
-		virtual_network.VnService{Db: d},
+		virtual_network.NewVnService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())

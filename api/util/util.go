@@ -14,7 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-func ConvertCommonParams(parameters *common.CloudSpecificCreateResourceCommonParameters) *common.CloudSpecificCommonResourceParameters {
+func ConvertCommonParams(parameters *common.CloudSpecificResourceCommonArgs) *common.CloudSpecificCommonResourceParameters {
 	return &common.CloudSpecificCommonResourceParameters{
 		ResourceGroupId: parameters.ResourceGroupId,
 		Location:        parameters.Location,
@@ -35,19 +35,19 @@ func ExtractUserId(ctx context.Context) (string, error) {
 	return userIds[0], nil
 }
 
-func StoreResourceInDb(ctx context.Context, in proto.Message, database *db.Database) (*config.Resource, error) {
+func StoreResourceInDb[Arg proto.Message](ctx context.Context, in []Arg, database *db.Database) (*config.Resource, error) {
 	userId, err := ExtractUserId(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	a, err := anypb.New(in)
+	args, err := convert(in)
 	if err != nil {
 		return nil, err
 	}
 	resource := config.Resource{
-		ResourceId: base64.StdEncoding.EncodeToString([]byte(uuid.New().String())),
-		Resource:   a,
+		ResourceId:   base64.StdEncoding.EncodeToString([]byte(uuid.New().String())),
+		ResourceArgs: args,
 	}
 
 	c, err := database.Load(userId)
@@ -60,6 +60,19 @@ func StoreResourceInDb(ctx context.Context, in proto.Message, database *db.Datab
 		return nil, err
 	}
 	return &resource, nil
+}
+
+func convert[Arg proto.Message](in []Arg) (*config.ResourceArgs, error) {
+	args := config.ResourceArgs{}
+
+	for _, arg := range in {
+		a, err := anypb.New(arg)
+		if err != nil {
+			return nil, err
+		}
+		args.ResourceArgs = append(args.ResourceArgs, a)
+	}
+	return &args, nil
 }
 
 func DeleteResourceFromDb(ctx context.Context, resourceId string, database *db.Database) error {
@@ -82,7 +95,7 @@ func DeleteResourceFromDb(ctx context.Context, resourceId string, database *db.D
 	return nil
 }
 
-func UpdateResourceInDb(ctx context.Context, resourceId string, in proto.Message, database *db.Database) error {
+func UpdateResourceInDb[Arg proto.Message](ctx context.Context, resourceId string, in []Arg, database *db.Database) error {
 	userId, err := ExtractUserId(ctx)
 	if err != nil {
 		return err
@@ -93,11 +106,11 @@ func UpdateResourceInDb(ctx context.Context, resourceId string, in proto.Message
 		return err
 	}
 	if i := slices.IndexFunc(c.Resources, func(r *config.Resource) bool { return r.ResourceId == resourceId }); i != -1 {
-		a, err := anypb.New(in)
+		a, err := convert(in)
 		if err != nil {
 			return err
 		}
-		c.Resources[i].Resource = a
+		c.Resources[i].ResourceArgs = a
 		err = database.Store(c)
 		if err != nil {
 			return err

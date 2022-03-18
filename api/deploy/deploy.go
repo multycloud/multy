@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/proto/config"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/decoder"
@@ -9,45 +10,28 @@ import (
 	common_resources "github.com/multycloud/multy/resources"
 	cloud_providers "github.com/multycloud/multy/resources/common"
 	rg "github.com/multycloud/multy/resources/resource_group"
-	"github.com/multycloud/multy/resources/types"
+	"google.golang.org/protobuf/proto"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
 func Deploy(c *config.Config, resourceId string) error {
 	// TODO: get rid of this translation layer and instead use protos directly
 	translated := map[string]common_resources.CloudSpecificResource{}
 	for _, r := range c.Resources {
-		if r.Resource.MessageIs(&resources.CreateVirtualNetworkRequest{}) {
-			m := &resources.CreateVirtualNetworkRequest{}
-			err := r.Resource.UnmarshalTo(m)
+		if len(r.ResourceArgs.ResourceArgs) == 0 {
+			continue
+		}
+
+		// TODO: move this to Converters
+		if r.ResourceArgs.ResourceArgs[0].MessageIs(&resources.CloudSpecificVirtualNetworkArgs{}) {
+			err := getMultyResource(r, translated, &converter.VnConverter{})
 			if err != nil {
 				return err
 			}
-			for _, cloudR := range m.Resources {
-				cloud := cloud_providers.CloudProvider(strings.ToLower(cloudR.CommonParameters.CloudProvider.String()))
-				vn := types.VirtualNetwork{
-					CommonResourceParams: &common_resources.CommonResourceParams{
-						ResourceId:      r.ResourceId,
-						ResourceGroupId: cloudR.CommonParameters.ResourceGroupId,
-						Location:        strings.ToLower(cloudR.CommonParameters.Location.String()),
-						Clouds:          []string{string(cloud)},
-					},
-					Name:      cloudR.Name,
-					CidrBlock: cloudR.CidrBlock,
-				}
-
-				translated[r.ResourceId] =
-					common_resources.CloudSpecificResource{
-						Cloud:             cloud,
-						Resource:          &vn,
-						ImplicitlyCreated: false,
-					}
-			}
 		} else {
-			return fmt.Errorf("unknown resource type %s", r.GetResource().MessageName())
+			return fmt.Errorf("unknown resource type %s", r.ResourceArgs.ResourceArgs[0].MessageName())
 		}
 	}
 
@@ -103,5 +87,21 @@ func Deploy(c *config.Config, resourceId string) error {
 		fmt.Println(string(stateBytes))
 	}
 
+	return nil
+}
+
+func getMultyResource(r *config.Resource, translated map[string]common_resources.CloudSpecificResource, c converter.MultyResourceConverter) error {
+	var allResources []proto.Message
+	for _, args := range r.ResourceArgs.ResourceArgs {
+		m := c.NewArg()
+		err := args.UnmarshalTo(m)
+		if err != nil {
+			return err
+		}
+		allResources = append(allResources, m)
+	}
+	for _, cloudR := range allResources {
+		translated[r.ResourceId] = c.ConvertToMultyResource(r.ResourceId, cloudR)
+	}
 	return nil
 }
