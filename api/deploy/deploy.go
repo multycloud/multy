@@ -25,13 +25,19 @@ func Deploy(c *config.Config, resourceId string) error {
 		}
 
 		// TODO: move this to Converters
-		if r.ResourceArgs.ResourceArgs[0].MessageIs(&resources.CloudSpecificVirtualNetworkArgs{}) {
-			err := getMultyResource(r, translated, &converter.VnConverter{})
+		resourceMessage := r.ResourceArgs.ResourceArgs[0]
+		if resourceMessage.MessageIs(&resources.CloudSpecificVirtualNetworkArgs{}) {
+			err := addMultyResource(r, translated, &converter.VnConverter{})
+			if err != nil {
+				return err
+			}
+		} else if resourceMessage.MessageIs(&resources.CloudSpecificSubnetArgs{}) {
+			err := addMultyResource(r, translated, &converter.SubnetConverter{})
 			if err != nil {
 				return err
 			}
 		} else {
-			return fmt.Errorf("unknown resource type %s", r.ResourceArgs.ResourceArgs[0].MessageName())
+			return fmt.Errorf("unknown resource type %s", resourceMessage.MessageName())
 		}
 	}
 
@@ -90,7 +96,7 @@ func Deploy(c *config.Config, resourceId string) error {
 	return nil
 }
 
-func getMultyResource(r *config.Resource, translated map[string]common_resources.CloudSpecificResource, c converter.MultyResourceConverter) error {
+func addMultyResource(r *config.Resource, translated map[string]common_resources.CloudSpecificResource, c converter.MultyResourceConverter) error {
 	var allResources []proto.Message
 	for _, args := range r.ResourceArgs.ResourceArgs {
 		m := c.NewArg()
