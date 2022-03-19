@@ -25,6 +25,8 @@ func ConvertCommonParams(parameters *common.CloudSpecificResourceCommonArgs) *co
 func ExtractUserId(ctx context.Context) (string, error) {
 	md, _ := metadata.FromIncomingContext(ctx)
 	userIds := md.Get("user_id")
+	// fix me why
+	userIds = removeDuplicateStr(userIds)
 	if len(userIds) == 0 {
 		return "", fmt.Errorf("user id must be set")
 	}
@@ -32,6 +34,18 @@ func ExtractUserId(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("only expected 1 user id, found %d", len(userIds))
 	}
 	return userIds[0], nil
+}
+
+func removeDuplicateStr(strSlice []string) []string {
+	allKeys := make(map[string]bool)
+	list := []string{}
+	for _, item := range strSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
 }
 
 func InsertIntoConfig[Arg proto.Message](in []Arg, c *config.Config) (*config.Resource, error) {

@@ -57,7 +57,7 @@ jobs:
 
       - name: Deploy
         run: |
-          cd api/aws
+          cd api/infra
           terraform init
           terraform taint aws_instance.vm
           terraform apply --auto-approve

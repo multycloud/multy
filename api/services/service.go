@@ -33,11 +33,12 @@ type Service[Arg proto.Message, OutT proto.Message] struct {
 }
 
 func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
+	fmt.Println("Service create")
 	userId, err := util.ExtractUserId(ctx)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
-	c, err := s.Db.Load(userId)
+	c, err := s.Db.LoadUserConfig(userId)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
@@ -46,9 +47,10 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 		return s.Converters.Nil(), err
 	}
 
+	fmt.Printf("Deploying %s\n", resource.ResourceId)
 	err = deploy.Deploy(c, resource.ResourceId)
 
-	err = s.Db.Store(c)
+	err = s.Db.StoreUserConfig(c)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
@@ -56,12 +58,13 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, error) {
+	fmt.Printf("Service read: %s\n", in.GetResourceId())
 	userId, err := util.ExtractUserId(ctx)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
 
-	c, err := s.Db.Load(userId)
+	c, err := s.Db.LoadUserConfig(userId)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
@@ -83,11 +86,12 @@ func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, 
 }
 
 func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
+	fmt.Printf("Service update: %s\n", in.GetResourceId())
 	userId, err := util.ExtractUserId(ctx)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
-	c, err := s.Db.Load(userId)
+	c, err := s.Db.LoadUserConfig(userId)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
@@ -101,7 +105,7 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 		return s.Converters.Nil(), err
 	}
 
-	err = s.Db.Store(c)
+	err = s.Db.StoreUserConfig(c)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
@@ -109,11 +113,12 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*common.Empty, error) {
+	fmt.Printf("Service delete: %s\n", in.GetResourceId())
 	userId, err := util.ExtractUserId(ctx)
 	if err != nil {
 		return nil, err
 	}
-	c, err := s.Db.Load(userId)
+	c, err := s.Db.LoadUserConfig(userId)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +132,7 @@ func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*com
 		return nil, err
 	}
 
-	err = s.Db.Store(c)
+	err = s.Db.StoreUserConfig(c)
 	if err != nil {
 		return nil, err
 	}
