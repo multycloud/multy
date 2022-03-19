@@ -3,6 +3,8 @@ module github.com/multycloud/multy
 go 1.18
 
 require (
+	github.com/aws/aws-sdk-go v1.40.56
+	github.com/aws/aws-sdk-go-v2 v1.15.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
 	github.com/gruntwork-io/terratest v0.40.5
@@ -24,7 +26,7 @@ require (
 	cloud.google.com/go/storage v1.10.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.40.56 // indirect
+	github.com/aws/smithy-go v1.11.1 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
@@ -65,6 +67,6 @@ require (
 )
 
 require (
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.7
 	golang.org/x/text v0.3.7 // indirect
 )

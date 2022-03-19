@@ -16,6 +16,11 @@ import (
 	"path/filepath"
 )
 
+const (
+	tfFile  = "main.tf"
+	tfState = "terraform.tfstate"
+)
+
 func Deploy(c *config.Config, resourceId string) error {
 	// TODO: get rid of this translation layer and instead use protos directly
 	translated := map[string]common_resources.CloudSpecificResource{}
@@ -41,6 +46,7 @@ func Deploy(c *config.Config, resourceId string) error {
 		}
 	}
 
+	// TODO add s3 state file backend
 	decodedResources := decoder.DecodedResources{
 		Resources: translated,
 		GlobalConfig: decoder.DecodedGlobalConfig{
@@ -54,13 +60,8 @@ func Deploy(c *config.Config, resourceId string) error {
 
 	fmt.Println(hclOutput)
 
-	// TODO: different dirs for different users
-	tmpDir := filepath.Join(os.TempDir(), "multy")
-	err := os.MkdirAll(tmpDir, os.ModeDir|(os.ModePerm&0775))
-	if err != nil {
-		return fmt.Errorf("error creating output file: %s", err.Error())
-	}
-	err = os.WriteFile(filepath.Join(tmpDir, "main.tf"), []byte(hclOutput), os.ModePerm&0664)
+	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
+	err := os.WriteFile(filepath.Join(tmpDir, tfFile), []byte(hclOutput), os.ModePerm&0664)
 	if err != nil {
 		return fmt.Errorf("error creating output file: %s", err.Error())
 	}
@@ -75,7 +76,7 @@ func Deploy(c *config.Config, resourceId string) error {
 		return err
 	}
 
-	fmt.Println("running tf apply")
+	fmt.Println("Running tf apply")
 
 	// TODO: only deploy targets given in the args
 	// TODO: parse errors and send them to user
@@ -88,10 +89,10 @@ func Deploy(c *config.Config, resourceId string) error {
 	}
 
 	// TODO: store this in S3
-	stateBytes, err := os.ReadFile(filepath.Join(tmpDir, "terraform.tfstate"))
-	if err == nil {
-		fmt.Println(string(stateBytes))
-	}
+	_, err = os.ReadFile(filepath.Join(tmpDir, tfState))
+	//if err == nil {
+	//	fmt.Println(string(stateBytes))
+	//}
 
 	return nil
 }
