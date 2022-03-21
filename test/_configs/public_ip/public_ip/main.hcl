@@ -14,13 +14,13 @@ multy "subnet" "subnet" {
 }
 multy "network_interface" "public-nic" {
   name      = "test-public-nic"
-  subnet_id = subnet.id
+  subnet_id = subnet
 }
 multy "network_interface" "private-nic" {
   name      = "test-private-nic"
-  subnet_id = subnet.id
+  subnet_id = subnet
 }
 multy "public_ip" "ip" {
   name                 = "test-ip"
-  network_interface_id = public-nic.id
+  network_interface_id = public-nic
 }

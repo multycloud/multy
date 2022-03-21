@@ -20,6 +20,19 @@ func GetAllResources[T Resource](ctx MultyContext) []T {
 	return result
 }
 
+func GetAllResourcesInCloud[T Resource](ctx MultyContext, cloud common.CloudProvider) []T {
+	var result []T
+	for _, r := range ctx.Resources {
+		if r.Cloud != cloud {
+			continue
+		}
+		if casted, canCast := r.Resource.(T); canCast {
+			result = append(result, casted)
+		}
+	}
+	return result
+}
+
 func (ctx *MultyContext) GetLocationFromCommonParams(commonParams *CommonResourceParams, cloud common.CloudProvider) string {
 	location := ctx.Location
 	if commonParams.Location != "" {

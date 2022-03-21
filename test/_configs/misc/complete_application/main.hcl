@@ -22,7 +22,7 @@ multy "object_storage" "obj_storage" {
 }
 multy "network_interface" "example_nic" {
   name      = "example_nic"
-  subnet_id = example_subnet.id
+  subnet_id = example_subnet
 }
 config {
   default_resource_group_name = "${resource_type}-rg"

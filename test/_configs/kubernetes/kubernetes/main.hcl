@@ -5,13 +5,13 @@ config {
 
 multy "kubernetes_service" "example" {
   name       = "example"
-  subnet_ids = [subnet1.id, subnet2.id]
+  subnet_ids = [subnet1, subnet2]
 }
 
 multy "kubernetes_node_pool" "example_pool" {
   name            = "example"
-  cluster_id      = example.id
-  subnet_ids      = [subnet1.id, subnet2.id]
+  cluster_id      = example
+  subnet_ids      = [subnet1, subnet2]
   max_node_count  = 1
   min_node_count  = 1
   is_default_pool = true
@@ -47,8 +47,8 @@ multy route_table "rt" {
   ]
 }
 multy route_table_association rta {
-  route_table_id = rt.id
-  subnet_id      = subnet2.id
+  route_table_id = rt
+  subnet_id      = subnet2
 }
 
 output kubernetes_outputs {

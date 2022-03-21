@@ -14,6 +14,7 @@ import (
 	"github.com/multycloud/multy/resources/output/terraform"
 	"github.com/multycloud/multy/resources/output/virtual_machine"
 	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -28,15 +29,15 @@ Azure: To have a private IP by default, if no NIC is passed, one will be created
 
 type VirtualMachine struct {
 	*resources.CommonResourceParams
-	Name                    string   `hcl:"name"`
-	OperatingSystem         string   `hcl:"os"`
-	NetworkInterfaceIds     []string `hcl:"network_interface_ids,optional"`
-	NetworkSecurityGroupIds []string `hcl:"network_security_group_ids,optional"`
-	Size                    string   `hcl:"size"`
-	UserData                string   `hcl:"user_data,optional"`
-	SubnetId                string   `hcl:"subnet_id"`
-	SshKeyFileName          string   `hcl:"ssh_key_file_path,optional"`
-	PublicIpId              string   `hcl:"public_ip_id,optional"`
+	Name                    string                  `hcl:"name"`
+	OperatingSystem         string                  `hcl:"os"`
+	NetworkInterfaceIds     []*NetworkInterface     `mhcl:"ref=network_interface_ids,optional"`
+	NetworkSecurityGroupIds []*NetworkSecurityGroup `mhcl:"ref=network_security_group_ids,optional"`
+	Size                    string                  `hcl:"size"`
+	UserData                string                  `hcl:"user_data,optional"`
+	SubnetId                *Subnet                 `mhcl:"ref=subnet_id"`
+	SshKeyFileName          string                  `hcl:"ssh_key_file_path,optional"`
+	PublicIpId              *PublicIp               `mhcl:"ref=public_ip_id,optional"`
 	// PublicIp auto-generate public IP
 	PublicIp bool `hcl:"public_ip,optional"`
 }
@@ -54,15 +55,15 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		vm.UserData = fmt.Sprintf("%s(\"%s\")", "base64encode", []byte(hclencoder.EscapeString(vm.UserData)))
 	}
 
-	var subnetId = vm.SubnetId
+	var subnetId = resources.GetMainOutputId(vm.SubnetId, cloud)
 
 	if cloud == common.AWS {
 		var awsResources []output.TfBlock
 		var ec2NicIds []virtual_machine.AwsEc2NetworkInterface
-		for i, id := range vm.NetworkInterfaceIds {
+		for i, ni := range vm.NetworkInterfaceIds {
 			ec2NicIds = append(
 				ec2NicIds, virtual_machine.AwsEc2NetworkInterface{
-					NetworkInterfaceId: id,
+					NetworkInterfaceId: resources.GetMainOutputId(ni, cloud),
 					DeviceIndex:        i,
 				},
 			)
@@ -76,7 +77,9 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			UserDataBase64:           vm.UserData,
 			SubnetId:                 subnetId,
 			NetworkInterfaces:        ec2NicIds,
-			SecurityGroupIds:         vm.NetworkSecurityGroupIds,
+			SecurityGroupIds: util.MapSliceValues(vm.NetworkSecurityGroupIds, func(v *NetworkSecurityGroup) string {
+				return resources.GetMainOutputId(v, cloud)
+			}),
 		}
 
 		if len(ec2NicIds) != 0 {
@@ -153,7 +156,9 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		// TODO validate that NIC is on the same VNET
 		var azResources []output.TfBlock
 		rgName := rg.GetResourceGroupName(vm.ResourceGroupId, cloud)
-		nicIds := vm.NetworkInterfaceIds
+		nicIds := util.MapSliceValues(vm.NetworkInterfaceIds, func(v *NetworkInterface) string {
+			return resources.GetMainOutputId(v, cloud)
+		})
 
 		if len(vm.NetworkInterfaceIds) == 0 {
 			nic := network_interface.AzureNetworkInterface{
@@ -187,12 +192,12 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 				azResources = append(azResources, &pIp)
 			}
 			azResources = append(azResources, nic)
-			nicIds = append(nicIds, nic.GetId(cloud))
+			nicIds = append(nicIds, fmt.Sprintf("${%s.%s.id}", common.GetResourceName(nic), nic.ResourceId))
 		}
 
 		// TODO change this to multy nsg_nic_attachment resource and use aws_network_interface_sg_attachment
 		if len(vm.NetworkSecurityGroupIds) != 0 {
-			for _, nsgId := range vm.NetworkSecurityGroupIds {
+			for _, nsg := range vm.NetworkSecurityGroupIds {
 				for _, nicId := range nicIds {
 					azResources = append(
 						azResources, network_security_group.AzureNetworkInterfaceSecurityGroupAssociation{
@@ -202,7 +207,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 								},
 							},
 							NetworkInterfaceId:     nicId,
-							NetworkSecurityGroupId: nsgId,
+							NetworkSecurityGroupId: resources.GetMainOutputId(nsg, cloud),
 						},
 					)
 				}
@@ -302,7 +307,7 @@ func (vm *VirtualMachine) Validate(ctx resources.MultyContext, cloud common.Clou
 	if vm.PublicIp && len(vm.NetworkInterfaceIds) != 0 {
 		errs = append(errs, vm.NewError("public_ip", "public ip can't be set with network interface ids"))
 	}
-	if vm.PublicIp && vm.PublicIpId != "" {
+	if vm.PublicIp && vm.PublicIpId != nil {
 		errs = append(errs, vm.NewError("public_ip", "conflict between public_ip and public_ip_id"))
 	}
 	if common.ValidateVmSize(vm.Size) {

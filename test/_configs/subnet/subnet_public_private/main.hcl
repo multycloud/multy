@@ -34,8 +34,8 @@ multy route_table "rt" {
   ]
 }
 multy route_table_association rta {
-  route_table_id = rt.id
-  subnet_id      = subnet3.id
+  route_table_id = rt
+  subnet_id      = subnet3
 }
 multy "database" "example_db" {
   name           = "example-db"
@@ -46,8 +46,8 @@ multy "database" "example_db" {
   db_username    = "multyadmin"
   db_password    = "multy$Admin123!"
   subnet_ids     = [
-    subnet1.id,
-    subnet2.id,
+    subnet1,
+    subnet2,
   ]
 }
 multy "virtual_machine" "vm" {
@@ -58,7 +58,7 @@ multy "virtual_machine" "vm" {
     aws : "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html",
     azure : "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on Azure</h1>\" > /var/www/html/index.html",
   })
-  subnet_id = subnet3.id
+  subnet_id = subnet3
   public_ip = true
 }
 multy "network_security_group" nsg2 {

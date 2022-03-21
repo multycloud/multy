@@ -18,17 +18,21 @@ Azure: NIC association done on NIC creation
 
 type PublicIp struct {
 	*resources.CommonResourceParams
-	Name               string `hcl:"name"`
-	NetworkInterfaceId string `hcl:"network_interface_id,optional"`
+	Name               string            `hcl:"name"`
+	NetworkInterfaceId *NetworkInterface `mhcl:"ref=network_interface_id,optional"`
 }
 
 func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
 
 	if cloud == common.AWS {
+		nid := ""
+		if r.NetworkInterfaceId != nil {
+			nid = resources.GetMainOutputId(r.NetworkInterfaceId, cloud)
+		}
 		return []output.TfBlock{
 			public_ip.AwsElasticIp{
 				AwsResource:        common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
-				NetworkInterfaceId: r.NetworkInterfaceId,
+				NetworkInterfaceId: nid,
 				//Vpc:        true,
 			},
 		}

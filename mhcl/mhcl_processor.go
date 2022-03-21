@@ -5,6 +5,7 @@ import (
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/validate"
+	"github.com/zclconf/go-cty/cty"
 	"reflect"
 	"strings"
 )
@@ -65,31 +66,46 @@ func (p *MHCLProcessor) Process(body hcl.Body, r any, ctx *hcl.EvalContext, clou
 		if diags != nil {
 			validate.LogFatalWithDiags(diags, "error while evaluating attribute")
 		}
-		if !val.Type().HasAttribute("multy_id") {
-			validate.LogFatalWithSourceRange(attr.Range, "expected a multy resource, but got %s", val.Type().GoString())
-		}
-		refId := val.AsValueMap()["multy_id"].AsString()
-		if resource, ok := p.ResourceRefs[refId]; ok {
-			actualType := reflect.TypeOf(resource.Resource).Elem()
-			expectedType := refFields[attr.Name].Type.Elem()
-			if !actualType.AssignableTo(expectedType) {
-				validate.LogFatalWithSourceRange(
-					attr.Range, "expected resource of type %s but got %s", expectedType.Name(), actualType.Name(),
-				)
+		field := tValue.Elem().FieldByName(refFields[attr.Name].Name)
+		expectedType := refFields[attr.Name].Type.Elem()
+		if val.Type().IsObjectType() {
+			field.Set(p.getResource(val, expectedType, attr, cloud))
+		} else if val.Type().IsTupleType() {
+			allValues := reflect.MakeSlice(reflect.SliceOf(expectedType), 0, val.LengthInt())
+			for _, valElement := range val.AsValueSlice() {
+				allValues = reflect.Append(allValues, p.getResource(valElement, expectedType.Elem(), attr, cloud))
 			}
-			if resource.Cloud != cloud {
-				validate.LogFatalWithSourceRange(
-					attr.Range, "cross-cloud references are not supported for this attribute",
-				)
-			}
-			tValue.Elem().FieldByName(refFields[attr.Name].Name).Set(reflect.ValueOf(resource.Resource))
+			field.Set(allValues)
 		} else {
-			validate.LogInternalError("unknown resource %s", refId)
+			validate.LogFatalWithSourceRange(attr.Range, "expected a multy resource, but got %s", val.Type().GoString())
 		}
 	}
 
 	return remaining
+}
 
+func (p *MHCLProcessor) getResource(val cty.Value, expectedType reflect.Type, attr *hcl.Attribute, cloud common.CloudProvider) reflect.Value {
+	if !val.Type().HasAttribute("multy_id") {
+		validate.LogFatalWithSourceRange(attr.Range, "expected a multy resource, but got %s", val.Type().GoString())
+	}
+	refId := val.AsValueMap()["multy_id"].AsString()
+	if resource, ok := p.ResourceRefs[refId]; ok {
+		actualType := reflect.TypeOf(resource.Resource).Elem()
+		if !actualType.AssignableTo(expectedType) {
+			validate.LogFatalWithSourceRange(
+				attr.Range, "expected resource of type %s but got %s", expectedType.Name(), actualType.Name(),
+			)
+		}
+		if resource.Cloud != cloud {
+			validate.LogFatalWithSourceRange(
+				attr.Range, "cross-cloud references are not supported for this attribute",
+			)
+		}
+		return reflect.ValueOf(resource.Resource)
+	} else {
+		validate.LogInternalError("unknown resource %s", refId)
+	}
+	return reflect.Value{}
 }
 
 func parseMHclTag(value string) MHclTag {

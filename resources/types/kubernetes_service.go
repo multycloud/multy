@@ -9,14 +9,15 @@ import (
 	"github.com/multycloud/multy/resources/output/kubernetes_node_pool"
 	"github.com/multycloud/multy/resources/output/kubernetes_service"
 	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 )
 
 type KubernetesService struct {
 	*resources.CommonResourceParams
-	Name      string   `hcl:"name"`
-	SubnetIds []string `hcl:"subnet_ids"`
+	Name      string    `hcl:"name"`
+	SubnetIds []*Subnet `mhcl:"ref=subnet_ids"`
 }
 
 func (r *KubernetesService) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
@@ -24,8 +25,8 @@ func (r *KubernetesService) Validate(ctx resources.MultyContext, cloud common.Cl
 		errs = append(errs, r.NewError("subnet_ids", "at least 2 subnet ids must be provided"))
 	}
 	associatedNodes := 0
-	for _, node := range resources.GetAllResources[*KubernetesServiceNodePool](ctx) {
-		if node.ClusterId == resources.GetMainOutputId(r, cloud) && node.IsDefaultPool {
+	for _, node := range resources.GetAllResourcesInCloud[*KubernetesServiceNodePool](ctx, cloud) {
+		if node.ClusterId.ResourceId == r.ResourceId && node.IsDefaultPool {
 			associatedNodes += 1
 		}
 	}
@@ -68,14 +69,16 @@ func (r *KubernetesService) Translate(cloud common.CloudProvider, ctx resources.
 			&kubernetes_service.AwsEksCluster{
 				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 				RoleArn:     fmt.Sprintf("aws_iam_role.%s.arn", r.GetTfResourceId(cloud)),
-				VpcConfig:   kubernetes_service.VpcConfig{SubnetIds: r.SubnetIds},
-				Name:        r.Name,
+				VpcConfig: kubernetes_service.VpcConfig{SubnetIds: util.MapSliceValues(r.SubnetIds, func(v *Subnet) string {
+					return resources.GetMainOutputId(v, cloud)
+				})},
+				Name: r.Name,
 			},
 		}
 	} else if cloud == common.AZURE {
 		var defaultPool *kubernetes_node_pool.AzureKubernetesNodePool
 		for _, node := range resources.GetAllResources[*KubernetesServiceNodePool](ctx) {
-			if node.ClusterId == resources.GetMainOutputId(r, cloud) && node.IsDefaultPool {
+			if node.ClusterId.ResourceId == r.ResourceId && node.IsDefaultPool {
 				defaultPool = node.translateAzNodePool(ctx)
 				defaultPool.Name = defaultPool.AzResource.Name
 				defaultPool.AzResource = nil

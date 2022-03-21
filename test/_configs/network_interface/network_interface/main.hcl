@@ -14,5 +14,5 @@ multy "subnet" "subnet" {
 }
 multy "network_interface" "nic" {
   name      = "test-nic"
-  subnet_id = subnet.id
+  subnet_id = subnet
 }

@@ -37,8 +37,10 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 		// https://aws.amazon.com/blogs/containers/upcoming-changes-to-ip-assignment-for-eks-managed-node-groups/
 		// How to tell if this subnet is private?
 		for _, resource := range resources.GetAllResources[*KubernetesServiceNodePool](ctx) {
-			if util.Contains(resource.SubnetIds, resources.GetMainOutputId(s, cloud)) {
-				awsSubnet.MapPublicIpOnLaunch = true
+			for _, sn := range resource.SubnetIds {
+				if sn.ResourceId == s.ResourceId {
+					awsSubnet.MapPublicIpOnLaunch = true
+				}
 			}
 		}
 		return []output.TfBlock{awsSubnet}
@@ -53,11 +55,11 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			AddressPrefixes:    []string{s.CidrBlock},
 			VirtualNetworkName: s.VirtualNetwork.GetVirtualNetworkName(cloud),
 		}
-		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, resources.GetMainOutputId(s, cloud))
+		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, s.ResourceId)
 		azResources = append(azResources, azSubnet)
 
 		// there must be a better way to do this
-		if !checkSubnetRouteTableAssociated(ctx, resources.GetMainOutputId(s, cloud)) {
+		if !checkSubnetRouteTableAssociated(ctx, s.ResourceId) {
 			rt := s.VirtualNetwork.GetAssociatedRouteTableId(cloud)
 			rtAssociation := route_table_association.AzureRouteTableAssociation{
 				AzResource: &common.AzResource{
@@ -87,8 +89,10 @@ func getServiceEndpointSubnetReferences(ctx resources.MultyContext, id string) [
 
 	serviceEndpoints := map[string]bool{}
 	for _, resource := range resources.GetAllResources[*Database](ctx) {
-		if util.Contains(resource.SubnetIds, id) {
-			serviceEndpoints[DATABASE] = true
+		for _, sn := range resource.SubnetIds {
+			if sn.ResourceId == id {
+				serviceEndpoints[DATABASE] = true
+			}
 		}
 	}
 	return util.Keys(serviceEndpoints)
@@ -96,7 +100,7 @@ func getServiceEndpointSubnetReferences(ctx resources.MultyContext, id string) [
 
 func checkSubnetRouteTableAssociated(ctx resources.MultyContext, sId string) bool {
 	for _, resource := range resources.GetAllResources[*RouteTableAssociation](ctx) {
-		if sId == resource.SubnetId {
+		if sId == resource.SubnetId.ResourceId {
 			return true
 		}
 	}

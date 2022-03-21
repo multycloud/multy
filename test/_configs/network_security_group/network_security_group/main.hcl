@@ -22,8 +22,8 @@ multy route_table "rt" {
   ]
 }
 multy route_table_association rta {
-  route_table_id = rt.id
-  subnet_id      = subnet1.id
+  route_table_id = rt
+  subnet_id      = subnet1
 }
 multy "virtual_machine" "vm2" {
   name                       = "test-vm2"
@@ -33,8 +33,8 @@ multy "virtual_machine" "vm2" {
     aws : "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html",
     azure : "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on Azure</h1>\" > /var/www/html/index.html",
   })
-  subnet_id                  = subnet1.id
-  network_security_group_ids = [nsg2.id]
+  subnet_id                  = subnet1
+  network_security_group_ids = [nsg2]
   public_ip                  = true
 }
 multy "virtual_machine" "vm" {
@@ -45,7 +45,7 @@ multy "virtual_machine" "vm" {
     aws : "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html",
     azure : "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on Azure</h1>\" > /var/www/html/index.html",
   })
-  subnet_id = subnet1.id
+  subnet_id = subnet1
   public_ip = true
 }
 multy "network_security_group" nsg2 {

@@ -23,5 +23,5 @@ multy "object_storage" "obj_storage" {
 }
 multy "network_interface" "example_nic" {
   name      = "example_nic"
-  subnet_id = example_subnet.id
+  subnet_id = example_subnet
 }
