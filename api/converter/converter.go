@@ -6,6 +6,7 @@ import (
 	common_resources "github.com/multycloud/multy/resources"
 	cloud_providers "github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/types"
+	"github.com/multycloud/multy/util"
 	"google.golang.org/protobuf/proto"
 	"strings"
 )
@@ -104,9 +105,9 @@ func (v NetworkInterfaceConverter) ConvertToMultyResource(resourceId string, m p
 		Name: arg.Name,
 	}
 
-	if vn, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SubnetId, c)]; ok {
-		// Connect to vn in the same cloud
-		ni.SubnetId = vn.Resource.(*types.Subnet)
+	if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SubnetId, c)]; ok {
+		// Connect to subnet in the same cloud
+		ni.SubnetId = subnet.Resource.(*types.Subnet)
 	} else {
 		return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", arg.SubnetId, c)
 	}
@@ -114,6 +115,48 @@ func (v NetworkInterfaceConverter) ConvertToMultyResource(resourceId string, m p
 	return common_resources.CloudSpecificResource{
 		Cloud:             c,
 		Resource:          &ni,
+		ImplicitlyCreated: false,
+	}, nil
+}
+
+type RouteTableConverter struct {
+}
+
+func (v RouteTableConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificRouteTableArgs{}
+}
+
+func (v RouteTableConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificRouteTableArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	rt := types.RouteTable{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name: arg.Name,
+		Routes: util.MapSliceValues(arg.Routes, func(route *resources.Route) types.RouteTableRoute {
+			return types.RouteTableRoute{
+				CidrBlock:   route.CidrBlock,
+				Destination: strings.ToLower(route.Destination.String()),
+			}
+		}),
+	}
+
+	if arg.VirtualNetworkId != "" {
+		if vn, ok := otherResources[common_resources.GetResourceIdForCloud(arg.VirtualNetworkId, c)]; ok {
+			// Connect to vn in the same cloud
+			rt.VirtualNetwork = vn.Resource.(*types.VirtualNetwork)
+		} else {
+			return common_resources.CloudSpecificResource{}, fmt.Errorf("virtual network with id %s not found in %s", arg.VirtualNetworkId, c)
+		}
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &rt,
 		ImplicitlyCreated: false,
 	}, nil
 }
