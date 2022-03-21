@@ -6,6 +6,7 @@ import (
 	"github.com/multycloud/multy/api/proto"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/services/database"
 	"github.com/multycloud/multy/api/services/network_interface"
 	"github.com/multycloud/multy/api/services/network_security_group"
 	"github.com/multycloud/multy/api/services/route_table"
@@ -26,6 +27,7 @@ type Server struct {
 	route_table.RouteTableService
 	route_table_association.RouteTableAssociationService
 	network_security_group.NetworkSecurityGroupService
+	database.DatabaseService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -52,6 +54,7 @@ func RunServer(ctx context.Context, port int) {
 		route_table.NewRouteTableServiceService(d),
 		route_table_association.NewRouteTableAssociationServiceService(d),
 		network_security_group.NewNetworkSecurityGroupServiceService(d),
+		database.NewDatabaseServiceService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -136,5 +139,18 @@ func (s *Server) UpdateNetworkSecurityGroup(ctx context.Context, in *resources.U
 	return s.NetworkSecurityGroupService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteNetworkSecurityGroup(ctx context.Context, in *resources.DeleteNetworkSecurityGroupRequest) (*common.Empty, error) {
+	return s.RouteTableService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateDatabase(ctx context.Context, in *resources.CreateDatabaseRequest) (*resources.DatabaseResource, error) {
+	return s.DatabaseService.Service.Create(ctx, in)
+}
+func (s *Server) ReadDatabase(ctx context.Context, in *resources.ReadDatabaseRequest) (*resources.DatabaseResource, error) {
+	return s.DatabaseService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateDatabase(ctx context.Context, in *resources.UpdateDatabaseRequest) (*resources.DatabaseResource, error) {
+	return s.DatabaseService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteDatabase(ctx context.Context, in *resources.DeleteDatabaseRequest) (*common.Empty, error) {
 	return s.RouteTableService.Service.Delete(ctx, in)
 }

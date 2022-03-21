@@ -19,6 +19,11 @@ enum CloudProvider {
   AZURE = 2;
 }
 
+enum DatabaseSize {
+  UNKNOWN_DATABASE_SIZE = 0;
+  MICRO = 1;
+}
+
 
 // Common messages for READ requests
 message CommonResourceParameters {

@@ -44,6 +44,10 @@ type MultyResourceServiceClient interface {
 	ReadNetworkSecurityGroup(ctx context.Context, in *resources.ReadNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error)
 	UpdateNetworkSecurityGroup(ctx context.Context, in *resources.UpdateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error)
 	DeleteNetworkSecurityGroup(ctx context.Context, in *resources.DeleteNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateDatabase(ctx context.Context, in *resources.CreateDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error)
+	ReadDatabase(ctx context.Context, in *resources.ReadDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error)
+	UpdateDatabase(ctx context.Context, in *resources.UpdateDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error)
+	DeleteDatabase(ctx context.Context, in *resources.DeleteDatabaseRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -270,6 +274,42 @@ func (c *multyResourceServiceClient) DeleteNetworkSecurityGroup(ctx context.Cont
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) CreateDatabase(ctx context.Context, in *resources.CreateDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error) {
+	out := new(resources.DatabaseResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateDatabase", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadDatabase(ctx context.Context, in *resources.ReadDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error) {
+	out := new(resources.DatabaseResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadDatabase", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateDatabase(ctx context.Context, in *resources.UpdateDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error) {
+	out := new(resources.DatabaseResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateDatabase", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteDatabase(ctx context.Context, in *resources.DeleteDatabaseRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteDatabase", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -298,6 +338,10 @@ type MultyResourceServiceServer interface {
 	ReadNetworkSecurityGroup(context.Context, *resources.ReadNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error)
 	UpdateNetworkSecurityGroup(context.Context, *resources.UpdateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error)
 	DeleteNetworkSecurityGroup(context.Context, *resources.DeleteNetworkSecurityGroupRequest) (*common.Empty, error)
+	CreateDatabase(context.Context, *resources.CreateDatabaseRequest) (*resources.DatabaseResource, error)
+	ReadDatabase(context.Context, *resources.ReadDatabaseRequest) (*resources.DatabaseResource, error)
+	UpdateDatabase(context.Context, *resources.UpdateDatabaseRequest) (*resources.DatabaseResource, error)
+	DeleteDatabase(context.Context, *resources.DeleteDatabaseRequest) (*common.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -376,6 +420,18 @@ func (UnimplementedMultyResourceServiceServer) UpdateNetworkSecurityGroup(contex
 }
 func (UnimplementedMultyResourceServiceServer) DeleteNetworkSecurityGroup(context.Context, *resources.DeleteNetworkSecurityGroupRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNetworkSecurityGroup not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateDatabase(context.Context, *resources.CreateDatabaseRequest) (*resources.DatabaseResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateDatabase not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadDatabase(context.Context, *resources.ReadDatabaseRequest) (*resources.DatabaseResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadDatabase not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateDatabase(context.Context, *resources.UpdateDatabaseRequest) (*resources.DatabaseResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDatabase not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteDatabase(context.Context, *resources.DeleteDatabaseRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDatabase not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -822,6 +878,78 @@ func _MultyResourceService_DeleteNetworkSecurityGroup_Handler(srv interface{}, c
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_CreateDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateDatabase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateDatabase(ctx, req.(*resources.CreateDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadDatabase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadDatabase(ctx, req.(*resources.ReadDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateDatabase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateDatabase(ctx, req.(*resources.UpdateDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteDatabase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteDatabase(ctx, req.(*resources.DeleteDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -924,6 +1052,22 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteNetworkSecurityGroup",
 			Handler:    _MultyResourceService_DeleteNetworkSecurityGroup_Handler,
+		},
+		{
+			MethodName: "CreateDatabase",
+			Handler:    _MultyResourceService_CreateDatabase_Handler,
+		},
+		{
+			MethodName: "ReadDatabase",
+			Handler:    _MultyResourceService_ReadDatabase_Handler,
+		},
+		{
+			MethodName: "UpdateDatabase",
+			Handler:    _MultyResourceService_UpdateDatabase_Handler,
+		},
+		{
+			MethodName: "DeleteDatabase",
+			Handler:    _MultyResourceService_DeleteDatabase_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
