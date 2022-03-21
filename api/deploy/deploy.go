@@ -56,7 +56,7 @@ func Deploy(c *config.Config, resourceId string) error {
 			if err != nil {
 				return err
 			}
-		} else if resourceMessage.MessageIs(&resources.NetworkSecurityGroupResource{}) {
+		} else if resourceMessage.MessageIs(&resources.CloudSpecificNetworkSecurityGroupArgs{}) {
 			err := addMultyResource(r, translated, &converter.NetworkSecurityGroupConverter{})
 			if err != nil {
 				return err
@@ -88,6 +88,11 @@ func Deploy(c *config.Config, resourceId string) error {
 			}
 		} else if resourceMessage.MessageIs(&resources.CloudSpecificKubernetesNodePoolArgs{}) {
 			err := addMultyResource(r, translated, &converter.KubernetesNodePoolConverter{})
+			if err != nil {
+				return err
+			}
+		} else if resourceMessage.MessageIs(&resources.CloudSpecificLambdaArgs{}) {
+			err := addMultyResource(r, translated, &converter.LambdaConverter{})
 			if err != nil {
 				return err
 			}

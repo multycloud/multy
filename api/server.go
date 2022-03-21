@@ -9,6 +9,7 @@ import (
 	"github.com/multycloud/multy/api/services/database"
 	"github.com/multycloud/multy/api/services/kubernetes_cluster"
 	"github.com/multycloud/multy/api/services/kubernetes_node_pool"
+	"github.com/multycloud/multy/api/services/lambda"
 	"github.com/multycloud/multy/api/services/network_interface"
 	"github.com/multycloud/multy/api/services/network_security_group"
 	"github.com/multycloud/multy/api/services/object_storage"
@@ -38,6 +39,7 @@ type Server struct {
 	public_ip.PublicIpService
 	kubernetes_cluster.KubernetesClusterService
 	kubernetes_node_pool.KubernetesNodePoolService
+	lambda.LambdaService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -70,6 +72,7 @@ func RunServer(ctx context.Context, port int) {
 		public_ip.NewPublicIpService(d),
 		kubernetes_cluster.NewKubernetesClusterService(d),
 		kubernetes_node_pool.NewKubernetesNodePoolService(d),
+		lambda.NewLambdaService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -233,4 +236,17 @@ func (s *Server) UpdateKubernetesNodePool(ctx context.Context, in *resources.Upd
 }
 func (s *Server) DeleteKubernetesNodePool(ctx context.Context, in *resources.DeleteKubernetesNodePoolRequest) (*common.Empty, error) {
 	return s.KubernetesNodePoolService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateLambda(ctx context.Context, in *resources.CreateLambdaRequest) (*resources.LambdaResource, error) {
+	return s.LambdaService.Service.Create(ctx, in)
+}
+func (s *Server) ReadLambda(ctx context.Context, in *resources.ReadLambdaRequest) (*resources.LambdaResource, error) {
+	return s.LambdaService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateLambda(ctx context.Context, in *resources.UpdateLambdaRequest) (*resources.LambdaResource, error) {
+	return s.LambdaService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteLambda(ctx context.Context, in *resources.DeleteLambdaRequest) (*common.Empty, error) {
+	return s.LambdaService.Service.Delete(ctx, in)
 }
