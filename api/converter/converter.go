@@ -266,3 +266,46 @@ func convertPort(port int32) string {
 
 	return strconv.Itoa(int(port))
 }
+
+type DatabaseConverter struct {
+}
+
+func (v DatabaseConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificRouteTableArgs{}
+}
+
+func (v DatabaseConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificDatabaseArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	db := types.Database{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name:          arg.Name,
+		Engine:        arg.Engine.String(),
+		EngineVersion: arg.EngineVersion,
+		Storage:       int(arg.StorageMb / 1024),
+		Size:          arg.Size.String(),
+		DbUsername:    arg.Username,
+		DbPassword:    arg.Password,
+	}
+
+	for _, subnetId := range arg.SubnetIds {
+
+		if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(subnetId, c)]; ok {
+			// Connect to vn in the same cloud
+			db.SubnetIds = append(db.SubnetIds, subnet.Resource.(*types.Subnet))
+		} else {
+			return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", subnetId, c)
+		}
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &db,
+		ImplicitlyCreated: false,
+	}, nil
+}

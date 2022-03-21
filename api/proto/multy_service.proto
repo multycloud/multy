@@ -6,6 +6,7 @@ option java_package = "dev.multy.api";
 option java_outer_classname = "MultyProto";
 
 import "api/proto/resources/virtual_network.proto";
+import "api/proto/resources/database.proto";
 import "api/proto/resources/network_security_group.proto";
 import "api/proto/resources/route_table.proto";
 import "api/proto/resources/route_table_association.proto";
@@ -45,4 +46,9 @@ service MultyResourceService {
   rpc ReadNetworkSecurityGroup (resources.ReadNetworkSecurityGroupRequest) returns (resources.NetworkSecurityGroupResource) {}
   rpc UpdateNetworkSecurityGroup (resources.UpdateNetworkSecurityGroupRequest) returns (resources.NetworkSecurityGroupResource) {}
   rpc DeleteNetworkSecurityGroup (resources.DeleteNetworkSecurityGroupRequest) returns (common.Empty) {}
+
+  rpc CreateDatabase (resources.CreateDatabaseRequest) returns (resources.DatabaseResource) {}
+  rpc ReadDatabase (resources.ReadDatabaseRequest) returns (resources.DatabaseResource) {}
+  rpc UpdateDatabase (resources.UpdateDatabaseRequest) returns (resources.DatabaseResource) {}
+  rpc DeleteDatabase (resources.DeleteDatabaseRequest) returns (common.Empty) {}
 }
