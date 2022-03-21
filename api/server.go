@@ -6,6 +6,8 @@ import (
 	"github.com/multycloud/multy/api/proto"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/services/network_interface"
+	"github.com/multycloud/multy/api/services/route_table"
 	"github.com/multycloud/multy/api/services/subnet"
 	"github.com/multycloud/multy/api/services/virtual_network"
 	"github.com/multycloud/multy/db"
@@ -18,6 +20,8 @@ type Server struct {
 	proto.UnimplementedMultyResourceServiceServer
 	virtual_network.VnService
 	subnet.SubnetService
+	network_interface.NetworkInterfaceService
+	route_table.RouteTableService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -40,6 +44,8 @@ func RunServer(ctx context.Context, port int) {
 		proto.UnimplementedMultyResourceServiceServer{},
 		virtual_network.NewVnService(d),
 		subnet.NewSubnetServiceService(d),
+		network_interface.NewNetworkInterfaceServiceService(d),
+		route_table.NewRouteTableServiceService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -73,4 +79,30 @@ func (s *Server) UpdateSubnet(ctx context.Context, in *resources.UpdateSubnetReq
 }
 func (s *Server) DeleteSubnet(ctx context.Context, in *resources.DeleteSubnetRequest) (*common.Empty, error) {
 	return s.SubnetService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateNetworkInterface(ctx context.Context, in *resources.CreateNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error) {
+	return s.NetworkInterfaceService.Service.Create(ctx, in)
+}
+func (s *Server) ReadNetworkInterface(ctx context.Context, in *resources.ReadNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error) {
+	return s.NetworkInterfaceService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateNetworkInterface(ctx context.Context, in *resources.UpdateNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error) {
+	return s.NetworkInterfaceService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteNetworkInterface(ctx context.Context, in *resources.DeleteNetworkInterfaceRequest) (*common.Empty, error) {
+	return s.NetworkInterfaceService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateRouteTable(ctx context.Context, in *resources.CreateRouteTableRequest) (*resources.RouteTableResource, error) {
+	return s.RouteTableService.Service.Create(ctx, in)
+}
+func (s *Server) ReadRouteTable(ctx context.Context, in *resources.ReadRouteTableRequest) (*resources.RouteTableResource, error) {
+	return s.RouteTableService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateRouteTable(ctx context.Context, in *resources.UpdateRouteTableRequest) (*resources.RouteTableResource, error) {
+	return s.RouteTableService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteRouteTable(ctx context.Context, in *resources.DeleteRouteTableRequest) (*common.Empty, error) {
+	return s.RouteTableService.Service.Delete(ctx, in)
 }

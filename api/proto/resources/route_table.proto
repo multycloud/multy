@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option go_package = "github.com/multycloud/multy/api/proto/resources";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.resources";
+option java_outer_classname = "ResourcesProto";
+
+import "api/proto/common/common.proto";
+
+package dev.multy.resources;
+
+message CreateRouteTableRequest {
+  repeated CloudSpecificRouteTableArgs resources = 1;
+}
+
+message ReadRouteTableRequest {
+  string resource_id = 1;
+}
+
+message UpdateRouteTableRequest {
+  string resource_id = 1;
+  repeated CloudSpecificRouteTableArgs resources = 2;
+}
+
+message DeleteRouteTableRequest {
+  string resource_id = 1;
+}
+
+enum RouteDestination {
+  UNKNOWN = 0;
+  INTERNET = 1;
+}
+
+message Route {
+  string cidr_block = 1;
+  RouteDestination destination = 2;
+}
+
+message CloudSpecificRouteTableArgs {
+  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+  string name = 2;
+  string virtual_network_id = 3;
+  repeated Route routes = 4;
+}
+
+message CloudSpecificRouteTableResource {
+  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+  string name = 2;
+  string virtual_network_id = 3;
+  repeated Route routes = 4;
+}
+
+message RouteTableResource {
+  common.CommonResourceParameters common_parameters = 1;
+  repeated CloudSpecificRouteTableResource resources = 2;
+}
