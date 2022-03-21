@@ -1,7 +1,6 @@
 package subnet
 
 import (
-	"context"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/services"
@@ -10,7 +9,7 @@ import (
 )
 
 type SubnetService struct {
-	s services.Service[*resources.CloudSpecificSubnetArgs, *resources.SubnetResource]
+	Service services.Service[*resources.CloudSpecificSubnetArgs, *resources.SubnetResource]
 }
 
 func (s SubnetService) Convert(resourceId string, args []*resources.CloudSpecificSubnetArgs) *resources.SubnetResource {
@@ -39,29 +38,13 @@ func (s SubnetService) Nil() *resources.SubnetResource {
 	return nil
 }
 
-func (s SubnetService) Create(ctx context.Context, in *resources.CreateSubnetRequest) (*resources.SubnetResource, error) {
-	return s.s.Create(ctx, in)
-}
-
-func (s SubnetService) Update(ctx context.Context, in *resources.UpdateSubnetRequest) (*resources.SubnetResource, error) {
-	return s.s.Update(ctx, in)
-}
-
-func (s SubnetService) Delete(ctx context.Context, in *resources.DeleteSubnetRequest) (*common.Empty, error) {
-	return s.s.Delete(ctx, in)
-}
-
-func (s SubnetService) Read(ctx context.Context, in *resources.ReadSubnetRequest) (*resources.SubnetResource, error) {
-	return s.s.Read(ctx, in)
-}
-
 func NewSubnetServiceService(database *db.Database) SubnetService {
 	vn := SubnetService{
-		s: services.Service[*resources.CloudSpecificSubnetArgs, *resources.SubnetResource]{
+		Service: services.Service[*resources.CloudSpecificSubnetArgs, *resources.SubnetResource]{
 			Db:         database,
 			Converters: nil,
 		},
 	}
-	vn.s.Converters = &vn
+	vn.Service.Converters = &vn
 	return vn
 }
