@@ -6,6 +6,7 @@ option java_package = "dev.multy.api";
 option java_outer_classname = "MultyProto";
 
 import "api/proto/resources/virtual_network.proto";
+import "api/proto/resources/virtual_machine.proto";
 import "api/proto/resources/vault.proto";
 import "api/proto/resources/vault_access_policy.proto";
 import "api/proto/resources/vault_secret.proto";
@@ -105,4 +106,9 @@ service MultyResourceService {
   rpc ReadVaultSecret (resources.ReadVaultSecretRequest) returns (resources.VaultSecretResource) {}
   rpc UpdateVaultSecret (resources.UpdateVaultSecretRequest) returns (resources.VaultSecretResource) {}
   rpc DeleteVaultSecret (resources.DeleteVaultSecretRequest) returns (common.Empty) {}
+
+  rpc CreateVirtualMachine (resources.CreateVirtualMachineRequest) returns (resources.VirtualMachineResource) {}
+  rpc ReadVirtualMachine (resources.ReadVirtualMachineRequest) returns (resources.VirtualMachineResource) {}
+  rpc UpdateVirtualMachine (resources.UpdateVirtualMachineRequest) returns (resources.VirtualMachineResource) {}
+  rpc DeleteVirtualMachine (resources.DeleteVirtualMachineRequest) returns (common.Empty) {}
 }

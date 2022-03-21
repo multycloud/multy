@@ -19,6 +19,7 @@ import (
 	"github.com/multycloud/multy/api/services/route_table_association"
 	"github.com/multycloud/multy/api/services/subnet"
 	"github.com/multycloud/multy/api/services/vault"
+	"github.com/multycloud/multy/api/services/virtual_machine"
 	"github.com/multycloud/multy/api/services/virtual_network"
 	"github.com/multycloud/multy/db"
 	"google.golang.org/grpc"
@@ -44,6 +45,7 @@ type Server struct {
 	vault.VaultService
 	vault.VaultAccessPolicyService
 	vault.VaultSecretService
+	virtual_machine.VirtualMachineService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -80,6 +82,7 @@ func RunServer(ctx context.Context, port int) {
 		vault.NewVaultService(d),
 		vault.NewVaultAccessPolicyService(d),
 		vault.NewVaultSecretService(d),
+		virtual_machine.NewVirtualMachineService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -295,4 +298,17 @@ func (s *Server) UpdateVaultAccessPolicy(ctx context.Context, in *resources.Upda
 }
 func (s *Server) DeleteVaultAccessPolicy(ctx context.Context, in *resources.DeleteVaultAccessPolicyRequest) (*common.Empty, error) {
 	return s.VaultAccessPolicyService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateVirtualMachine(ctx context.Context, in *resources.CreateVirtualMachineRequest) (*resources.VirtualMachineResource, error) {
+	return s.VirtualMachineService.Service.Create(ctx, in)
+}
+func (s *Server) ReadVirtualMachine(ctx context.Context, in *resources.ReadVirtualMachineRequest) (*resources.VirtualMachineResource, error) {
+	return s.VirtualMachineService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateVirtualMachine(ctx context.Context, in *resources.UpdateVirtualMachineRequest) (*resources.VirtualMachineResource, error) {
+	return s.VirtualMachineService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteVirtualMachine(ctx context.Context, in *resources.DeleteVirtualMachineRequest) (*common.Empty, error) {
+	return s.VirtualMachineService.Service.Delete(ctx, in)
 }

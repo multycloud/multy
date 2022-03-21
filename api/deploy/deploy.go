@@ -111,6 +111,11 @@ func Deploy(c *config.Config, resourceId string) error {
 			if err != nil {
 				return err
 			}
+		} else if resourceMessage.MessageIs(&resources.CloudSpecificVirtualMachineArgs{}) {
+			err := addMultyResource(r, translated, &converter.VirtualMachineConverter{})
+			if err != nil {
+				return err
+			}
 		} else {
 			return fmt.Errorf("unknown resource type %s", resourceMessage.MessageName())
 		}

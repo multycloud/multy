@@ -636,3 +636,63 @@ func (v VaultSecretConverter) ConvertToMultyResource(resourceId string, m proto.
 		ImplicitlyCreated: false,
 	}, nil
 }
+
+type VirtualMachineConverter struct {
+}
+
+func (v VirtualMachineConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificVirtualMachineArgs{}
+}
+
+func (v VirtualMachineConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificVirtualMachineArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	vm := types.VirtualMachine{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name:            arg.Name,
+		OperatingSystem: strings.ToLower(arg.OperatingSystem.String()),
+		Size:            strings.ToLower(arg.VmSize.String()),
+		UserData:        arg.UserData,
+		SshKey:          arg.PublicSshKey,
+		PublicIp:        arg.GeneratePublicIp,
+	}
+
+	if pid, ok := otherResources[common_resources.GetResourceIdForCloud(arg.PublicIpId, c)]; ok {
+		vm.PublicIpId = pid.Resource.(*types.PublicIp)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("public ip with id %s not found in %s", arg.PublicIpId, c)
+	}
+
+	if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SubnetId, c)]; ok {
+		vm.SubnetId = subnet.Resource.(*types.Subnet)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", arg.SubnetId, c)
+	}
+
+	for _, niId := range arg.NetworkInterfaceIds {
+		if ni, ok := otherResources[common_resources.GetResourceIdForCloud(niId, c)]; ok {
+			vm.NetworkInterfaceIds = append(vm.NetworkInterfaceIds, ni.Resource.(*types.NetworkInterface))
+		} else {
+			return common_resources.CloudSpecificResource{}, fmt.Errorf("network interface with id %s not found in %s", niId, c)
+		}
+	}
+
+	for _, nsgId := range arg.NetworkInterfaceIds {
+		if nsg, ok := otherResources[common_resources.GetResourceIdForCloud(nsgId, c)]; ok {
+			vm.NetworkSecurityGroupIds = append(vm.NetworkSecurityGroupIds, nsg.Resource.(*types.NetworkSecurityGroup))
+		} else {
+			return common_resources.CloudSpecificResource{}, fmt.Errorf("network security group with id %s not found in %s", nsgId, c)
+		}
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &vm,
+		ImplicitlyCreated: false,
+	}, nil
+}
