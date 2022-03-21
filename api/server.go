@@ -9,6 +9,8 @@ import (
 	"github.com/multycloud/multy/api/services/database"
 	"github.com/multycloud/multy/api/services/network_interface"
 	"github.com/multycloud/multy/api/services/network_security_group"
+	"github.com/multycloud/multy/api/services/object_storage"
+	"github.com/multycloud/multy/api/services/object_storage_object"
 	"github.com/multycloud/multy/api/services/route_table"
 	"github.com/multycloud/multy/api/services/route_table_association"
 	"github.com/multycloud/multy/api/services/subnet"
@@ -28,6 +30,8 @@ type Server struct {
 	route_table_association.RouteTableAssociationService
 	network_security_group.NetworkSecurityGroupService
 	database.DatabaseService
+	object_storage.ObjectStorageService
+	object_storage_object.ObjectStorageObjectService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -55,6 +59,8 @@ func RunServer(ctx context.Context, port int) {
 		route_table_association.NewRouteTableAssociationServiceService(d),
 		network_security_group.NewNetworkSecurityGroupServiceService(d),
 		database.NewDatabaseServiceService(d),
+		object_storage.NewObjectStorageServiceService(d),
+		object_storage_object.NewObjectStorageObjectServiceService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -152,5 +158,31 @@ func (s *Server) UpdateDatabase(ctx context.Context, in *resources.UpdateDatabas
 	return s.DatabaseService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteDatabase(ctx context.Context, in *resources.DeleteDatabaseRequest) (*common.Empty, error) {
+	return s.RouteTableService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateObjectStorage(ctx context.Context, in *resources.CreateObjectStorageRequest) (*resources.ObjectStorageResource, error) {
+	return s.ObjectStorageService.Service.Create(ctx, in)
+}
+func (s *Server) ReadObjectStorage(ctx context.Context, in *resources.ReadObjectStorageRequest) (*resources.ObjectStorageResource, error) {
+	return s.ObjectStorageService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateObjectStorage(ctx context.Context, in *resources.UpdateObjectStorageRequest) (*resources.ObjectStorageResource, error) {
+	return s.ObjectStorageService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteObjectStorage(ctx context.Context, in *resources.DeleteObjectStorageRequest) (*common.Empty, error) {
+	return s.RouteTableService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateObjectStorageObject(ctx context.Context, in *resources.CreateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error) {
+	return s.ObjectStorageObjectService.Service.Create(ctx, in)
+}
+func (s *Server) ReadObjectStorageObject(ctx context.Context, in *resources.ReadObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error) {
+	return s.ObjectStorageObjectService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateObjectStorageObject(ctx context.Context, in *resources.UpdateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error) {
+	return s.ObjectStorageObjectService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteObjectStorageObject(ctx context.Context, in *resources.DeleteObjectStorageObjectRequest) (*common.Empty, error) {
 	return s.RouteTableService.Service.Delete(ctx, in)
 }

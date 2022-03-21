@@ -6,6 +6,8 @@ option java_package = "dev.multy.api";
 option java_outer_classname = "MultyProto";
 
 import "api/proto/resources/virtual_network.proto";
+import "api/proto/resources/object_storage.proto";
+import "api/proto/resources/object_storage_object.proto";
 import "api/proto/resources/database.proto";
 import "api/proto/resources/network_security_group.proto";
 import "api/proto/resources/route_table.proto";
@@ -51,4 +53,15 @@ service MultyResourceService {
   rpc ReadDatabase (resources.ReadDatabaseRequest) returns (resources.DatabaseResource) {}
   rpc UpdateDatabase (resources.UpdateDatabaseRequest) returns (resources.DatabaseResource) {}
   rpc DeleteDatabase (resources.DeleteDatabaseRequest) returns (common.Empty) {}
+
+  rpc CreateObjectStorage (resources.CreateObjectStorageRequest) returns (resources.ObjectStorageResource) {}
+  rpc ReadObjectStorage (resources.ReadObjectStorageRequest) returns (resources.ObjectStorageResource) {}
+  rpc UpdateObjectStorage (resources.UpdateObjectStorageRequest) returns (resources.ObjectStorageResource) {}
+  rpc DeleteObjectStorage (resources.DeleteObjectStorageRequest) returns (common.Empty) {}
+
+  rpc CreateObjectStorageObject (resources.CreateObjectStorageObjectRequest) returns (resources.ObjectStorageObjectResource) {}
+  rpc ReadObjectStorageObject (resources.ReadObjectStorageObjectRequest) returns (resources.ObjectStorageObjectResource) {}
+  rpc UpdateObjectStorageObject (resources.UpdateObjectStorageObjectRequest) returns (resources.ObjectStorageObjectResource) {}
+  rpc DeleteObjectStorageObject (resources.DeleteObjectStorageObjectRequest) returns (common.Empty) {}
+
 }

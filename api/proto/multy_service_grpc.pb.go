@@ -48,6 +48,14 @@ type MultyResourceServiceClient interface {
 	ReadDatabase(ctx context.Context, in *resources.ReadDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error)
 	UpdateDatabase(ctx context.Context, in *resources.UpdateDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error)
 	DeleteDatabase(ctx context.Context, in *resources.DeleteDatabaseRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateObjectStorage(ctx context.Context, in *resources.CreateObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error)
+	ReadObjectStorage(ctx context.Context, in *resources.ReadObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error)
+	UpdateObjectStorage(ctx context.Context, in *resources.UpdateObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error)
+	DeleteObjectStorage(ctx context.Context, in *resources.DeleteObjectStorageRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateObjectStorageObject(ctx context.Context, in *resources.CreateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error)
+	ReadObjectStorageObject(ctx context.Context, in *resources.ReadObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error)
+	UpdateObjectStorageObject(ctx context.Context, in *resources.UpdateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error)
+	DeleteObjectStorageObject(ctx context.Context, in *resources.DeleteObjectStorageObjectRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -310,6 +318,78 @@ func (c *multyResourceServiceClient) DeleteDatabase(ctx context.Context, in *res
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) CreateObjectStorage(ctx context.Context, in *resources.CreateObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error) {
+	out := new(resources.ObjectStorageResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateObjectStorage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadObjectStorage(ctx context.Context, in *resources.ReadObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error) {
+	out := new(resources.ObjectStorageResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadObjectStorage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateObjectStorage(ctx context.Context, in *resources.UpdateObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error) {
+	out := new(resources.ObjectStorageResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateObjectStorage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteObjectStorage(ctx context.Context, in *resources.DeleteObjectStorageRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteObjectStorage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) CreateObjectStorageObject(ctx context.Context, in *resources.CreateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error) {
+	out := new(resources.ObjectStorageObjectResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateObjectStorageObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadObjectStorageObject(ctx context.Context, in *resources.ReadObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error) {
+	out := new(resources.ObjectStorageObjectResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadObjectStorageObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateObjectStorageObject(ctx context.Context, in *resources.UpdateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error) {
+	out := new(resources.ObjectStorageObjectResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateObjectStorageObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteObjectStorageObject(ctx context.Context, in *resources.DeleteObjectStorageObjectRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteObjectStorageObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -342,6 +422,14 @@ type MultyResourceServiceServer interface {
 	ReadDatabase(context.Context, *resources.ReadDatabaseRequest) (*resources.DatabaseResource, error)
 	UpdateDatabase(context.Context, *resources.UpdateDatabaseRequest) (*resources.DatabaseResource, error)
 	DeleteDatabase(context.Context, *resources.DeleteDatabaseRequest) (*common.Empty, error)
+	CreateObjectStorage(context.Context, *resources.CreateObjectStorageRequest) (*resources.ObjectStorageResource, error)
+	ReadObjectStorage(context.Context, *resources.ReadObjectStorageRequest) (*resources.ObjectStorageResource, error)
+	UpdateObjectStorage(context.Context, *resources.UpdateObjectStorageRequest) (*resources.ObjectStorageResource, error)
+	DeleteObjectStorage(context.Context, *resources.DeleteObjectStorageRequest) (*common.Empty, error)
+	CreateObjectStorageObject(context.Context, *resources.CreateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error)
+	ReadObjectStorageObject(context.Context, *resources.ReadObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error)
+	UpdateObjectStorageObject(context.Context, *resources.UpdateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error)
+	DeleteObjectStorageObject(context.Context, *resources.DeleteObjectStorageObjectRequest) (*common.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -432,6 +520,30 @@ func (UnimplementedMultyResourceServiceServer) UpdateDatabase(context.Context, *
 }
 func (UnimplementedMultyResourceServiceServer) DeleteDatabase(context.Context, *resources.DeleteDatabaseRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDatabase not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateObjectStorage(context.Context, *resources.CreateObjectStorageRequest) (*resources.ObjectStorageResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateObjectStorage not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadObjectStorage(context.Context, *resources.ReadObjectStorageRequest) (*resources.ObjectStorageResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadObjectStorage not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateObjectStorage(context.Context, *resources.UpdateObjectStorageRequest) (*resources.ObjectStorageResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateObjectStorage not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteObjectStorage(context.Context, *resources.DeleteObjectStorageRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteObjectStorage not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateObjectStorageObject(context.Context, *resources.CreateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateObjectStorageObject not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadObjectStorageObject(context.Context, *resources.ReadObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadObjectStorageObject not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateObjectStorageObject(context.Context, *resources.UpdateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateObjectStorageObject not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteObjectStorageObject(context.Context, *resources.DeleteObjectStorageObjectRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteObjectStorageObject not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -950,6 +1062,150 @@ func _MultyResourceService_DeleteDatabase_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_CreateObjectStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateObjectStorageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateObjectStorage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateObjectStorage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateObjectStorage(ctx, req.(*resources.CreateObjectStorageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadObjectStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadObjectStorageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadObjectStorage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadObjectStorage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadObjectStorage(ctx, req.(*resources.ReadObjectStorageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateObjectStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateObjectStorageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateObjectStorage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateObjectStorage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateObjectStorage(ctx, req.(*resources.UpdateObjectStorageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteObjectStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteObjectStorageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteObjectStorage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteObjectStorage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteObjectStorage(ctx, req.(*resources.DeleteObjectStorageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_CreateObjectStorageObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateObjectStorageObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateObjectStorageObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateObjectStorageObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateObjectStorageObject(ctx, req.(*resources.CreateObjectStorageObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadObjectStorageObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadObjectStorageObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadObjectStorageObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadObjectStorageObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadObjectStorageObject(ctx, req.(*resources.ReadObjectStorageObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateObjectStorageObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateObjectStorageObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateObjectStorageObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateObjectStorageObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateObjectStorageObject(ctx, req.(*resources.UpdateObjectStorageObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteObjectStorageObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteObjectStorageObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteObjectStorageObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteObjectStorageObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteObjectStorageObject(ctx, req.(*resources.DeleteObjectStorageObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1068,6 +1324,38 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteDatabase",
 			Handler:    _MultyResourceService_DeleteDatabase_Handler,
+		},
+		{
+			MethodName: "CreateObjectStorage",
+			Handler:    _MultyResourceService_CreateObjectStorage_Handler,
+		},
+		{
+			MethodName: "ReadObjectStorage",
+			Handler:    _MultyResourceService_ReadObjectStorage_Handler,
+		},
+		{
+			MethodName: "UpdateObjectStorage",
+			Handler:    _MultyResourceService_UpdateObjectStorage_Handler,
+		},
+		{
+			MethodName: "DeleteObjectStorage",
+			Handler:    _MultyResourceService_DeleteObjectStorage_Handler,
+		},
+		{
+			MethodName: "CreateObjectStorageObject",
+			Handler:    _MultyResourceService_CreateObjectStorageObject_Handler,
+		},
+		{
+			MethodName: "ReadObjectStorageObject",
+			Handler:    _MultyResourceService_ReadObjectStorageObject_Handler,
+		},
+		{
+			MethodName: "UpdateObjectStorageObject",
+			Handler:    _MultyResourceService_UpdateObjectStorageObject_Handler,
+		},
+		{
+			MethodName: "DeleteObjectStorageObject",
+			Handler:    _MultyResourceService_DeleteObjectStorageObject_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
