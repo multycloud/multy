@@ -8,6 +8,7 @@ import (
 	"github.com/multycloud/multy/resources/types"
 	"github.com/multycloud/multy/util"
 	"google.golang.org/protobuf/proto"
+	"strconv"
 	"strings"
 )
 
@@ -165,7 +166,7 @@ type RouteTableAssociationConverter struct {
 }
 
 func (v RouteTableAssociationConverter) NewArg() proto.Message {
-	return &resources.CloudSpecificRouteTableArgs{}
+	return &resources.CloudSpecificRouteTableAssociationArgs{}
 }
 
 func (v RouteTableAssociationConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
@@ -199,4 +200,69 @@ func (v RouteTableAssociationConverter) ConvertToMultyResource(resourceId string
 		Resource:          &rta,
 		ImplicitlyCreated: false,
 	}, nil
+}
+
+type NetworkSecurityGroupConverter struct {
+}
+
+func (v NetworkSecurityGroupConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificRouteTableArgs{}
+}
+
+func (v NetworkSecurityGroupConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificNetworkSecurityGroupArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	nsg := types.NetworkSecurityGroup{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name: arg.Name,
+		Rules: util.MapSliceValues(arg.Rules, func(rule *resources.NetworkSecurityRule) types.RuleType {
+			return types.RuleType{
+				Protocol:  rule.Protocol,
+				Priority:  int(rule.Priority),
+				FromPort:  convertPort(rule.PortRange.From),
+				ToPort:    convertPort(rule.PortRange.To),
+				CidrBlock: rule.CidrBlock,
+				Direction: convertRuleDirection(rule.Direction),
+			}
+		}),
+	}
+
+	if vn, ok := otherResources[common_resources.GetResourceIdForCloud(arg.VirtualNetworkId, c)]; ok {
+		// Connect to vn in the same cloud
+		nsg.VirtualNetwork = vn.Resource.(*types.VirtualNetwork)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("virtual network with id %s not found in %s", arg.VirtualNetworkId, c)
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &nsg,
+		ImplicitlyCreated: false,
+	}, nil
+}
+
+func convertRuleDirection(direction resources.Direction) string {
+	switch direction {
+	case resources.Direction_BOTH_DIRECTIONS:
+		return "both"
+	case resources.Direction_INGRESS:
+		return "ingress"
+	case resources.Direction_EGRESS:
+		return "egress"
+	}
+
+	return "unknown"
+}
+
+func convertPort(port int32) string {
+	if port == 0 {
+		return "*"
+	}
+
+	return strconv.Itoa(int(port))
 }
