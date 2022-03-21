@@ -40,6 +40,10 @@ type MultyResourceServiceClient interface {
 	ReadRouteTableAssociation(ctx context.Context, in *resources.ReadRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error)
 	UpdateRouteTableAssociation(ctx context.Context, in *resources.UpdateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error)
 	DeleteRouteTableAssociation(ctx context.Context, in *resources.DeleteRouteTableAssociationRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateNetworkSecurityGroup(ctx context.Context, in *resources.CreateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error)
+	ReadNetworkSecurityGroup(ctx context.Context, in *resources.ReadNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error)
+	UpdateNetworkSecurityGroup(ctx context.Context, in *resources.UpdateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error)
+	DeleteNetworkSecurityGroup(ctx context.Context, in *resources.DeleteNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -230,6 +234,42 @@ func (c *multyResourceServiceClient) DeleteRouteTableAssociation(ctx context.Con
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) CreateNetworkSecurityGroup(ctx context.Context, in *resources.CreateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error) {
+	out := new(resources.NetworkSecurityGroupResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateNetworkSecurityGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadNetworkSecurityGroup(ctx context.Context, in *resources.ReadNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error) {
+	out := new(resources.NetworkSecurityGroupResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadNetworkSecurityGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateNetworkSecurityGroup(ctx context.Context, in *resources.UpdateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error) {
+	out := new(resources.NetworkSecurityGroupResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateNetworkSecurityGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteNetworkSecurityGroup(ctx context.Context, in *resources.DeleteNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteNetworkSecurityGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -254,6 +294,10 @@ type MultyResourceServiceServer interface {
 	ReadRouteTableAssociation(context.Context, *resources.ReadRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error)
 	UpdateRouteTableAssociation(context.Context, *resources.UpdateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error)
 	DeleteRouteTableAssociation(context.Context, *resources.DeleteRouteTableAssociationRequest) (*common.Empty, error)
+	CreateNetworkSecurityGroup(context.Context, *resources.CreateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error)
+	ReadNetworkSecurityGroup(context.Context, *resources.ReadNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error)
+	UpdateNetworkSecurityGroup(context.Context, *resources.UpdateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error)
+	DeleteNetworkSecurityGroup(context.Context, *resources.DeleteNetworkSecurityGroupRequest) (*common.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -320,6 +364,18 @@ func (UnimplementedMultyResourceServiceServer) UpdateRouteTableAssociation(conte
 }
 func (UnimplementedMultyResourceServiceServer) DeleteRouteTableAssociation(context.Context, *resources.DeleteRouteTableAssociationRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRouteTableAssociation not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateNetworkSecurityGroup(context.Context, *resources.CreateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNetworkSecurityGroup not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadNetworkSecurityGroup(context.Context, *resources.ReadNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadNetworkSecurityGroup not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateNetworkSecurityGroup(context.Context, *resources.UpdateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNetworkSecurityGroup not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteNetworkSecurityGroup(context.Context, *resources.DeleteNetworkSecurityGroupRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNetworkSecurityGroup not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -694,6 +750,78 @@ func _MultyResourceService_DeleteRouteTableAssociation_Handler(srv interface{}, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_CreateNetworkSecurityGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateNetworkSecurityGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateNetworkSecurityGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateNetworkSecurityGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateNetworkSecurityGroup(ctx, req.(*resources.CreateNetworkSecurityGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadNetworkSecurityGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadNetworkSecurityGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadNetworkSecurityGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadNetworkSecurityGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadNetworkSecurityGroup(ctx, req.(*resources.ReadNetworkSecurityGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateNetworkSecurityGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateNetworkSecurityGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateNetworkSecurityGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateNetworkSecurityGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateNetworkSecurityGroup(ctx, req.(*resources.UpdateNetworkSecurityGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteNetworkSecurityGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteNetworkSecurityGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteNetworkSecurityGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteNetworkSecurityGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteNetworkSecurityGroup(ctx, req.(*resources.DeleteNetworkSecurityGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -780,6 +908,22 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteRouteTableAssociation",
 			Handler:    _MultyResourceService_DeleteRouteTableAssociation_Handler,
+		},
+		{
+			MethodName: "CreateNetworkSecurityGroup",
+			Handler:    _MultyResourceService_CreateNetworkSecurityGroup_Handler,
+		},
+		{
+			MethodName: "ReadNetworkSecurityGroup",
+			Handler:    _MultyResourceService_ReadNetworkSecurityGroup_Handler,
+		},
+		{
+			MethodName: "UpdateNetworkSecurityGroup",
+			Handler:    _MultyResourceService_UpdateNetworkSecurityGroup_Handler,
+		},
+		{
+			MethodName: "DeleteNetworkSecurityGroup",
+			Handler:    _MultyResourceService_DeleteNetworkSecurityGroup_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

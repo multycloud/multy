@@ -27,7 +27,7 @@ message DeleteRouteTableRequest {
 }
 
 enum RouteDestination {
-  UNKNOWN = 0;
+  UNKNOWN_DESTINATION = 0;
   INTERNET = 1;
 }
 

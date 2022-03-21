@@ -7,6 +7,7 @@ import (
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/services/network_interface"
+	"github.com/multycloud/multy/api/services/network_security_group"
 	"github.com/multycloud/multy/api/services/route_table"
 	"github.com/multycloud/multy/api/services/route_table_association"
 	"github.com/multycloud/multy/api/services/subnet"
@@ -24,6 +25,7 @@ type Server struct {
 	network_interface.NetworkInterfaceService
 	route_table.RouteTableService
 	route_table_association.RouteTableAssociationService
+	network_security_group.NetworkSecurityGroupService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -49,6 +51,7 @@ func RunServer(ctx context.Context, port int) {
 		network_interface.NewNetworkInterfaceServiceService(d),
 		route_table.NewRouteTableServiceService(d),
 		route_table_association.NewRouteTableAssociationServiceService(d),
+		network_security_group.NewNetworkSecurityGroupServiceService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -120,5 +123,18 @@ func (s *Server) UpdateRouteTableAssociation(ctx context.Context, in *resources.
 	return s.RouteTableAssociationService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteRouteTableAssociation(ctx context.Context, in *resources.DeleteRouteTableAssociationRequest) (*common.Empty, error) {
+	return s.RouteTableService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateNetworkSecurityGroup(ctx context.Context, in *resources.CreateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error) {
+	return s.NetworkSecurityGroupService.Service.Create(ctx, in)
+}
+func (s *Server) ReadNetworkSecurityGroup(ctx context.Context, in *resources.ReadNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error) {
+	return s.NetworkSecurityGroupService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateNetworkSecurityGroup(ctx context.Context, in *resources.UpdateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error) {
+	return s.NetworkSecurityGroupService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteNetworkSecurityGroup(ctx context.Context, in *resources.DeleteNetworkSecurityGroupRequest) (*common.Empty, error) {
 	return s.RouteTableService.Service.Delete(ctx, in)
 }
