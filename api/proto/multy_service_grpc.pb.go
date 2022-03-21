@@ -68,6 +68,10 @@ type MultyResourceServiceClient interface {
 	ReadKubernetesNodePool(ctx context.Context, in *resources.ReadKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error)
 	UpdateKubernetesNodePool(ctx context.Context, in *resources.UpdateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error)
 	DeleteKubernetesNodePool(ctx context.Context, in *resources.DeleteKubernetesNodePoolRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateLambda(ctx context.Context, in *resources.CreateLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error)
+	ReadLambda(ctx context.Context, in *resources.ReadLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error)
+	UpdateLambda(ctx context.Context, in *resources.UpdateLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error)
+	DeleteLambda(ctx context.Context, in *resources.DeleteLambdaRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -510,6 +514,42 @@ func (c *multyResourceServiceClient) DeleteKubernetesNodePool(ctx context.Contex
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) CreateLambda(ctx context.Context, in *resources.CreateLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error) {
+	out := new(resources.LambdaResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateLambda", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadLambda(ctx context.Context, in *resources.ReadLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error) {
+	out := new(resources.LambdaResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadLambda", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateLambda(ctx context.Context, in *resources.UpdateLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error) {
+	out := new(resources.LambdaResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateLambda", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteLambda(ctx context.Context, in *resources.DeleteLambdaRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteLambda", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -562,6 +602,10 @@ type MultyResourceServiceServer interface {
 	ReadKubernetesNodePool(context.Context, *resources.ReadKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error)
 	UpdateKubernetesNodePool(context.Context, *resources.UpdateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error)
 	DeleteKubernetesNodePool(context.Context, *resources.DeleteKubernetesNodePoolRequest) (*common.Empty, error)
+	CreateLambda(context.Context, *resources.CreateLambdaRequest) (*resources.LambdaResource, error)
+	ReadLambda(context.Context, *resources.ReadLambdaRequest) (*resources.LambdaResource, error)
+	UpdateLambda(context.Context, *resources.UpdateLambdaRequest) (*resources.LambdaResource, error)
+	DeleteLambda(context.Context, *resources.DeleteLambdaRequest) (*common.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -712,6 +756,18 @@ func (UnimplementedMultyResourceServiceServer) UpdateKubernetesNodePool(context.
 }
 func (UnimplementedMultyResourceServiceServer) DeleteKubernetesNodePool(context.Context, *resources.DeleteKubernetesNodePoolRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteKubernetesNodePool not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateLambda(context.Context, *resources.CreateLambdaRequest) (*resources.LambdaResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateLambda not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadLambda(context.Context, *resources.ReadLambdaRequest) (*resources.LambdaResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadLambda not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateLambda(context.Context, *resources.UpdateLambdaRequest) (*resources.LambdaResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateLambda not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteLambda(context.Context, *resources.DeleteLambdaRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteLambda not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -1590,6 +1646,78 @@ func _MultyResourceService_DeleteKubernetesNodePool_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_CreateLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateLambdaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateLambda(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateLambda",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateLambda(ctx, req.(*resources.CreateLambdaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadLambdaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadLambda(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadLambda",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadLambda(ctx, req.(*resources.ReadLambdaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateLambdaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateLambda(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateLambda",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateLambda(ctx, req.(*resources.UpdateLambdaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteLambdaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteLambda(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteLambda",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteLambda(ctx, req.(*resources.DeleteLambdaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1788,6 +1916,22 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteKubernetesNodePool",
 			Handler:    _MultyResourceService_DeleteKubernetesNodePool_Handler,
+		},
+		{
+			MethodName: "CreateLambda",
+			Handler:    _MultyResourceService_CreateLambda_Handler,
+		},
+		{
+			MethodName: "ReadLambda",
+			Handler:    _MultyResourceService_ReadLambda_Handler,
+		},
+		{
+			MethodName: "UpdateLambda",
+			Handler:    _MultyResourceService_UpdateLambda_Handler,
+		},
+		{
+			MethodName: "DeleteLambda",
+			Handler:    _MultyResourceService_DeleteLambda_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

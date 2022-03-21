@@ -504,3 +504,38 @@ func (v KubernetesNodePoolConverter) ConvertToMultyResource(resourceId string, m
 		ImplicitlyCreated: false,
 	}, nil
 }
+
+type LambdaConverter struct {
+}
+
+func (v LambdaConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificRouteTableArgs{}
+}
+
+func (v LambdaConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificLambdaArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	l := types.Lambda{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		FunctionName: arg.Name,
+		Runtime:      arg.Runtime,
+	}
+
+	if o, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SourceCodeObjectId, c)]; ok {
+		// Connect to vn in the same cloud
+		l.SourceCodeObject = o.Resource.(*types.ObjectStorageObject)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("object with id %s not found in %s", arg.SourceCodeObjectId, c)
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &l,
+		ImplicitlyCreated: false,
+	}, nil
+}
