@@ -46,6 +46,16 @@ func Deploy(c *config.Config, resourceId string) error {
 			if err != nil {
 				return err
 			}
+		} else if resourceMessage.MessageIs(&resources.CloudSpecificRouteTableArgs{}) {
+			err := addMultyResource(r, translated, &converter.RouteTableConverter{})
+			if err != nil {
+				return err
+			}
+		} else if resourceMessage.MessageIs(&resources.CloudSpecificRouteTableAssociationArgs{}) {
+			err := addMultyResource(r, translated, &converter.RouteTableAssociationConverter{})
+			if err != nil {
+				return err
+			}
 		} else {
 			return fmt.Errorf("unknown resource type %s", resourceMessage.MessageName())
 		}

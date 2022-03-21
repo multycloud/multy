@@ -8,6 +8,7 @@ import (
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/services/network_interface"
 	"github.com/multycloud/multy/api/services/route_table"
+	"github.com/multycloud/multy/api/services/route_table_association"
 	"github.com/multycloud/multy/api/services/subnet"
 	"github.com/multycloud/multy/api/services/virtual_network"
 	"github.com/multycloud/multy/db"
@@ -22,6 +23,7 @@ type Server struct {
 	subnet.SubnetService
 	network_interface.NetworkInterfaceService
 	route_table.RouteTableService
+	route_table_association.RouteTableAssociationService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -46,6 +48,7 @@ func RunServer(ctx context.Context, port int) {
 		subnet.NewSubnetServiceService(d),
 		network_interface.NewNetworkInterfaceServiceService(d),
 		route_table.NewRouteTableServiceService(d),
+		route_table_association.NewRouteTableAssociationServiceService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -104,5 +107,18 @@ func (s *Server) UpdateRouteTable(ctx context.Context, in *resources.UpdateRoute
 	return s.RouteTableService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteRouteTable(ctx context.Context, in *resources.DeleteRouteTableRequest) (*common.Empty, error) {
+	return s.RouteTableService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateRouteTableAssociation(ctx context.Context, in *resources.CreateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error) {
+	return s.RouteTableAssociationService.Service.Create(ctx, in)
+}
+func (s *Server) ReadRouteTableAssociation(ctx context.Context, in *resources.ReadRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error) {
+	return s.RouteTableAssociationService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateRouteTableAssociation(ctx context.Context, in *resources.UpdateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error) {
+	return s.RouteTableAssociationService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteRouteTableAssociation(ctx context.Context, in *resources.DeleteRouteTableAssociationRequest) (*common.Empty, error) {
 	return s.RouteTableService.Service.Delete(ctx, in)
 }

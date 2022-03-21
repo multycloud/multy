@@ -38,12 +38,12 @@ func (s RouteTableService) Nil() *resources.RouteTableResource {
 }
 
 func NewRouteTableServiceService(database *db.Database) RouteTableService {
-	ni := RouteTableService{
+	rt := RouteTableService{
 		Service: services.Service[*resources.CloudSpecificRouteTableArgs, *resources.RouteTableResource]{
 			Db:         database,
 			Converters: nil,
 		},
 	}
-	ni.Service.Converters = &ni
-	return ni
+	rt.Service.Converters = &rt
+	return rt
 }
