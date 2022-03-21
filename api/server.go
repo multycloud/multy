@@ -50,27 +50,27 @@ func RunServer(ctx context.Context, port int) {
 }
 
 func (s *Server) CreateVirtualNetwork(ctx context.Context, in *resources.CreateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error) {
-	return s.VnService.Create(ctx, in)
+	return s.VnService.Service.Create(ctx, in)
 }
 func (s *Server) ReadVirtualNetwork(ctx context.Context, in *resources.ReadVirtualNetworkRequest) (*resources.VirtualNetworkResource, error) {
-	return s.VnService.Read(ctx, in)
+	return s.VnService.Service.Read(ctx, in)
 }
 func (s *Server) UpdateVirtualNetwork(ctx context.Context, in *resources.UpdateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error) {
-	return s.VnService.Update(ctx, in)
+	return s.VnService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteVirtualNetwork(ctx context.Context, in *resources.DeleteVirtualNetworkRequest) (*common.Empty, error) {
-	return s.VnService.Delete(ctx, in)
+	return s.VnService.Service.Delete(ctx, in)
 }
 
 func (s *Server) CreateSubnet(ctx context.Context, in *resources.CreateSubnetRequest) (*resources.SubnetResource, error) {
-	return s.SubnetService.Create(ctx, in)
+	return s.SubnetService.Service.Create(ctx, in)
 }
 func (s *Server) ReadSubnet(ctx context.Context, in *resources.ReadSubnetRequest) (*resources.SubnetResource, error) {
-	return s.SubnetService.Read(ctx, in)
+	return s.SubnetService.Service.Read(ctx, in)
 }
 func (s *Server) UpdateSubnet(ctx context.Context, in *resources.UpdateSubnetRequest) (*resources.SubnetResource, error) {
-	return s.SubnetService.Update(ctx, in)
+	return s.SubnetService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteSubnet(ctx context.Context, in *resources.DeleteSubnetRequest) (*common.Empty, error) {
-	return s.SubnetService.Delete(ctx, in)
+	return s.SubnetService.Service.Delete(ctx, in)
 }
