@@ -183,17 +183,17 @@ resource "aws_key_pair" "vm" {
   key_name   = "vm_multy"
   public_key = file("./ssh_key.pub")
 }
-resource "aws_instance" "vm" {
-  tags             = { "Name" = "backend" }
-  ami              = "ami-0015a39e4b7c0966f" # Ubuntu Server 20.04 LTS (HVM), SSD Volume Type
-  instance_type    = "t2.nano"
-  subnet_id        = aws_subnet.subnet.id
-  user_data_base64 = base64encode(templatefile("init.sh", {
-    "s3_bucket_name" = var.bucket_name
-  }))
-  key_name             = aws_key_pair.vm.key_name
-  iam_instance_profile = aws_iam_instance_profile.iam_instance_profile.id
-}
+#resource "aws_instance" "vm" {
+#  tags             = { "Name" = "backend" }
+#  ami              = "ami-0015a39e4b7c0966f" # Ubuntu Server 20.04 LTS (HVM), SSD Volume Type
+#  instance_type    = "t2.nano"
+#  subnet_id        = aws_subnet.subnet.id
+#  user_data_base64 = base64encode(templatefile("init.sh", {
+#    "s3_bucket_name" = var.bucket_name
+#  }))
+#  key_name             = aws_key_pair.vm.key_name
+#  iam_instance_profile = aws_iam_instance_profile.iam_instance_profile.id
+#}
 resource "aws_s3_bucket" "tfstate_bucket" {
   tags   = { "Name" = "backend" }
   bucket = var.bucket_name
@@ -209,14 +209,14 @@ resource "aws_dynamodb_table" "user_ddb" {
     type = "S"
   }
 }
-resource "aws_eip" "ip_aws" {
-  tags     = { "Name" = "backend" }
-  instance = aws_instance.vm.id
-}
+#resource "aws_eip" "ip_aws" {
+#  tags     = { "Name" = "backend" }
+#  instance = aws_instance.vm.id
+#}
 terraform {
-  backend "s3"{
+  backend "s3" {
     bucket = "multy-tfstate"
-    key = "terraform.tfstate"
+    key    = "terraform.tfstate"
     region = "eu-west-2"
   }
   required_providers {
@@ -229,6 +229,6 @@ terraform {
 provider "aws" {
   region = "eu-west-2"
 }
-output "aws_endpoint" {
-  value = aws_eip.ip_aws.public_ip
-}
+#output "aws_endpoint" {
+#  value = aws_eip.ip_aws.public_ip
+#}
