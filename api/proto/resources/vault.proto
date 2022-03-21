@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+option go_package = "github.com/multycloud/multy/api/proto/resources";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.resources";
+option java_outer_classname = "ResourcesProto";
+
+import "api/proto/common/common.proto";
+
+package dev.multy.resources;
+
+message CreateVaultRequest {
+  repeated CloudSpecificVaultArgs resources = 1;
+}
+
+message ReadVaultRequest {
+  string resource_id = 1;
+}
+
+message UpdateVaultRequest {
+  string resource_id = 1;
+  repeated CloudSpecificVaultArgs resources = 2;
+}
+
+message DeleteVaultRequest {
+  string resource_id = 1;
+}
+
+message CloudSpecificVaultArgs {
+  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+  string name = 2;
+}
+
+message CloudSpecificVaultResource {
+  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+  string name = 2;
+}
+
+message VaultResource {
+  common.CommonResourceParameters common_parameters = 1;
+  repeated CloudSpecificVaultResource resources = 2;
+}

@@ -6,6 +6,9 @@ option java_package = "dev.multy.api";
 option java_outer_classname = "MultyProto";
 
 import "api/proto/resources/virtual_network.proto";
+import "api/proto/resources/vault.proto";
+import "api/proto/resources/vault_access_policy.proto";
+import "api/proto/resources/vault_secret.proto";
 import "api/proto/resources/public_ip.proto";
 import "api/proto/resources/lambda.proto";
 import "api/proto/resources/kubernetes_cluster.proto";
@@ -87,4 +90,19 @@ service MultyResourceService {
   rpc ReadLambda (resources.ReadLambdaRequest) returns (resources.LambdaResource) {}
   rpc UpdateLambda (resources.UpdateLambdaRequest) returns (resources.LambdaResource) {}
   rpc DeleteLambda (resources.DeleteLambdaRequest) returns (common.Empty) {}
+
+  rpc CreateVault (resources.CreateVaultRequest) returns (resources.VaultResource) {}
+  rpc ReadVault (resources.ReadVaultRequest) returns (resources.VaultResource) {}
+  rpc UpdateVault (resources.UpdateVaultRequest) returns (resources.VaultResource) {}
+  rpc DeleteVault (resources.DeleteVaultRequest) returns (common.Empty) {}
+
+  rpc CreateVaultAccessPolicy (resources.CreateVaultAccessPolicyRequest) returns (resources.VaultAccessPolicyResource) {}
+  rpc ReadVaultAccessPolicy (resources.ReadVaultAccessPolicyRequest) returns (resources.VaultAccessPolicyResource) {}
+  rpc UpdateVaultAccessPolicy (resources.UpdateVaultAccessPolicyRequest) returns (resources.VaultAccessPolicyResource) {}
+  rpc DeleteVaultAccessPolicy (resources.DeleteVaultAccessPolicyRequest) returns (common.Empty) {}
+
+  rpc CreateVaultSecret (resources.CreateVaultSecretRequest) returns (resources.VaultSecretResource) {}
+  rpc ReadVaultSecret (resources.ReadVaultSecretRequest) returns (resources.VaultSecretResource) {}
+  rpc UpdateVaultSecret (resources.UpdateVaultSecretRequest) returns (resources.VaultSecretResource) {}
+  rpc DeleteVaultSecret (resources.DeleteVaultSecretRequest) returns (common.Empty) {}
 }
