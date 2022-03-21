@@ -49,6 +49,9 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 
 	fmt.Printf("Deploying %s\n", resource.ResourceId)
 	err = deploy.Deploy(c, resource.ResourceId)
+	if err != nil {
+		return s.Converters.Nil(), err
+	}
 
 	err = s.Db.StoreUserConfig(c)
 	if err != nil {
