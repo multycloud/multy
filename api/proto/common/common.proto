@@ -19,9 +19,19 @@ enum CloudProvider {
   AZURE = 2;
 }
 
-enum DatabaseSize {
-  UNKNOWN_DATABASE_SIZE = 0;
-  MICRO = 1;
+message DatabaseSize {
+  enum Enum {
+    UNKNOWN_VM_SIZE = 0;
+    MICRO = 1;
+    MEDIUM = 2;
+  }
+}
+message VmSize {
+  enum Enum {
+    UNKNOWN_VM_SIZE = 0;
+    MICRO = 1;
+    MEDIUM = 2;
+  }
 }
 
 
