@@ -31,12 +31,12 @@ multy route_table "rt" {
 }
 
 multy route_table_association rta {
-  route_table_id = rt.id
-  subnet_id      = subnet1.id
+  route_table_id = rt
+  subnet_id      = subnet1
 }
 multy route_table_association rta2 {
-  route_table_id = rt.id
-  subnet_id      = subnet2.id
+  route_table_id = rt
+  subnet_id      = subnet2
 }
 multy "database" "example_db" {
   name           = "example-db"
@@ -47,7 +47,7 @@ multy "database" "example_db" {
   db_username    = "multyadmin"
   db_password    = "multy$Admin123!"
   subnet_ids     = [
-    subnet1.id,
-    subnet2.id,
+    subnet1,
+    subnet2,
   ]
 }

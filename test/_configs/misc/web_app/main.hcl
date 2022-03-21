@@ -34,16 +34,16 @@ multy route_table "rt" {
   ]
 }
 multy route_table_association rta {
-  route_table_id = rt.id
-  subnet_id      = subnet3.id
+  route_table_id = rt
+  subnet_id      = subnet3
 }
 multy route_table_association rta2 {
-  route_table_id = rt.id
-  subnet_id      = subnet2.id
+  route_table_id = rt
+  subnet_id      = subnet2
 }
 multy route_table_association rta3 {
-  route_table_id = rt.id
-  subnet_id      = subnet1.id
+  route_table_id = rt
+  subnet_id      = subnet1
 }
 multy "database" "example_db" {
   name           = "example-db"
@@ -54,8 +54,8 @@ multy "database" "example_db" {
   db_username    = "multyadmin"
   db_password    = "multy-Admin123!"
   subnet_ids     = [
-    subnet1.id,
-    subnet2.id,
+    subnet1,
+    subnet2,
   ]
   clouds = ["azure"]
 }
@@ -77,7 +77,7 @@ multy "virtual_machine" "vm" {
       db_password_secret_name : db_password.name
     })
   })
-  subnet_id         = subnet3.id
+  subnet_id         = subnet3
   ssh_key_file_path = "./ssh_key.pub"
   public_ip         = true
 

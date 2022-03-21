@@ -17,11 +17,11 @@ multy "virtual_machine" "vm" {
   os        = "linux"
   size      = "micro"
   user_data = "echo 'Hello World'"
-  subnet_id = subnet.id
+  subnet_id = subnet
 }
 multy "virtual_machine" "vm2" {
   name      = "test-vm"
   os        = "linux"
   size      = "micro"
-  subnet_id = subnet.id
+  subnet_id = subnet
 }

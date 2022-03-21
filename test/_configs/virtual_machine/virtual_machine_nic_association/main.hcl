@@ -14,14 +14,14 @@ multy "subnet" "subnet" {
 }
 multy "network_interface" "nic" {
   name      = "test-nic"
-  subnet_id = subnet.id
+  subnet_id = subnet
 }
 multy "virtual_machine" "vm" {
   name                  = "test-vm"
   os                    = "linux"
   size                  = "micro"
   user_data             = "echo 'Hello World'"
-  subnet_id             = subnet.id
-  network_interface_ids = [nic.id]
+  subnet_id             = subnet
+  network_interface_ids = [nic]
   public_ip             = false
 }

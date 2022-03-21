@@ -11,8 +11,8 @@ import (
 // route_table_association
 type RouteTableAssociation struct {
 	*resources.CommonResourceParams
-	SubnetId     string `hcl:"subnet_id"`
-	RouteTableId string `hcl:"route_table_id"`
+	SubnetId     *Subnet     `mhcl:"ref=subnet_id"`
+	RouteTableId *RouteTable `mhcl:"ref=route_table_id"`
 }
 
 func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
@@ -22,8 +22,8 @@ func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resour
 				AwsResource: &common.AwsResource{
 					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 				},
-				RouteTableId: r.RouteTableId,
-				SubnetId:     r.SubnetId,
+				RouteTableId: resources.GetMainOutputId(r.RouteTableId, cloud),
+				SubnetId:     resources.GetMainOutputId(r.SubnetId, cloud),
 			},
 		}
 	} else if cloud == common.AZURE {
@@ -32,8 +32,8 @@ func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resour
 				AzResource: &common.AzResource{
 					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 				},
-				RouteTableId: r.RouteTableId,
-				SubnetId:     r.SubnetId,
+				RouteTableId: resources.GetMainOutputId(r.RouteTableId, cloud),
+				SubnetId:     resources.GetMainOutputId(r.SubnetId, cloud),
 			},
 		}
 	}

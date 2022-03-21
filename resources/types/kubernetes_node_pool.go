@@ -14,16 +14,16 @@ import (
 
 type KubernetesServiceNodePool struct {
 	*resources.CommonResourceParams
-	Name              string            `hcl:"name"`
-	ClusterId         string            `hcl:"cluster_id"`
-	IsDefaultPool     bool              `hcl:"is_default_pool,optional"`
-	SubnetIds         []string          `hcl:"subnet_ids"` // azure??
-	StartingNodeCount *int              `hcl:"starting_node_count,optional"`
-	MaxNodeCount      int               `hcl:"max_node_count"`
-	MinNodeCount      int               `hcl:"min_node_count"`
-	Labels            map[string]string `hcl:"labels,optional"`
-	VmSize            string            `hcl:"vm_size"`
-	DiskSizeGiB       int               `hcl:"disk_size_gib,optional"`
+	Name              string             `hcl:"name"`
+	ClusterId         *KubernetesService `mhcl:"ref=cluster_id"`
+	IsDefaultPool     bool               `hcl:"is_default_pool,optional"`
+	SubnetIds         []*Subnet          `mhcl:"ref=subnet_ids"` // azure??
+	StartingNodeCount *int               `hcl:"starting_node_count,optional"`
+	MaxNodeCount      int                `hcl:"max_node_count"`
+	MinNodeCount      int                `hcl:"min_node_count"`
+	Labels            map[string]string  `hcl:"labels,optional"`
+	VmSize            string             `hcl:"vm_size"`
+	DiskSizeGiB       int                `hcl:"disk_size_gib,optional"`
 }
 
 func (r *KubernetesServiceNodePool) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
@@ -85,10 +85,12 @@ func (r *KubernetesServiceNodePool) Translate(cloud common.CloudProvider, ctx re
 			},
 			&kubernetes_node_pool.AwsKubernetesNodeGroup{
 				AwsResource:   common.NewAwsResourceWithIdOnly(r.GetTfResourceId(cloud)),
-				ClusterName:   r.ClusterId,
+				ClusterName:   resources.GetMainOutputId(r.ClusterId, cloud),
 				NodeGroupName: r.Name,
 				NodeRoleArn:   fmt.Sprintf("aws_iam_role.%s.arn", r.GetTfResourceId(cloud)),
-				SubnetIds:     r.SubnetIds,
+				SubnetIds: util.MapSliceValues(r.SubnetIds, func(v *Subnet) string {
+					return resources.GetMainOutputId(v, cloud)
+				}),
 				ScalingConfig: kubernetes_node_pool.ScalingConfig{
 					DesiredSize: util.GetOrDefault(r.StartingNodeCount, r.MinNodeCount),
 					MaxSize:     r.MaxNodeCount,
@@ -116,7 +118,7 @@ func (r *KubernetesServiceNodePool) Translate(cloud common.CloudProvider, ctx re
 func (r *KubernetesServiceNodePool) translateAzNodePool(ctx resources.MultyContext) *kubernetes_node_pool.AzureKubernetesNodePool {
 	return &kubernetes_node_pool.AzureKubernetesNodePool{
 		AzResource:        common.NewAzResource(r.GetTfResourceId(common.AZURE), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, common.AZURE), ctx.GetLocationFromCommonParams(r.CommonResourceParams, common.AZURE)),
-		ClusterId:         r.ClusterId,
+		ClusterId:         resources.GetMainOutputId(r.ClusterId, common.AZURE),
 		NodeCount:         util.GetOrDefault(r.StartingNodeCount, r.MinNodeCount),
 		MaxSize:           r.MaxNodeCount,
 		MinSize:           r.MinNodeCount,

@@ -7,20 +7,21 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/database"
 	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 )
 
 type Database struct {
 	*resources.CommonResourceParams
-	Name          string   `hcl:"name"`
-	Engine        string   `hcl:"engine"`
-	EngineVersion string   `hcl:"engine_version"`
-	Storage       int      `hcl:"storage"`
-	Size          string   `hcl:"size"`
-	DbUsername    string   `hcl:"db_username"`
-	DbPassword    string   `hcl:"db_password"`
-	SubnetIds     []string `hcl:"subnet_ids"`
+	Name          string    `hcl:"name"`
+	Engine        string    `hcl:"engine"`
+	EngineVersion string    `hcl:"engine_version"`
+	Storage       int       `hcl:"storage"`
+	Size          string    `hcl:"size"`
+	DbUsername    string    `hcl:"db_username"`
+	DbPassword    string    `hcl:"db_password"`
+	SubnetIds     []*Subnet `mhcl:"ref=subnet_ids"`
 }
 
 func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
@@ -30,7 +31,9 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 		dbSubnetGroup := database.AwsDbSubnetGroup{
 			AwsResource: common.NewAwsResource(db.GetTfResourceId(cloud), db.Name),
 			Name:        db.Name,
-			SubnetIds:   db.SubnetIds,
+			SubnetIds: util.MapSliceValues(db.SubnetIds, func(v *Subnet) string {
+				return resources.GetMainOutputId(v, cloud)
+			}),
 		}
 		return []output.TfBlock{
 			dbSubnetGroup,
@@ -64,7 +67,9 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 				AdministratorLogin:         db.DbUsername,
 				AdministratorLoginPassword: db.DbPassword,
 				SkuName:                    common.DBSIZE[db.Size][cloud],
-				SubnetIds:                  db.SubnetIds,
+				SubnetIds: util.MapSliceValues(db.SubnetIds, func(v *Subnet) string {
+					return resources.GetMainOutputId(v, cloud)
+				}),
 			},
 		)
 	}

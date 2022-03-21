@@ -28,6 +28,6 @@ multy "virtual_machine" "vm" {
   name      = "test-vm"
   os        = "linux"
   size      = "micro"
-  subnet_id = subnet.id
+  subnet_id = subnet
   public_ip = true
 }

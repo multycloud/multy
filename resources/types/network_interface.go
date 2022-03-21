@@ -12,14 +12,12 @@ import (
 
 type NetworkInterface struct {
 	*resources.CommonResourceParams
-	Name     string `hcl:"name"`
-	SubnetId string `hcl:"subnet_id,optional"`
+	Name     string  `hcl:"name"`
+	SubnetId *Subnet `mhcl:"ref=subnet_id,optional"`
 }
 
 func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
-	var subnetId string
-
-	subnetId = r.SubnetId
+	subnetId := resources.GetMainOutputId(r.SubnetId, cloud)
 
 	if cloud == common.AWS {
 		return []output.TfBlock{
@@ -62,7 +60,7 @@ func (r *NetworkInterface) GetId(cloud common.CloudProvider) string {
 func getPublicIpReferences(ctx resources.MultyContext, subnetId string) []network_interface.AzureIpConfiguration {
 	var ipConfigurations []network_interface.AzureIpConfiguration
 	for _, resource := range resources.GetAllResources[*PublicIp](ctx) {
-		if resources.GetCloudSpecificResourceId(resource, common.AZURE) == resource.NetworkInterfaceId {
+		if resource.NetworkInterfaceId != nil && resources.GetCloudSpecificResourceId(resource, common.AZURE) == resource.NetworkInterfaceId.ResourceId {
 			ipConfigurations = append(
 				ipConfigurations, network_interface.AzureIpConfiguration{
 					Name:                       fmt.Sprintf("external-%s", resource.Name),
