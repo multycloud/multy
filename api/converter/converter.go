@@ -160,3 +160,43 @@ func (v RouteTableConverter) ConvertToMultyResource(resourceId string, m proto.M
 		ImplicitlyCreated: false,
 	}, nil
 }
+
+type RouteTableAssociationConverter struct {
+}
+
+func (v RouteTableAssociationConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificRouteTableArgs{}
+}
+
+func (v RouteTableAssociationConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificRouteTableAssociationArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	rta := types.RouteTableAssociation{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+	}
+
+	if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SubnetId, c)]; ok {
+		// Connect to subnet in the same cloud
+		rta.SubnetId = subnet.Resource.(*types.Subnet)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", arg.SubnetId, c)
+	}
+
+	if rt, ok := otherResources[common_resources.GetResourceIdForCloud(arg.RouteTableId, c)]; ok {
+		// Connect to subnet in the same cloud
+		rta.RouteTableId = rt.Resource.(*types.RouteTable)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("route table with id %s not found in %s", arg.RouteTableId, c)
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &rta,
+		ImplicitlyCreated: false,
+	}, nil
+}

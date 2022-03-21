@@ -36,6 +36,10 @@ type MultyResourceServiceClient interface {
 	ReadRouteTable(ctx context.Context, in *resources.ReadRouteTableRequest, opts ...grpc.CallOption) (*resources.RouteTableResource, error)
 	UpdateRouteTable(ctx context.Context, in *resources.UpdateRouteTableRequest, opts ...grpc.CallOption) (*resources.RouteTableResource, error)
 	DeleteRouteTable(ctx context.Context, in *resources.DeleteRouteTableRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateRouteTableAssociation(ctx context.Context, in *resources.CreateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error)
+	ReadRouteTableAssociation(ctx context.Context, in *resources.ReadRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error)
+	UpdateRouteTableAssociation(ctx context.Context, in *resources.UpdateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error)
+	DeleteRouteTableAssociation(ctx context.Context, in *resources.DeleteRouteTableAssociationRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -190,6 +194,42 @@ func (c *multyResourceServiceClient) DeleteRouteTable(ctx context.Context, in *r
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) CreateRouteTableAssociation(ctx context.Context, in *resources.CreateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error) {
+	out := new(resources.RouteTableAssociationResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateRouteTableAssociation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadRouteTableAssociation(ctx context.Context, in *resources.ReadRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error) {
+	out := new(resources.RouteTableAssociationResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadRouteTableAssociation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateRouteTableAssociation(ctx context.Context, in *resources.UpdateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error) {
+	out := new(resources.RouteTableAssociationResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateRouteTableAssociation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteRouteTableAssociation(ctx context.Context, in *resources.DeleteRouteTableAssociationRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteRouteTableAssociation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -210,6 +250,10 @@ type MultyResourceServiceServer interface {
 	ReadRouteTable(context.Context, *resources.ReadRouteTableRequest) (*resources.RouteTableResource, error)
 	UpdateRouteTable(context.Context, *resources.UpdateRouteTableRequest) (*resources.RouteTableResource, error)
 	DeleteRouteTable(context.Context, *resources.DeleteRouteTableRequest) (*common.Empty, error)
+	CreateRouteTableAssociation(context.Context, *resources.CreateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error)
+	ReadRouteTableAssociation(context.Context, *resources.ReadRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error)
+	UpdateRouteTableAssociation(context.Context, *resources.UpdateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error)
+	DeleteRouteTableAssociation(context.Context, *resources.DeleteRouteTableAssociationRequest) (*common.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -264,6 +308,18 @@ func (UnimplementedMultyResourceServiceServer) UpdateRouteTable(context.Context,
 }
 func (UnimplementedMultyResourceServiceServer) DeleteRouteTable(context.Context, *resources.DeleteRouteTableRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRouteTable not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateRouteTableAssociation(context.Context, *resources.CreateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateRouteTableAssociation not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadRouteTableAssociation(context.Context, *resources.ReadRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadRouteTableAssociation not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateRouteTableAssociation(context.Context, *resources.UpdateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateRouteTableAssociation not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteRouteTableAssociation(context.Context, *resources.DeleteRouteTableAssociationRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRouteTableAssociation not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -566,6 +622,78 @@ func _MultyResourceService_DeleteRouteTable_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_CreateRouteTableAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateRouteTableAssociationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateRouteTableAssociation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateRouteTableAssociation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateRouteTableAssociation(ctx, req.(*resources.CreateRouteTableAssociationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadRouteTableAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadRouteTableAssociationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadRouteTableAssociation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadRouteTableAssociation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadRouteTableAssociation(ctx, req.(*resources.ReadRouteTableAssociationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateRouteTableAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateRouteTableAssociationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateRouteTableAssociation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateRouteTableAssociation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateRouteTableAssociation(ctx, req.(*resources.UpdateRouteTableAssociationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteRouteTableAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteRouteTableAssociationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteRouteTableAssociation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteRouteTableAssociation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteRouteTableAssociation(ctx, req.(*resources.DeleteRouteTableAssociationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -636,6 +764,22 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteRouteTable",
 			Handler:    _MultyResourceService_DeleteRouteTable_Handler,
+		},
+		{
+			MethodName: "CreateRouteTableAssociation",
+			Handler:    _MultyResourceService_CreateRouteTableAssociation_Handler,
+		},
+		{
+			MethodName: "ReadRouteTableAssociation",
+			Handler:    _MultyResourceService_ReadRouteTableAssociation_Handler,
+		},
+		{
+			MethodName: "UpdateRouteTableAssociation",
+			Handler:    _MultyResourceService_UpdateRouteTableAssociation_Handler,
+		},
+		{
+			MethodName: "DeleteRouteTableAssociation",
+			Handler:    _MultyResourceService_DeleteRouteTableAssociation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
