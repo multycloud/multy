@@ -7,6 +7,8 @@ import (
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/services/database"
+	"github.com/multycloud/multy/api/services/kubernetes_cluster"
+	"github.com/multycloud/multy/api/services/kubernetes_node_pool"
 	"github.com/multycloud/multy/api/services/network_interface"
 	"github.com/multycloud/multy/api/services/network_security_group"
 	"github.com/multycloud/multy/api/services/object_storage"
@@ -34,6 +36,8 @@ type Server struct {
 	object_storage.ObjectStorageService
 	object_storage_object.ObjectStorageObjectService
 	public_ip.PublicIpService
+	kubernetes_cluster.KubernetesClusterService
+	kubernetes_node_pool.KubernetesNodePoolService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -64,6 +68,8 @@ func RunServer(ctx context.Context, port int) {
 		object_storage.NewObjectStorageService(d),
 		object_storage_object.NewObjectStorageObjectService(d),
 		public_ip.NewPublicIpService(d),
+		kubernetes_cluster.NewKubernetesClusterService(d),
+		kubernetes_node_pool.NewKubernetesNodePoolService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -187,7 +193,7 @@ func (s *Server) UpdateObjectStorageObject(ctx context.Context, in *resources.Up
 	return s.ObjectStorageObjectService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteObjectStorageObject(ctx context.Context, in *resources.DeleteObjectStorageObjectRequest) (*common.Empty, error) {
-	return s.ObjectStorageService.Service.Delete(ctx, in)
+	return s.ObjectStorageObjectService.Service.Delete(ctx, in)
 }
 
 func (s *Server) CreatePublicIp(ctx context.Context, in *resources.CreatePublicIpRequest) (*resources.PublicIpResource, error) {
@@ -201,4 +207,30 @@ func (s *Server) UpdatePublicIp(ctx context.Context, in *resources.UpdatePublicI
 }
 func (s *Server) DeletePublicIp(ctx context.Context, in *resources.DeletePublicIpRequest) (*common.Empty, error) {
 	return s.PublicIpService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateKubernetesCluster(ctx context.Context, in *resources.CreateKubernetesClusterRequest) (*resources.KubernetesClusterResource, error) {
+	return s.KubernetesClusterService.Service.Create(ctx, in)
+}
+func (s *Server) ReadKubernetesCluster(ctx context.Context, in *resources.ReadKubernetesClusterRequest) (*resources.KubernetesClusterResource, error) {
+	return s.KubernetesClusterService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateKubernetesCluster(ctx context.Context, in *resources.UpdateKubernetesClusterRequest) (*resources.KubernetesClusterResource, error) {
+	return s.KubernetesClusterService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteKubernetesCluster(ctx context.Context, in *resources.DeleteKubernetesClusterRequest) (*common.Empty, error) {
+	return s.KubernetesClusterService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateKubernetesNodePool(ctx context.Context, in *resources.CreateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error) {
+	return s.KubernetesNodePoolService.Service.Create(ctx, in)
+}
+func (s *Server) ReadKubernetesNodePool(ctx context.Context, in *resources.ReadKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error) {
+	return s.KubernetesNodePoolService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateKubernetesNodePool(ctx context.Context, in *resources.UpdateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error) {
+	return s.KubernetesNodePoolService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteKubernetesNodePool(ctx context.Context, in *resources.DeleteKubernetesNodePoolRequest) (*common.Empty, error) {
+	return s.KubernetesNodePoolService.Service.Delete(ctx, in)
 }

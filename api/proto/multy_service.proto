@@ -7,6 +7,8 @@ option java_outer_classname = "MultyProto";
 
 import "api/proto/resources/virtual_network.proto";
 import "api/proto/resources/public_ip.proto";
+import "api/proto/resources/kubernetes_cluster.proto";
+import "api/proto/resources/kubernetes_node_pool.proto";
 import "api/proto/resources/object_storage.proto";
 import "api/proto/resources/object_storage_object.proto";
 import "api/proto/resources/database.proto";
@@ -69,4 +71,14 @@ service MultyResourceService {
   rpc ReadPublicIp (resources.ReadPublicIpRequest) returns (resources.PublicIpResource) {}
   rpc UpdatePublicIp (resources.UpdatePublicIpRequest) returns (resources.PublicIpResource) {}
   rpc DeletePublicIp (resources.DeletePublicIpRequest) returns (common.Empty) {}
+
+  rpc CreateKubernetesCluster (resources.CreateKubernetesClusterRequest) returns (resources.KubernetesClusterResource) {}
+  rpc ReadKubernetesCluster (resources.ReadKubernetesClusterRequest) returns (resources.KubernetesClusterResource) {}
+  rpc UpdateKubernetesCluster (resources.UpdateKubernetesClusterRequest) returns (resources.KubernetesClusterResource) {}
+  rpc DeleteKubernetesCluster (resources.DeleteKubernetesClusterRequest) returns (common.Empty) {}
+
+  rpc CreateKubernetesNodePool (resources.CreateKubernetesNodePoolRequest) returns (resources.KubernetesNodePoolResource) {}
+  rpc ReadKubernetesNodePool (resources.ReadKubernetesNodePoolRequest) returns (resources.KubernetesNodePoolResource) {}
+  rpc UpdateKubernetesNodePool (resources.UpdateKubernetesNodePoolRequest) returns (resources.KubernetesNodePoolResource) {}
+  rpc DeleteKubernetesNodePool (resources.DeleteKubernetesNodePoolRequest) returns (common.Empty) {}
 }

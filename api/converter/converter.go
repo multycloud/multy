@@ -408,3 +408,99 @@ func (v PublicIpConverter) ConvertToMultyResource(resourceId string, m proto.Mes
 		ImplicitlyCreated: false,
 	}, nil
 }
+
+type KubernetesClusterConverter struct {
+}
+
+func (v KubernetesClusterConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificRouteTableArgs{}
+}
+
+func (v KubernetesClusterConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificKubernetesClusterArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	kc := types.KubernetesService{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name: arg.Name,
+	}
+
+	for _, subnetId := range arg.SubnetIds {
+
+		if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(subnetId, c)]; ok {
+			// Connect to vn in the same cloud
+			kc.SubnetIds = append(kc.SubnetIds, subnet.Resource.(*types.Subnet))
+		} else {
+			return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", subnetId, c)
+		}
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &kc,
+		ImplicitlyCreated: false,
+	}, nil
+}
+
+type KubernetesNodePoolConverter struct {
+}
+
+func (v KubernetesNodePoolConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificRouteTableArgs{}
+}
+
+func zeroToNil(a int32) *int {
+	var result *int
+	if a != 0 {
+		n := int(a)
+		result = &n
+	}
+	return result
+}
+
+func (v KubernetesNodePoolConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificKubernetesNodePoolArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	knp := types.KubernetesServiceNodePool{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name:              arg.Name,
+		IsDefaultPool:     arg.IsDefaultPool,
+		StartingNodeCount: zeroToNil(arg.StartingNodeCount),
+		MaxNodeCount:      int(arg.MaxNodeCount),
+		MinNodeCount:      int(arg.MinNodeCount),
+		Labels:            arg.Labels,
+		VmSize:            arg.VmSize.String(),
+		DiskSizeGiB:       int(arg.DiskSizeGb),
+	}
+
+	if kc, ok := otherResources[common_resources.GetResourceIdForCloud(arg.ClusterId, c)]; ok {
+		// Connect to vn in the same cloud
+		knp.ClusterId = kc.Resource.(*types.KubernetesService)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("cluster with id %s not found in %s", arg.ClusterId, c)
+	}
+
+	for _, subnetId := range arg.SubnetIds {
+		if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(subnetId, c)]; ok {
+			// Connect to vn in the same cloud
+			knp.SubnetIds = append(knp.SubnetIds, subnet.Resource.(*types.Subnet))
+		} else {
+			return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", subnetId, c)
+		}
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &knp,
+		ImplicitlyCreated: false,
+	}, nil
+}

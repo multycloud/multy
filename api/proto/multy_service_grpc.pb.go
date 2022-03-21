@@ -60,6 +60,14 @@ type MultyResourceServiceClient interface {
 	ReadPublicIp(ctx context.Context, in *resources.ReadPublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error)
 	UpdatePublicIp(ctx context.Context, in *resources.UpdatePublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error)
 	DeletePublicIp(ctx context.Context, in *resources.DeletePublicIpRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateKubernetesCluster(ctx context.Context, in *resources.CreateKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error)
+	ReadKubernetesCluster(ctx context.Context, in *resources.ReadKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error)
+	UpdateKubernetesCluster(ctx context.Context, in *resources.UpdateKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error)
+	DeleteKubernetesCluster(ctx context.Context, in *resources.DeleteKubernetesClusterRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateKubernetesNodePool(ctx context.Context, in *resources.CreateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error)
+	ReadKubernetesNodePool(ctx context.Context, in *resources.ReadKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error)
+	UpdateKubernetesNodePool(ctx context.Context, in *resources.UpdateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error)
+	DeleteKubernetesNodePool(ctx context.Context, in *resources.DeleteKubernetesNodePoolRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -430,6 +438,78 @@ func (c *multyResourceServiceClient) DeletePublicIp(ctx context.Context, in *res
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) CreateKubernetesCluster(ctx context.Context, in *resources.CreateKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error) {
+	out := new(resources.KubernetesClusterResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateKubernetesCluster", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadKubernetesCluster(ctx context.Context, in *resources.ReadKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error) {
+	out := new(resources.KubernetesClusterResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadKubernetesCluster", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateKubernetesCluster(ctx context.Context, in *resources.UpdateKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error) {
+	out := new(resources.KubernetesClusterResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateKubernetesCluster", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteKubernetesCluster(ctx context.Context, in *resources.DeleteKubernetesClusterRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteKubernetesCluster", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) CreateKubernetesNodePool(ctx context.Context, in *resources.CreateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error) {
+	out := new(resources.KubernetesNodePoolResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateKubernetesNodePool", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadKubernetesNodePool(ctx context.Context, in *resources.ReadKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error) {
+	out := new(resources.KubernetesNodePoolResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadKubernetesNodePool", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateKubernetesNodePool(ctx context.Context, in *resources.UpdateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error) {
+	out := new(resources.KubernetesNodePoolResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateKubernetesNodePool", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteKubernetesNodePool(ctx context.Context, in *resources.DeleteKubernetesNodePoolRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteKubernetesNodePool", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -474,6 +554,14 @@ type MultyResourceServiceServer interface {
 	ReadPublicIp(context.Context, *resources.ReadPublicIpRequest) (*resources.PublicIpResource, error)
 	UpdatePublicIp(context.Context, *resources.UpdatePublicIpRequest) (*resources.PublicIpResource, error)
 	DeletePublicIp(context.Context, *resources.DeletePublicIpRequest) (*common.Empty, error)
+	CreateKubernetesCluster(context.Context, *resources.CreateKubernetesClusterRequest) (*resources.KubernetesClusterResource, error)
+	ReadKubernetesCluster(context.Context, *resources.ReadKubernetesClusterRequest) (*resources.KubernetesClusterResource, error)
+	UpdateKubernetesCluster(context.Context, *resources.UpdateKubernetesClusterRequest) (*resources.KubernetesClusterResource, error)
+	DeleteKubernetesCluster(context.Context, *resources.DeleteKubernetesClusterRequest) (*common.Empty, error)
+	CreateKubernetesNodePool(context.Context, *resources.CreateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error)
+	ReadKubernetesNodePool(context.Context, *resources.ReadKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error)
+	UpdateKubernetesNodePool(context.Context, *resources.UpdateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error)
+	DeleteKubernetesNodePool(context.Context, *resources.DeleteKubernetesNodePoolRequest) (*common.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -600,6 +688,30 @@ func (UnimplementedMultyResourceServiceServer) UpdatePublicIp(context.Context, *
 }
 func (UnimplementedMultyResourceServiceServer) DeletePublicIp(context.Context, *resources.DeletePublicIpRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePublicIp not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateKubernetesCluster(context.Context, *resources.CreateKubernetesClusterRequest) (*resources.KubernetesClusterResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateKubernetesCluster not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadKubernetesCluster(context.Context, *resources.ReadKubernetesClusterRequest) (*resources.KubernetesClusterResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadKubernetesCluster not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateKubernetesCluster(context.Context, *resources.UpdateKubernetesClusterRequest) (*resources.KubernetesClusterResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateKubernetesCluster not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteKubernetesCluster(context.Context, *resources.DeleteKubernetesClusterRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteKubernetesCluster not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateKubernetesNodePool(context.Context, *resources.CreateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateKubernetesNodePool not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadKubernetesNodePool(context.Context, *resources.ReadKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadKubernetesNodePool not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateKubernetesNodePool(context.Context, *resources.UpdateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateKubernetesNodePool not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteKubernetesNodePool(context.Context, *resources.DeleteKubernetesNodePoolRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteKubernetesNodePool not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -1334,6 +1446,150 @@ func _MultyResourceService_DeletePublicIp_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_CreateKubernetesCluster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateKubernetesClusterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateKubernetesCluster(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateKubernetesCluster",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateKubernetesCluster(ctx, req.(*resources.CreateKubernetesClusterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadKubernetesCluster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadKubernetesClusterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadKubernetesCluster(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadKubernetesCluster",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadKubernetesCluster(ctx, req.(*resources.ReadKubernetesClusterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateKubernetesCluster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateKubernetesClusterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateKubernetesCluster(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateKubernetesCluster",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateKubernetesCluster(ctx, req.(*resources.UpdateKubernetesClusterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteKubernetesCluster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteKubernetesClusterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteKubernetesCluster(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteKubernetesCluster",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteKubernetesCluster(ctx, req.(*resources.DeleteKubernetesClusterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_CreateKubernetesNodePool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateKubernetesNodePoolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateKubernetesNodePool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateKubernetesNodePool",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateKubernetesNodePool(ctx, req.(*resources.CreateKubernetesNodePoolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadKubernetesNodePool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadKubernetesNodePoolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadKubernetesNodePool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadKubernetesNodePool",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadKubernetesNodePool(ctx, req.(*resources.ReadKubernetesNodePoolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateKubernetesNodePool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateKubernetesNodePoolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateKubernetesNodePool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateKubernetesNodePool",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateKubernetesNodePool(ctx, req.(*resources.UpdateKubernetesNodePoolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteKubernetesNodePool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteKubernetesNodePoolRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteKubernetesNodePool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteKubernetesNodePool",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteKubernetesNodePool(ctx, req.(*resources.DeleteKubernetesNodePoolRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1500,6 +1756,38 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeletePublicIp",
 			Handler:    _MultyResourceService_DeletePublicIp_Handler,
+		},
+		{
+			MethodName: "CreateKubernetesCluster",
+			Handler:    _MultyResourceService_CreateKubernetesCluster_Handler,
+		},
+		{
+			MethodName: "ReadKubernetesCluster",
+			Handler:    _MultyResourceService_ReadKubernetesCluster_Handler,
+		},
+		{
+			MethodName: "UpdateKubernetesCluster",
+			Handler:    _MultyResourceService_UpdateKubernetesCluster_Handler,
+		},
+		{
+			MethodName: "DeleteKubernetesCluster",
+			Handler:    _MultyResourceService_DeleteKubernetesCluster_Handler,
+		},
+		{
+			MethodName: "CreateKubernetesNodePool",
+			Handler:    _MultyResourceService_CreateKubernetesNodePool_Handler,
+		},
+		{
+			MethodName: "ReadKubernetesNodePool",
+			Handler:    _MultyResourceService_ReadKubernetesNodePool_Handler,
+		},
+		{
+			MethodName: "UpdateKubernetesNodePool",
+			Handler:    _MultyResourceService_UpdateKubernetesNodePool_Handler,
+		},
+		{
+			MethodName: "DeleteKubernetesNodePool",
+			Handler:    _MultyResourceService_DeleteKubernetesNodePool_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

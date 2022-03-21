@@ -37,7 +37,7 @@ message CloudSpecificDatabaseArgs {
   DatabaseEngine engine = 3;
   string engine_version = 4;
   int64 storage_mb = 5;
-  common.DatabaseSize size = 6;
+  common.DatabaseSize.Enum size = 6;
   string username = 7;
   string password = 8;
   repeated string subnet_ids = 9;
@@ -49,7 +49,7 @@ message CloudSpecificDatabaseResource {
   DatabaseEngine engine = 3;
   string engine_version = 4;
   int64 storage_mb = 5;
-  common.DatabaseSize size = 6;
+  common.DatabaseSize.Enum size = 6;
   string username = 7;
   string password = 8;
   repeated string subnet_ids = 9;
