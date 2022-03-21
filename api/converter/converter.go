@@ -206,7 +206,7 @@ type NetworkSecurityGroupConverter struct {
 }
 
 func (v NetworkSecurityGroupConverter) NewArg() proto.Message {
-	return &resources.CloudSpecificRouteTableArgs{}
+	return &resources.CloudSpecificNetworkSecurityGroupArgs{}
 }
 
 func (v NetworkSecurityGroupConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
@@ -271,7 +271,7 @@ type DatabaseConverter struct {
 }
 
 func (v DatabaseConverter) NewArg() proto.Message {
-	return &resources.CloudSpecificRouteTableArgs{}
+	return &resources.CloudSpecificDatabaseArgs{}
 }
 
 func (v DatabaseConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
@@ -314,7 +314,7 @@ type ObjectStorageConverter struct {
 }
 
 func (v ObjectStorageConverter) NewArg() proto.Message {
-	return &resources.CloudSpecificRouteTableArgs{}
+	return &resources.CloudSpecificObjectStorageArgs{}
 }
 
 func (v ObjectStorageConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
@@ -341,7 +341,7 @@ type ObjectStorageObjectConverter struct {
 }
 
 func (v ObjectStorageObjectConverter) NewArg() proto.Message {
-	return &resources.CloudSpecificRouteTableArgs{}
+	return &resources.CloudSpecificObjectStorageObjectArgs{}
 }
 
 func (v ObjectStorageObjectConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
@@ -379,7 +379,7 @@ type PublicIpConverter struct {
 }
 
 func (v PublicIpConverter) NewArg() proto.Message {
-	return &resources.CloudSpecificRouteTableArgs{}
+	return &resources.CloudSpecificPublicIpArgs{}
 }
 
 func (v PublicIpConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
@@ -413,7 +413,7 @@ type KubernetesClusterConverter struct {
 }
 
 func (v KubernetesClusterConverter) NewArg() proto.Message {
-	return &resources.CloudSpecificRouteTableArgs{}
+	return &resources.CloudSpecificKubernetesClusterArgs{}
 }
 
 func (v KubernetesClusterConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
@@ -450,7 +450,7 @@ type KubernetesNodePoolConverter struct {
 }
 
 func (v KubernetesNodePoolConverter) NewArg() proto.Message {
-	return &resources.CloudSpecificRouteTableArgs{}
+	return &resources.CloudSpecificKubernetesNodePoolArgs{}
 }
 
 func zeroToNil(a int32) *int {
@@ -509,7 +509,7 @@ type LambdaConverter struct {
 }
 
 func (v LambdaConverter) NewArg() proto.Message {
-	return &resources.CloudSpecificRouteTableArgs{}
+	return &resources.CloudSpecificLambdaArgs{}
 }
 
 func (v LambdaConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
@@ -536,6 +536,103 @@ func (v LambdaConverter) ConvertToMultyResource(resourceId string, m proto.Messa
 	return common_resources.CloudSpecificResource{
 		Cloud:             c,
 		Resource:          &l,
+		ImplicitlyCreated: false,
+	}, nil
+}
+
+type VaultConverter struct {
+}
+
+func (v VaultConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificVaultArgs{}
+}
+
+func (v VaultConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificVaultArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	vault := types.Vault{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name: arg.Name,
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &vault,
+		ImplicitlyCreated: false,
+	}, nil
+}
+
+type VaultAccessPolicyConverter struct {
+}
+
+func (v VaultAccessPolicyConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificVaultAccessPolicyArgs{}
+}
+
+func (v VaultAccessPolicyConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificVaultAccessPolicyArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	vap := types.VaultAccessPolicy{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Identity: arg.Identity,
+		Access:   strings.ToLower(arg.Access.String()),
+	}
+
+	if v, ok := otherResources[common_resources.GetResourceIdForCloud(arg.VaultId, c)]; ok {
+		// Connect to vn in the same cloud
+		vap.Vault = v.Resource.(*types.Vault)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("vault with id %s not found in %s", arg.VaultId, c)
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &vap,
+		ImplicitlyCreated: false,
+	}, nil
+}
+
+type VaultSecretConverter struct {
+}
+
+func (v VaultSecretConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificVaultSecretArgs{}
+}
+
+func (v VaultSecretConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificVaultSecretArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	vs := types.VaultSecret{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name:  arg.Name,
+		Value: arg.Value,
+	}
+
+	if v, ok := otherResources[common_resources.GetResourceIdForCloud(arg.VaultId, c)]; ok {
+		// Connect to vn in the same cloud
+		vs.Vault = v.Resource.(*types.Vault)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("vault with id %s not found in %s", arg.VaultId, c)
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &vs,
 		ImplicitlyCreated: false,
 	}, nil
 }

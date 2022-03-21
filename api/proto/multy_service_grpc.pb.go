@@ -72,6 +72,18 @@ type MultyResourceServiceClient interface {
 	ReadLambda(ctx context.Context, in *resources.ReadLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error)
 	UpdateLambda(ctx context.Context, in *resources.UpdateLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error)
 	DeleteLambda(ctx context.Context, in *resources.DeleteLambdaRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateVault(ctx context.Context, in *resources.CreateVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error)
+	ReadVault(ctx context.Context, in *resources.ReadVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error)
+	UpdateVault(ctx context.Context, in *resources.UpdateVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error)
+	DeleteVault(ctx context.Context, in *resources.DeleteVaultRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateVaultAccessPolicy(ctx context.Context, in *resources.CreateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error)
+	ReadVaultAccessPolicy(ctx context.Context, in *resources.ReadVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error)
+	UpdateVaultAccessPolicy(ctx context.Context, in *resources.UpdateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error)
+	DeleteVaultAccessPolicy(ctx context.Context, in *resources.DeleteVaultAccessPolicyRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateVaultSecret(ctx context.Context, in *resources.CreateVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error)
+	ReadVaultSecret(ctx context.Context, in *resources.ReadVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error)
+	UpdateVaultSecret(ctx context.Context, in *resources.UpdateVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error)
+	DeleteVaultSecret(ctx context.Context, in *resources.DeleteVaultSecretRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -550,6 +562,114 @@ func (c *multyResourceServiceClient) DeleteLambda(ctx context.Context, in *resou
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) CreateVault(ctx context.Context, in *resources.CreateVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error) {
+	out := new(resources.VaultResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateVault", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadVault(ctx context.Context, in *resources.ReadVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error) {
+	out := new(resources.VaultResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadVault", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateVault(ctx context.Context, in *resources.UpdateVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error) {
+	out := new(resources.VaultResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateVault", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteVault(ctx context.Context, in *resources.DeleteVaultRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteVault", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) CreateVaultAccessPolicy(ctx context.Context, in *resources.CreateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error) {
+	out := new(resources.VaultAccessPolicyResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateVaultAccessPolicy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadVaultAccessPolicy(ctx context.Context, in *resources.ReadVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error) {
+	out := new(resources.VaultAccessPolicyResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadVaultAccessPolicy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateVaultAccessPolicy(ctx context.Context, in *resources.UpdateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error) {
+	out := new(resources.VaultAccessPolicyResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateVaultAccessPolicy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteVaultAccessPolicy(ctx context.Context, in *resources.DeleteVaultAccessPolicyRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteVaultAccessPolicy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) CreateVaultSecret(ctx context.Context, in *resources.CreateVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error) {
+	out := new(resources.VaultSecretResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateVaultSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadVaultSecret(ctx context.Context, in *resources.ReadVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error) {
+	out := new(resources.VaultSecretResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadVaultSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateVaultSecret(ctx context.Context, in *resources.UpdateVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error) {
+	out := new(resources.VaultSecretResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateVaultSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteVaultSecret(ctx context.Context, in *resources.DeleteVaultSecretRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteVaultSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -606,6 +726,18 @@ type MultyResourceServiceServer interface {
 	ReadLambda(context.Context, *resources.ReadLambdaRequest) (*resources.LambdaResource, error)
 	UpdateLambda(context.Context, *resources.UpdateLambdaRequest) (*resources.LambdaResource, error)
 	DeleteLambda(context.Context, *resources.DeleteLambdaRequest) (*common.Empty, error)
+	CreateVault(context.Context, *resources.CreateVaultRequest) (*resources.VaultResource, error)
+	ReadVault(context.Context, *resources.ReadVaultRequest) (*resources.VaultResource, error)
+	UpdateVault(context.Context, *resources.UpdateVaultRequest) (*resources.VaultResource, error)
+	DeleteVault(context.Context, *resources.DeleteVaultRequest) (*common.Empty, error)
+	CreateVaultAccessPolicy(context.Context, *resources.CreateVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error)
+	ReadVaultAccessPolicy(context.Context, *resources.ReadVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error)
+	UpdateVaultAccessPolicy(context.Context, *resources.UpdateVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error)
+	DeleteVaultAccessPolicy(context.Context, *resources.DeleteVaultAccessPolicyRequest) (*common.Empty, error)
+	CreateVaultSecret(context.Context, *resources.CreateVaultSecretRequest) (*resources.VaultSecretResource, error)
+	ReadVaultSecret(context.Context, *resources.ReadVaultSecretRequest) (*resources.VaultSecretResource, error)
+	UpdateVaultSecret(context.Context, *resources.UpdateVaultSecretRequest) (*resources.VaultSecretResource, error)
+	DeleteVaultSecret(context.Context, *resources.DeleteVaultSecretRequest) (*common.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -768,6 +900,42 @@ func (UnimplementedMultyResourceServiceServer) UpdateLambda(context.Context, *re
 }
 func (UnimplementedMultyResourceServiceServer) DeleteLambda(context.Context, *resources.DeleteLambdaRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteLambda not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateVault(context.Context, *resources.CreateVaultRequest) (*resources.VaultResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateVault not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadVault(context.Context, *resources.ReadVaultRequest) (*resources.VaultResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadVault not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateVault(context.Context, *resources.UpdateVaultRequest) (*resources.VaultResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateVault not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteVault(context.Context, *resources.DeleteVaultRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteVault not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateVaultAccessPolicy(context.Context, *resources.CreateVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateVaultAccessPolicy not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadVaultAccessPolicy(context.Context, *resources.ReadVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadVaultAccessPolicy not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateVaultAccessPolicy(context.Context, *resources.UpdateVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateVaultAccessPolicy not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteVaultAccessPolicy(context.Context, *resources.DeleteVaultAccessPolicyRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteVaultAccessPolicy not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateVaultSecret(context.Context, *resources.CreateVaultSecretRequest) (*resources.VaultSecretResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateVaultSecret not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadVaultSecret(context.Context, *resources.ReadVaultSecretRequest) (*resources.VaultSecretResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadVaultSecret not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateVaultSecret(context.Context, *resources.UpdateVaultSecretRequest) (*resources.VaultSecretResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateVaultSecret not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteVaultSecret(context.Context, *resources.DeleteVaultSecretRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteVaultSecret not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -1718,6 +1886,222 @@ func _MultyResourceService_DeleteLambda_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_CreateVault_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateVaultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateVault(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateVault",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateVault(ctx, req.(*resources.CreateVaultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadVault_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadVaultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadVault(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadVault",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadVault(ctx, req.(*resources.ReadVaultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateVault_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateVaultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateVault(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateVault",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateVault(ctx, req.(*resources.UpdateVaultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteVault_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteVaultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteVault(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteVault",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteVault(ctx, req.(*resources.DeleteVaultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_CreateVaultAccessPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateVaultAccessPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateVaultAccessPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateVaultAccessPolicy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateVaultAccessPolicy(ctx, req.(*resources.CreateVaultAccessPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadVaultAccessPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadVaultAccessPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadVaultAccessPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadVaultAccessPolicy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadVaultAccessPolicy(ctx, req.(*resources.ReadVaultAccessPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateVaultAccessPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateVaultAccessPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateVaultAccessPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateVaultAccessPolicy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateVaultAccessPolicy(ctx, req.(*resources.UpdateVaultAccessPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteVaultAccessPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteVaultAccessPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteVaultAccessPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteVaultAccessPolicy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteVaultAccessPolicy(ctx, req.(*resources.DeleteVaultAccessPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_CreateVaultSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateVaultSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateVaultSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateVaultSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateVaultSecret(ctx, req.(*resources.CreateVaultSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadVaultSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadVaultSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadVaultSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadVaultSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadVaultSecret(ctx, req.(*resources.ReadVaultSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateVaultSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateVaultSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateVaultSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateVaultSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateVaultSecret(ctx, req.(*resources.UpdateVaultSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteVaultSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteVaultSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteVaultSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteVaultSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteVaultSecret(ctx, req.(*resources.DeleteVaultSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1932,6 +2316,54 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteLambda",
 			Handler:    _MultyResourceService_DeleteLambda_Handler,
+		},
+		{
+			MethodName: "CreateVault",
+			Handler:    _MultyResourceService_CreateVault_Handler,
+		},
+		{
+			MethodName: "ReadVault",
+			Handler:    _MultyResourceService_ReadVault_Handler,
+		},
+		{
+			MethodName: "UpdateVault",
+			Handler:    _MultyResourceService_UpdateVault_Handler,
+		},
+		{
+			MethodName: "DeleteVault",
+			Handler:    _MultyResourceService_DeleteVault_Handler,
+		},
+		{
+			MethodName: "CreateVaultAccessPolicy",
+			Handler:    _MultyResourceService_CreateVaultAccessPolicy_Handler,
+		},
+		{
+			MethodName: "ReadVaultAccessPolicy",
+			Handler:    _MultyResourceService_ReadVaultAccessPolicy_Handler,
+		},
+		{
+			MethodName: "UpdateVaultAccessPolicy",
+			Handler:    _MultyResourceService_UpdateVaultAccessPolicy_Handler,
+		},
+		{
+			MethodName: "DeleteVaultAccessPolicy",
+			Handler:    _MultyResourceService_DeleteVaultAccessPolicy_Handler,
+		},
+		{
+			MethodName: "CreateVaultSecret",
+			Handler:    _MultyResourceService_CreateVaultSecret_Handler,
+		},
+		{
+			MethodName: "ReadVaultSecret",
+			Handler:    _MultyResourceService_ReadVaultSecret_Handler,
+		},
+		{
+			MethodName: "UpdateVaultSecret",
+			Handler:    _MultyResourceService_UpdateVaultSecret_Handler,
+		},
+		{
+			MethodName: "DeleteVaultSecret",
+			Handler:    _MultyResourceService_DeleteVaultSecret_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

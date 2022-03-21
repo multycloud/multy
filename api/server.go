@@ -18,6 +18,7 @@ import (
 	"github.com/multycloud/multy/api/services/route_table"
 	"github.com/multycloud/multy/api/services/route_table_association"
 	"github.com/multycloud/multy/api/services/subnet"
+	"github.com/multycloud/multy/api/services/vault"
 	"github.com/multycloud/multy/api/services/virtual_network"
 	"github.com/multycloud/multy/db"
 	"google.golang.org/grpc"
@@ -40,6 +41,9 @@ type Server struct {
 	kubernetes_cluster.KubernetesClusterService
 	kubernetes_node_pool.KubernetesNodePoolService
 	lambda.LambdaService
+	vault.VaultService
+	vault.VaultAccessPolicyService
+	vault.VaultSecretService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -73,6 +77,9 @@ func RunServer(ctx context.Context, port int) {
 		kubernetes_cluster.NewKubernetesClusterService(d),
 		kubernetes_node_pool.NewKubernetesNodePoolService(d),
 		lambda.NewLambdaService(d),
+		vault.NewVaultService(d),
+		vault.NewVaultAccessPolicyService(d),
+		vault.NewVaultSecretService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -249,4 +256,43 @@ func (s *Server) UpdateLambda(ctx context.Context, in *resources.UpdateLambdaReq
 }
 func (s *Server) DeleteLambda(ctx context.Context, in *resources.DeleteLambdaRequest) (*common.Empty, error) {
 	return s.LambdaService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateVault(ctx context.Context, in *resources.CreateVaultRequest) (*resources.VaultResource, error) {
+	return s.VaultService.Service.Create(ctx, in)
+}
+func (s *Server) ReadVault(ctx context.Context, in *resources.ReadVaultRequest) (*resources.VaultResource, error) {
+	return s.VaultService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateVault(ctx context.Context, in *resources.UpdateVaultRequest) (*resources.VaultResource, error) {
+	return s.VaultService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteVault(ctx context.Context, in *resources.DeleteVaultRequest) (*common.Empty, error) {
+	return s.VaultService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateVaultSecret(ctx context.Context, in *resources.CreateVaultSecretRequest) (*resources.VaultSecretResource, error) {
+	return s.VaultSecretService.Service.Create(ctx, in)
+}
+func (s *Server) ReadVaultSecret(ctx context.Context, in *resources.ReadVaultSecretRequest) (*resources.VaultSecretResource, error) {
+	return s.VaultSecretService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateVaultSecret(ctx context.Context, in *resources.UpdateVaultSecretRequest) (*resources.VaultSecretResource, error) {
+	return s.VaultSecretService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteVaultSecret(ctx context.Context, in *resources.DeleteVaultSecretRequest) (*common.Empty, error) {
+	return s.VaultSecretService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreateVaultAccessPolicy(ctx context.Context, in *resources.CreateVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error) {
+	return s.VaultAccessPolicyService.Service.Create(ctx, in)
+}
+func (s *Server) ReadVaultAccessPolicy(ctx context.Context, in *resources.ReadVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error) {
+	return s.VaultAccessPolicyService.Service.Read(ctx, in)
+}
+func (s *Server) UpdateVaultAccessPolicy(ctx context.Context, in *resources.UpdateVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error) {
+	return s.VaultAccessPolicyService.Service.Update(ctx, in)
+}
+func (s *Server) DeleteVaultAccessPolicy(ctx context.Context, in *resources.DeleteVaultAccessPolicyRequest) (*common.Empty, error) {
+	return s.VaultAccessPolicyService.Service.Delete(ctx, in)
 }
