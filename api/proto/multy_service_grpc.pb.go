@@ -56,6 +56,10 @@ type MultyResourceServiceClient interface {
 	ReadObjectStorageObject(ctx context.Context, in *resources.ReadObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error)
 	UpdateObjectStorageObject(ctx context.Context, in *resources.UpdateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error)
 	DeleteObjectStorageObject(ctx context.Context, in *resources.DeleteObjectStorageObjectRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreatePublicIp(ctx context.Context, in *resources.CreatePublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error)
+	ReadPublicIp(ctx context.Context, in *resources.ReadPublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error)
+	UpdatePublicIp(ctx context.Context, in *resources.UpdatePublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error)
+	DeletePublicIp(ctx context.Context, in *resources.DeletePublicIpRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -390,6 +394,42 @@ func (c *multyResourceServiceClient) DeleteObjectStorageObject(ctx context.Conte
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) CreatePublicIp(ctx context.Context, in *resources.CreatePublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error) {
+	out := new(resources.PublicIpResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreatePublicIp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadPublicIp(ctx context.Context, in *resources.ReadPublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error) {
+	out := new(resources.PublicIpResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadPublicIp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdatePublicIp(ctx context.Context, in *resources.UpdatePublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error) {
+	out := new(resources.PublicIpResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdatePublicIp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeletePublicIp(ctx context.Context, in *resources.DeletePublicIpRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeletePublicIp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -430,6 +470,10 @@ type MultyResourceServiceServer interface {
 	ReadObjectStorageObject(context.Context, *resources.ReadObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error)
 	UpdateObjectStorageObject(context.Context, *resources.UpdateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error)
 	DeleteObjectStorageObject(context.Context, *resources.DeleteObjectStorageObjectRequest) (*common.Empty, error)
+	CreatePublicIp(context.Context, *resources.CreatePublicIpRequest) (*resources.PublicIpResource, error)
+	ReadPublicIp(context.Context, *resources.ReadPublicIpRequest) (*resources.PublicIpResource, error)
+	UpdatePublicIp(context.Context, *resources.UpdatePublicIpRequest) (*resources.PublicIpResource, error)
+	DeletePublicIp(context.Context, *resources.DeletePublicIpRequest) (*common.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -544,6 +588,18 @@ func (UnimplementedMultyResourceServiceServer) UpdateObjectStorageObject(context
 }
 func (UnimplementedMultyResourceServiceServer) DeleteObjectStorageObject(context.Context, *resources.DeleteObjectStorageObjectRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteObjectStorageObject not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreatePublicIp(context.Context, *resources.CreatePublicIpRequest) (*resources.PublicIpResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePublicIp not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadPublicIp(context.Context, *resources.ReadPublicIpRequest) (*resources.PublicIpResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadPublicIp not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdatePublicIp(context.Context, *resources.UpdatePublicIpRequest) (*resources.PublicIpResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePublicIp not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeletePublicIp(context.Context, *resources.DeletePublicIpRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePublicIp not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -1206,6 +1262,78 @@ func _MultyResourceService_DeleteObjectStorageObject_Handler(srv interface{}, ct
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_CreatePublicIp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreatePublicIpRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreatePublicIp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreatePublicIp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreatePublicIp(ctx, req.(*resources.CreatePublicIpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadPublicIp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadPublicIpRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadPublicIp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadPublicIp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadPublicIp(ctx, req.(*resources.ReadPublicIpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdatePublicIp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdatePublicIpRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdatePublicIp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdatePublicIp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdatePublicIp(ctx, req.(*resources.UpdatePublicIpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeletePublicIp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeletePublicIpRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeletePublicIp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeletePublicIp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeletePublicIp(ctx, req.(*resources.DeletePublicIpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1356,6 +1484,22 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteObjectStorageObject",
 			Handler:    _MultyResourceService_DeleteObjectStorageObject_Handler,
+		},
+		{
+			MethodName: "CreatePublicIp",
+			Handler:    _MultyResourceService_CreatePublicIp_Handler,
+		},
+		{
+			MethodName: "ReadPublicIp",
+			Handler:    _MultyResourceService_ReadPublicIp_Handler,
+		},
+		{
+			MethodName: "UpdatePublicIp",
+			Handler:    _MultyResourceService_UpdatePublicIp_Handler,
+		},
+		{
+			MethodName: "DeletePublicIp",
+			Handler:    _MultyResourceService_DeletePublicIp_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

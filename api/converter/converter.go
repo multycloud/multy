@@ -374,3 +374,37 @@ func (v ObjectStorageObjectConverter) ConvertToMultyResource(resourceId string, 
 		ImplicitlyCreated: false,
 	}, nil
 }
+
+type PublicIpConverter struct {
+}
+
+func (v PublicIpConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificRouteTableArgs{}
+}
+
+func (v PublicIpConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificPublicIpArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	obj := types.PublicIp{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name: arg.Name,
+	}
+
+	if ni, ok := otherResources[common_resources.GetResourceIdForCloud(arg.NetworkInterfaceId, c)]; ok {
+		// Connect to vn in the same cloud
+		obj.NetworkInterfaceId = ni.Resource.(*types.NetworkInterface)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("network interface with id %s not found in %s", arg.NetworkInterfaceId, c)
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &obj,
+		ImplicitlyCreated: false,
+	}, nil
+}

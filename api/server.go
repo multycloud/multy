@@ -11,6 +11,7 @@ import (
 	"github.com/multycloud/multy/api/services/network_security_group"
 	"github.com/multycloud/multy/api/services/object_storage"
 	"github.com/multycloud/multy/api/services/object_storage_object"
+	"github.com/multycloud/multy/api/services/public_ip"
 	"github.com/multycloud/multy/api/services/route_table"
 	"github.com/multycloud/multy/api/services/route_table_association"
 	"github.com/multycloud/multy/api/services/subnet"
@@ -32,6 +33,7 @@ type Server struct {
 	database.DatabaseService
 	object_storage.ObjectStorageService
 	object_storage_object.ObjectStorageObjectService
+	public_ip.PublicIpService
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -53,14 +55,15 @@ func RunServer(ctx context.Context, port int) {
 	server := Server{
 		proto.UnimplementedMultyResourceServiceServer{},
 		virtual_network.NewVnService(d),
-		subnet.NewSubnetServiceService(d),
-		network_interface.NewNetworkInterfaceServiceService(d),
-		route_table.NewRouteTableServiceService(d),
-		route_table_association.NewRouteTableAssociationServiceService(d),
-		network_security_group.NewNetworkSecurityGroupServiceService(d),
-		database.NewDatabaseServiceService(d),
-		object_storage.NewObjectStorageServiceService(d),
-		object_storage_object.NewObjectStorageObjectServiceService(d),
+		subnet.NewSubnetService(d),
+		network_interface.NewNetworkInterfaceService(d),
+		route_table.NewRouteTableService(d),
+		route_table_association.NewRouteTableAssociationService(d),
+		network_security_group.NewNetworkSecurityGroupService(d),
+		database.NewDatabaseService(d),
+		object_storage.NewObjectStorageService(d),
+		object_storage_object.NewObjectStorageObjectService(d),
+		public_ip.NewPublicIpService(d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -145,7 +148,7 @@ func (s *Server) UpdateNetworkSecurityGroup(ctx context.Context, in *resources.U
 	return s.NetworkSecurityGroupService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteNetworkSecurityGroup(ctx context.Context, in *resources.DeleteNetworkSecurityGroupRequest) (*common.Empty, error) {
-	return s.RouteTableService.Service.Delete(ctx, in)
+	return s.NetworkSecurityGroupService.Service.Delete(ctx, in)
 }
 
 func (s *Server) CreateDatabase(ctx context.Context, in *resources.CreateDatabaseRequest) (*resources.DatabaseResource, error) {
@@ -158,7 +161,7 @@ func (s *Server) UpdateDatabase(ctx context.Context, in *resources.UpdateDatabas
 	return s.DatabaseService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteDatabase(ctx context.Context, in *resources.DeleteDatabaseRequest) (*common.Empty, error) {
-	return s.RouteTableService.Service.Delete(ctx, in)
+	return s.DatabaseService.Service.Delete(ctx, in)
 }
 
 func (s *Server) CreateObjectStorage(ctx context.Context, in *resources.CreateObjectStorageRequest) (*resources.ObjectStorageResource, error) {
@@ -171,7 +174,7 @@ func (s *Server) UpdateObjectStorage(ctx context.Context, in *resources.UpdateOb
 	return s.ObjectStorageService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteObjectStorage(ctx context.Context, in *resources.DeleteObjectStorageRequest) (*common.Empty, error) {
-	return s.RouteTableService.Service.Delete(ctx, in)
+	return s.ObjectStorageService.Service.Delete(ctx, in)
 }
 
 func (s *Server) CreateObjectStorageObject(ctx context.Context, in *resources.CreateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error) {
@@ -184,5 +187,18 @@ func (s *Server) UpdateObjectStorageObject(ctx context.Context, in *resources.Up
 	return s.ObjectStorageObjectService.Service.Update(ctx, in)
 }
 func (s *Server) DeleteObjectStorageObject(ctx context.Context, in *resources.DeleteObjectStorageObjectRequest) (*common.Empty, error) {
-	return s.RouteTableService.Service.Delete(ctx, in)
+	return s.ObjectStorageService.Service.Delete(ctx, in)
+}
+
+func (s *Server) CreatePublicIp(ctx context.Context, in *resources.CreatePublicIpRequest) (*resources.PublicIpResource, error) {
+	return s.PublicIpService.Service.Create(ctx, in)
+}
+func (s *Server) ReadPublicIp(ctx context.Context, in *resources.ReadPublicIpRequest) (*resources.PublicIpResource, error) {
+	return s.PublicIpService.Service.Read(ctx, in)
+}
+func (s *Server) UpdatePublicIp(ctx context.Context, in *resources.UpdatePublicIpRequest) (*resources.PublicIpResource, error) {
+	return s.PublicIpService.Service.Update(ctx, in)
+}
+func (s *Server) DeletePublicIp(ctx context.Context, in *resources.DeletePublicIpRequest) (*common.Empty, error) {
+	return s.PublicIpService.Service.Delete(ctx, in)
 }

@@ -38,7 +38,7 @@ func (s SubnetService) Nil() *resources.SubnetResource {
 	return nil
 }
 
-func NewSubnetServiceService(database *db.Database) SubnetService {
+func NewSubnetService(database *db.Database) SubnetService {
 	vn := SubnetService{
 		Service: services.Service[*resources.CloudSpecificSubnetArgs, *resources.SubnetResource]{
 			Db:         database,

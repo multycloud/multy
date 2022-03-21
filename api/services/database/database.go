@@ -42,7 +42,7 @@ func (s DatabaseService) Nil() *resources.DatabaseResource {
 	return nil
 }
 
-func NewDatabaseServiceService(database *db.Database) DatabaseService {
+func NewDatabaseService(database *db.Database) DatabaseService {
 	ni := DatabaseService{
 		Service: services.Service[*resources.CloudSpecificDatabaseArgs, *resources.DatabaseResource]{
 			Db:         database,

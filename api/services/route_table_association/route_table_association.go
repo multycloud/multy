@@ -36,7 +36,7 @@ func (s RouteTableAssociationService) Nil() *resources.RouteTableAssociationReso
 	return nil
 }
 
-func NewRouteTableAssociationServiceService(database *db.Database) RouteTableAssociationService {
+func NewRouteTableAssociationService(database *db.Database) RouteTableAssociationService {
 	rta := RouteTableAssociationService{
 		Service: services.Service[*resources.CloudSpecificRouteTableAssociationArgs, *resources.RouteTableAssociationResource]{
 			Db:         database,

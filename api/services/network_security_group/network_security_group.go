@@ -37,7 +37,7 @@ func (s NetworkSecurityGroupService) Nil() *resources.NetworkSecurityGroupResour
 	return nil
 }
 
-func NewNetworkSecurityGroupServiceService(database *db.Database) NetworkSecurityGroupService {
+func NewNetworkSecurityGroupService(database *db.Database) NetworkSecurityGroupService {
 	nsg := NetworkSecurityGroupService{
 		Service: services.Service[*resources.CloudSpecificNetworkSecurityGroupArgs, *resources.NetworkSecurityGroupResource]{
 			Db:         database,

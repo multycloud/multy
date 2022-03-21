@@ -36,7 +36,7 @@ func (s NetworkInterfaceService) Nil() *resources.NetworkInterfaceResource {
 	return nil
 }
 
-func NewNetworkInterfaceServiceService(database *db.Database) NetworkInterfaceService {
+func NewNetworkInterfaceService(database *db.Database) NetworkInterfaceService {
 	ni := NetworkInterfaceService{
 		Service: services.Service[*resources.CloudSpecificNetworkInterfaceArgs, *resources.NetworkInterfaceResource]{
 			Db:         database,
