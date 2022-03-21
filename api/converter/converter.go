@@ -309,3 +309,68 @@ func (v DatabaseConverter) ConvertToMultyResource(resourceId string, m proto.Mes
 		ImplicitlyCreated: false,
 	}, nil
 }
+
+type ObjectStorageConverter struct {
+}
+
+func (v ObjectStorageConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificRouteTableArgs{}
+}
+
+func (v ObjectStorageConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificObjectStorageArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	db := types.ObjectStorage{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name: arg.Name,
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &db,
+		ImplicitlyCreated: false,
+	}, nil
+}
+
+type ObjectStorageObjectConverter struct {
+}
+
+func (v ObjectStorageObjectConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificRouteTableArgs{}
+}
+
+func (v ObjectStorageObjectConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificObjectStorageObjectArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	obj := types.ObjectStorageObject{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name:        arg.Name,
+		Content:     arg.Content,
+		ContentType: arg.ContentType,
+		Acl:         arg.Acl.String(),
+		Source:      arg.Source,
+	}
+
+	if o, ok := otherResources[common_resources.GetResourceIdForCloud(arg.ObjectStorageId, c)]; ok {
+		// Connect to vn in the same cloud
+		obj.ObjectStorage = o.Resource.(*types.ObjectStorage)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("object storage with id %s not found in %s", arg.ObjectStorageId, c)
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &obj,
+		ImplicitlyCreated: false,
+	}, nil
+}

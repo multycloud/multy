@@ -66,6 +66,16 @@ func Deploy(c *config.Config, resourceId string) error {
 			if err != nil {
 				return err
 			}
+		} else if resourceMessage.MessageIs(&resources.CloudSpecificObjectStorageArgs{}) {
+			err := addMultyResource(r, translated, &converter.ObjectStorageConverter{})
+			if err != nil {
+				return err
+			}
+		} else if resourceMessage.MessageIs(&resources.CloudSpecificObjectStorageObjectArgs{}) {
+			err := addMultyResource(r, translated, &converter.ObjectStorageObjectConverter{})
+			if err != nil {
+				return err
+			}
 		} else {
 			return fmt.Errorf("unknown resource type %s", resourceMessage.MessageName())
 		}
