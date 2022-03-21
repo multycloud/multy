@@ -28,6 +28,10 @@ type MultyResourceServiceClient interface {
 	ReadVirtualNetwork(ctx context.Context, in *resources.ReadVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error)
 	UpdateVirtualNetwork(ctx context.Context, in *resources.UpdateVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error)
 	DeleteVirtualNetwork(ctx context.Context, in *resources.DeleteVirtualNetworkRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateNetworkInterface(ctx context.Context, in *resources.CreateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error)
+	ReadNetworkInterface(ctx context.Context, in *resources.ReadNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error)
+	UpdateNetworkInterface(ctx context.Context, in *resources.UpdateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error)
+	DeleteNetworkInterface(ctx context.Context, in *resources.DeleteNetworkInterfaceRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -110,6 +114,42 @@ func (c *multyResourceServiceClient) DeleteVirtualNetwork(ctx context.Context, i
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) CreateNetworkInterface(ctx context.Context, in *resources.CreateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error) {
+	out := new(resources.NetworkInterfaceResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateNetworkInterface", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadNetworkInterface(ctx context.Context, in *resources.ReadNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error) {
+	out := new(resources.NetworkInterfaceResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadNetworkInterface", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateNetworkInterface(ctx context.Context, in *resources.UpdateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error) {
+	out := new(resources.NetworkInterfaceResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateNetworkInterface", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteNetworkInterface(ctx context.Context, in *resources.DeleteNetworkInterfaceRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteNetworkInterface", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -122,6 +162,10 @@ type MultyResourceServiceServer interface {
 	ReadVirtualNetwork(context.Context, *resources.ReadVirtualNetworkRequest) (*resources.VirtualNetworkResource, error)
 	UpdateVirtualNetwork(context.Context, *resources.UpdateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error)
 	DeleteVirtualNetwork(context.Context, *resources.DeleteVirtualNetworkRequest) (*common.Empty, error)
+	CreateNetworkInterface(context.Context, *resources.CreateNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error)
+	ReadNetworkInterface(context.Context, *resources.ReadNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error)
+	UpdateNetworkInterface(context.Context, *resources.UpdateNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error)
+	DeleteNetworkInterface(context.Context, *resources.DeleteNetworkInterfaceRequest) (*common.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -152,6 +196,18 @@ func (UnimplementedMultyResourceServiceServer) UpdateVirtualNetwork(context.Cont
 }
 func (UnimplementedMultyResourceServiceServer) DeleteVirtualNetwork(context.Context, *resources.DeleteVirtualNetworkRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVirtualNetwork not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateNetworkInterface(context.Context, *resources.CreateNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNetworkInterface not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadNetworkInterface(context.Context, *resources.ReadNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadNetworkInterface not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateNetworkInterface(context.Context, *resources.UpdateNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNetworkInterface not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteNetworkInterface(context.Context, *resources.DeleteNetworkInterfaceRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNetworkInterface not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -310,6 +366,78 @@ func _MultyResourceService_DeleteVirtualNetwork_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_CreateNetworkInterface_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateNetworkInterfaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateNetworkInterface(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateNetworkInterface",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateNetworkInterface(ctx, req.(*resources.CreateNetworkInterfaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadNetworkInterface_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadNetworkInterfaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadNetworkInterface(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadNetworkInterface",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadNetworkInterface(ctx, req.(*resources.ReadNetworkInterfaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateNetworkInterface_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateNetworkInterfaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateNetworkInterface(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateNetworkInterface",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateNetworkInterface(ctx, req.(*resources.UpdateNetworkInterfaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteNetworkInterface_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteNetworkInterfaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteNetworkInterface(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteNetworkInterface",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteNetworkInterface(ctx, req.(*resources.DeleteNetworkInterfaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -348,6 +476,22 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteVirtualNetwork",
 			Handler:    _MultyResourceService_DeleteVirtualNetwork_Handler,
+		},
+		{
+			MethodName: "CreateNetworkInterface",
+			Handler:    _MultyResourceService_CreateNetworkInterface_Handler,
+		},
+		{
+			MethodName: "ReadNetworkInterface",
+			Handler:    _MultyResourceService_ReadNetworkInterface_Handler,
+		},
+		{
+			MethodName: "UpdateNetworkInterface",
+			Handler:    _MultyResourceService_UpdateNetworkInterface_Handler,
+		},
+		{
+			MethodName: "DeleteNetworkInterface",
+			Handler:    _MultyResourceService_DeleteNetworkInterface_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

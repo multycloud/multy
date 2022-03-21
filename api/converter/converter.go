@@ -83,3 +83,37 @@ func (v SubnetConverter) ConvertToMultyResource(resourceId string, m proto.Messa
 		ImplicitlyCreated: false,
 	}, nil
 }
+
+type NetworkInterfaceConverter struct {
+}
+
+func (v NetworkInterfaceConverter) NewArg() proto.Message {
+	return &resources.CloudSpecificNetworkInterfaceArgs{}
+}
+
+func (v NetworkInterfaceConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
+	arg := m.(*resources.CloudSpecificNetworkInterfaceArgs)
+	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
+	ni := types.NetworkInterface{
+		CommonResourceParams: &common_resources.CommonResourceParams{
+			ResourceId:      resourceId,
+			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
+			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
+			Clouds:          []string{string(c)},
+		},
+		Name: arg.Name,
+	}
+
+	if vn, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SubnetId, c)]; ok {
+		// Connect to vn in the same cloud
+		ni.SubnetId = vn.Resource.(*types.Subnet)
+	} else {
+		return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", arg.SubnetId, c)
+	}
+
+	return common_resources.CloudSpecificResource{
+		Cloud:             c,
+		Resource:          &ni,
+		ImplicitlyCreated: false,
+	}, nil
+}

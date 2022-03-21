@@ -6,6 +6,7 @@ option java_package = "dev.multy.api";
 option java_outer_classname = "MultyProto";
 
 import "api/proto/resources/virtual_network.proto";
+import "api/proto/resources/network_interface.proto";
 import "api/proto/resources/subnet.proto";
 import "api/proto/common/common.proto";
 
@@ -21,4 +22,9 @@ service MultyResourceService {
   rpc ReadVirtualNetwork (resources.ReadVirtualNetworkRequest) returns (resources.VirtualNetworkResource) {}
   rpc UpdateVirtualNetwork (resources.UpdateVirtualNetworkRequest) returns (resources.VirtualNetworkResource) {}
   rpc DeleteVirtualNetwork (resources.DeleteVirtualNetworkRequest) returns (common.Empty) {}
+
+  rpc CreateNetworkInterface (resources.CreateNetworkInterfaceRequest) returns (resources.NetworkInterfaceResource) {}
+  rpc ReadNetworkInterface (resources.ReadNetworkInterfaceRequest) returns (resources.NetworkInterfaceResource) {}
+  rpc UpdateNetworkInterface (resources.UpdateNetworkInterfaceRequest) returns (resources.NetworkInterfaceResource) {}
+  rpc DeleteNetworkInterface (resources.DeleteNetworkInterfaceRequest) returns (common.Empty) {}
 }
