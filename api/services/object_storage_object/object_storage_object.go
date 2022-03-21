@@ -40,7 +40,7 @@ func (s ObjectStorageObjectService) Nil() *resources.ObjectStorageObjectResource
 	return nil
 }
 
-func NewObjectStorageObjectServiceService(database *db.Database) ObjectStorageObjectService {
+func NewObjectStorageObjectService(database *db.Database) ObjectStorageObjectService {
 	nsg := ObjectStorageObjectService{
 		Service: services.Service[*resources.CloudSpecificObjectStorageObjectArgs, *resources.ObjectStorageObjectResource]{
 			Db:         database,

@@ -6,6 +6,7 @@ option java_package = "dev.multy.api";
 option java_outer_classname = "MultyProto";
 
 import "api/proto/resources/virtual_network.proto";
+import "api/proto/resources/public_ip.proto";
 import "api/proto/resources/object_storage.proto";
 import "api/proto/resources/object_storage_object.proto";
 import "api/proto/resources/database.proto";
@@ -64,4 +65,8 @@ service MultyResourceService {
   rpc UpdateObjectStorageObject (resources.UpdateObjectStorageObjectRequest) returns (resources.ObjectStorageObjectResource) {}
   rpc DeleteObjectStorageObject (resources.DeleteObjectStorageObjectRequest) returns (common.Empty) {}
 
+  rpc CreatePublicIp (resources.CreatePublicIpRequest) returns (resources.PublicIpResource) {}
+  rpc ReadPublicIp (resources.ReadPublicIpRequest) returns (resources.PublicIpResource) {}
+  rpc UpdatePublicIp (resources.UpdatePublicIpRequest) returns (resources.PublicIpResource) {}
+  rpc DeletePublicIp (resources.DeletePublicIpRequest) returns (common.Empty) {}
 }
