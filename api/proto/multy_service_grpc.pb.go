@@ -84,6 +84,10 @@ type MultyResourceServiceClient interface {
 	ReadVaultSecret(ctx context.Context, in *resources.ReadVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error)
 	UpdateVaultSecret(ctx context.Context, in *resources.UpdateVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error)
 	DeleteVaultSecret(ctx context.Context, in *resources.DeleteVaultSecretRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateVirtualMachine(ctx context.Context, in *resources.CreateVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error)
+	ReadVirtualMachine(ctx context.Context, in *resources.ReadVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error)
+	UpdateVirtualMachine(ctx context.Context, in *resources.UpdateVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error)
+	DeleteVirtualMachine(ctx context.Context, in *resources.DeleteVirtualMachineRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -670,6 +674,42 @@ func (c *multyResourceServiceClient) DeleteVaultSecret(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) CreateVirtualMachine(ctx context.Context, in *resources.CreateVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error) {
+	out := new(resources.VirtualMachineResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateVirtualMachine", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadVirtualMachine(ctx context.Context, in *resources.ReadVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error) {
+	out := new(resources.VirtualMachineResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadVirtualMachine", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateVirtualMachine(ctx context.Context, in *resources.UpdateVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error) {
+	out := new(resources.VirtualMachineResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateVirtualMachine", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteVirtualMachine(ctx context.Context, in *resources.DeleteVirtualMachineRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteVirtualMachine", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -738,6 +778,10 @@ type MultyResourceServiceServer interface {
 	ReadVaultSecret(context.Context, *resources.ReadVaultSecretRequest) (*resources.VaultSecretResource, error)
 	UpdateVaultSecret(context.Context, *resources.UpdateVaultSecretRequest) (*resources.VaultSecretResource, error)
 	DeleteVaultSecret(context.Context, *resources.DeleteVaultSecretRequest) (*common.Empty, error)
+	CreateVirtualMachine(context.Context, *resources.CreateVirtualMachineRequest) (*resources.VirtualMachineResource, error)
+	ReadVirtualMachine(context.Context, *resources.ReadVirtualMachineRequest) (*resources.VirtualMachineResource, error)
+	UpdateVirtualMachine(context.Context, *resources.UpdateVirtualMachineRequest) (*resources.VirtualMachineResource, error)
+	DeleteVirtualMachine(context.Context, *resources.DeleteVirtualMachineRequest) (*common.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -936,6 +980,18 @@ func (UnimplementedMultyResourceServiceServer) UpdateVaultSecret(context.Context
 }
 func (UnimplementedMultyResourceServiceServer) DeleteVaultSecret(context.Context, *resources.DeleteVaultSecretRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVaultSecret not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateVirtualMachine(context.Context, *resources.CreateVirtualMachineRequest) (*resources.VirtualMachineResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateVirtualMachine not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadVirtualMachine(context.Context, *resources.ReadVirtualMachineRequest) (*resources.VirtualMachineResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadVirtualMachine not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateVirtualMachine(context.Context, *resources.UpdateVirtualMachineRequest) (*resources.VirtualMachineResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateVirtualMachine not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteVirtualMachine(context.Context, *resources.DeleteVirtualMachineRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteVirtualMachine not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -2102,6 +2158,78 @@ func _MultyResourceService_DeleteVaultSecret_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_CreateVirtualMachine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.CreateVirtualMachineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateVirtualMachine(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateVirtualMachine",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateVirtualMachine(ctx, req.(*resources.CreateVirtualMachineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadVirtualMachine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.ReadVirtualMachineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadVirtualMachine(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadVirtualMachine",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadVirtualMachine(ctx, req.(*resources.ReadVirtualMachineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateVirtualMachine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.UpdateVirtualMachineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateVirtualMachine(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateVirtualMachine",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateVirtualMachine(ctx, req.(*resources.UpdateVirtualMachineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteVirtualMachine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resources.DeleteVirtualMachineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteVirtualMachine(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteVirtualMachine",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteVirtualMachine(ctx, req.(*resources.DeleteVirtualMachineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2364,6 +2492,22 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteVaultSecret",
 			Handler:    _MultyResourceService_DeleteVaultSecret_Handler,
+		},
+		{
+			MethodName: "CreateVirtualMachine",
+			Handler:    _MultyResourceService_CreateVirtualMachine_Handler,
+		},
+		{
+			MethodName: "ReadVirtualMachine",
+			Handler:    _MultyResourceService_ReadVirtualMachine_Handler,
+		},
+		{
+			MethodName: "UpdateVirtualMachine",
+			Handler:    _MultyResourceService_UpdateVirtualMachine_Handler,
+		},
+		{
+			MethodName: "DeleteVirtualMachine",
+			Handler:    _MultyResourceService_DeleteVirtualMachine_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+option go_package = "github.com/multycloud/multy/api/proto/resources";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.resources";
+option java_outer_classname = "ResourcesProto";
+
+import "api/proto/common/common.proto";
+
+package dev.multy.resources;
+
+message CreateVirtualMachineRequest {
+  repeated CloudSpecificVirtualMachineArgs resources = 1;
+}
+
+message ReadVirtualMachineRequest {
+  string resource_id = 1;
+}
+
+message UpdateVirtualMachineRequest {
+  string resource_id = 1;
+  repeated CloudSpecificVirtualMachineArgs resources = 2;
+}
+
+message DeleteVirtualMachineRequest {
+  string resource_id = 1;
+}
+
+message CloudSpecificVirtualMachineArgs {
+  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+  string name = 2;
+  common.OperatingSystem.Enum operating_system = 3;
+  repeated string network_interface_ids = 4;
+  repeated string network_security_group_ids = 5;
+  common.VmSize.Enum vm_size = 6;
+  string user_data = 7;
+  string subnet_id = 8;
+  string public_ssh_key = 9;
+  string public_ip_id = 10;
+  bool generate_public_ip = 11;
+}
+
+message CloudSpecificVirtualMachineResource {
+  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+  string name = 2;
+  common.OperatingSystem.Enum operating_system = 3;
+  repeated string network_interface_ids = 4;
+  repeated string network_security_group_ids = 5;
+  common.VmSize.Enum vm_size = 6;
+  string user_data = 7;
+  string subnet_id = 8;
+  string public_ssh_key = 9;
+  string public_ip_id = 10;
+  bool generate_public_ip = 11;
+}
+
+message VirtualMachineResource {
+  common.CommonResourceParameters common_parameters = 1;
+  repeated CloudSpecificVirtualMachineResource resources = 2;
+}

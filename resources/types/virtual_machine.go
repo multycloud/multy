@@ -37,6 +37,7 @@ type VirtualMachine struct {
 	UserData                string                  `hcl:"user_data,optional"`
 	SubnetId                *Subnet                 `mhcl:"ref=subnet_id"`
 	SshKeyFileName          string                  `hcl:"ssh_key_file_path,optional"`
+	SshKey                  string                  `hcl:"ssh_key,optional"`
 	PublicIpId              *PublicIp               `mhcl:"ref=public_ip_id,optional"`
 	// PublicIp auto-generate public IP
 	PublicIp bool `hcl:"public_ip,optional"`
@@ -57,6 +58,10 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 
 	var subnetId = resources.GetMainOutputId(vm.SubnetId, cloud)
 
+	sshKeyData := vm.SshKey
+	if vm.SshKey == "" {
+		sshKeyData = fmt.Sprintf("file(\"%s\")", vm.SshKeyFileName)
+	}
 	if cloud == common.AWS {
 		var awsResources []output.TfBlock
 		var ec2NicIds []virtual_machine.AwsEc2NetworkInterface
@@ -144,7 +149,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			keyPair := virtual_machine.AwsKeyPair{
 				AwsResource: common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
 				KeyName:     fmt.Sprintf("%s_multy", vm.ResourceId),
-				PublicKey:   fmt.Sprintf("file(\"%s\")", vm.SshKeyFileName),
+				PublicKey:   sshKeyData,
 			}
 			ec2.KeyName = vm.GetAssociatedKeyPairName(cloud)
 			awsResources = append(awsResources, keyPair)
@@ -224,7 +229,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		if vm.SshKeyFileName != "" {
 			azureSshKey = virtual_machine.AzureAdminSshKey{
 				Username:  "adminuser",
-				PublicKey: fmt.Sprintf("file(\"%s\")", vm.SshKeyFileName),
+				PublicKey: sshKeyData,
 			}
 			disablePassAuth = true
 		} else {

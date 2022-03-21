@@ -19,6 +19,13 @@ enum CloudProvider {
   AZURE = 2;
 }
 
+message OperatingSystem {
+  enum Enum {
+    UNKNOWN_OS = 0;
+    LINUX = 1;
+  }
+}
+
 message DatabaseSize {
   enum Enum {
     UNKNOWN_VM_SIZE = 0;
