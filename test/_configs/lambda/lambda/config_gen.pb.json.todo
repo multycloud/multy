@@ -1,0 +1,38 @@
+{
+  "resources": [
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificLambdaArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "function_name": "super_long_function",
+            "runtime": "python3.9",
+            "source_code_dir": "source_dir/aws"
+          }
+        ]
+      },
+      "resource_id": "super_long_function"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificLambdaArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "function_name": "super_long_function",
+            "runtime": "python3.9",
+            "source_code_dir": "source_dir/azure"
+          }
+        ]
+      },
+      "resource_id": "super_long_function"
+    }
+  ]
+}

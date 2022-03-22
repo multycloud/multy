@@ -1,0 +1,152 @@
+{
+  "resources": [
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
+            "cidr_block": "10.0.0.0/16",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "example_vn"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
+            "cidr_block": "10.0.0.0/16",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "example_vn"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 2,
+            "cidr_block": "10.0.2.0/24",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "subnet2",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 0,
+            "cidr_block": "10.0.1.0/24",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "subnet1",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet1"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 0,
+            "cidr_block": "10.0.1.0/24",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "subnet1",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet1"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 2,
+            "cidr_block": "10.0.2.0/24",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "subnet2",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "test-rt",
+            "routes": [
+              {
+                "cidr_block": "0.0.0.0/0",
+                "destination": "INTERNET"
+              }
+            ],
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "rt"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "test-rt",
+            "routes": [
+              {
+                "cidr_block": "0.0.0.0/0",
+                "destination": "INTERNET"
+              }
+            ],
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "rt"
+    }
+  ]
+}

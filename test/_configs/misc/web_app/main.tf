@@ -169,7 +169,7 @@ resource "aws_key_pair" "vm_aws" {
   ]
   tags       = { "Name" = "test-vm" }
   key_name   = "vm_multy"
-  public_key = file("./ssh_key.pub")
+  public_key = "${file("./ssh_key.pub")}"
 }
 resource "aws_instance" "vm_aws" {
   depends_on = [
@@ -425,7 +425,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   admin_username = "adminuser"
   admin_ssh_key {
     username   = "adminuser"
-    public_key = file("./ssh_key.pub")
+    public_key = "${file("./ssh_key.pub")}"
   }
   source_image_reference {
     publisher = "OpenLogic"

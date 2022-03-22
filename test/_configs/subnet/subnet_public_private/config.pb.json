@@ -1,0 +1,408 @@
+{
+  "resources": [
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
+            "cidr_block": "10.0.0.0/16",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "example_vn"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
+            "cidr_block": "10.0.0.0/16",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "example_vn"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 2,
+            "cidr_block": "10.0.2.0/24",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "private-subnet2",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 2,
+            "cidr_block": "10.0.2.0/24",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "private-subnet2",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 1,
+            "cidr_block": "10.0.1.0/24",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "private-subnet1",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet1"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 1,
+            "cidr_block": "10.0.1.0/24",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "private-subnet1",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet1"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 0,
+            "cidr_block": "10.0.3.0/24",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "public-subnet3",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet3"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 0,
+            "cidr_block": "10.0.3.0/24",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "public-subnet3",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet3"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "test-rt",
+            "routes": [
+              {
+                "cidr_block": "0.0.0.0/0",
+                "destination": "INTERNET"
+              }
+            ],
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "rt"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "test-rt",
+            "routes": [
+              {
+                "cidr_block": "0.0.0.0/0",
+                "destination": "INTERNET"
+              }
+            ],
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "rt"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificDatabaseArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "password": "multy$Admin123!",
+            "username": "multyadmin",
+            "engine": "MYSQL",
+            "engine_version": "5.7",
+            "name": "example-db",
+            "size": "NANO",
+            "storage_gb": 10,
+            "subnet_ids": [
+              "subnet1",
+              "subnet2"
+            ]
+          }
+        ]
+      },
+      "resource_id": "example_db"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "test-vm",
+            "operating_system": "LINUX",
+            "generate_public_ip": true,
+            "vm_size": "MICRO",
+            "public_ssh_key": "",
+            "subnet_id": "subnet3",
+            "user_data": "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on Azure\u003c/h1\u003e\" \u003e /var/www/html/index.html"
+          }
+        ]
+      },
+      "resource_id": "vm"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificNetworkSecurityGroupArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "test-nsg2",
+            "rules": [
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "port_range": {
+                  "from": 80,
+                  "to": 80
+                },
+                "priority": 100,
+                "protocol": "tcp"
+              },
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "priority": 120,
+                "protocol": "tcp",
+                "port_range": {
+                  "from": 22,
+                  "to": 22
+                }
+              },
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "priority": 140,
+                "protocol": "tcp",
+                "port_range": {
+                  "from": 443,
+                  "to": 443
+                }
+              }
+            ],
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "nsg2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "test-vm",
+            "operating_system": "LINUX",
+            "generate_public_ip": true,
+            "vm_size": "MICRO",
+            "public_ssh_key": "",
+            "subnet_id": "subnet3",
+            "user_data": "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on AWS\u003c/h1\u003e\" \u003e /var/www/html/index.html"
+          }
+        ]
+      },
+      "resource_id": "vm"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "route_table_id": "rt",
+            "subnet_id": "subnet3"
+          }
+        ]
+      },
+      "resource_id": "rta"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "route_table_id": "rt",
+            "subnet_id": "subnet3"
+          }
+        ]
+      },
+      "resource_id": "rta"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificDatabaseArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "password": "multy$Admin123!",
+            "username": "multyadmin",
+            "engine": "MYSQL",
+            "engine_version": "5.7",
+            "name": "example-db",
+            "size": "NANO",
+            "storage_gb": 10,
+            "subnet_ids": [
+              "subnet1",
+              "subnet2"
+            ]
+          }
+        ]
+      },
+      "resource_id": "example_db"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificNetworkSecurityGroupArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "test-nsg2",
+            "rules": [
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "port_range": {
+                  "from": 80,
+                  "to": 80
+                },
+                "priority": 100,
+                "protocol": "tcp"
+              },
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "priority": 120,
+                "protocol": "tcp",
+                "port_range": {
+                  "from": 22,
+                  "to": 22
+                }
+              },
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "priority": 140,
+                "protocol": "tcp",
+                "port_range": {
+                  "from": 443,
+                  "to": 443
+                }
+              }
+            ],
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "nsg2"
+    }
+  ]
+}

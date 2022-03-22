@@ -1,0 +1,212 @@
+{
+  "resources": [
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "UK"
+            },
+            "name": "test-vm",
+            "operating_system": "LINUX",
+            "generate_public_ip": true,
+            "vm_size": "MICRO",
+            "public_ssh_key": "",
+            "subnet_id": "subnet",
+            "user_data": ""
+          }
+        ]
+      },
+      "resource_id": "vm"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "UK"
+            },
+            "name": "dev-test-secret-multy"
+          }
+        ]
+      },
+      "resource_id": "example"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 0,
+            "cidr_block": "10.0.2.0/24",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "UK"
+            },
+            "name": "subnet",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 0,
+            "cidr_block": "10.0.2.0/24",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "UK"
+            },
+            "name": "subnet",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "UK"
+            },
+            "name": "test-vm",
+            "operating_system": "LINUX",
+            "generate_public_ip": true,
+            "vm_size": "MICRO",
+            "public_ssh_key": "",
+            "subnet_id": "subnet",
+            "user_data": ""
+          }
+        ]
+      },
+      "resource_id": "vm"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultSecretArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "UK"
+            },
+            "name": "api-key",
+            "value": "xxx",
+            "vault_id": "example"
+          }
+        ]
+      },
+      "resource_id": "api_key"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultSecretArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "UK"
+            },
+            "name": "api-key",
+            "value": "xxx",
+            "vault_id": "example"
+          }
+        ]
+      },
+      "resource_id": "api_key"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultAccessPolicyArgs",
+            "access": "owner",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "UK"
+            },
+            "identity": "${aws_iam_role.vm_aws.id}",
+            "vault_id": "example"
+          }
+        ]
+      },
+      "resource_id": "kv_ap"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultAccessPolicyArgs",
+            "access": "owner",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "UK"
+            },
+            "identity": "${azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id}",
+            "vault_id": "example"
+          }
+        ]
+      },
+      "resource_id": "kv_ap"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "UK"
+            },
+            "name": "dev-test-secret-multy"
+          }
+        ]
+      },
+      "resource_id": "example"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
+            "cidr_block": "10.0.0.0/16",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "UK"
+            },
+            "name": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "example_vn"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
+            "cidr_block": "10.0.0.0/16",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "UK"
+            },
+            "name": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "example_vn"
+    }
+  ]
+}

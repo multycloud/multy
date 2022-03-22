@@ -1,7 +1,6 @@
 config {
   clouds                      = ["aws", "azure"]
-  location                    = "us-east"
-  default_resource_group_name = "dbt-${resource_type}-rg"
+  location                    = "us_east"
 }
 multy virtual_network vn {
   name       = "db-vn"

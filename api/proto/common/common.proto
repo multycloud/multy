@@ -30,8 +30,9 @@ message OperatingSystem {
 message DatabaseSize {
   enum Enum {
     UNKNOWN_VM_SIZE = 0;
-    MICRO = 1;
-    MEDIUM = 2;
+    NANO = 1;
+    MICRO = 2;
+    MEDIUM = 3;
   }
 }
 message VmSize {

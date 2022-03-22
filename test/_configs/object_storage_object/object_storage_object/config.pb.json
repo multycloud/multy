@@ -1,0 +1,150 @@
+{
+  "resources": [
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "name": "test-storage-9999919"
+          }
+        ]
+      },
+      "resource_id": "obj_storage"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "test-storage-9999919"
+          }
+        ]
+      },
+      "resource_id": "obj_storage"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "content": "\u003ch1\u003eHi\u003c/h1\u003e",
+            "content_type": "text/html",
+            "name": "index_private.html",
+            "object_storage_id": "obj_storage"
+          }
+        ]
+      },
+      "resource_id": "file2_private"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
+            "acl": "PUBLIC_READ",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "content": "\u003ch1\u003eHi from Azure\u003c/h1\u003e",
+            "content_type": "text/html",
+            "name": "index.html",
+            "object_storage_id": "obj_storage"
+          }
+        ]
+      },
+      "resource_id": "file1_public"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "content": "\u003ch1\u003eHi\u003c/h1\u003e",
+            "content_type": "text/html",
+            "name": "index_private.html",
+            "object_storage_id": "obj_storage",
+            "source": ""
+          }
+        ]
+      },
+      "resource_id": "file2_private"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
+            "acl": "PUBLIC_READ",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "content": "",
+            "content_type": "",
+            "name": "index.html",
+            "object_storage_id": "obj_storage",
+            "source": "test.zip"
+          }
+        ]
+      },
+      "resource_id": "file3_source"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
+            "acl": "PUBLIC_READ",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "content": "",
+            "content_type": "",
+            "name": "index.html",
+            "object_storage_id": "obj_storage",
+            "source": "test.zip"
+          }
+        ]
+      },
+      "resource_id": "file3_source"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
+            "acl": "PUBLIC_READ",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "content": "\u003ch1\u003eHi from AWS\u003c/h1\u003e",
+            "content_type": "text/html",
+            "name": "index.html",
+            "object_storage_id": "obj_storage",
+            "source": ""
+          }
+        ]
+      },
+      "resource_id": "file1_public"
+    }
+  ]
+}

@@ -21,6 +21,10 @@ type ValidationError struct {
 	ResourceId   string
 }
 
+func NewResourceValidationInfoWithId(resourceId string) *ResourceValidationInfo {
+	return &ResourceValidationInfo{ResourceId: resourceId, SourceRanges: map[string]hcl.Range{}}
+}
+
 func NewResourceValidationInfoFromContent(content *hcl.BodyContent, definitionRange hcl.Range, id string) *ResourceValidationInfo {
 	result := map[string]hcl.Range{}
 	for _, attr := range content.Attributes {

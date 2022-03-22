@@ -20,7 +20,7 @@ func (s DatabaseService) Convert(resourceId string, args []*resources.CloudSpeci
 			Name:             r.Name,
 			Engine:           r.Engine,
 			EngineVersion:    r.EngineVersion,
-			StorageMb:        r.StorageMb,
+			StorageGb:        r.StorageGb,
 			Size:             r.Size,
 			Username:         r.Username,
 			Password:         r.Password,

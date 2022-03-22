@@ -1,0 +1,81 @@
+{
+  "resources": [
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificLambdaArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "function_name": "multy_function",
+            "runtime": "python3.9",
+            "source_code_dir": "source_dir/aws"
+          }
+        ]
+      },
+      "resource_id": "lambda"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificLambdaArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "IRELAND"
+            },
+            "function_name": "multy_function",
+            "runtime": "python3.9",
+            "source_code_dir": "source_dir/azure"
+          }
+        ]
+      },
+      "resource_id": "lambda"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
+            "clouds": [
+              "aws"
+            ],
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "name": "test-storage-9999919",
+            "random_suffix": false,
+            "versioning": false
+          }
+        ]
+      },
+      "resource_id": "obj_storage"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
+            "acl": "PUBLIC_READ",
+            "clouds": [
+              "aws"
+            ],
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "IRELAND"
+            },
+            "content": "${templatefile(\"index.html\",{\"aws_url\"=\"${aws_api_gateway_deployment.lambda_aws.invoke_url}\",\"azure_url\"=\"https://${azurerm_function_app.lambda_azure.default_hostname}/trigger\"})}",
+            "content_type": "text/html",
+            "name": "index.html",
+            "object_storage_id": "obj_storage",
+            "source": ""
+          }
+        ]
+      },
+      "resource_id": "file1_public"
+    }
+  ]
+}

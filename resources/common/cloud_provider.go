@@ -31,7 +31,7 @@ func AsCloudProvider(s string) (CloudProvider, bool) {
 const (
 	IRELAND = "ireland"
 	UK      = "uk"
-	USEAST  = "us-east"
+	USEAST  = "us_east"
 )
 
 var LOCATION = map[string]map[CloudProvider]string{
@@ -100,6 +100,9 @@ func GetResourceTypeAbbreviation(t string) string {
 }
 
 func GetAvailabilityZone(location string, az int, cloud CloudProvider) string {
+	if AVAILABILITY_ZONES[location] == nil {
+		validate.LogInternalError("invalid location: %s", location)
+	}
 	azArray := AVAILABILITY_ZONES[location][cloud]
 	if az == 0 {
 		return ""

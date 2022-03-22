@@ -1,5 +1,5 @@
 config {
-  location = "us-east"
+  location = "us_east"
   clouds   = ["aws", "azure"]
 }
 multy "virtual_network" "example_vn" {

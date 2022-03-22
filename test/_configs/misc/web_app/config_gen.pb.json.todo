@@ -1,0 +1,620 @@
+{
+  "resources": [
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 2,
+            "cidr_block": "10.0.2.0/24",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "name": "subnet2",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 0,
+            "cidr_block": "10.0.3.0/24",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "name": "subnet3",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet3"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 1,
+            "cidr_block": "10.0.1.0/24",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "name": "subnet1",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet1"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "name": "test-rt",
+            "routes": [
+              {
+                "cidr_block": "0.0.0.0/0",
+                "destination": "INTERNET"
+              }
+            ],
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "rt"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "route_table_id": "rt",
+            "subnet_id": "subnet2"
+          }
+        ]
+      },
+      "resource_id": "rta2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "name": "web-app-vault-test"
+          }
+        ]
+      },
+      "resource_id": "web_app_vault"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultSecretArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "name": "db-host",
+            "value": "${azurerm_MYSQL_server.example_db_azure.fqdn}",
+            "vault_id": "web_app_vault"
+          }
+        ]
+      },
+      "resource_id": "db_host"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultSecretArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "name": "db-username",
+            "value": "multyadmin@example-db",
+            "vault_id": "web_app_vault"
+          }
+        ]
+      },
+      "resource_id": "username"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultSecretArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "name": "db-username",
+            "value": "multyadmin@example-db",
+            "vault_id": "web_app_vault"
+          }
+        ]
+      },
+      "resource_id": "username"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificNetworkSecurityGroupArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "name": "test-nsg2",
+            "rules": [
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "from_port": "80",
+                "priority": 100,
+                "protocol": "tcp",
+                "to_port": "80"
+              },
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "port_range": {
+                  "from": 22,
+                  "to": 22
+                },
+                "priority": 120,
+                "protocol": "tcp"
+              },
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "port_range": {
+                  "from": 443,
+                  "to": 443
+                },
+                "priority": 140,
+                "protocol": "tcp"
+              }
+            ],
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "nsg2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultAccessPolicyArgs",
+            "access": "owner",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "identity": "${aws_iam_role.vm_aws.id}",
+            "vault_id": "web_app_vault"
+          }
+        ]
+      },
+      "resource_id": "kv_ap"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultSecretArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "name": "db-host",
+            "value": "${azurerm_MYSQL_server.example_db_azure.fqdn}",
+            "vault_id": "web_app_vault"
+          }
+        ]
+      },
+      "resource_id": "db_host"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultAccessPolicyArgs",
+            "access": "owner",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "identity": "${azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id}",
+            "vault_id": "web_app_vault"
+          }
+        ]
+      },
+      "resource_id": "kv_ap"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificDatabaseArgs",
+            "clouds": [
+              "azure"
+            ],
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "password": "multy-Admin123!",
+            "username": "multyadmin",
+            "engine": "MYSQL",
+            "engine_version": "5.7",
+            "name": "example-db",
+            "size": "NANO",
+            "storage_gb": 10,
+            "subnet_ids": [
+              "subnet1",
+              "subnet2"
+            ]
+          }
+        ]
+      },
+      "resource_id": "example_db"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificNetworkSecurityGroupArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "name": "test-nsg2",
+            "rules": [
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "from_port": "80",
+                "priority": 100,
+                "protocol": "tcp",
+                "to_port": "80"
+              },
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "port_range": {
+                  "from": 22,
+                  "to": 22
+                },
+                "priority": 120,
+                "protocol": "tcp"
+              },
+              {
+                "cidr_block": "0.0.0.0/0",
+                "direction": "BOTH_DIRECTIONS",
+                "port_range": {
+                  "from": 443,
+                  "to": 443
+                },
+                "priority": 140,
+                "protocol": "tcp"
+              }
+            ],
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "nsg2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "name": "web-app-vault-test"
+          }
+        ]
+      },
+      "resource_id": "web_app_vault"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 0,
+            "cidr_block": "10.0.3.0/24",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "name": "subnet3",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet3"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "route_table_id": "rt",
+            "subnet_id": "subnet3"
+          }
+        ]
+      },
+      "resource_id": "rta"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "route_table_id": "rt",
+            "subnet_id": "subnet2"
+          }
+        ]
+      },
+      "resource_id": "rta2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "route_table_id": "rt",
+            "subnet_id": "subnet1"
+          }
+        ]
+      },
+      "resource_id": "rta3"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "route_table_id": "rt",
+            "subnet_id": "subnet1"
+          }
+        ]
+      },
+      "resource_id": "rta3"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultSecretArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "name": "db-password",
+            "value": "multy-Admin123!",
+            "vault_id": "web_app_vault"
+          }
+        ]
+      },
+      "resource_id": "password"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultSecretArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "name": "db-password",
+            "value": "multy-Admin123!",
+            "vault_id": "web_app_vault"
+          }
+        ]
+      },
+      "resource_id": "password"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 1,
+            "cidr_block": "10.0.1.0/24",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "name": "subnet1",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet1"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "depends_on": [
+              "example_db"
+            ],
+            "name": "test-vm",
+            "operating_system": "LINUX",
+            "generate_public_ip": true,
+            "vm_size": "MICRO",
+            "public_ssh_key": "",
+            "ssh_key_file_name": "./ssh_key.pub",
+            "subnet_id": "subnet3",
+            "user_data": "${templatefile(\"azure_init.sh\",{\"db_host_secret_name\"=\"db-host\",\"password_secret_name\"=\"db-password\",\"username_secret_name\"=\"db-username\",\"vault_name\"=\"web-app-vault-test\"})}"
+          }
+        ]
+      },
+      "resource_id": "vm"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
+            "cidr_block": "10.0.0.0/16",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "name": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "example_vn"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
+            "availability_zone": 2,
+            "cidr_block": "10.0.2.0/24",
+            "common_parameters": {
+              "cloud_provider": "AZURE",
+              "location": "US_EAST"
+            },
+            "name": "subnet2",
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "subnet2"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "name": "test-rt",
+            "routes": [
+              {
+                "cidr_block": "0.0.0.0/0",
+                "destination": "INTERNET"
+              }
+            ],
+            "virtual_network_id": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "rt"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "route_table_id": "rt",
+            "subnet_id": "subnet3"
+          }
+        ]
+      },
+      "resource_id": "rta"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "depends_on": [
+              "example_db"
+            ],
+            "name": "test-vm",
+            "operating_system": "LINUX",
+            "generate_public_ip": true,
+            "vm_size": "MICRO",
+            "public_ssh_key": "",
+            "ssh_key_file_name": "./ssh_key.pub",
+            "subnet_id": "subnet3",
+            "user_data": "${templatefile(\"init.sh\",{\"db_host\"=\"${azurerm_MYSQL_server.example_db_azure.fqdn}\",\"password\"=\"multy-Admin123!\",\"username\"=\"multyadmin@example-db\"})}"
+          }
+        ]
+      },
+      "resource_id": "vm"
+    },
+    {
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
+            "cidr_block": "10.0.0.0/16",
+            "common_parameters": {
+              "cloud_provider": "AWS",
+              "location": "US_EAST"
+            },
+            "name": "example_vn"
+          }
+        ]
+      },
+      "resource_id": "example_vn"
+    }
+  ]
+}
