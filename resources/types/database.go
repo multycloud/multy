@@ -110,13 +110,13 @@ func (db *Database) GetOutputValues(cloud common.CloudProvider) map[string]cty.V
 			"password": cty.StringVal(db.DbPassword),
 			"host": cty.StringVal(
 				fmt.Sprintf(
-					"${%s.%s.address}", common.GetResourceName(database.AwsDbInstance{}),
+					"${%s.%s.address}", output.GetResourceName(database.AwsDbInstance{}),
 					db.GetTfResourceId(cloud),
 				),
 			),
 			"username": cty.StringVal(
 				fmt.Sprintf(
-					"${%s.%s.username}", common.GetResourceName(database.AwsDbInstance{}),
+					"${%s.%s.username}", output.GetResourceName(database.AwsDbInstance{}),
 					db.GetTfResourceId(cloud),
 				),
 			),
@@ -126,7 +126,7 @@ func (db *Database) GetOutputValues(cloud common.CloudProvider) map[string]cty.V
 			"password": cty.StringVal(db.DbPassword),
 			"host": cty.StringVal(
 				fmt.Sprintf(
-					"${%s.%s.fqdn}", common.GetResourceName(database.AzureMySqlServer{}),
+					"${%s.%s.fqdn}", output.GetResourceName(database.AzureMySqlServer{}),
 					db.GetTfResourceId(cloud),
 				),
 			),

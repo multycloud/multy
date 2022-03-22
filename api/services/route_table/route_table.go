@@ -6,13 +6,14 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources/output"
 )
 
 type RouteTableService struct {
 	Service services.Service[*resources.CloudSpecificRouteTableArgs, *resources.RouteTableResource]
 }
 
-func (s RouteTableService) Convert(resourceId string, args []*resources.CloudSpecificRouteTableArgs) *resources.RouteTableResource {
+func (s RouteTableService) Convert(resourceId string, args []*resources.CloudSpecificRouteTableArgs, state *output.TfState) (*resources.RouteTableResource, error) {
 	var result []*resources.CloudSpecificRouteTableResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificRouteTableResource{
@@ -26,7 +27,7 @@ func (s RouteTableService) Convert(resourceId string, args []*resources.CloudSpe
 	return &resources.RouteTableResource{
 		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
 		Resources:        result,
-	}
+	}, nil
 }
 
 func (s RouteTableService) NewArg() *resources.CloudSpecificRouteTableArgs {

@@ -6,13 +6,14 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources/output"
 )
 
 type NetworkInterfaceService struct {
 	Service services.Service[*resources.CloudSpecificNetworkInterfaceArgs, *resources.NetworkInterfaceResource]
 }
 
-func (s NetworkInterfaceService) Convert(resourceId string, args []*resources.CloudSpecificNetworkInterfaceArgs) *resources.NetworkInterfaceResource {
+func (s NetworkInterfaceService) Convert(resourceId string, args []*resources.CloudSpecificNetworkInterfaceArgs, state *output.TfState) (*resources.NetworkInterfaceResource, error) {
 	var result []*resources.CloudSpecificNetworkInterfaceResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificNetworkInterfaceResource{
@@ -25,7 +26,7 @@ func (s NetworkInterfaceService) Convert(resourceId string, args []*resources.Cl
 	return &resources.NetworkInterfaceResource{
 		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
 		Resources:        result,
-	}
+	}, nil
 }
 
 func (s NetworkInterfaceService) NewArg() *resources.CloudSpecificNetworkInterfaceArgs {

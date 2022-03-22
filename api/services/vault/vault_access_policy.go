@@ -6,13 +6,14 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources/output"
 )
 
 type VaultAccessPolicyService struct {
 	Service services.Service[*resources.CloudSpecificVaultAccessPolicyArgs, *resources.VaultAccessPolicyResource]
 }
 
-func (s VaultAccessPolicyService) Convert(resourceId string, args []*resources.CloudSpecificVaultAccessPolicyArgs) *resources.VaultAccessPolicyResource {
+func (s VaultAccessPolicyService) Convert(resourceId string, args []*resources.CloudSpecificVaultAccessPolicyArgs, state *output.TfState) (*resources.VaultAccessPolicyResource, error) {
 	var result []*resources.CloudSpecificVaultAccessPolicyResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificVaultAccessPolicyResource{
@@ -26,7 +27,7 @@ func (s VaultAccessPolicyService) Convert(resourceId string, args []*resources.C
 	return &resources.VaultAccessPolicyResource{
 		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
 		Resources:        result,
-	}
+	}, nil
 }
 
 func (s VaultAccessPolicyService) NewArg() *resources.CloudSpecificVaultAccessPolicyArgs {

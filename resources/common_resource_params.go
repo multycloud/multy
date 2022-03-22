@@ -26,7 +26,7 @@ func (c *CommonResourceParams) GetOutputValues(cloud common.CloudProvider) map[s
 }
 
 func (c *CommonResourceParams) GetTfResourceId(cloud common.CloudProvider) string {
-	return getTfResourceId(c.ResourceId, cloud)
+	return util.GetTfResourceId(c.ResourceId, string(cloud))
 }
 
 func (c *CommonResourceParams) GetLocation(cloud common.CloudProvider, ctx MultyContext) string {

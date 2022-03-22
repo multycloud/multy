@@ -1,8 +1,10 @@
 package util
 
 import (
+	"fmt"
 	"golang.org/x/exp/constraints"
 	"sort"
+	"strings"
 )
 
 func SortResourcesById[T any](r []T, idGetter func(T) string) []T {
@@ -89,4 +91,8 @@ func GetOrDefault[V any](v *V, defaultValue V) V {
 	}
 
 	return *v
+}
+
+func GetTfResourceId(resourceId string, cloud string) string {
+	return fmt.Sprintf("%s_%s", resourceId, strings.ToLower(cloud))
 }

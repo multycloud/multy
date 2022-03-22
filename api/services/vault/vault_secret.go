@@ -6,13 +6,14 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources/output"
 )
 
 type VaultSecretService struct {
 	Service services.Service[*resources.CloudSpecificVaultSecretArgs, *resources.VaultSecretResource]
 }
 
-func (s VaultSecretService) Convert(resourceId string, args []*resources.CloudSpecificVaultSecretArgs) *resources.VaultSecretResource {
+func (s VaultSecretService) Convert(resourceId string, args []*resources.CloudSpecificVaultSecretArgs, state *output.TfState) (*resources.VaultSecretResource, error) {
 	var result []*resources.CloudSpecificVaultSecretResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificVaultSecretResource{
@@ -26,7 +27,7 @@ func (s VaultSecretService) Convert(resourceId string, args []*resources.CloudSp
 	return &resources.VaultSecretResource{
 		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
 		Resources:        result,
-	}
+	}, nil
 }
 
 func (s VaultSecretService) NewArg() *resources.CloudSpecificVaultSecretArgs {

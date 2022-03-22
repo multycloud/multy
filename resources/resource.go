@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -50,15 +51,10 @@ type Resource interface {
 	GetDependencies(ctx MultyContext) []CloudSpecificResource
 }
 
-func getTfResourceId(resourceId string, cloud common.CloudProvider) string {
-	return fmt.Sprintf("%s_%s", resourceId, cloud)
-
-}
-
 func (c *CloudSpecificResource) GetMainOutputId() string {
 	return GetMainOutputId(c.Resource, c.Cloud)
 }
 
 func GetMainOutputId(r Resource, cloud common.CloudProvider) string {
-	return fmt.Sprintf("${%s.%s.id}", r.GetMainResourceName(cloud), getTfResourceId(r.GetResourceId(), cloud))
+	return fmt.Sprintf("${%s.%s.id}", r.GetMainResourceName(cloud), util.GetTfResourceId(r.GetResourceId(), string(cloud)))
 }

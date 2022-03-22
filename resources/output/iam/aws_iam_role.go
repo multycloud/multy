@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 )
@@ -87,9 +88,9 @@ func NewRoleResourcePolicy(resource ...string) string {
 }
 
 func (r *AwsIamRole) GetId() string {
-	return fmt.Sprintf("${%s.%s.id}", common.GetResourceName(AwsIamRole{}), r.ResourceId)
+	return fmt.Sprintf("${%s.%s.id}", output.GetResourceName(AwsIamRole{}), r.ResourceId)
 }
 
 func (r *AwsIamInstanceProfile) GetId() string {
-	return fmt.Sprintf("%s.%s.id", common.GetResourceName(AwsIamInstanceProfile{}), r.ResourceId)
+	return fmt.Sprintf("%s.%s.id", output.GetResourceName(AwsIamInstanceProfile{}), r.ResourceId)
 }

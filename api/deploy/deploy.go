@@ -1,6 +1,8 @@
 package deploy
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/multycloud/multy/api/converter"
@@ -11,6 +13,7 @@ import (
 	"github.com/multycloud/multy/encoder"
 	common_resources "github.com/multycloud/multy/resources"
 	cloud_providers "github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
 	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/function"
@@ -141,11 +144,11 @@ func Translate(c *config.Config) (string, error) {
 	return hclOutput, nil
 }
 
-func Deploy(c *config.Config, resourceId string) error {
+func Deploy(c *config.Config, resourceId string) (*output.TfState, error) {
 
 	hclOutput, err := Translate(c)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	fmt.Println(hclOutput)
@@ -153,7 +156,7 @@ func Deploy(c *config.Config, resourceId string) error {
 	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
 	err = os.WriteFile(filepath.Join(tmpDir, tfFile), []byte(hclOutput), os.ModePerm&0664)
 	if err != nil {
-		return fmt.Errorf("error creating output file: %s", err.Error())
+		return nil, fmt.Errorf("error creating output file: %s", err.Error())
 	}
 
 	fmt.Println("running tf init")
@@ -163,7 +166,7 @@ func Deploy(c *config.Config, resourceId string) error {
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	fmt.Println("Running tf apply")
@@ -175,7 +178,12 @@ func Deploy(c *config.Config, resourceId string) error {
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	state, err := GetState(c.UserId)
+	if err != nil {
+		return state, err
 	}
 
 	// TODO: store this in S3
@@ -184,7 +192,26 @@ func Deploy(c *config.Config, resourceId string) error {
 	//	fmt.Println(string(stateBytes))
 	//}
 
-	return nil
+	return state, nil
+}
+
+func GetState(userId string) (*output.TfState, error) {
+	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
+	state := output.TfState{}
+	stateJson := new(bytes.Buffer)
+	cmd := exec.Command("terraform", "-chdir="+tmpDir, "show", "-json")
+	cmd.Stdout = stateJson
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		return &state, nil
+	}
+
+	err = json.Unmarshal(stateJson.Bytes(), &state)
+	if err != nil {
+		return nil, err
+	}
+	return &state, err
 }
 
 type hasCommonArgs interface {
