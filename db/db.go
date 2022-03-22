@@ -18,8 +18,9 @@ type Database struct {
 }
 
 const (
-	configFile = "config.pb.json"
-	tfState    = "terraform.tfstate"
+	configFile     = "config.pb.json"
+	tfState        = "terraform.tfstate"
+	multyLocalUser = "multy_local"
 )
 
 func (d *Database) StoreUserConfig(config *config.Config) error {
@@ -29,20 +30,23 @@ func (d *Database) StoreUserConfig(config *config.Config) error {
 		return err
 	}
 
-	err = d.client.SaveFile(config.UserId, configFile, str)
-	if err != nil {
-		return err
-	}
+	if config.UserId != multyLocalUser {
+		err = d.client.SaveFile(config.UserId, configFile, str)
+		if err != nil {
+			return err
+		}
+		tmpDir := filepath.Join(os.TempDir(), "multy", config.UserId)
+		data, err := os.ReadFile(filepath.Join(tmpDir, tfState))
+		if err != nil {
+			return err
+		}
 
-	tmpDir := filepath.Join(os.TempDir(), "multy", config.UserId)
-	data, err := os.ReadFile(filepath.Join(tmpDir, tfState))
-	if err != nil {
-		return err
-	}
-
-	err = d.client.SaveFile(config.UserId, tfState, string(data))
-	if err != nil {
-		return err
+		err = d.client.SaveFile(config.UserId, tfState, string(data))
+		if err != nil {
+			return err
+		}
+	} else {
+		d.keyValueStore[config.UserId] = str
 	}
 
 	return nil
@@ -61,24 +65,30 @@ func (d *Database) LoadUserConfig(userId string) (*config.Config, error) {
 		return nil, fmt.Errorf("error creating output file: %s", err.Error())
 	}
 
-	tfFileStr, er := d.client.ReadFile(userId, configFile)
-	if er != nil {
-		return nil, *er
+	tfFileStr := ""
+	if userId != multyLocalUser {
+		var errPtr *error
+		tfFileStr, errPtr = d.client.ReadFile(userId, configFile)
+		if errPtr != nil {
+			return nil, *errPtr
+		}
+		tfStateStr, er := d.client.ReadFile(userId, tfState)
+		if er != nil {
+			return nil, err
+		}
+		err = os.WriteFile(filepath.Join(tmpDir, tfState), []byte(tfStateStr), os.ModePerm&0664)
+		if er != nil {
+			return nil, err
+		}
+	} else {
+		tfFileStr = d.keyValueStore[userId]
 	}
+
 	if tfFileStr != "" {
 		er := jsonpb.UnmarshalString(tfFileStr, &result)
 		if er != nil {
 			return nil, er
 		}
-	}
-
-	tfStateStr, er := d.client.ReadFile(userId, tfState)
-	if er != nil {
-		return nil, err
-	}
-	err = os.WriteFile(filepath.Join(tmpDir, tfState), []byte(tfStateStr), os.ModePerm&0664)
-	if er != nil {
-		return nil, err
 	}
 	return &result, nil
 }
