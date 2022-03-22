@@ -11,6 +11,7 @@ enum Location {
   UNKNOWN_LOCATION = 0;
   US_EAST = 1;
   IRELAND = 2;
+  UK = 3;
 }
 
 enum CloudProvider {

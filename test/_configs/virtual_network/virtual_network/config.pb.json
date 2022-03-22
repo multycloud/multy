@@ -1,0 +1,36 @@
+{
+  "resources": [
+    {
+      "resource_id": "example_vn",
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
+            "common_parameters": {
+              "location": "UK",
+              "cloud_provider": "AWS"
+            },
+            "name": "example_vn",
+            "cidr_block": "10.0.0.0/16"
+          }
+        ]
+      }
+    },
+    {
+      "resource_id": "example_vn",
+      "resource_args": {
+        "resource_args": [
+          {
+            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
+            "common_parameters": {
+              "location": "UK",
+              "cloud_provider": "AZURE"
+            },
+            "name": "example_vn",
+            "cidr_block": "10.0.0.0/16"
+          }
+        ]
+      }
+    }
+  ]
+}

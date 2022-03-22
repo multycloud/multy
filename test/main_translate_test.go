@@ -120,8 +120,12 @@ func test(testFiles TestFiles, t *testing.T) {
 	r := decoder.Decode(parsedConfig)
 	hclOutput := encoder.Encode(r)
 
+	assertEqualHcl(t, []byte(hclOutput), testFiles.OutputFile)
+}
+
+func assertEqualHcl(t *testing.T, hclOutput []byte, expectedFilePath string) {
 	var lines []string
-	for i, line := range strings.Split(hclOutput, "\n") {
+	for i, line := range strings.Split(string(hclOutput), "\n") {
 		lines = append(lines, fmt.Sprintf("%d:%s", i+1, line))
 	}
 	t.Logf("output:\n%s", strings.Join(lines, "\n"))
@@ -136,12 +140,12 @@ func test(testFiles TestFiles, t *testing.T) {
 		t.Fatal(diags)
 	}
 
-	expectedOutput, err := ioutil.ReadFile(testFiles.OutputFile)
+	expectedOutput, err := ioutil.ReadFile(expectedFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	f, diags = hclP.ParseHCLFile(testFiles.OutputFile)
+	f, diags = hclP.ParseHCLFile(expectedFilePath)
 	if diags != nil {
 		t.Fatal(diags)
 	}

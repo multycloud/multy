@@ -18,8 +18,8 @@ type Database struct {
 }
 
 const (
-	tfFile  = "main.tf"
-	tfState = "terraform.tfstate"
+	configFile = "config.pb.json"
+	tfState    = "terraform.tfstate"
 )
 
 func (d *Database) StoreUserConfig(config *config.Config) error {
@@ -29,7 +29,7 @@ func (d *Database) StoreUserConfig(config *config.Config) error {
 		return err
 	}
 
-	err = d.client.SaveFile(config.UserId, tfFile, str)
+	err = d.client.SaveFile(config.UserId, configFile, str)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (d *Database) LoadUserConfig(userId string) (*config.Config, error) {
 		return nil, fmt.Errorf("error creating output file: %s", err.Error())
 	}
 
-	tfFileStr, er := d.client.ReadFile(userId, tfFile)
+	tfFileStr, er := d.client.ReadFile(userId, configFile)
 	if er != nil {
 		return nil, *er
 	}

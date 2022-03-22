@@ -46,7 +46,7 @@ func (d ResourceDecoder) Decode(resource parser.MultyResource, ctx CloudSpecific
 	var result []resources.CloudSpecificResource
 	for _, cloud := range clouds {
 		cloudCtx := ctx.GetContext(cloud)
-		rgId, shouldCreateRg := getRgId(d.globalConfig.DefaultRgName, attrs, cloudCtx, resource)
+		rgId, shouldCreateRg := GetRgId(d.globalConfig.DefaultRgName, attrs, cloudCtx, resource.Type)
 		r, diags := decode(resource, cloudCtx, rgId, mhclProcessor, cloud)
 		if diags != nil {
 			validate.LogFatalWithDiags(diags, "Unable to decode resource %s.", resource.ID)
@@ -128,9 +128,9 @@ func decodeBody(t any, body hcl.Body, ctx *hcl.EvalContext, definitionRange hcl.
 	return validate.NewResourceValidationInfoFromContent(content, definitionRange, resourceId), diags
 }
 
-func getRgId(defaultRgId hcl.Expression, attrs hcl.Attributes, ctx *hcl.EvalContext, resource parser.MultyResource) (string, bool) {
+func GetRgId(defaultRgId hcl.Expression, attrs hcl.Attributes, ctx *hcl.EvalContext, resourceType string) (string, bool) {
 	// TODO: refactor so that we don't do explicit checks here
-	if resource.Type == "resource_group" || resource.Type == "route_table_association" {
+	if resourceType == "resource_group" || resourceType == "route_table_association" {
 		return "", false
 	}
 	shouldCreateRg := true
@@ -157,13 +157,13 @@ func getRgId(defaultRgId hcl.Expression, attrs hcl.Attributes, ctx *hcl.EvalCont
 		Variables: ctx.Variables,
 		Functions: ctx.Functions,
 	}
-	childCtx.Variables["resource_type"] = cty.StringVal(common.GetResourceTypeAbbreviation(resource.Type))
+	childCtx.Variables["resource_type"] = cty.StringVal(common.GetResourceTypeAbbreviation(resourceType))
 	childCtx.Variables["rg_vars"] = rgVars
 	diags = gohcl.DecodeExpression(rgIdExpr, ctx, &rgId)
 	if diags != nil {
 		validate.LogFatalWithDiags(
-			diags, "Unable to resolve resource group name for resource %s. "+
-				"Are you missing a rg_var?", resource.ID,
+			diags, "Unable to resolve resource group name for resource. "+
+				"Are you missing a rg_var?",
 		)
 	}
 	return rgId, shouldCreateRg

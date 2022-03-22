@@ -21,9 +21,100 @@ type ResourceConverters[Arg proto.Message, OutT proto.Message] interface {
 type MultyResourceConverter interface {
 	ConvertToMultyResource(resourceId string, arg proto.Message, resources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error)
 	NewArg() proto.Message
+	GetResourceType() string
 }
 
 type VnConverter struct {
+}
+
+type SubnetConverter struct {
+}
+
+type NetworkInterfaceConverter struct {
+}
+
+type RouteTableConverter struct {
+}
+
+type NetworkSecurityGroupConverter struct {
+}
+type RouteTableAssociationConverter struct {
+}
+type DatabaseConverter struct {
+}
+type ObjectStorageConverter struct {
+}
+type ObjectStorageObjectConverter struct {
+}
+type PublicIpConverter struct {
+}
+type KubernetesClusterConverter struct {
+}
+type KubernetesNodePoolConverter struct {
+}
+type LambdaConverter struct {
+}
+type VaultConverter struct {
+}
+type VaultAccessPolicyConverter struct {
+}
+type VaultSecretConverter struct {
+}
+type VirtualMachineConverter struct {
+}
+
+func (v VnConverter) GetResourceType() string {
+	return "virtual_network"
+}
+
+func (v SubnetConverter) GetResourceType() string {
+	return "subnet"
+}
+
+func (v NetworkInterfaceConverter) GetResourceType() string {
+	return "network_interface"
+}
+func (v RouteTableConverter) GetResourceType() string {
+	return "route_table"
+}
+func (v NetworkSecurityGroupConverter) GetResourceType() string {
+	return "network_security_group"
+}
+func (v RouteTableAssociationConverter) GetResourceType() string {
+	return "route_table_association"
+}
+func (v DatabaseConverter) GetResourceType() string {
+	return "database"
+}
+func (v ObjectStorageConverter) GetResourceType() string {
+	return "object_storage"
+}
+func (v ObjectStorageObjectConverter) GetResourceType() string {
+	return "object_storage_object"
+}
+func (v PublicIpConverter) GetResourceType() string {
+	return "public_ip"
+}
+func (v KubernetesClusterConverter) GetResourceType() string {
+	return "kubernetes_service"
+}
+func (v KubernetesNodePoolConverter) GetResourceType() string {
+	return "kubernetes_node_pool"
+}
+func (v LambdaConverter) GetResourceType() string {
+	return "lambda"
+}
+func (v VaultConverter) GetResourceType() string {
+	return "vault"
+}
+func (v VaultAccessPolicyConverter) GetResourceType() string {
+	return "vault_access_policy"
+}
+func (v VaultSecretConverter) GetResourceType() string {
+	return "vault_secret"
+}
+func (v VirtualMachineConverter) GetResourceType() string {
+	return "virtual_machine"
 }
 
 func (v VnConverter) NewArg() proto.Message {
@@ -48,9 +139,6 @@ func (v VnConverter) ConvertToMultyResource(resourceId string, m proto.Message, 
 		Resource:          &vn,
 		ImplicitlyCreated: false,
 	}, nil
-}
-
-type SubnetConverter struct {
 }
 
 func (v SubnetConverter) NewArg() proto.Message {
@@ -86,9 +174,6 @@ func (v SubnetConverter) ConvertToMultyResource(resourceId string, m proto.Messa
 	}, nil
 }
 
-type NetworkInterfaceConverter struct {
-}
-
 func (v NetworkInterfaceConverter) NewArg() proto.Message {
 	return &resources.CloudSpecificNetworkInterfaceArgs{}
 }
@@ -118,9 +203,6 @@ func (v NetworkInterfaceConverter) ConvertToMultyResource(resourceId string, m p
 		Resource:          &ni,
 		ImplicitlyCreated: false,
 	}, nil
-}
-
-type RouteTableConverter struct {
 }
 
 func (v RouteTableConverter) NewArg() proto.Message {
@@ -162,9 +244,6 @@ func (v RouteTableConverter) ConvertToMultyResource(resourceId string, m proto.M
 	}, nil
 }
 
-type RouteTableAssociationConverter struct {
-}
-
 func (v RouteTableAssociationConverter) NewArg() proto.Message {
 	return &resources.CloudSpecificRouteTableAssociationArgs{}
 }
@@ -200,9 +279,6 @@ func (v RouteTableAssociationConverter) ConvertToMultyResource(resourceId string
 		Resource:          &rta,
 		ImplicitlyCreated: false,
 	}, nil
-}
-
-type NetworkSecurityGroupConverter struct {
 }
 
 func (v NetworkSecurityGroupConverter) NewArg() proto.Message {
@@ -267,9 +343,6 @@ func convertPort(port int32) string {
 	return strconv.Itoa(int(port))
 }
 
-type DatabaseConverter struct {
-}
-
 func (v DatabaseConverter) NewArg() proto.Message {
 	return &resources.CloudSpecificDatabaseArgs{}
 }
@@ -310,9 +383,6 @@ func (v DatabaseConverter) ConvertToMultyResource(resourceId string, m proto.Mes
 	}, nil
 }
 
-type ObjectStorageConverter struct {
-}
-
 func (v ObjectStorageConverter) NewArg() proto.Message {
 	return &resources.CloudSpecificObjectStorageArgs{}
 }
@@ -335,9 +405,6 @@ func (v ObjectStorageConverter) ConvertToMultyResource(resourceId string, m prot
 		Resource:          &db,
 		ImplicitlyCreated: false,
 	}, nil
-}
-
-type ObjectStorageObjectConverter struct {
 }
 
 func (v ObjectStorageObjectConverter) NewArg() proto.Message {
@@ -375,9 +442,6 @@ func (v ObjectStorageObjectConverter) ConvertToMultyResource(resourceId string, 
 	}, nil
 }
 
-type PublicIpConverter struct {
-}
-
 func (v PublicIpConverter) NewArg() proto.Message {
 	return &resources.CloudSpecificPublicIpArgs{}
 }
@@ -407,9 +471,6 @@ func (v PublicIpConverter) ConvertToMultyResource(resourceId string, m proto.Mes
 		Resource:          &obj,
 		ImplicitlyCreated: false,
 	}, nil
-}
-
-type KubernetesClusterConverter struct {
 }
 
 func (v KubernetesClusterConverter) NewArg() proto.Message {
@@ -444,9 +505,6 @@ func (v KubernetesClusterConverter) ConvertToMultyResource(resourceId string, m 
 		Resource:          &kc,
 		ImplicitlyCreated: false,
 	}, nil
-}
-
-type KubernetesNodePoolConverter struct {
 }
 
 func (v KubernetesNodePoolConverter) NewArg() proto.Message {
@@ -505,9 +563,6 @@ func (v KubernetesNodePoolConverter) ConvertToMultyResource(resourceId string, m
 	}, nil
 }
 
-type LambdaConverter struct {
-}
-
 func (v LambdaConverter) NewArg() proto.Message {
 	return &resources.CloudSpecificLambdaArgs{}
 }
@@ -540,9 +595,6 @@ func (v LambdaConverter) ConvertToMultyResource(resourceId string, m proto.Messa
 	}, nil
 }
 
-type VaultConverter struct {
-}
-
 func (v VaultConverter) NewArg() proto.Message {
 	return &resources.CloudSpecificVaultArgs{}
 }
@@ -565,9 +617,6 @@ func (v VaultConverter) ConvertToMultyResource(resourceId string, m proto.Messag
 		Resource:          &vault,
 		ImplicitlyCreated: false,
 	}, nil
-}
-
-type VaultAccessPolicyConverter struct {
 }
 
 func (v VaultAccessPolicyConverter) NewArg() proto.Message {
@@ -602,9 +651,6 @@ func (v VaultAccessPolicyConverter) ConvertToMultyResource(resourceId string, m 
 	}, nil
 }
 
-type VaultSecretConverter struct {
-}
-
 func (v VaultSecretConverter) NewArg() proto.Message {
 	return &resources.CloudSpecificVaultSecretArgs{}
 }
@@ -635,9 +681,6 @@ func (v VaultSecretConverter) ConvertToMultyResource(resourceId string, m proto.
 		Resource:          &vs,
 		ImplicitlyCreated: false,
 	}, nil
-}
-
-type VirtualMachineConverter struct {
 }
 
 func (v VirtualMachineConverter) NewArg() proto.Message {
