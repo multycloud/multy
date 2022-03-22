@@ -80,6 +80,7 @@ func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, 
 				if err != nil {
 					return s.Converters.Nil(), err
 				}
+				convertedArgs = append(convertedArgs, converted)
 			}
 			return s.Converters.Convert(in.GetResourceId(), convertedArgs), nil
 		}
