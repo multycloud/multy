@@ -50,12 +50,3 @@ multy route_table_association rta {
   route_table_id = rt
   subnet_id      = subnet2
 }
-
-output kubernetes_outputs {
-  value = {
-    aws_endpoint         = aws.example.endpoint,
-    azure_endpoint       = azure.example.endpoint,
-    aws_ca_certificate   = aws.example.ca_certificate,
-    azure_ca_certificate = azure.example.ca_certificate
-  }
-}

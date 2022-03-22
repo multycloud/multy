@@ -29,5 +29,5 @@ const AwsKeyPairResourceName = "aws_key_pair"
 type AwsKeyPair struct {
 	*common.AwsResource `hcl:",squash"  default:"name=aws_key_pair"`
 	KeyName             string `hcl:"key_name"`
-	PublicKey           string `hcl:"public_key,expr"`
+	PublicKey           string `hcl:"public_key"`
 }

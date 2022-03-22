@@ -2,11 +2,13 @@ package converter
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	common_resources "github.com/multycloud/multy/resources"
 	cloud_providers "github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/types"
 	"github.com/multycloud/multy/util"
+	"github.com/multycloud/multy/validate"
 	"google.golang.org/protobuf/proto"
 	"strconv"
 	"strings"
@@ -125,20 +127,25 @@ func (v VnConverter) ConvertToMultyResource(resourceId string, m proto.Message, 
 	arg := m.(*resources.CloudSpecificVirtualNetworkArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
 	vn := types.VirtualNetwork{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
-		Name:      arg.Name,
-		CidrBlock: arg.CidrBlock,
+		CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
+		Name:                 arg.Name,
+		CidrBlock:            arg.CidrBlock,
 	}
 	return common_resources.CloudSpecificResource{
 		Cloud:             c,
 		Resource:          &vn,
 		ImplicitlyCreated: false,
 	}, nil
+}
+
+func getCommonParams(resourceId string, arg *common.CloudSpecificResourceCommonArgs, c cloud_providers.CloudProvider) *common_resources.CommonResourceParams {
+	return &common_resources.CommonResourceParams{
+		ResourceId:             resourceId,
+		ResourceGroupId:        arg.ResourceGroupId,
+		Location:               strings.ToLower(arg.Location.String()),
+		Clouds:                 []string{string(c)},
+		ResourceValidationInfo: validate.NewResourceValidationInfoWithId(resourceId),
+	}
 }
 
 func (v SubnetConverter) NewArg() proto.Message {
@@ -148,13 +155,7 @@ func (v SubnetConverter) NewArg() proto.Message {
 func (v SubnetConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificSubnetArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	subnet := types.Subnet{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	subnet := types.Subnet{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name:             arg.Name,
 		CidrBlock:        arg.CidrBlock,
 		AvailabilityZone: int(arg.AvailabilityZone),
@@ -181,13 +182,7 @@ func (v NetworkInterfaceConverter) NewArg() proto.Message {
 func (v NetworkInterfaceConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificNetworkInterfaceArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	ni := types.NetworkInterface{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	ni := types.NetworkInterface{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name: arg.Name,
 	}
 
@@ -212,13 +207,7 @@ func (v RouteTableConverter) NewArg() proto.Message {
 func (v RouteTableConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificRouteTableArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	rt := types.RouteTable{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	rt := types.RouteTable{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name: arg.Name,
 		Routes: util.MapSliceValues(arg.Routes, func(route *resources.Route) types.RouteTableRoute {
 			return types.RouteTableRoute{
@@ -251,14 +240,7 @@ func (v RouteTableAssociationConverter) NewArg() proto.Message {
 func (v RouteTableAssociationConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificRouteTableAssociationArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	rta := types.RouteTableAssociation{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
-	}
+	rta := types.RouteTableAssociation{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c)}
 
 	if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SubnetId, c)]; ok {
 		// Connect to subnet in the same cloud
@@ -288,13 +270,7 @@ func (v NetworkSecurityGroupConverter) NewArg() proto.Message {
 func (v NetworkSecurityGroupConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificNetworkSecurityGroupArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	nsg := types.NetworkSecurityGroup{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	nsg := types.NetworkSecurityGroup{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name: arg.Name,
 		Rules: util.MapSliceValues(arg.Rules, func(rule *resources.NetworkSecurityRule) types.RuleType {
 			return types.RuleType{
@@ -350,18 +326,12 @@ func (v DatabaseConverter) NewArg() proto.Message {
 func (v DatabaseConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificDatabaseArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	db := types.Database{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	db := types.Database{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name:          arg.Name,
-		Engine:        arg.Engine.String(),
+		Engine:        strings.ToLower(arg.Engine.String()),
 		EngineVersion: arg.EngineVersion,
-		Storage:       int(arg.StorageMb / 1024),
-		Size:          arg.Size.String(),
+		Storage:       int(arg.StorageGb),
+		Size:          strings.ToLower(arg.Size.String()),
 		DbUsername:    arg.Username,
 		DbPassword:    arg.Password,
 	}
@@ -390,13 +360,7 @@ func (v ObjectStorageConverter) NewArg() proto.Message {
 func (v ObjectStorageConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificObjectStorageArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	db := types.ObjectStorage{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	db := types.ObjectStorage{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name: arg.Name,
 	}
 
@@ -414,17 +378,11 @@ func (v ObjectStorageObjectConverter) NewArg() proto.Message {
 func (v ObjectStorageObjectConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificObjectStorageObjectArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	obj := types.ObjectStorageObject{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	obj := types.ObjectStorageObject{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name:        arg.Name,
 		Content:     arg.Content,
 		ContentType: arg.ContentType,
-		Acl:         arg.Acl.String(),
+		Acl:         strings.ToLower(arg.Acl.String()),
 		Source:      arg.Source,
 	}
 
@@ -449,13 +407,7 @@ func (v PublicIpConverter) NewArg() proto.Message {
 func (v PublicIpConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificPublicIpArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	obj := types.PublicIp{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	obj := types.PublicIp{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name: arg.Name,
 	}
 
@@ -480,13 +432,7 @@ func (v KubernetesClusterConverter) NewArg() proto.Message {
 func (v KubernetesClusterConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificKubernetesClusterArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	kc := types.KubernetesService{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	kc := types.KubernetesService{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name: arg.Name,
 	}
 
@@ -523,20 +469,14 @@ func zeroToNil(a int32) *int {
 func (v KubernetesNodePoolConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificKubernetesNodePoolArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	knp := types.KubernetesServiceNodePool{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	knp := types.KubernetesServiceNodePool{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name:              arg.Name,
 		IsDefaultPool:     arg.IsDefaultPool,
 		StartingNodeCount: zeroToNil(arg.StartingNodeCount),
 		MaxNodeCount:      int(arg.MaxNodeCount),
 		MinNodeCount:      int(arg.MinNodeCount),
 		Labels:            arg.Labels,
-		VmSize:            arg.VmSize.String(),
+		VmSize:            strings.ToLower(arg.VmSize.String()),
 		DiskSizeGiB:       int(arg.DiskSizeGb),
 	}
 
@@ -570,13 +510,7 @@ func (v LambdaConverter) NewArg() proto.Message {
 func (v LambdaConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificLambdaArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	l := types.Lambda{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	l := types.Lambda{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		FunctionName: arg.Name,
 		Runtime:      arg.Runtime,
 	}
@@ -602,13 +536,7 @@ func (v VaultConverter) NewArg() proto.Message {
 func (v VaultConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificVaultArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	vault := types.Vault{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	vault := types.Vault{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name: arg.Name,
 	}
 
@@ -626,13 +554,7 @@ func (v VaultAccessPolicyConverter) NewArg() proto.Message {
 func (v VaultAccessPolicyConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificVaultAccessPolicyArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	vap := types.VaultAccessPolicy{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	vap := types.VaultAccessPolicy{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Identity: arg.Identity,
 		Access:   strings.ToLower(arg.Access.String()),
 	}
@@ -658,13 +580,7 @@ func (v VaultSecretConverter) NewArg() proto.Message {
 func (v VaultSecretConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificVaultSecretArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	vs := types.VaultSecret{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	vs := types.VaultSecret{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name:  arg.Name,
 		Value: arg.Value,
 	}
@@ -690,13 +606,7 @@ func (v VirtualMachineConverter) NewArg() proto.Message {
 func (v VirtualMachineConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificVirtualMachineArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
-	vm := types.VirtualMachine{
-		CommonResourceParams: &common_resources.CommonResourceParams{
-			ResourceId:      resourceId,
-			ResourceGroupId: arg.CommonParameters.ResourceGroupId,
-			Location:        strings.ToLower(arg.CommonParameters.Location.String()),
-			Clouds:          []string{string(c)},
-		},
+	vm := types.VirtualMachine{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
 		Name:            arg.Name,
 		OperatingSystem: strings.ToLower(arg.OperatingSystem.String()),
 		Size:            strings.ToLower(arg.VmSize.String()),
@@ -705,10 +615,12 @@ func (v VirtualMachineConverter) ConvertToMultyResource(resourceId string, m pro
 		PublicIp:        arg.GeneratePublicIp,
 	}
 
-	if pid, ok := otherResources[common_resources.GetResourceIdForCloud(arg.PublicIpId, c)]; ok {
-		vm.PublicIpId = pid.Resource.(*types.PublicIp)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("public ip with id %s not found in %s", arg.PublicIpId, c)
+	if arg.PublicIpId != "" {
+		if pid, ok := otherResources[common_resources.GetResourceIdForCloud(arg.PublicIpId, c)]; ok {
+			vm.PublicIpId = pid.Resource.(*types.PublicIp)
+		} else {
+			return common_resources.CloudSpecificResource{}, fmt.Errorf("public ip with id %s not found in %s", arg.PublicIpId, c)
+		}
 	}
 
 	if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SubnetId, c)]; ok {
@@ -725,7 +637,7 @@ func (v VirtualMachineConverter) ConvertToMultyResource(resourceId string, m pro
 		}
 	}
 
-	for _, nsgId := range arg.NetworkInterfaceIds {
+	for _, nsgId := range arg.NetworkSecurityGroupIds {
 		if nsg, ok := otherResources[common_resources.GetResourceIdForCloud(nsgId, c)]; ok {
 			vm.NetworkSecurityGroupIds = append(vm.NetworkSecurityGroupIds, nsg.Resource.(*types.NetworkSecurityGroup))
 		} else {

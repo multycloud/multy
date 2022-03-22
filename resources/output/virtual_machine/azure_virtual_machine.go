@@ -27,7 +27,7 @@ type AzureIdentity struct {
 
 type AzureAdminSshKey struct {
 	Username  string `hcl:"username"`
-	PublicKey string `hcl:"public_key,expr"`
+	PublicKey string `hcl:"public_key"`
 }
 
 type AzureOsDisk struct {

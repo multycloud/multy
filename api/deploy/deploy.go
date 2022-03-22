@@ -207,17 +207,19 @@ func addMultyResource(r *config.Resource, translated map[string]common_resources
 					Variables: map[string]cty.Value{},
 					Functions: map[string]function.Function{},
 				}, c.GetResourceType())
-				commonArgs.GetCommonParameters().ResourceGroupId = rgId
-				resourceGroup := common_resources.CloudSpecificResource{
-					ImplicitlyCreated: true,
-					Cloud:             cloud_providers.CloudProvider(strings.ToLower(commonArgs.GetCommonParameters().CloudProvider.String())),
-					Resource: &rg.Type{
-						ResourceId: rgId,
-						Name:       rgId,
-						Location:   strings.ToLower(commonArgs.GetCommonParameters().Location.String()),
-					},
+				if rgId != "" {
+					commonArgs.GetCommonParameters().ResourceGroupId = rgId
+					resourceGroup := common_resources.CloudSpecificResource{
+						ImplicitlyCreated: true,
+						Cloud:             cloud_providers.CloudProvider(strings.ToLower(commonArgs.GetCommonParameters().CloudProvider.String())),
+						Resource: &rg.Type{
+							ResourceId: rgId,
+							Name:       rgId,
+							Location:   strings.ToLower(commonArgs.GetCommonParameters().Location.String()),
+						},
+					}
+					translated[resourceGroup.GetResourceId()] = resourceGroup
 				}
-				translated[resourceGroup.GetResourceId()] = resourceGroup
 			}
 		}
 	}

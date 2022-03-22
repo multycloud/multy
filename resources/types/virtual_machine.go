@@ -59,8 +59,8 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 	var subnetId = resources.GetMainOutputId(vm.SubnetId, cloud)
 
 	sshKeyData := vm.SshKey
-	if vm.SshKey == "" {
-		sshKeyData = fmt.Sprintf("file(\"%s\")", vm.SshKeyFileName)
+	if vm.SshKey == "" && vm.SshKeyFileName != "" {
+		sshKeyData = fmt.Sprintf("${file(\"%s\")}", vm.SshKeyFileName)
 	}
 	if cloud == common.AWS {
 		var awsResources []output.TfBlock
@@ -145,7 +145,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 
 		// adding ssh key to vm requires aws key pair resource
 		// key pair will be added and referenced via key_name parameter
-		if vm.SshKeyFileName != "" {
+		if sshKeyData != "" {
 			keyPair := virtual_machine.AwsKeyPair{
 				AwsResource: common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
 				KeyName:     fmt.Sprintf("%s_multy", vm.ResourceId),
@@ -226,7 +226,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		var azureSshKey virtual_machine.AzureAdminSshKey
 		var vmPassword string
 		disablePassAuth := false
-		if vm.SshKeyFileName != "" {
+		if sshKeyData != "" {
 			azureSshKey = virtual_machine.AzureAdminSshKey{
 				Username:  "adminuser",
 				PublicKey: sshKeyData,
