@@ -6,13 +6,14 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources/output"
 )
 
 type NetworkSecurityGroupService struct {
 	Service services.Service[*resources.CloudSpecificNetworkSecurityGroupArgs, *resources.NetworkSecurityGroupResource]
 }
 
-func (s NetworkSecurityGroupService) Convert(resourceId string, args []*resources.CloudSpecificNetworkSecurityGroupArgs) *resources.NetworkSecurityGroupResource {
+func (s NetworkSecurityGroupService) Convert(resourceId string, args []*resources.CloudSpecificNetworkSecurityGroupArgs, state *output.TfState) (*resources.NetworkSecurityGroupResource, error) {
 	var result []*resources.CloudSpecificNetworkSecurityGroupResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificNetworkSecurityGroupResource{
@@ -26,7 +27,7 @@ func (s NetworkSecurityGroupService) Convert(resourceId string, args []*resource
 	return &resources.NetworkSecurityGroupResource{
 		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
 		Resources:        result,
-	}
+	}, nil
 }
 
 func (s NetworkSecurityGroupService) NewArg() *resources.CloudSpecificNetworkSecurityGroupArgs {

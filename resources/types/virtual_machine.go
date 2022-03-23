@@ -130,7 +130,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: vm.GetTfResourceId(cloud)}},
 			Name:        vm.getAwsIamRoleName(),
 			Role: fmt.Sprintf(
-				"%s.%s.name", common.GetResourceName(iam.AwsIamRole{}), iamRole.ResourceId,
+				"%s.%s.name", output.GetResourceName(iam.AwsIamRole{}), iamRole.ResourceId,
 			),
 		}
 
@@ -197,7 +197,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 				azResources = append(azResources, &pIp)
 			}
 			azResources = append(azResources, nic)
-			nicIds = append(nicIds, fmt.Sprintf("${%s.%s.id}", common.GetResourceName(nic), nic.ResourceId))
+			nicIds = append(nicIds, fmt.Sprintf("${%s.%s.id}", output.GetResourceName(nic), nic.ResourceId))
 		}
 
 		// TODO change this to multy nsg_nic_attachment resource and use aws_network_interface_sg_attachment
@@ -339,13 +339,13 @@ func (vm *VirtualMachine) GetOutputValues(cloud common.CloudProvider) map[string
 			return map[string]cty.Value{
 				"public_ip": cty.StringVal(
 					fmt.Sprintf(
-						"${%s.%s.public_ip}", common.GetResourceName(virtual_machine.AwsEC2{}),
+						"${%s.%s.public_ip}", output.GetResourceName(virtual_machine.AwsEC2{}),
 						vm.GetTfResourceId(cloud),
 					),
 				),
 				"identity": cty.StringVal(
 					fmt.Sprintf(
-						"${%s.%s.id}", common.GetResourceName(iam.AwsIamRole{}),
+						"${%s.%s.id}", output.GetResourceName(iam.AwsIamRole{}),
 						vm.GetTfResourceId(cloud),
 					),
 				),
@@ -354,13 +354,13 @@ func (vm *VirtualMachine) GetOutputValues(cloud common.CloudProvider) map[string
 			return map[string]cty.Value{
 				"public_ip": cty.StringVal(
 					fmt.Sprintf(
-						"${%s.%s.ip_address}", common.GetResourceName(public_ip.AzurePublicIp{}),
+						"${%s.%s.ip_address}", output.GetResourceName(public_ip.AzurePublicIp{}),
 						vm.GetTfResourceId(cloud),
 					),
 				),
 				"identity": cty.StringVal(
 					fmt.Sprintf(
-						"${%s.%s.identity[0].principal_id}", common.GetResourceName(virtual_machine.AzureVirtualMachine{}),
+						"${%s.%s.identity[0].principal_id}", output.GetResourceName(virtual_machine.AzureVirtualMachine{}),
 						vm.GetTfResourceId(cloud),
 					),
 				),

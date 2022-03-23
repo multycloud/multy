@@ -6,13 +6,14 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources/output"
 )
 
 type VirtualMachineService struct {
 	Service services.Service[*resources.CloudSpecificVirtualMachineArgs, *resources.VirtualMachineResource]
 }
 
-func (s VirtualMachineService) Convert(resourceId string, args []*resources.CloudSpecificVirtualMachineArgs) *resources.VirtualMachineResource {
+func (s VirtualMachineService) Convert(resourceId string, args []*resources.CloudSpecificVirtualMachineArgs, state *output.TfState) (*resources.VirtualMachineResource, error) {
 	var result []*resources.CloudSpecificVirtualMachineResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificVirtualMachineResource{
@@ -33,7 +34,7 @@ func (s VirtualMachineService) Convert(resourceId string, args []*resources.Clou
 	return &resources.VirtualMachineResource{
 		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
 		Resources:        result,
-	}
+	}, nil
 }
 
 func (s VirtualMachineService) NewArg() *resources.CloudSpecificVirtualMachineArgs {

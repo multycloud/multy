@@ -49,10 +49,10 @@ func (r *KubernetesServiceNodePool) Validate(ctx resources.MultyContext, cloud c
 
 func (r *KubernetesServiceNodePool) GetMainResourceName(cloud common.CloudProvider) string {
 	if cloud == common.AWS {
-		return common.GetResourceName(kubernetes_node_pool.AwsKubernetesNodeGroup{})
+		return output.GetResourceName(kubernetes_node_pool.AwsKubernetesNodeGroup{})
 	}
 	if cloud == common.AZURE {
-		return common.GetResourceName(kubernetes_node_pool.AzureKubernetesNodePool{})
+		return output.GetResourceName(kubernetes_node_pool.AzureKubernetesNodePool{})
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return ""

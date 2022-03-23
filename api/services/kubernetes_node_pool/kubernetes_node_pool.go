@@ -6,13 +6,14 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources/output"
 )
 
 type KubernetesNodePoolService struct {
 	Service services.Service[*resources.CloudSpecificKubernetesNodePoolArgs, *resources.KubernetesNodePoolResource]
 }
 
-func (s KubernetesNodePoolService) Convert(resourceId string, args []*resources.CloudSpecificKubernetesNodePoolArgs) *resources.KubernetesNodePoolResource {
+func (s KubernetesNodePoolService) Convert(resourceId string, args []*resources.CloudSpecificKubernetesNodePoolArgs, state *output.TfState) (*resources.KubernetesNodePoolResource, error) {
 	var result []*resources.CloudSpecificKubernetesNodePoolResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificKubernetesNodePoolResource{
@@ -33,7 +34,7 @@ func (s KubernetesNodePoolService) Convert(resourceId string, args []*resources.
 	return &resources.KubernetesNodePoolResource{
 		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
 		Resources:        result,
-	}
+	}, nil
 }
 
 func (s KubernetesNodePoolService) NewArg() *resources.CloudSpecificKubernetesNodePoolArgs {

@@ -6,13 +6,14 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources/output"
 )
 
 type LambdaService struct {
 	Service services.Service[*resources.CloudSpecificLambdaArgs, *resources.LambdaResource]
 }
 
-func (s LambdaService) Convert(resourceId string, args []*resources.CloudSpecificLambdaArgs) *resources.LambdaResource {
+func (s LambdaService) Convert(resourceId string, args []*resources.CloudSpecificLambdaArgs, state *output.TfState) (*resources.LambdaResource, error) {
 	var result []*resources.CloudSpecificLambdaResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificLambdaResource{
@@ -26,7 +27,7 @@ func (s LambdaService) Convert(resourceId string, args []*resources.CloudSpecifi
 	return &resources.LambdaResource{
 		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
 		Resources:        result,
-	}
+	}, nil
 }
 
 func (s LambdaService) NewArg() *resources.CloudSpecificLambdaArgs {

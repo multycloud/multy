@@ -48,7 +48,7 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 	}
 
 	fmt.Printf("Deploying %s\n", resource.ResourceId)
-	err = deploy.Deploy(c, resource.ResourceId)
+	_, err = deploy.Deploy(c, resource.ResourceId)
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
@@ -82,7 +82,11 @@ func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, 
 				}
 				convertedArgs = append(convertedArgs, converted)
 			}
-			return s.Converters.Convert(in.GetResourceId(), convertedArgs), nil
+			state, err := deploy.GetState(c.UserId)
+			if err != nil {
+				return s.Converters.Nil(), err
+			}
+			return s.Converters.Convert(in.GetResourceId(), convertedArgs, state)
 		}
 	}
 
@@ -104,7 +108,7 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 		return s.Converters.Nil(), err
 	}
 
-	err = deploy.Deploy(c, in.GetResourceId())
+	_, err = deploy.Deploy(c, in.GetResourceId())
 	if err != nil {
 		return s.Converters.Nil(), err
 	}
@@ -131,7 +135,7 @@ func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*com
 		return nil, err
 	}
 
-	err = deploy.Deploy(c, in.GetResourceId())
+	_, err = deploy.Deploy(c, in.GetResourceId())
 	if err != nil {
 		return nil, err
 	}

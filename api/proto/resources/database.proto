@@ -53,6 +53,9 @@ message CloudSpecificDatabaseResource {
   string username = 7;
   string password = 8;
   repeated string subnet_ids = 9;
+
+  //outputs
+  string host = 10;
 }
 
 message DatabaseResource {

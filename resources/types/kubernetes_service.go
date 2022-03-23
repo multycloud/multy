@@ -38,9 +38,9 @@ func (r *KubernetesService) Validate(ctx resources.MultyContext, cloud common.Cl
 
 func (r *KubernetesService) GetMainResourceName(cloud common.CloudProvider) string {
 	if cloud == common.AWS {
-		return common.GetResourceName(kubernetes_service.AwsEksCluster{})
+		return output.GetResourceName(kubernetes_service.AwsEksCluster{})
 	} else if cloud == common.AZURE {
-		return common.GetResourceName(kubernetes_service.AzureEksCluster{})
+		return output.GetResourceName(kubernetes_service.AzureEksCluster{})
 	}
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return ""
@@ -104,13 +104,13 @@ func (r *KubernetesService) GetOutputValues(cloud common.CloudProvider) map[stri
 		return map[string]cty.Value{
 			"endpoint": cty.StringVal(
 				fmt.Sprintf(
-					"${%s.%s.endpoint}", common.GetResourceName(kubernetes_service.AwsEksCluster{}),
+					"${%s.%s.endpoint}", output.GetResourceName(kubernetes_service.AwsEksCluster{}),
 					r.GetTfResourceId(cloud),
 				),
 			),
 			"ca_certificate": cty.StringVal(
 				fmt.Sprintf(
-					"${%s.%s.certificate_authority[0].data}", common.GetResourceName(kubernetes_service.AwsEksCluster{}),
+					"${%s.%s.certificate_authority[0].data}", output.GetResourceName(kubernetes_service.AwsEksCluster{}),
 					r.GetTfResourceId(cloud),
 				),
 			),
@@ -119,13 +119,13 @@ func (r *KubernetesService) GetOutputValues(cloud common.CloudProvider) map[stri
 		return map[string]cty.Value{
 			"endpoint": cty.StringVal(
 				fmt.Sprintf(
-					"${%s.%s.kube_config.0.host}", common.GetResourceName(kubernetes_service.AzureEksCluster{}),
+					"${%s.%s.kube_config.0.host}", output.GetResourceName(kubernetes_service.AzureEksCluster{}),
 					r.GetTfResourceId(cloud),
 				),
 			),
 			"ca_certificate": cty.StringVal(
 				fmt.Sprintf(
-					"${%s.%s.kube_config.0.cluster_ca_certificate}", common.GetResourceName(kubernetes_service.AzureEksCluster{}),
+					"${%s.%s.kube_config.0.cluster_ca_certificate}", output.GetResourceName(kubernetes_service.AzureEksCluster{}),
 					r.GetTfResourceId(cloud),
 				),
 			),

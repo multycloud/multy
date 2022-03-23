@@ -6,6 +6,7 @@ import (
 	"github.com/multycloud/multy/api/proto/resources"
 	common_resources "github.com/multycloud/multy/resources"
 	cloud_providers "github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/types"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
@@ -15,7 +16,7 @@ import (
 )
 
 type ResourceConverters[Arg proto.Message, OutT proto.Message] interface {
-	Convert(resourceId string, request []Arg) OutT
+	Convert(resourceId string, request []Arg, state *output.TfState) (OutT, error)
 	NewArg() Arg
 	Nil() OutT
 }

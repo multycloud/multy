@@ -6,13 +6,14 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources/output"
 )
 
 type VnService struct {
 	Service services.Service[*resources.CloudSpecificVirtualNetworkArgs, *resources.VirtualNetworkResource]
 }
 
-func (s VnService) Convert(resourceId string, args []*resources.CloudSpecificVirtualNetworkArgs) *resources.VirtualNetworkResource {
+func (s VnService) Convert(resourceId string, args []*resources.CloudSpecificVirtualNetworkArgs, state *output.TfState) (*resources.VirtualNetworkResource, error) {
 	var result []*resources.CloudSpecificVirtualNetworkResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificVirtualNetworkResource{
@@ -25,7 +26,7 @@ func (s VnService) Convert(resourceId string, args []*resources.CloudSpecificVir
 	return &resources.VirtualNetworkResource{
 		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
 		Resources:        result,
-	}
+	}, nil
 }
 
 func (s VnService) NewArg() *resources.CloudSpecificVirtualNetworkArgs {
