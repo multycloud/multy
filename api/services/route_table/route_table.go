@@ -30,14 +30,6 @@ func (s RouteTableService) Convert(resourceId string, args []*resources.CloudSpe
 	}, nil
 }
 
-func (s RouteTableService) NewArg() *resources.CloudSpecificRouteTableArgs {
-	return &resources.CloudSpecificRouteTableArgs{}
-}
-
-func (s RouteTableService) Nil() *resources.RouteTableResource {
-	return nil
-}
-
 func NewRouteTableService(database *db.Database) RouteTableService {
 	rt := RouteTableService{
 		Service: services.Service[*resources.CloudSpecificRouteTableArgs, *resources.RouteTableResource]{

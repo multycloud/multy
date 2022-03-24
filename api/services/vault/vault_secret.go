@@ -30,14 +30,6 @@ func (s VaultSecretService) Convert(resourceId string, args []*resources.CloudSp
 	}, nil
 }
 
-func (s VaultSecretService) NewArg() *resources.CloudSpecificVaultSecretArgs {
-	return &resources.CloudSpecificVaultSecretArgs{}
-}
-
-func (s VaultSecretService) Nil() *resources.VaultSecretResource {
-	return nil
-}
-
 func NewVaultSecretService(database *db.Database) VaultSecretService {
 	ni := VaultSecretService{
 		Service: services.Service[*resources.CloudSpecificVaultSecretArgs, *resources.VaultSecretResource]{

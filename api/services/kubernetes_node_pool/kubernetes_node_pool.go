@@ -37,14 +37,6 @@ func (s KubernetesNodePoolService) Convert(resourceId string, args []*resources.
 	}, nil
 }
 
-func (s KubernetesNodePoolService) NewArg() *resources.CloudSpecificKubernetesNodePoolArgs {
-	return &resources.CloudSpecificKubernetesNodePoolArgs{}
-}
-
-func (s KubernetesNodePoolService) Nil() *resources.KubernetesNodePoolResource {
-	return nil
-}
-
 func NewKubernetesNodePoolService(database *db.Database) KubernetesNodePoolService {
 	ni := KubernetesNodePoolService{
 		Service: services.Service[*resources.CloudSpecificKubernetesNodePoolArgs, *resources.KubernetesNodePoolResource]{

@@ -30,14 +30,6 @@ func (s NetworkSecurityGroupService) Convert(resourceId string, args []*resource
 	}, nil
 }
 
-func (s NetworkSecurityGroupService) NewArg() *resources.CloudSpecificNetworkSecurityGroupArgs {
-	return &resources.CloudSpecificNetworkSecurityGroupArgs{}
-}
-
-func (s NetworkSecurityGroupService) Nil() *resources.NetworkSecurityGroupResource {
-	return nil
-}
-
 func NewNetworkSecurityGroupService(database *db.Database) NetworkSecurityGroupService {
 	nsg := NetworkSecurityGroupService{
 		Service: services.Service[*resources.CloudSpecificNetworkSecurityGroupArgs, *resources.NetworkSecurityGroupResource]{

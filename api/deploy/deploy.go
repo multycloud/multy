@@ -15,6 +15,7 @@ import (
 	cloud_providers "github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	rg "github.com/multycloud/multy/resources/resource_group"
+	"github.com/multycloud/multy/resources/types"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/function"
 	"google.golang.org/protobuf/proto"
@@ -29,7 +30,7 @@ const (
 	tfState = "terraform.tfstate"
 )
 
-func Translate(c *config.Config) (string, error) {
+func Translate(c *config.Config, prev *config.Resource, curr *config.Resource) (string, error) {
 	// TODO: get rid of this translation layer and instead use protos directly
 	translated := map[string]common_resources.CloudSpecificResource{}
 	for _, r := range c.Resources {
@@ -129,6 +130,11 @@ func Translate(c *config.Config) (string, error) {
 		}
 	}
 
+	provider, err := getExistingProvider(prev)
+	if err != nil {
+		return "", err
+	}
+
 	// TODO add s3 state file backend
 	decodedResources := decoder.DecodedResources{
 		Resources: translated,
@@ -137,6 +143,7 @@ func Translate(c *config.Config) (string, error) {
 			Clouds:        cloud_providers.GetAllCloudProviders(),
 			DefaultRgName: rg.GetDefaultResourceGroupId(),
 		},
+		Providers: provider,
 	}
 
 	hclOutput := encoder.Encode(&decodedResources)
@@ -144,9 +151,9 @@ func Translate(c *config.Config) (string, error) {
 	return hclOutput, nil
 }
 
-func Deploy(c *config.Config, resourceId string) (*output.TfState, error) {
+func Deploy(c *config.Config, prev *config.Resource, curr *config.Resource) (*output.TfState, error) {
 
-	hclOutput, err := Translate(c)
+	hclOutput, err := Translate(c, prev, curr)
 	if err != nil {
 		return nil, err
 	}
@@ -221,8 +228,7 @@ type hasCommonArgs interface {
 func addMultyResource(r *config.Resource, translated map[string]common_resources.CloudSpecificResource, c converter.MultyResourceConverter) error {
 	var allResources []proto.Message
 	for _, args := range r.ResourceArgs.ResourceArgs {
-		m := c.NewArg()
-		err := args.UnmarshalTo(m)
+		m, err := args.UnmarshalNew()
 		if err != nil {
 			return err
 		}
@@ -258,4 +264,40 @@ func addMultyResource(r *config.Resource, translated map[string]common_resources
 		translated[translatedResource.GetResourceId()] = translatedResource
 	}
 	return nil
+}
+
+type WithCommonParams interface {
+	GetCommonParameters() *common.CloudSpecificResourceCommonArgs
+}
+
+func getExistingProvider(r *config.Resource) (map[cloud_providers.CloudProvider]map[string]*types.Provider, error) {
+	if r != nil {
+		args := r.GetResourceArgs().GetResourceArgs()
+		for _, arg := range args {
+			m, err := arg.UnmarshalNew()
+			if err != nil {
+				return nil, err
+			}
+			if wcp, ok := m.(WithCommonParams); ok {
+				cloud := cloud_providers.CloudProvider(strings.ToLower(wcp.GetCommonParameters().CloudProvider.String()))
+				location, err := cloud_providers.GetCloudLocation(strings.ToLower(wcp.GetCommonParameters().Location.String()), cloud)
+				if err != nil {
+					return nil, err
+				}
+				return map[cloud_providers.CloudProvider]map[string]*types.Provider{
+					cloud: {
+						location: &types.Provider{
+							Cloud:             cloud,
+							Location:          location,
+							IsDefaultProvider: false,
+							NumResources:      1,
+						},
+					},
+				}, nil
+
+			}
+		}
+	}
+
+	return map[cloud_providers.CloudProvider]map[string]*types.Provider{}, nil
 }

@@ -29,14 +29,6 @@ func (s VnService) Convert(resourceId string, args []*resources.CloudSpecificVir
 	}, nil
 }
 
-func (s VnService) NewArg() *resources.CloudSpecificVirtualNetworkArgs {
-	return &resources.CloudSpecificVirtualNetworkArgs{}
-}
-
-func (s VnService) Nil() *resources.VirtualNetworkResource {
-	return nil
-}
-
 func NewVnService(database *db.Database) VnService {
 	vn := VnService{
 		Service: services.Service[*resources.CloudSpecificVirtualNetworkArgs, *resources.VirtualNetworkResource]{

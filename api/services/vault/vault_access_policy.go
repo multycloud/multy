@@ -30,14 +30,6 @@ func (s VaultAccessPolicyService) Convert(resourceId string, args []*resources.C
 	}, nil
 }
 
-func (s VaultAccessPolicyService) NewArg() *resources.CloudSpecificVaultAccessPolicyArgs {
-	return &resources.CloudSpecificVaultAccessPolicyArgs{}
-}
-
-func (s VaultAccessPolicyService) Nil() *resources.VaultAccessPolicyResource {
-	return nil
-}
-
 func NewVaultAccessPolicyService(database *db.Database) VaultAccessPolicyService {
 	ni := VaultAccessPolicyService{
 		Service: services.Service[*resources.CloudSpecificVaultAccessPolicyArgs, *resources.VaultAccessPolicyResource]{

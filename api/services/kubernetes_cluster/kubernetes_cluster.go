@@ -29,14 +29,6 @@ func (s KubernetesClusterService) Convert(resourceId string, args []*resources.C
 	}, nil
 }
 
-func (s KubernetesClusterService) NewArg() *resources.CloudSpecificKubernetesClusterArgs {
-	return &resources.CloudSpecificKubernetesClusterArgs{}
-}
-
-func (s KubernetesClusterService) Nil() *resources.KubernetesClusterResource {
-	return nil
-}
-
 func NewKubernetesClusterService(database *db.Database) KubernetesClusterService {
 	ni := KubernetesClusterService{
 		Service: services.Service[*resources.CloudSpecificKubernetesClusterArgs, *resources.KubernetesClusterResource]{

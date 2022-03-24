@@ -37,14 +37,6 @@ func (s VirtualMachineService) Convert(resourceId string, args []*resources.Clou
 	}, nil
 }
 
-func (s VirtualMachineService) NewArg() *resources.CloudSpecificVirtualMachineArgs {
-	return &resources.CloudSpecificVirtualMachineArgs{}
-}
-
-func (s VirtualMachineService) Nil() *resources.VirtualMachineResource {
-	return nil
-}
-
 func NewVirtualMachineService(database *db.Database) VirtualMachineService {
 	VirtualMachine := VirtualMachineService{
 		Service: services.Service[*resources.CloudSpecificVirtualMachineArgs, *resources.VirtualMachineResource]{
