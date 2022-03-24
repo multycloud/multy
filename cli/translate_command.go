@@ -61,7 +61,7 @@ func (c *TranslateCommand) Execute(ctx context.Context) error {
 
 	r := decoder.Decode(parsedConfig)
 
-	hclOutput := encoder.Encode(r)
+	hclOutput, _ := encoder.Encode(r)
 
 	err := os.MkdirAll(filepath.Dir(c.OutputFile), os.ModeDir|(os.ModePerm&0775))
 	if err != nil {

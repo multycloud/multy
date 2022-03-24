@@ -7,6 +7,7 @@ import (
 	"github.com/multycloud/multy/encoder"
 	"github.com/multycloud/multy/parser"
 	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/validate"
 	flag "github.com/spf13/pflag"
 	"io/ioutil"
 	"log"
@@ -54,7 +55,10 @@ func (c *CheckCommand) Execute(ctx context.Context) error {
 	r := decoder.Decode(parsedConfig)
 	mctx := resources.MultyContext{Resources: r.Resources, Location: r.GlobalConfig.Location}
 
-	_ = encoder.TranslateResources(r, mctx)
+	_, errs := encoder.TranslateResources(r, mctx)
+	if errs != nil {
+		validate.PrintAllAndExit(errs)
+	}
 
 	fmt.Println("no validation errors found")
 	return nil

@@ -5,12 +5,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/config"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
+	"strings"
 )
 
 func ConvertCommonParams(parameters *common.CloudSpecificResourceCommonArgs) *common.CloudSpecificCommonResourceParameters {
@@ -25,27 +27,13 @@ func ConvertCommonParams(parameters *common.CloudSpecificResourceCommonArgs) *co
 func ExtractUserId(ctx context.Context) (string, error) {
 	md, _ := metadata.FromIncomingContext(ctx)
 	userIds := md.Get("user_id")
-	// fix me why
-	userIds = removeDuplicateStr(userIds)
 	if len(userIds) == 0 {
-		return "", fmt.Errorf("user id must be set")
+		return "", errors.PermissionDenied(fmt.Sprintf("user id must be set"))
 	}
 	if len(userIds) > 1 {
-		return "", fmt.Errorf("only expected 1 user id, found %d", len(userIds))
+		return "", errors.PermissionDenied(fmt.Sprintf("only expected 1 user id, found %d: %s", len(userIds), strings.Join(userIds, ", ")))
 	}
 	return userIds[0], nil
-}
-
-func removeDuplicateStr(strSlice []string) []string {
-	allKeys := make(map[string]bool)
-	list := []string{}
-	for _, item := range strSlice {
-		if _, value := allKeys[item]; !value {
-			allKeys[item] = true
-			list = append(list, item)
-		}
-	}
-	return list
 }
 
 func InsertIntoConfig[Arg proto.Message](in []Arg, c *config.Config) (*config.Resource, error) {

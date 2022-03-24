@@ -119,7 +119,7 @@ func test(testFiles TestFiles, t *testing.T) {
 	parsedConfig := p.Parse(testFiles.InputFile)
 	r := decoder.Decode(parsedConfig)
 
-	hclOutput := encoder.Encode(r)
+	hclOutput, _ := encoder.Encode(r)
 
 	assertEqualHcl(t, []byte(hclOutput), testFiles.OutputFile)
 }
