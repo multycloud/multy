@@ -29,10 +29,13 @@ func (w WithProvider) AddDependency(s string) {
 	w.Resource.AddDependency(s)
 }
 
-func Encode(decodedResources *decoder.DecodedResources) string {
+func Encode(decodedResources *decoder.DecodedResources) (string, []validate.ValidationError) {
 	ctx := resources.MultyContext{Resources: decodedResources.Resources, Location: decodedResources.GlobalConfig.Location}
 
-	translatedResources := TranslateResources(decodedResources, ctx)
+	translatedResources, errs := TranslateResources(decodedResources, ctx)
+	if errs != nil {
+		return "", errs
+	}
 	providers := buildProviders(decodedResources, ctx)
 
 	var b bytes.Buffer
@@ -95,7 +98,7 @@ func Encode(decodedResources *decoder.DecodedResources) string {
 		b.Write(hclOutput)
 	}
 
-	return b.String()
+	return b.String(), nil
 }
 
 type providerWrapper struct {

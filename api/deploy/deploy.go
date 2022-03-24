@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/multycloud/multy/api/converter"
+	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/config"
 	"github.com/multycloud/multy/api/proto/resources"
@@ -146,7 +147,10 @@ func Translate(c *config.Config, prev *config.Resource, curr *config.Resource) (
 		Providers: provider,
 	}
 
-	hclOutput := encoder.Encode(&decodedResources)
+	hclOutput, errs := encoder.Encode(&decodedResources)
+	if errs != nil {
+		return hclOutput, errors.ValidationErrors(errs)
+	}
 
 	return hclOutput, nil
 }

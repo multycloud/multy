@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/deploy"
+	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/config"
 	"github.com/multycloud/multy/api/proto/resources"
@@ -33,7 +34,21 @@ type Service[Arg proto.Message, OutT proto.Message] struct {
 	Converters converter.ResourceConverters[Arg, OutT]
 }
 
+func WrappingErrors[InT any, OutT any](f func(context.Context, InT) (OutT, error)) func(context.Context, InT) (OutT, error) {
+	return func(ctx context.Context, in InT) (OutT, error) {
+		out, err := f(ctx, in)
+		if err != nil {
+			return out, errors.InternalServerError(err)
+		}
+		return out, nil
+	}
+}
+
 func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
+	return WrappingErrors(s.create)(ctx, in)
+}
+
+func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
 	fmt.Println("Service create")
 	userId, err := util.ExtractUserId(ctx)
 	if err != nil {
@@ -41,7 +56,6 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 	}
 	c, err := s.Db.LoadUserConfig(userId)
 	if err != nil {
-
 		return *new(OutT), err
 	}
 	resource, err := util.InsertIntoConfig(in.GetResources(), c)
@@ -63,6 +77,10 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, error) {
+	return WrappingErrors(s.read)(ctx, in)
+}
+
+func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, error) {
 	fmt.Printf("Service read: %s\n", in.GetResourceId())
 	userId, err := util.ExtractUserId(ctx)
 	if err != nil {
@@ -95,6 +113,10 @@ func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, 
 }
 
 func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
+	return WrappingErrors(s.update)(ctx, in)
+}
+
+func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
 	fmt.Printf("Service update: %s\n", in.GetResourceId())
 	userId, err := util.ExtractUserId(ctx)
 	if err != nil {
@@ -123,6 +145,10 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*common.Empty, error) {
+	return WrappingErrors(s.delete)(ctx, in)
+}
+
+func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*common.Empty, error) {
 	fmt.Printf("Service delete: %s\n", in.GetResourceId())
 	userId, err := util.ExtractUserId(ctx)
 	if err != nil {

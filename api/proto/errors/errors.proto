@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "github.com/multycloud/multy/api/proto/errors";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.errors";
+option java_outer_classname = "MultyProto";
+
+package dev.multy.config;
+
+message ResourceValidationError {
+  string resource_id = 1;
+  string error_message = 2;
+  // this is tentative, it might not be populated or might have a different name from the proto request
+  string field_name = 3;
+}

@@ -19,6 +19,7 @@ type ValidationError struct {
 	SourceRange  hcl.Range
 	ErrorMessage string
 	ResourceId   string
+	FieldName    string
 }
 
 func NewResourceValidationInfoWithId(resourceId string) *ResourceValidationInfo {
@@ -67,11 +68,13 @@ func (info *ResourceValidationInfo) NewError(fieldName string, errorMessage stri
 			SourceRange:  sourceRange,
 			ErrorMessage: errorMessage,
 			ResourceId:   info.ResourceId,
+			FieldName:    fieldName,
 		}
 	}
 	return ValidationError{
 		ErrorMessage: errorMessage,
 		ResourceId:   info.ResourceId,
+		FieldName:    fieldName,
 	}
 }
 
