@@ -52,6 +52,10 @@ message CloudSpecificVirtualMachineResource {
   string public_ssh_key = 9;
   string public_ip_id = 10;
   bool generate_public_ip = 11;
+
+  // outputs
+  string public_ip = 12;
+  string identity_id = 13;
 }
 
 message VirtualMachineResource {

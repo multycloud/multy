@@ -36,6 +36,9 @@ message CloudSpecificKubernetesClusterResource {
   common.CloudSpecificCommonResourceParameters common_parameters = 1;
   string name = 2;
   repeated string subnet_ids = 3;
+
+  // outputs
+  string endpoint = 4;
 }
 
 message KubernetesClusterResource {
