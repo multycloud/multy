@@ -29,14 +29,6 @@ func (s RouteTableAssociationService) Convert(resourceId string, args []*resourc
 	}, nil
 }
 
-func (s RouteTableAssociationService) NewArg() *resources.CloudSpecificRouteTableAssociationArgs {
-	return &resources.CloudSpecificRouteTableAssociationArgs{}
-}
-
-func (s RouteTableAssociationService) Nil() *resources.RouteTableAssociationResource {
-	return nil
-}
-
 func NewRouteTableAssociationService(database *db.Database) RouteTableAssociationService {
 	rta := RouteTableAssociationService{
 		Service: services.Service[*resources.CloudSpecificRouteTableAssociationArgs, *resources.RouteTableAssociationResource]{

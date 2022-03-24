@@ -29,14 +29,6 @@ func (s PublicIpService) Convert(resourceId string, args []*resources.CloudSpeci
 	}, nil
 }
 
-func (s PublicIpService) NewArg() *resources.CloudSpecificPublicIpArgs {
-	return &resources.CloudSpecificPublicIpArgs{}
-}
-
-func (s PublicIpService) Nil() *resources.PublicIpResource {
-	return nil
-}
-
 func NewPublicIpService(database *db.Database) PublicIpService {
 	nsg := PublicIpService{
 		Service: services.Service[*resources.CloudSpecificPublicIpArgs, *resources.PublicIpResource]{

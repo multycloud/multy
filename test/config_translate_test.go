@@ -79,7 +79,7 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 		t.Fatalf("unable to parse input file: %v", err)
 	}
 
-	hclOutput, err := deploy.Translate(&c)
+	hclOutput, err := deploy.Translate(&c, nil, nil)
 	if err != nil {
 		t.Fatalf("unable to translate: %v", err)
 	}

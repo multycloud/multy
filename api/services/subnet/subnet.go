@@ -31,14 +31,6 @@ func (s SubnetService) Convert(resourceId string, args []*resources.CloudSpecifi
 	}, nil
 }
 
-func (s SubnetService) NewArg() *resources.CloudSpecificSubnetArgs {
-	return &resources.CloudSpecificSubnetArgs{}
-}
-
-func (s SubnetService) Nil() *resources.SubnetResource {
-	return nil
-}
-
 func NewSubnetService(database *db.Database) SubnetService {
 	vn := SubnetService{
 		Service: services.Service[*resources.CloudSpecificSubnetArgs, *resources.SubnetResource]{

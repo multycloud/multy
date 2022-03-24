@@ -61,15 +61,6 @@ func getHost(resourceId string, state *output.TfState, cloud common.CloudProvide
 	}
 
 	return "", fmt.Errorf("unknown cloud: %s", cloud.String())
-
-}
-
-func (s DatabaseService) NewArg() *resources.CloudSpecificDatabaseArgs {
-	return &resources.CloudSpecificDatabaseArgs{}
-}
-
-func (s DatabaseService) Nil() *resources.DatabaseResource {
-	return nil
 }
 
 func NewDatabaseService(database *db.Database) DatabaseService {

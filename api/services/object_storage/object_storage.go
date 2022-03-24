@@ -28,14 +28,6 @@ func (s ObjectStorageService) Convert(resourceId string, args []*resources.Cloud
 	}, nil
 }
 
-func (s ObjectStorageService) NewArg() *resources.CloudSpecificObjectStorageArgs {
-	return &resources.CloudSpecificObjectStorageArgs{}
-}
-
-func (s ObjectStorageService) Nil() *resources.ObjectStorageResource {
-	return nil
-}
-
 func NewObjectStorageService(database *db.Database) ObjectStorageService {
 	nsg := ObjectStorageService{
 		Service: services.Service[*resources.CloudSpecificObjectStorageArgs, *resources.ObjectStorageResource]{

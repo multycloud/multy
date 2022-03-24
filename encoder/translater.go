@@ -40,7 +40,7 @@ func getProvider(providers map[common.CloudProvider]map[string]*types.Provider, 
 }
 
 func buildProviders(r *decoder.DecodedResources, ctx resources.MultyContext) map[common.CloudProvider]map[string]*types.Provider {
-	providers := map[common.CloudProvider]map[string]*types.Provider{}
+	providers := r.Providers
 
 	for _, resource := range r.Resources {
 		if _, ok := providers[resource.Cloud]; !ok {

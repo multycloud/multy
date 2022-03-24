@@ -26,7 +26,7 @@ type DecodedGlobalConfig struct {
 type DecodedResources struct {
 	Resources    map[string]resources.CloudSpecificResource
 	Outputs      map[string]DecodedOutput
-	Providers    map[string]types.Provider
+	Providers    map[common.CloudProvider]map[string]*types.Provider
 	GlobalConfig DecodedGlobalConfig
 }
 
@@ -96,6 +96,7 @@ func Decode(config parser.ParsedConfig) *DecodedResources {
 		Resources:    r,
 		GlobalConfig: globalConfig,
 		Outputs:      outputs,
+		Providers:    map[common.CloudProvider]map[string]*types.Provider{},
 	}
 }
 

@@ -29,14 +29,6 @@ func (s NetworkInterfaceService) Convert(resourceId string, args []*resources.Cl
 	}, nil
 }
 
-func (s NetworkInterfaceService) NewArg() *resources.CloudSpecificNetworkInterfaceArgs {
-	return &resources.CloudSpecificNetworkInterfaceArgs{}
-}
-
-func (s NetworkInterfaceService) Nil() *resources.NetworkInterfaceResource {
-	return nil
-}
-
 func NewNetworkInterfaceService(database *db.Database) NetworkInterfaceService {
 	ni := NetworkInterfaceService{
 		Service: services.Service[*resources.CloudSpecificNetworkInterfaceArgs, *resources.NetworkInterfaceResource]{
