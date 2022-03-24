@@ -27,7 +27,7 @@ type ResourceValidationError struct {
 
 	ResourceId   string `protobuf:"bytes,1,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
 	ErrorMessage string `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
-	// this is tentative, it might not exist or might have a different name from the proto request
+	// this is tentative, it might not be populated or might have a different name from the proto request
 	FieldName string `protobuf:"bytes,3,opt,name=field_name,json=fieldName,proto3" json:"field_name,omitempty"`
 }
 
