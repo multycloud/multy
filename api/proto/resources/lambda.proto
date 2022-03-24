@@ -31,6 +31,9 @@ message CloudSpecificLambdaArgs {
   string name = 2;
   string runtime = 3;
   string source_code_object_id = 4;
+
+  // outputs
+  string url = 5;
 }
 
 message CloudSpecificLambdaResource {
