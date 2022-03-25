@@ -28,6 +28,7 @@ type Subnet struct {
 func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if cloud == common.AWS {
 		location := s.Location
+		location = common.GetLocationFromCloudLocation(s.VirtualNetwork.CommonResourceParams.GetLocation(cloud, ctx), cloud)
 		if location == "" {
 			location = ctx.Location
 		}

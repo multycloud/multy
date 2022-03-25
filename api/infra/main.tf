@@ -30,8 +30,10 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_security_group" "nsg2_aws" {
-  tags   = { "Name" = "backend" }
-  vpc_id = aws_vpc.main_vpc.id
+  tags        = { "Name" = "backend" }
+  vpc_id      = aws_vpc.main_vpc.id
+  name        = "backend"
+  description = "Managed by Multy"
   ingress {
     protocol    = "tcp"
     from_port   = 80

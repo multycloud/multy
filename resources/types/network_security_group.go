@@ -65,6 +65,8 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 			network_security_group.AwsSecurityGroup{
 				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 				VpcId:       vnId,
+				Name:        r.Name,
+				Description: "Managed by Multy",
 				Ingress:     awsRules["ingress"],
 				Egress:      awsRules["egress"],
 			},

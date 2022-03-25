@@ -70,7 +70,9 @@ resource "aws_security_group" "nsg2_aws" {
     "Name" = "test-nsg2"
   }
 
-  vpc_id = "${aws_vpc.example_vn_aws.id}"
+  name        = "test-nsg2"
+  description = "Managed by Multy"
+  vpc_id      = "${aws_vpc.example_vn_aws.id}"
 
   ingress {
     protocol    = "tcp"
