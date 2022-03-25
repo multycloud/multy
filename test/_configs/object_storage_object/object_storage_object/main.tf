@@ -45,12 +45,12 @@ resource "azurerm_storage_blob" "file3_source_azure" {
   source                 = "test.zip"
 }
 resource "azurerm_storage_account" "obj_storage_azure" {
-  resource_group_name      = azurerm_resource_group.st-rg.name
-  name                     = "teststorage9999919"
-  location                 = "northeurope"
-  account_tier             = "Standard"
-  account_replication_type = "GZRS"
-  allow_blob_public_access = true
+  resource_group_name             = azurerm_resource_group.st-rg.name
+  name                            = "teststorage9999919"
+  location                        = "northeurope"
+  account_tier                    = "Standard"
+  account_replication_type        = "GZRS"
+  allow_nested_items_to_be_public = true
 }
 resource "azurerm_storage_container" "obj_storage_azure_public" {
   name                  = "public"

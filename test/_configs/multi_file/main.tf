@@ -110,12 +110,12 @@ resource "azurerm_resource_group" "nic-rg" {
   location = "northeurope"
 }
 resource "azurerm_storage_account" "obj_storage_azure" {
-  resource_group_name      = azurerm_resource_group.st-rg.name
-  name                     = "teststorage"
-  location                 = "ukwest"
-  account_tier             = "Standard"
-  account_replication_type = "GZRS"
-  allow_blob_public_access = true
+  resource_group_name             = azurerm_resource_group.st-rg.name
+  name                            = "teststorage"
+  location                        = "ukwest"
+  account_tier                    = "Standard"
+  account_replication_type        = "GZRS"
+  allow_nested_items_to_be_public = true
 }
 resource "azurerm_storage_container" "obj_storage_azure_public" {
   name                  = "public"

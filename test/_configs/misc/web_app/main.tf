@@ -274,7 +274,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   location            = "eastus"
   security_rule {
     name                       = "0"
-    protocol                   = "tcp"
+    protocol                   = "Tcp"
     priority                   = 100
     access                     = "Allow"
     source_port_range          = "*"
@@ -285,7 +285,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   }
   security_rule {
     name                       = "1"
-    protocol                   = "tcp"
+    protocol                   = "Tcp"
     priority                   = 100
     access                     = "Allow"
     source_port_range          = "*"
@@ -296,7 +296,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   }
   security_rule {
     name                       = "2"
-    protocol                   = "tcp"
+    protocol                   = "Tcp"
     priority                   = 120
     access                     = "Allow"
     source_port_range          = "*"
@@ -307,7 +307,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   }
   security_rule {
     name                       = "3"
-    protocol                   = "tcp"
+    protocol                   = "Tcp"
     priority                   = 120
     access                     = "Allow"
     source_port_range          = "*"
@@ -318,7 +318,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   }
   security_rule {
     name                       = "4"
-    protocol                   = "tcp"
+    protocol                   = "Tcp"
     priority                   = 140
     access                     = "Allow"
     source_port_range          = "*"
@@ -329,7 +329,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   }
   security_rule {
     name                       = "5"
-    protocol                   = "tcp"
+    protocol                   = "Tcp"
     priority                   = 140
     access                     = "Allow"
     source_port_range          = "*"
