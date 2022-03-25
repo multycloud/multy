@@ -22,12 +22,12 @@ type PublicIp struct {
 	NetworkInterfaceId *NetworkInterface `mhcl:"ref=network_interface_id,optional"`
 }
 
-func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 
 	if cloud == common.AWS {
 		nid := ""
 		if r.NetworkInterfaceId != nil {
-			nid = resources.GetMainOutputId(r.NetworkInterfaceId, cloud)
+			nid, _ = resources.GetMainOutputId(r.NetworkInterfaceId, cloud)
 		}
 		return []output.TfBlock{
 			public_ip.AwsElasticIp{
@@ -35,7 +35,7 @@ func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyCont
 				NetworkInterfaceId: nid,
 				//Vpc:        true,
 			},
-		}
+		}, nil
 	} else if cloud == common.AZURE {
 		return []output.TfBlock{
 			public_ip.AzurePublicIp{
@@ -45,10 +45,9 @@ func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyCont
 				),
 				AllocationMethod: "Static",
 			},
-		}
+		}, nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 func (r *PublicIp) GetId(cloud common.CloudProvider) string {
@@ -63,14 +62,13 @@ func (r *PublicIp) Validate(ctx resources.MultyContext, cloud common.CloudProvid
 	return errs
 }
 
-func (r *PublicIp) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *PublicIp) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return public_ip.AwsResourceName
+		return public_ip.AwsResourceName, nil
 	case common.AZURE:
-		return public_ip.AzureResourceName
+		return public_ip.AzureResourceName, nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
 }

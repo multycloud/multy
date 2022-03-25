@@ -47,24 +47,33 @@ func (r *KubernetesServiceNodePool) Validate(ctx resources.MultyContext, cloud c
 	return errs
 }
 
-func (r *KubernetesServiceNodePool) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *KubernetesServiceNodePool) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	if cloud == common.AWS {
-		return output.GetResourceName(kubernetes_node_pool.AwsKubernetesNodeGroup{})
+		return output.GetResourceName(kubernetes_node_pool.AwsKubernetesNodeGroup{}), nil
 	}
 	if cloud == common.AZURE {
-		return output.GetResourceName(kubernetes_node_pool.AzureKubernetesNodePool{})
+		return output.GetResourceName(kubernetes_node_pool.AzureKubernetesNodePool{}), nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return ""
+	return "", fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
-func (r *KubernetesServiceNodePool) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (r *KubernetesServiceNodePool) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
+	subnetIds, err := util.MapSliceValuesErr(r.SubnetIds, func(v *Subnet) (string, error) {
+		return resources.GetMainOutputId(v, cloud)
+	})
+	if err != nil {
+		return nil, err
+	}
 	if cloud == common.AWS {
 		roleName := fmt.Sprintf("iam_for_k8nodepool_%s", r.Name)
 		role := iam.AwsIamRole{
 			AwsResource:      common.NewAwsResource(r.GetTfResourceId(cloud), roleName),
 			Name:             fmt.Sprintf("iam_for_k8nodepool_%s", r.Name),
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("ec2.amazonaws.com"),
+		}
+		clusterId, err := resources.GetMainOutputId(r.ClusterId, cloud)
+		if err != nil {
+			return nil, err
 		}
 		return []output.TfBlock{
 			&role,
@@ -85,12 +94,10 @@ func (r *KubernetesServiceNodePool) Translate(cloud common.CloudProvider, ctx re
 			},
 			&kubernetes_node_pool.AwsKubernetesNodeGroup{
 				AwsResource:   common.NewAwsResourceWithIdOnly(r.GetTfResourceId(cloud)),
-				ClusterName:   resources.GetMainOutputId(r.ClusterId, cloud),
+				ClusterName:   clusterId,
 				NodeGroupName: r.Name,
 				NodeRoleArn:   fmt.Sprintf("aws_iam_role.%s.arn", r.GetTfResourceId(cloud)),
-				SubnetIds: util.MapSliceValues(r.SubnetIds, func(v *Subnet) string {
-					return resources.GetMainOutputId(v, cloud)
-				}),
+				SubnetIds:     subnetIds,
 				ScalingConfig: kubernetes_node_pool.ScalingConfig{
 					DesiredSize: util.GetOrDefault(r.StartingNodeCount, r.MinNodeCount),
 					MaxSize:     r.MaxNodeCount,
@@ -99,31 +106,38 @@ func (r *KubernetesServiceNodePool) Translate(cloud common.CloudProvider, ctx re
 				Labels:        r.Labels,
 				InstanceTypes: []string{common.VMSIZE[r.VmSize][cloud]},
 			},
-		}
+		}, nil
 	} else if cloud == common.AZURE {
 		if r.IsDefaultPool {
 			// this will be embedded in the cluster instead
-			return nil
+			return nil, nil
 		}
 
-		return []output.TfBlock{
-			r.translateAzNodePool(ctx),
+		pool, err := r.translateAzNodePool(ctx)
+		if err != nil {
+			return nil, err
 		}
+		return []output.TfBlock{
+			pool,
+		}, nil
 
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
-func (r *KubernetesServiceNodePool) translateAzNodePool(ctx resources.MultyContext) *kubernetes_node_pool.AzureKubernetesNodePool {
+func (r *KubernetesServiceNodePool) translateAzNodePool(ctx resources.MultyContext) (*kubernetes_node_pool.AzureKubernetesNodePool, error) {
+	clusterId, err := resources.GetMainOutputId(r.ClusterId, common.AZURE)
+	if err != nil {
+		return nil, err
+	}
 	return &kubernetes_node_pool.AzureKubernetesNodePool{
 		AzResource:        common.NewAzResource(r.GetTfResourceId(common.AZURE), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, common.AZURE), ctx.GetLocationFromCommonParams(r.CommonResourceParams, common.AZURE)),
-		ClusterId:         resources.GetMainOutputId(r.ClusterId, common.AZURE),
+		ClusterId:         clusterId,
 		NodeCount:         util.GetOrDefault(r.StartingNodeCount, r.MinNodeCount),
 		MaxSize:           r.MaxNodeCount,
 		MinSize:           r.MinNodeCount,
 		Labels:            r.Labels,
 		EnableAutoScaling: true,
 		VmSize:            common.VMSIZE[r.VmSize][common.AZURE],
-	}
+	}, nil
 }

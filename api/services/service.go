@@ -109,7 +109,7 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		}
 	}
 
-	return *new(OutT), fmt.Errorf("resource with id %s not found", in.GetResourceId())
+	return *new(OutT), errors.ResourceNotFound(in.GetResourceId())
 }
 
 func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {

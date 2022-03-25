@@ -25,7 +25,7 @@ type Subnet struct {
 	AvailabilityZone int             `hcl:"availability_zone,optional"`
 }
 
-func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if cloud == common.AWS {
 		location := s.Location
 		if location == "" {
@@ -47,7 +47,7 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				}
 			}
 		}
-		return []output.TfBlock{awsSubnet}
+		return []output.TfBlock{awsSubnet}, nil
 	} else if cloud == common.AZURE {
 		var azResources []output.TfBlock
 		azSubnet := subnet.AzureSubnet{
@@ -64,21 +64,28 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 
 		// there must be a better way to do this
 		if !checkSubnetRouteTableAssociated(ctx, s.ResourceId) {
-			rt := s.VirtualNetwork.GetAssociatedRouteTableId(cloud)
+			rt, err := s.VirtualNetwork.GetAssociatedRouteTableId(cloud)
+			if err != nil {
+				return nil, err
+			}
+			subnetId, err := resources.GetMainOutputId(s, cloud)
+			if err != nil {
+				return nil, err
+			}
 			rtAssociation := route_table_association.AzureRouteTableAssociation{
 				AzResource: &common.AzResource{
 					TerraformResource: output.TerraformResource{ResourceId: s.GetTfResourceId(cloud)},
 				},
-				SubnetId:     resources.GetMainOutputId(s, cloud),
+				SubnetId:     subnetId,
 				RouteTableId: rt,
 			}
 			azResources = append(azResources, rtAssociation)
 		}
 
-		return azResources
+		return azResources, nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, nil
 }
 
 func (s *Subnet) GetId(cloud common.CloudProvider) string {
@@ -123,14 +130,13 @@ func (s *Subnet) Validate(ctx resources.MultyContext, cloud common.CloudProvider
 	return errs
 }
 
-func (s *Subnet) GetMainResourceName(cloud common.CloudProvider) string {
+func (s *Subnet) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return subnet.AwsResourceName
+		return subnet.AwsResourceName, nil
 	case common.AZURE:
-		return subnet.AzureResourceName
+		return subnet.AzureResourceName, nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
 }

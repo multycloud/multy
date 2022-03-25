@@ -6,6 +6,7 @@ import (
 	"github.com/multycloud/multy/decoder"
 	"github.com/multycloud/multy/encoder"
 	"github.com/multycloud/multy/parser"
+	"github.com/multycloud/multy/validate"
 	"github.com/multycloud/multy/variables"
 	flag "github.com/spf13/pflag"
 	"io/ioutil"
@@ -61,9 +62,15 @@ func (c *TranslateCommand) Execute(ctx context.Context) error {
 
 	r := decoder.Decode(parsedConfig)
 
-	hclOutput, _ := encoder.Encode(r)
+	hclOutput, errs, err := encoder.Encode(r)
+	if len(errs) > 0 {
+		validate.PrintAllAndExit(errs)
+	}
+	if err != nil {
+		validate.LogInternalError(err.Error())
+	}
 
-	err := os.MkdirAll(filepath.Dir(c.OutputFile), os.ModeDir|(os.ModePerm&0775))
+	err = os.MkdirAll(filepath.Dir(c.OutputFile), os.ModeDir|(os.ModePerm&0775))
 	if err != nil {
 		return fmt.Errorf("error creating output file: %s", err.Error())
 	}

@@ -36,17 +36,22 @@ func (r *KubernetesService) Validate(ctx resources.MultyContext, cloud common.Cl
 	return errs
 }
 
-func (r *KubernetesService) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *KubernetesService) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	if cloud == common.AWS {
-		return output.GetResourceName(kubernetes_service.AwsEksCluster{})
+		return output.GetResourceName(kubernetes_service.AwsEksCluster{}), nil
 	} else if cloud == common.AZURE {
-		return output.GetResourceName(kubernetes_service.AzureEksCluster{})
+		return output.GetResourceName(kubernetes_service.AzureEksCluster{}), nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return ""
+	return "", fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
-func (r *KubernetesService) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (r *KubernetesService) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
+	subnetIds, err := util.MapSliceValuesErr(r.SubnetIds, func(v *Subnet) (string, error) {
+		return resources.GetMainOutputId(v, cloud)
+	})
+	if err != nil {
+		return nil, err
+	}
 	if cloud == common.AWS {
 		roleName := fmt.Sprintf("iam_for_k8cluster_%s", r.Name)
 		role := iam.AwsIamRole{
@@ -69,17 +74,18 @@ func (r *KubernetesService) Translate(cloud common.CloudProvider, ctx resources.
 			&kubernetes_service.AwsEksCluster{
 				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 				RoleArn:     fmt.Sprintf("aws_iam_role.%s.arn", r.GetTfResourceId(cloud)),
-				VpcConfig: kubernetes_service.VpcConfig{SubnetIds: util.MapSliceValues(r.SubnetIds, func(v *Subnet) string {
-					return resources.GetMainOutputId(v, cloud)
-				})},
-				Name: r.Name,
+				VpcConfig:   kubernetes_service.VpcConfig{SubnetIds: subnetIds},
+				Name:        r.Name,
 			},
-		}
+		}, nil
 	} else if cloud == common.AZURE {
 		var defaultPool *kubernetes_node_pool.AzureKubernetesNodePool
 		for _, node := range resources.GetAllResources[*KubernetesServiceNodePool](ctx) {
 			if node.ClusterId.ResourceId == r.ResourceId && node.IsDefaultPool {
-				defaultPool = node.translateAzNodePool(ctx)
+				defaultPool, err = node.translateAzNodePool(ctx)
+				if err != nil {
+					return nil, err
+				}
 				defaultPool.Name = defaultPool.AzResource.Name
 				defaultPool.AzResource = nil
 				defaultPool.ClusterId = ""
@@ -92,10 +98,9 @@ func (r *KubernetesService) Translate(cloud common.CloudProvider, ctx resources.
 				DnsPrefix:       r.Name,
 				Identity:        kubernetes_service.AzureIdentity{Type: "SystemAssigned"},
 			},
-		}
+		}, nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 func (r *KubernetesService) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
@@ -132,6 +137,5 @@ func (r *KubernetesService) GetOutputValues(cloud common.CloudProvider) map[stri
 		}
 	}
 
-	validate.LogInternalError("unknown cloud %s", cloud)
 	return nil
 }

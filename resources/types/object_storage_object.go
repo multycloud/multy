@@ -25,7 +25,7 @@ type ObjectStorageObject struct {
 	Source        string         `hcl:"source,optional"`
 }
 
-func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	var acl string
 	if r.Acl == "public_read" {
 		acl = "public-read"
@@ -43,7 +43,7 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 			Content:     r.Content,
 			ContentType: r.ContentType,
 			Source:      r.Source,
-		}}
+		}}, nil
 	} else if cloud == common.AZURE {
 		var containerName string
 		if r.Acl == "public_read" {
@@ -63,11 +63,10 @@ func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resource
 				SourceContent:        r.Content,
 				ContentType:          r.ContentType,
 				Source:               r.Source,
-			}}
+			}}, nil
 	}
 
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 func (r *ObjectStorageObject) GetS3Key() string {
@@ -104,14 +103,13 @@ func (r *ObjectStorageObject) Validate(ctx resources.MultyContext, cloud common.
 	return errs
 }
 
-func (r *ObjectStorageObject) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *ObjectStorageObject) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return "aws_s3_bucket_object"
+		return "aws_s3_bucket_object", nil
 	case common.AZURE:
-		return "azurerm_storage_blob"
+		return "azurerm_storage_blob", nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
 }

@@ -75,6 +75,18 @@ func MapSliceValues[V any, V2 any](values []V, mapper func(V) V2) []V2 {
 	return result
 }
 
+func MapSliceValuesErr[V any, V2 any](values []V, mapper func(V) (V2, error)) ([]V2, error) {
+	var result []V2
+	for _, v := range values {
+		mapped, err := mapper(v)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, mapped)
+	}
+	return result, nil
+}
+
 func FlatMapSliceValues[V any, V2 any](values []V, mapper func(V) []V2) []V2 {
 	var result []V2
 	for _, v := range values {

@@ -34,11 +34,19 @@ const (
 	VIRTUALNETWORK = "VirtualNetwork"
 )
 
-func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if cloud == common.AWS {
+		vpcId, err := resources.GetMainOutputId(r.VirtualNetwork, cloud)
+		if err != nil {
+			return nil, err
+		}
 		rt := route_table.AwsRouteTable{
 			AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
-			VpcId:       resources.GetMainOutputId(r.VirtualNetwork, cloud),
+			VpcId:       vpcId,
+		}
+		gtw, err := r.VirtualNetwork.GetAssociatedInternetGateway(cloud)
+		if err != nil {
+			return nil, err
 		}
 
 		var routes []route_table.AwsRouteTableRoute
@@ -47,14 +55,14 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 				routes = append(
 					routes, route_table.AwsRouteTableRoute{
 						CidrBlock: route.CidrBlock,
-						GatewayId: r.VirtualNetwork.GetAssociatedInternetGateway(cloud),
+						GatewayId: gtw,
 					},
 				)
 			}
 		}
 		rt.Routes = routes
 
-		return []output.TfBlock{rt}
+		return []output.TfBlock{rt}, nil
 	} else if cloud == common.AZURE {
 		rt := route_table.AzureRouteTable{
 			AzResource: common.NewAzResource(
@@ -76,10 +84,9 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 			}
 		}
 		rt.Routes = routes
-		return []output.TfBlock{rt}
+		return []output.TfBlock{rt}, nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 func (r *RouteTable) GetId(cloud common.CloudProvider) string {
@@ -100,14 +107,13 @@ func (r *RouteTable) Validate(ctx resources.MultyContext, cloud common.CloudProv
 	return errs
 }
 
-func (r *RouteTable) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *RouteTable) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return route_table.AwsResourceName
+		return route_table.AwsResourceName, nil
 	case common.AZURE:
-		return route_table.AzureResourceName
+		return route_table.AzureResourceName, nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
 }

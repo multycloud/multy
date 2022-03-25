@@ -51,12 +51,12 @@ type AwsRegionData struct {
 	*output.TerraformDataSource `hcl:",squash" default:"name=aws_region"`
 }
 
-func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if vm.UserData != "" {
 		vm.UserData = fmt.Sprintf("%s(\"%s\")", "base64encode", []byte(hclencoder.EscapeString(vm.UserData)))
 	}
 
-	var subnetId = resources.GetMainOutputId(vm.SubnetId, cloud)
+	var subnetId, _ = resources.GetMainOutputId(vm.SubnetId, cloud)
 
 	sshKeyData := vm.SshKey
 	if vm.SshKey == "" && vm.SshKeyFileName != "" {
@@ -66,12 +66,23 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		var awsResources []output.TfBlock
 		var ec2NicIds []virtual_machine.AwsEc2NetworkInterface
 		for i, ni := range vm.NetworkInterfaceIds {
+			niId, err := resources.GetMainOutputId(ni, cloud)
+			if err != nil {
+				return nil, err
+			}
 			ec2NicIds = append(
 				ec2NicIds, virtual_machine.AwsEc2NetworkInterface{
-					NetworkInterfaceId: resources.GetMainOutputId(ni, cloud),
+					NetworkInterfaceId: niId,
 					DeviceIndex:        i,
 				},
 			)
+		}
+
+		nsgIds, err := util.MapSliceValuesErr(vm.NetworkSecurityGroupIds, func(v *NetworkSecurityGroup) (string, error) {
+			return resources.GetMainOutputId(v, cloud)
+		})
+		if err != nil {
+			return nil, err
 		}
 
 		ec2 := virtual_machine.AwsEC2{
@@ -82,9 +93,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			UserDataBase64:           vm.UserData,
 			SubnetId:                 subnetId,
 			NetworkInterfaces:        ec2NicIds,
-			SecurityGroupIds: util.MapSliceValues(vm.NetworkSecurityGroupIds, func(v *NetworkSecurityGroup) string {
-				return resources.GetMainOutputId(v, cloud)
-			}),
+			SecurityGroupIds:         nsgIds,
 		}
 
 		if len(ec2NicIds) != 0 {
@@ -151,19 +160,25 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 				KeyName:     fmt.Sprintf("%s_multy", vm.ResourceId),
 				PublicKey:   sshKeyData,
 			}
-			ec2.KeyName = vm.GetAssociatedKeyPairName(cloud)
+			ec2.KeyName, err = vm.GetAssociatedKeyPairName(cloud)
+			if err != nil {
+				return nil, err
+			}
 			awsResources = append(awsResources, keyPair)
 		}
 
 		awsResources = append(awsResources, ec2)
-		return awsResources
+		return awsResources, nil
 	} else if cloud == common.AZURE {
 		// TODO validate that NIC is on the same VNET
 		var azResources []output.TfBlock
 		rgName := rg.GetResourceGroupName(vm.ResourceGroupId, cloud)
-		nicIds := util.MapSliceValues(vm.NetworkInterfaceIds, func(v *NetworkInterface) string {
+		nicIds, err := util.MapSliceValuesErr(vm.NetworkInterfaceIds, func(v *NetworkInterface) (string, error) {
 			return resources.GetMainOutputId(v, cloud)
 		})
+		if err != nil {
+			return nil, err
+		}
 
 		if len(vm.NetworkInterfaceIds) == 0 {
 			nic := network_interface.AzureNetworkInterface{
@@ -204,6 +219,10 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		if len(vm.NetworkSecurityGroupIds) != 0 {
 			for _, nsg := range vm.NetworkSecurityGroupIds {
 				for _, nicId := range nicIds {
+					nsgId, err := resources.GetMainOutputId(nsg, cloud)
+					if err != nil {
+						return nil, err
+					}
 					azResources = append(
 						azResources, network_security_group.AzureNetworkInterfaceSecurityGroupAssociation{
 							AzResource: &common.AzResource{
@@ -212,7 +231,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 								},
 							},
 							NetworkInterfaceId:     nicId,
-							NetworkSecurityGroupId: resources.GetMainOutputId(nsg, cloud),
+							NetworkSecurityGroupId: nsgId,
 						},
 					)
 				}
@@ -276,19 +295,17 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			},
 		)
 
-		return azResources
+		return azResources, nil
 	}
 
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
-func (vm *VirtualMachine) GetAssociatedKeyPairName(cloud common.CloudProvider) string {
+func (vm *VirtualMachine) GetAssociatedKeyPairName(cloud common.CloudProvider) (string, error) {
 	if cloud == common.AWS {
-		return fmt.Sprintf("%s.%s.key_name", virtual_machine.AwsKeyPairResourceName, vm.GetTfResourceId(common.AWS))
+		return fmt.Sprintf("%s.%s.key_name", virtual_machine.AwsKeyPairResourceName, vm.GetTfResourceId(common.AWS)), nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return ""
+	return "", fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 // check if VM identity is associated with vault (vault_access_policy)
@@ -321,16 +338,16 @@ func (vm *VirtualMachine) Validate(ctx resources.MultyContext, cloud common.Clou
 	return errs
 }
 
-func (vm *VirtualMachine) GetMainResourceName(cloud common.CloudProvider) string {
+func (vm *VirtualMachine) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return virtual_machine.AwsResourceName
+		return virtual_machine.AwsResourceName, nil
 	case common.AZURE:
-		return virtual_machine.AzureResourceName
+		return virtual_machine.AzureResourceName, nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
+	return "", nil
 }
 
 func (vm *VirtualMachine) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {

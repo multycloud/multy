@@ -49,7 +49,7 @@ type ObjectStorage struct {
 
 type AclRules struct{}
 
-func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	name := r.Name
 	if r.RandomSuffix {
 		name += fmt.Sprintf("-%s", common.RandomString(6))
@@ -59,7 +59,7 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 			AwsResource: &common.AwsResource{
 				TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 			},
-			Bucket: name}}
+			Bucket: name}}, nil
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 
@@ -93,18 +93,16 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 				},
 				StorageAccountName:  storageAccount.GetResourceName(),
 				ContainerAccessType: "private",
-			}}
+			}}, nil
 	}
 
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 func (r *ObjectStorage) GetAssociatedPublicContainerResourceName(cloud common.CloudProvider) string {
 	if cloud == common.AZURE {
 		return fmt.Sprintf("azurerm_storage_container.%s_public.name", r.GetTfResourceId(common.AZURE))
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return ""
 }
 
@@ -112,7 +110,6 @@ func (r *ObjectStorage) GetAssociatedPrivateContainerResourceName(cloud common.C
 	if cloud == common.AZURE {
 		return fmt.Sprintf("azurerm_storage_container.%s_private.name", r.GetTfResourceId(common.AZURE))
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return ""
 }
 
@@ -122,7 +119,6 @@ func (r *ObjectStorage) GetResourceName(cloud common.CloudProvider) string {
 	} else if cloud == common.AZURE {
 		return fmt.Sprintf("azurerm_storage_account.%s.name", r.GetTfResourceId(common.AZURE))
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
 	return ""
 }
 
@@ -130,14 +126,13 @@ func (r *ObjectStorage) Validate(ctx resources.MultyContext, cloud common.CloudP
 	return errs
 }
 
-func (r *ObjectStorage) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *ObjectStorage) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return "aws_s3_bucket"
+		return "aws_s3_bucket", nil
 	case common.AZURE:
-		return "azurerm_storage_account"
+		return "azurerm_storage_account", nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
 }

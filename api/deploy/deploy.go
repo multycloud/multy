@@ -147,9 +147,12 @@ func Translate(c *config.Config, prev *config.Resource, curr *config.Resource) (
 		Providers: provider,
 	}
 
-	hclOutput, errs := encoder.Encode(&decodedResources)
+	hclOutput, errs, err := encoder.Encode(&decodedResources)
 	if len(errs) > 0 {
 		return hclOutput, errors.ValidationErrors(errs)
+	}
+	if err != nil {
+		return hclOutput, err
 	}
 
 	return hclOutput, nil
@@ -167,7 +170,7 @@ func Deploy(c *config.Config, prev *config.Resource, curr *config.Resource) (*ou
 	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
 	err = os.WriteFile(filepath.Join(tmpDir, tfFile), []byte(hclOutput), os.ModePerm&0664)
 	if err != nil {
-		return nil, fmt.Errorf("error creating output file: %s", err.Error())
+		return nil, errors.InternalServerErrorWithMessage("error storing configuration", err)
 	}
 
 	fmt.Println("running tf init")
@@ -177,7 +180,7 @@ func Deploy(c *config.Config, prev *config.Resource, curr *config.Resource) (*ou
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		return nil, err
+		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
 	}
 
 	fmt.Println("Running tf apply")
@@ -189,19 +192,13 @@ func Deploy(c *config.Config, prev *config.Resource, curr *config.Resource) (*ou
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		return nil, err
+		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
 	}
 
 	state, err := GetState(c.UserId)
 	if err != nil {
-		return state, err
+		return state, errors.InternalServerErrorWithMessage("error parsing state", err)
 	}
-
-	// TODO: store this in S3
-	_, err = os.ReadFile(filepath.Join(tmpDir, tfState))
-	//if err == nil {
-	//	fmt.Println(string(stateBytes))
-	//}
 
 	return state, nil
 }
@@ -215,7 +212,7 @@ func GetState(userId string) (*output.TfState, error) {
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
-		return &state, nil
+		return &state, err
 	}
 
 	err = json.Unmarshal(stateJson.Bytes(), &state)

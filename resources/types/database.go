@@ -24,16 +24,20 @@ type Database struct {
 	SubnetIds     []*Subnet `mhcl:"ref=subnet_ids"`
 }
 
-func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
+	subnetIds, err := util.MapSliceValuesErr(db.SubnetIds, func(v *Subnet) (string, error) {
+		return resources.GetMainOutputId(v, cloud)
+	})
+	if err != nil {
+		return nil, err
+	}
+	// TODO validate subnet configuration (minimum 2 different AZs)
 	if cloud == common.AWS {
 		name := common.RemoveSpecialChars(db.Name)
-		// TODO validate subnet configuration (minimum 2 different AZs)
 		dbSubnetGroup := database.AwsDbSubnetGroup{
 			AwsResource: common.NewAwsResource(db.GetTfResourceId(cloud), db.Name),
 			Name:        db.Name,
-			SubnetIds: util.MapSliceValues(db.SubnetIds, func(v *Subnet) string {
-				return resources.GetMainOutputId(v, cloud)
-			}),
+			SubnetIds:   subnetIds,
 		}
 		return []output.TfBlock{
 			dbSubnetGroup,
@@ -51,7 +55,7 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 				DbSubnetGroupName:  dbSubnetGroup.GetResourceName(),
 				PubliclyAccessible: true,
 			},
-		}
+		}, nil
 	} else if cloud == common.AZURE {
 		return database.NewAzureDatabase(
 			database.AzureDbServer{
@@ -67,14 +71,11 @@ func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyCon
 				AdministratorLogin:         db.DbUsername,
 				AdministratorLoginPassword: db.DbPassword,
 				SkuName:                    common.DBSIZE[db.Size][cloud],
-				SubnetIds: util.MapSliceValues(db.SubnetIds, func(v *Subnet) string {
-					return resources.GetMainOutputId(v, cloud)
-				}),
+				SubnetIds:                  subnetIds,
 			},
-		)
+		), nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 func (db *Database) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
@@ -89,18 +90,18 @@ func (db *Database) Validate(ctx resources.MultyContext, cloud common.CloudProvi
 	return errs
 }
 
-func (db *Database) GetMainResourceName(cloud common.CloudProvider) string {
+func (db *Database) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return database.AwsResourceName
+		return database.AwsResourceName, nil
 	case common.AZURE:
 		if db.Engine == "mysql" {
-			return database.AzureMysqlResourceName
+			return database.AzureMysqlResourceName, nil
 		}
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
+	return "", nil
 }
 
 func (db *Database) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
@@ -135,7 +136,5 @@ func (db *Database) GetOutputValues(cloud common.CloudProvider) map[string]cty.V
 			),
 		}
 	}
-
-	validate.LogInternalError("unknown cloud %s", cloud)
 	return nil
 }
