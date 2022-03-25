@@ -110,7 +110,6 @@ func GetAvailabilityZone(location string, az int, cloud CloudProvider) string {
 	}
 	validate.LogInternalError("invalid az value: %d", az)
 	return ""
-
 }
 
 func GetCloudLocation(location string, provider CloudProvider) (string, error) {
@@ -121,6 +120,17 @@ func GetCloudLocation(location string, provider CloudProvider) (string, error) {
 		return "", fmt.Errorf("location %s is not defined for cloud %s", location, provider)
 	}
 	return LOCATION[location][provider], nil
+}
+
+// GetLocationFromCloudLocation get multy location from cloud specific location (eu-west-1 -> ireland)
+func GetLocationFromCloudLocation(location string, cloud CloudProvider) string {
+	for s, m := range LOCATION {
+		if m[cloud] == location {
+			return s
+		}
+	}
+	validate.LogInternalError("location %s is not defined for cloud %s", location, cloud)
+	return ""
 }
 
 func ValidateVmSize(s string) bool {

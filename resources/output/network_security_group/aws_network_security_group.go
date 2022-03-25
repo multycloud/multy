@@ -26,6 +26,8 @@ const AwsSecurityGroupResourceName = "aws_security_group"
 type AwsSecurityGroup struct {
 	*common.AwsResource `hcl:",squash"  default:"name=aws_security_group"`
 	VpcId               string                 `hcl:"vpc_id"`
+	Name                string                 `hcl:"name"`
+	Description         string                 `hcl:"description"`
 	Ingress             []AwsSecurityGroupRule `hcl:"ingress,blocks"`
 	Egress              []AwsSecurityGroupRule `hcl:"egress,blocks"`
 }

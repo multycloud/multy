@@ -13,6 +13,7 @@ type AzureNetworkSecurityGroup struct {
 
 type AzureNsg struct {
 	*common.AzResource `hcl:",squash" default:"name=azurerm_network_security_group"`
+	Description        string      `hcl:"description"`
 	Rules              []AzureRule `hcl:"security_rule,blocks"`
 }
 

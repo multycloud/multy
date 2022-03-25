@@ -21,6 +21,7 @@ AWS: VPC traffic is always added as an extra rule
 type NetworkSecurityGroup struct {
 	*resources.CommonResourceParams
 	Name           string          `hcl:"name"`
+	Description    string          `hcl:"description,optional"`
 	VirtualNetwork *VirtualNetwork `mhcl:"ref=virtual_network"`
 	Rules          []RuleType      `hcl:"rules,optional"`
 }
@@ -43,6 +44,11 @@ const (
 )
 
 func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
+	description := r.Description
+	if r.Description == "" {
+		description = "Managed by Multy"
+	}
+
 	if cloud == common.AWS {
 		awsRules := translateAwsNsgRules(r, r.Rules)
 
@@ -64,6 +70,8 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 			network_security_group.AwsSecurityGroup{
 				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 				VpcId:       vnId,
+				Name:        r.Name,
+				Description: description,
 				Ingress:     awsRules["ingress"],
 				Egress:      awsRules["egress"],
 			},
@@ -75,7 +83,8 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 					r.GetTfResourceId(cloud), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, cloud),
 					ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 				),
-				Rules: translateAzNsgRules(r.Rules),
+				Description: description,
+				Rules:       translateAzNsgRules(r.Rules),
 			},
 		}, nil
 	}
