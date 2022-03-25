@@ -9,6 +9,7 @@ import (
 	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/validate"
 	"strconv"
+	"strings"
 )
 
 /*
@@ -164,11 +165,12 @@ func translateAzNsgRules(rules []RuleType) []network_security_group.AzureRule {
 	var rls []network_security_group.AzureRule
 
 	for _, rule := range rules {
+		protocol := strings.Title(strings.ToLower(rule.Protocol))
 		if rule.Direction == BOTH {
 			rls = append(
 				rls, network_security_group.AzureRule{
 					Name:                     strconv.Itoa(len(rls)),
-					Protocol:                 rule.Protocol,
+					Protocol:                 protocol,
 					Priority:                 rule.Priority,
 					Access:                   "Allow",
 					SourcePortRange:          "*",
@@ -181,7 +183,7 @@ func translateAzNsgRules(rules []RuleType) []network_security_group.AzureRule {
 			rls = append(
 				rls, network_security_group.AzureRule{
 					Name:                     strconv.Itoa(len(rls)),
-					Protocol:                 rule.Protocol,
+					Protocol:                 protocol,
 					Priority:                 rule.Priority,
 					Access:                   "Allow",
 					SourcePortRange:          "*",
@@ -195,7 +197,7 @@ func translateAzNsgRules(rules []RuleType) []network_security_group.AzureRule {
 			rls = append(
 				rls, network_security_group.AzureRule{
 					Name:                     strconv.Itoa(len(rls)),
-					Protocol:                 rule.Protocol,
+					Protocol:                 protocol,
 					Priority:                 rule.Priority,
 					Access:                   "Allow",
 					SourcePortRange:          "*",

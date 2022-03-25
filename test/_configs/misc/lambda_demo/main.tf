@@ -91,12 +91,12 @@ data "archive_file" "lambda_azure" {
   output_path = ".multy/tmp/multy_function_azure.zip"
 }
 resource "azurerm_storage_account" "lambda_azure" {
-  resource_group_name      = azurerm_resource_group.fun-rg.name
-  name                     = "multyfunctionstacwzob"
-  location                 = "northeurope"
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-  allow_blob_public_access = false
+  resource_group_name             = azurerm_resource_group.fun-rg.name
+  name                            = "multyfunctionstacwzob"
+  location                        = "northeurope"
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  allow_nested_items_to_be_public = false
 }
 resource "azurerm_function_app" "lambda_azure" {
   resource_group_name        = azurerm_resource_group.fun-rg.name
