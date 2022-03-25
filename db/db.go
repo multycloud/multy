@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/protobuf/jsonpb"
 	aws_client "github.com/multycloud/multy/api/aws"
+	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto"
 	"github.com/multycloud/multy/api/proto/config"
 	"os"
@@ -27,23 +28,23 @@ func (d *Database) StoreUserConfig(config *config.Config) error {
 	fmt.Printf("Storing user config from api_key %s\n", config.UserId)
 	str, err := d.marshaler.MarshalToString(config)
 	if err != nil {
-		return err
+		return errors.InternalServerErrorWithMessage("unable to marshal configuration", err)
 	}
 
 	if config.UserId != multyLocalUser {
 		err = d.client.SaveFile(config.UserId, configFile, str)
 		if err != nil {
-			return err
+			return errors.InternalServerErrorWithMessage("error storing configuration", err)
 		}
 		tmpDir := filepath.Join(os.TempDir(), "multy", config.UserId)
 		data, err := os.ReadFile(filepath.Join(tmpDir, tfState))
 		if err != nil {
-			return err
+			return errors.InternalServerErrorWithMessage("error reading current infra state cache", err)
 		}
 
 		err = d.client.SaveFile(config.UserId, tfState, string(data))
 		if err != nil {
-			return err
+			return errors.InternalServerErrorWithMessage("error storing current infra state", err)
 		}
 	} else {
 		d.keyValueStore[config.UserId] = str
@@ -62,7 +63,7 @@ func (d *Database) LoadUserConfig(userId string) (*config.Config, error) {
 	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
 	err := os.MkdirAll(tmpDir, os.ModeDir|(os.ModePerm&0775))
 	if err != nil {
-		return nil, fmt.Errorf("error creating output file: %s", err.Error())
+		return nil, errors.InternalServerErrorWithMessage("error creating output file", err)
 	}
 
 	tfFileStr := ""
@@ -70,24 +71,24 @@ func (d *Database) LoadUserConfig(userId string) (*config.Config, error) {
 		var errPtr *error
 		tfFileStr, errPtr = d.client.ReadFile(userId, configFile)
 		if errPtr != nil {
-			return nil, *errPtr
+			return nil, errors.InternalServerErrorWithMessage("error read configuration", *errPtr)
 		}
-		tfStateStr, er := d.client.ReadFile(userId, tfState)
-		if er != nil {
-			return nil, err
+		tfStateStr, errPtr := d.client.ReadFile(userId, tfState)
+		if errPtr != nil {
+			return nil, errors.InternalServerErrorWithMessage("error reading current infra state", *errPtr)
 		}
 		err = os.WriteFile(filepath.Join(tmpDir, tfState), []byte(tfStateStr), os.ModePerm&0664)
-		if er != nil {
-			return nil, err
+		if err != nil {
+			return nil, errors.InternalServerErrorWithMessage("error caching current infra state", err)
 		}
 	} else {
 		tfFileStr = d.keyValueStore[userId]
 	}
 
 	if tfFileStr != "" {
-		er := jsonpb.UnmarshalString(tfFileStr, &result)
-		if er != nil {
-			return nil, er
+		err := jsonpb.UnmarshalString(tfFileStr, &result)
+		if err != nil {
+			return nil, errors.InternalServerErrorWithMessage("error parsing configuration", err)
 		}
 	}
 	return &result, nil

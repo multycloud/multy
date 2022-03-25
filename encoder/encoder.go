@@ -3,13 +3,13 @@ package encoder
 import (
 	"bytes"
 	"github.com/multy-dev/hclencoder"
+	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/decoder"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
-	"log"
 )
 
 type WithProvider struct {
@@ -29,12 +29,12 @@ func (w WithProvider) AddDependency(s string) {
 	w.Resource.AddDependency(s)
 }
 
-func Encode(decodedResources *decoder.DecodedResources) (string, []validate.ValidationError) {
+func Encode(decodedResources *decoder.DecodedResources) (string, []validate.ValidationError, error) {
 	ctx := resources.MultyContext{Resources: decodedResources.Resources, Location: decodedResources.GlobalConfig.Location}
 
-	translatedResources, errs := TranslateResources(decodedResources, ctx)
-	if len(errs) > 0 {
-		return "", errs
+	translatedResources, errs, err := TranslateResources(decodedResources, ctx)
+	if len(errs) > 0 || err != nil {
+		return "", errs, err
 	}
 	providers := buildProviders(decodedResources, ctx)
 
@@ -57,7 +57,7 @@ func Encode(decodedResources *decoder.DecodedResources) (string, []validate.Vali
 			// If not already wrapped in a tf block, assume it's a resource.
 			hcl, err := hclencoder.Encode(output.WrapWithBlockType(result))
 			if err != nil {
-				log.Fatal("unable to encode: ", err)
+				return "", nil, errors.InternalServerErrorWithMessage("unexpected error encoding resource", err)
 			}
 			b.Write(hcl)
 		}
@@ -72,7 +72,7 @@ func Encode(decodedResources *decoder.DecodedResources) (string, []validate.Vali
 				},
 			)
 			if err != nil {
-				log.Fatal("unable to encode: ", err)
+				return "", nil, errors.InternalServerErrorWithMessage("unexpected error encoding providers", err)
 			}
 			b.Write(hcl)
 		}
@@ -93,12 +93,14 @@ func Encode(decodedResources *decoder.DecodedResources) (string, []validate.Vali
 			},
 		)
 		if err != nil {
-			validate.LogFatalWithSourceRange(outputVal.DefinitionRange, "unable to encode output: %s", err.Error())
+			if err != nil {
+				return "", nil, errors.InternalServerErrorWithMessage("unexpected error encoding outputs", err)
+			}
 		}
 		b.Write(hclOutput)
 	}
 
-	return b.String(), nil
+	return b.String(), nil, nil
 }
 
 type providerWrapper struct {

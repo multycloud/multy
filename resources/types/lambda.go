@@ -34,7 +34,7 @@ type lambdaZip struct {
 
 const SasExpirationDuration = time.Hour * 24 * 365
 
-func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if cloud == common.AWS {
 		var result []output.TfBlock
 
@@ -186,7 +186,7 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				),
 			},
 		)
-		return result
+		return result, nil
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 		var result []output.TfBlock
@@ -289,9 +289,9 @@ func (r *Lambda) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 				},
 			},
 		)
-		return result
+		return result, nil
 	}
-	return nil
+	return nil, nil
 }
 
 func (r *Lambda) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
@@ -326,16 +326,16 @@ func (r *Lambda) getSourceCodeZip(cloud common.CloudProvider) string {
 	return fmt.Sprintf(".multy/tmp/%s_%s.zip", r.FunctionName, cloud)
 }
 
-func (r *Lambda) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *Lambda) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return lambda.AwsResourceName
+		return lambda.AwsResourceName, nil
 	case common.AZURE:
-		return lambda.AzureResourceName
+		return lambda.AzureResourceName, nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
+	return "", nil
 }
 
 func (r *Lambda) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
@@ -359,7 +359,5 @@ func (r *Lambda) GetOutputValues(cloud common.CloudProvider) map[string]cty.Valu
 			),
 		}
 	}
-
-	validate.LogInternalError("unknown cloud %s", cloud)
 	return nil
 }

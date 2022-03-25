@@ -37,7 +37,7 @@ type ResourceGroup struct {
 
 const AzureResourceName = "azurerm_resource_group"
 
-func (rg *Type) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (rg *Type) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if cloud == common.AZURE {
 		return []output.TfBlock{ResourceGroup{
 			AzResource: &common.AzResource{
@@ -45,13 +45,13 @@ func (rg *Type) Translate(cloud common.CloudProvider, ctx resources.MultyContext
 				Name:              rg.Name,
 			},
 			Location: ctx.GetLocation(rg.Location, cloud),
-		}}
+		}}, nil
 	} else if cloud == common.AWS {
-		return nil
+		return nil, nil
 	}
 
 	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, nil
 }
 
 func (rg *Type) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
@@ -94,16 +94,16 @@ func (rg *Type) Validate(ctx resources.MultyContext, cloud common.CloudProvider)
 	return nil
 }
 
-func (rg *Type) GetMainResourceName(cloud common.CloudProvider) string {
+func (rg *Type) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return ""
+		return "", nil
 	case common.AZURE:
-		return "AzureResourceName"
+		return "AzureResourceName", nil
 	default:
 		validate.LogInternalError("unknown cloud %s", cloud)
 	}
-	return ""
+	return "", nil
 }
 
 func (rg *Type) GetDependencies(ctx resources.MultyContext) []resources.CloudSpecificResource {

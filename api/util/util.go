@@ -39,7 +39,7 @@ func ExtractUserId(ctx context.Context) (string, error) {
 func InsertIntoConfig[Arg proto.Message](in []Arg, c *config.Config) (*config.Resource, error) {
 	args, err := convert(in)
 	if err != nil {
-		return nil, err
+		return nil, errors.InternalServerErrorWithMessage("error marhsalling resource", err)
 	}
 	resource := config.Resource{
 		ResourceId:   base64.StdEncoding.EncodeToString([]byte(uuid.New().String())),
@@ -77,7 +77,7 @@ func UpdateInConfig[Arg proto.Message](c *config.Config, resourceId string, in [
 		}
 		c.Resources[i].ResourceArgs = a
 	} else {
-		return fmt.Errorf("resource with id %s not found", resourceId)
+		return errors.ResourceNotFound(resourceId)
 	}
 	return nil
 }

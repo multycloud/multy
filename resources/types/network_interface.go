@@ -16,8 +16,8 @@ type NetworkInterface struct {
 	SubnetId *Subnet `mhcl:"ref=subnet_id,optional"`
 }
 
-func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
-	subnetId := resources.GetMainOutputId(r.SubnetId, cloud)
+func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
+	subnetId, _ := resources.GetMainOutputId(r.SubnetId, cloud)
 
 	if cloud == common.AWS {
 		return []output.TfBlock{
@@ -25,7 +25,7 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
 				SubnetId:    subnetId,
 			},
-		}
+		}, nil
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 		nic := network_interface.AzureNetworkInterface{
@@ -45,11 +45,10 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 		if publicIpReference := getPublicIpReferences(ctx, subnetId); len(publicIpReference) != 0 {
 			nic.IpConfigurations = publicIpReference
 		}
-		return []output.TfBlock{nic}
+		return []output.TfBlock{nic}, nil
 	}
 
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 func (r *NetworkInterface) GetId(cloud common.CloudProvider) string {
@@ -79,14 +78,13 @@ func (r *NetworkInterface) Validate(ctx resources.MultyContext, cloud common.Clo
 	return errs
 }
 
-func (r *NetworkInterface) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *NetworkInterface) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return network_interface.AwsResourceName
+		return network_interface.AwsResourceName, nil
 	case common.AZURE:
-		return network_interface.AzureResourceName
+		return network_interface.AzureResourceName, nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
 }

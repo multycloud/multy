@@ -42,7 +42,7 @@ const (
 	DENY    = "deny"
 )
 
-func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if cloud == common.AWS {
 		awsRules := translateAwsNsgRules(r, r.Rules)
 
@@ -56,14 +56,18 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 		awsRules[INGRESS] = append(awsRules[INGRESS], allowVpcTraffic)
 		awsRules[EGRESS] = append(awsRules[EGRESS], allowVpcTraffic)
 
+		vnId, err := resources.GetMainOutputId(r.VirtualNetwork, cloud)
+		if err != nil {
+			return nil, err
+		}
 		return []output.TfBlock{
 			network_security_group.AwsSecurityGroup{
 				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
-				VpcId:       resources.GetMainOutputId(r.VirtualNetwork, cloud),
+				VpcId:       vnId,
 				Ingress:     awsRules["ingress"],
 				Egress:      awsRules["egress"],
 			},
-		}
+		}, nil
 	} else if cloud == common.AZURE {
 		return []output.TfBlock{
 			network_security_group.AzureNsg{
@@ -73,22 +77,9 @@ func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resourc
 				),
 				Rules: translateAzNsgRules(r.Rules),
 			},
-		}
+		}, nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
-}
-
-func (r NetworkSecurityGroup) GetId(cloud common.CloudProvider) string {
-	if cloud == common.AWS {
-		return fmt.Sprintf("%s.%s.id", network_security_group.AwsSecurityGroupResourceName, r.GetTfResourceId(cloud))
-	} else if cloud == common.AZURE {
-		return fmt.Sprintf(
-			"%s.%s.id", network_security_group.AzureNetworkSecurityGroupResourceName, r.GetTfResourceId(cloud),
-		)
-	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return ""
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 func translateAwsNsgRules(r *NetworkSecurityGroup, rules []RuleType) map[string][]network_security_group.AwsSecurityGroupRule {
@@ -248,14 +239,13 @@ func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext, cloud common
 	return errs
 }
 
-func (r *NetworkSecurityGroup) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *NetworkSecurityGroup) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return network_security_group.AwsSecurityGroupResourceName
+		return network_security_group.AwsSecurityGroupResourceName, nil
 	case common.AZURE:
-		return network_security_group.AzureNetworkSecurityGroupResourceName
+		return network_security_group.AzureNetworkSecurityGroupResourceName, nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
 }

@@ -26,7 +26,7 @@ type VirtualNetwork struct {
 	CidrBlock                       string `hcl:"cidr_block"`
 }
 
-func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if cloud == common.AWS {
 		vpc := virtual_network.AwsVpc{
 			AwsResource:        common.NewAwsResource(vn.GetTfResourceId(cloud), vn.Name),
@@ -55,7 +55,7 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 			vpc,
 			igw,
 			sg,
-		}
+		}, nil
 	} else if cloud == common.AZURE {
 		return []output.TfBlock{virtual_network.AzureVnet{
 			AzResource: common.NewAzResource(
@@ -73,11 +73,10 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 				AddressPrefix: "0.0.0.0/0",
 				NextHopType:   "VnetLocal",
 			}},
-		}}
+		}}, nil
 	}
 
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 func (vn *VirtualNetwork) GetVirtualNetworkId(cloud common.CloudProvider) string {
@@ -90,28 +89,18 @@ func (vn *VirtualNetwork) GetVirtualNetworkName(cloud common.CloudProvider) stri
 	return fmt.Sprintf("%s.%s.name", types[cloud], vn.GetTfResourceId(cloud))
 }
 
-func (vn *VirtualNetwork) GetDefaultNetworkAclId(cloud common.CloudProvider) string {
-	if cloud == common.AWS {
-		return fmt.Sprintf("aws_vpc.%s.default_network_acl_id", vn.GetTfResourceId(common.AWS))
-	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return ""
-}
-
-func (vn *VirtualNetwork) GetAssociatedRouteTableId(cloud common.CloudProvider) string {
+func (vn *VirtualNetwork) GetAssociatedRouteTableId(cloud common.CloudProvider) (string, error) {
 	if cloud == common.AZURE {
-		return fmt.Sprintf("${%s.%s.id}", route_table.AzureResourceName, vn.GetTfResourceId(common.AZURE))
+		return fmt.Sprintf("${%s.%s.id}", route_table.AzureResourceName, vn.GetTfResourceId(common.AZURE)), nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return ""
+	return "", fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
-func (vn *VirtualNetwork) GetAssociatedInternetGateway(cloud common.CloudProvider) string {
+func (vn *VirtualNetwork) GetAssociatedInternetGateway(cloud common.CloudProvider) (string, error) {
 	if cloud == common.AWS {
-		return fmt.Sprintf("%s.%s.id", virtual_network.AwsInternetGatewayName, vn.GetTfResourceId(common.AWS))
+		return fmt.Sprintf("%s.%s.id", virtual_network.AwsInternetGatewayName, vn.GetTfResourceId(common.AWS)), nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return ""
+	return "", fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 // TODO validate commonparams
@@ -125,16 +114,15 @@ func (vn *VirtualNetwork) Validate(ctx resources.MultyContext, cloud common.Clou
 	return errs
 }
 
-func (vn *VirtualNetwork) GetMainResourceName(cloud common.CloudProvider) string {
+func (vn *VirtualNetwork) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return virtual_network.AwsResourceName
+		return virtual_network.AwsResourceName, nil
 	case common.AZURE:
-		return virtual_network.AzureResourceName
+		return virtual_network.AzureResourceName, nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
 }
 
 /*

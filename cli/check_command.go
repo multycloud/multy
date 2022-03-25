@@ -55,9 +55,12 @@ func (c *CheckCommand) Execute(ctx context.Context) error {
 	r := decoder.Decode(parsedConfig)
 	mctx := resources.MultyContext{Resources: r.Resources, Location: r.GlobalConfig.Location}
 
-	_, errs := encoder.TranslateResources(r, mctx)
+	_, errs, err := encoder.TranslateResources(r, mctx)
 	if errs != nil {
 		validate.PrintAllAndExit(errs)
+	}
+	if err != nil {
+		validate.LogInternalError(err.Error())
 	}
 
 	fmt.Println("no validation errors found")

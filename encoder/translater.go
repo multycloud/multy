@@ -12,14 +12,18 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-func TranslateResources(decodedResources *decoder.DecodedResources, ctx resources.MultyContext) (map[resources.CloudSpecificResource][]output.TfBlock, []validate.ValidationError) {
+func TranslateResources(decodedResources *decoder.DecodedResources, ctx resources.MultyContext) (map[resources.CloudSpecificResource][]output.TfBlock, []validate.ValidationError, error) {
 	defaultTagProcessor := mhcl.DefaultTagProcessor{}
 
 	translationCache := map[resources.CloudSpecificResource][]output.TfBlock{}
 
 	errors := map[validate.ValidationError]bool{}
 	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
-		translationCache[r] = r.Translate(ctx)
+		var err error
+		translationCache[r], err = r.Translate(ctx)
+		if err != nil {
+			return translationCache, nil, err
+		}
 		for _, translated := range translationCache[r] {
 			defaultTagProcessor.Process(translated)
 		}
@@ -29,7 +33,7 @@ func TranslateResources(decodedResources *decoder.DecodedResources, ctx resource
 		}
 	}
 
-	return translationCache, maps.Keys(errors)
+	return translationCache, maps.Keys(errors), nil
 }
 
 func getProvider(providers map[common.CloudProvider]map[string]*types.Provider, r resources.CloudSpecificResource, ctx resources.MultyContext) *types.Provider {

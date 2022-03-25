@@ -19,9 +19,9 @@ type AzureClientConfig struct {
 	*output.TerraformDataSource `hcl:",squash" default:"name=azurerm_client_config"`
 }
 
-func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if cloud == common.AWS {
-		return []output.TfBlock{}
+		return []output.TfBlock{}, nil
 	} else if cloud == common.AZURE {
 		return []output.TfBlock{
 			AzureClientConfig{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.GetTfResourceId(cloud)}},
@@ -47,34 +47,32 @@ func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext
 						SecretPermissions:      []string{"List", "Get", "Set", "Delete", "Recover", "Backup", "Restore", "Purge"},
 					},
 				}},
-			}}
+			}}, nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
-func (r *Vault) GetVaultId(cloud common.CloudProvider) string {
+func (r *Vault) GetVaultId(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AZURE:
-		return fmt.Sprintf("%s.%s.id", vault.AzureResourceName, r.GetTfResourceId(cloud))
+		return fmt.Sprintf("%s.%s.id", vault.AzureResourceName, r.GetTfResourceId(cloud)), nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
 }
 
 func (r *Vault) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
 	return errs
 }
 
-func (r *Vault) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *Vault) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return ""
+		return "", nil
 	case common.AZURE:
-		return vault.AzureResourceName
+		return vault.AzureResourceName, nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
+	return "", nil
 }

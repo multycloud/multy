@@ -2,6 +2,7 @@ package converter
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	common_resources "github.com/multycloud/multy/resources"
@@ -138,6 +139,32 @@ func getCommonParams(resourceId string, arg *common.CloudSpecificResourceCommonA
 	}
 }
 
+func setReference[T any](resources map[string]common_resources.CloudSpecificResource, id string, cloud cloud_providers.CloudProvider, field *T, resourceId string, fieldName string) error {
+	if vn, ok := resources[common_resources.GetResourceIdForCloud(id, cloud)]; ok {
+		if _, okType := vn.Resource.(T); !okType {
+			return errors.ValidationErrors([]validate.ValidationError{
+				{
+					ErrorMessage: fmt.Sprintf("resource with id %s is of the wrong type", id),
+					ResourceId:   resourceId,
+					FieldName:    fieldName,
+				},
+			})
+		}
+		// Connect to resource in the same cloud
+		*field = vn.Resource.(T)
+	} else {
+		return errors.ValidationErrors([]validate.ValidationError{
+			{
+				ErrorMessage: fmt.Sprintf("resource with id %s not found", id),
+				ResourceId:   resourceId,
+				FieldName:    fieldName,
+			},
+		})
+	}
+
+	return nil
+}
+
 func (v SubnetConverter) ConvertToMultyResource(resourceId string, m proto.Message, otherResources map[string]common_resources.CloudSpecificResource) (common_resources.CloudSpecificResource, error) {
 	arg := m.(*resources.CloudSpecificSubnetArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
@@ -147,11 +174,9 @@ func (v SubnetConverter) ConvertToMultyResource(resourceId string, m proto.Messa
 		AvailabilityZone: int(arg.AvailabilityZone),
 	}
 
-	if vn, ok := otherResources[common_resources.GetResourceIdForCloud(arg.VirtualNetworkId, c)]; ok {
-		// Connect to vn in the same cloud
-		subnet.VirtualNetwork = vn.Resource.(*types.VirtualNetwork)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("virtual network with id %s not found in %s", arg.VirtualNetworkId, c)
+	err := setReference(otherResources, arg.VirtualNetworkId, c, &subnet.VirtualNetwork, resourceId, "virtual_network_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
 	return common_resources.CloudSpecificResource{
@@ -168,11 +193,9 @@ func (v NetworkInterfaceConverter) ConvertToMultyResource(resourceId string, m p
 		Name: arg.Name,
 	}
 
-	if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SubnetId, c)]; ok {
-		// Connect to subnet in the same cloud
-		ni.SubnetId = subnet.Resource.(*types.Subnet)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", arg.SubnetId, c)
+	err := setReference(otherResources, arg.SubnetId, c, &ni.SubnetId, resourceId, "subnet_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
 	return common_resources.CloudSpecificResource{
@@ -196,11 +219,9 @@ func (v RouteTableConverter) ConvertToMultyResource(resourceId string, m proto.M
 	}
 
 	if arg.VirtualNetworkId != "" {
-		if vn, ok := otherResources[common_resources.GetResourceIdForCloud(arg.VirtualNetworkId, c)]; ok {
-			// Connect to vn in the same cloud
-			rt.VirtualNetwork = vn.Resource.(*types.VirtualNetwork)
-		} else {
-			return common_resources.CloudSpecificResource{}, fmt.Errorf("virtual network with id %s not found in %s", arg.VirtualNetworkId, c)
+		err := setReference(otherResources, arg.VirtualNetworkId, c, &rt.VirtualNetwork, resourceId, "virtual_network_id")
+		if err != nil {
+			return common_resources.CloudSpecificResource{}, err
 		}
 	}
 
@@ -216,18 +237,14 @@ func (v RouteTableAssociationConverter) ConvertToMultyResource(resourceId string
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
 	rta := types.RouteTableAssociation{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c)}
 
-	if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SubnetId, c)]; ok {
-		// Connect to subnet in the same cloud
-		rta.SubnetId = subnet.Resource.(*types.Subnet)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", arg.SubnetId, c)
+	err := setReference(otherResources, arg.SubnetId, c, &rta.SubnetId, resourceId, "subnet_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
-	if rt, ok := otherResources[common_resources.GetResourceIdForCloud(arg.RouteTableId, c)]; ok {
-		// Connect to subnet in the same cloud
-		rta.RouteTableId = rt.Resource.(*types.RouteTable)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("route table with id %s not found in %s", arg.RouteTableId, c)
+	err = setReference(otherResources, arg.RouteTableId, c, &rta.RouteTableId, resourceId, "route_table_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
 	return common_resources.CloudSpecificResource{
@@ -254,11 +271,9 @@ func (v NetworkSecurityGroupConverter) ConvertToMultyResource(resourceId string,
 		}),
 	}
 
-	if vn, ok := otherResources[common_resources.GetResourceIdForCloud(arg.VirtualNetworkId, c)]; ok {
-		// Connect to vn in the same cloud
-		nsg.VirtualNetwork = vn.Resource.(*types.VirtualNetwork)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("virtual network with id %s not found in %s", arg.VirtualNetworkId, c)
+	err := setReference(otherResources, arg.VirtualNetworkId, c, &nsg.VirtualNetwork, resourceId, "virtual_network_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
 	return common_resources.CloudSpecificResource{
@@ -302,13 +317,11 @@ func (v DatabaseConverter) ConvertToMultyResource(resourceId string, m proto.Mes
 		DbPassword:    arg.Password,
 	}
 
-	for _, subnetId := range arg.SubnetIds {
-
-		if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(subnetId, c)]; ok {
-			// Connect to vn in the same cloud
-			db.SubnetIds = append(db.SubnetIds, subnet.Resource.(*types.Subnet))
-		} else {
-			return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", subnetId, c)
+	db.SubnetIds = make([]*types.Subnet, len(arg.SubnetIds))
+	for i, subnetId := range arg.SubnetIds {
+		err := setReference(otherResources, subnetId, c, &db.SubnetIds[i], resourceId, fmt.Sprintf("subnet_ids[%d]", i))
+		if err != nil {
+			return common_resources.CloudSpecificResource{}, err
 		}
 	}
 
@@ -344,11 +357,9 @@ func (v ObjectStorageObjectConverter) ConvertToMultyResource(resourceId string, 
 		Source:      arg.Source,
 	}
 
-	if o, ok := otherResources[common_resources.GetResourceIdForCloud(arg.ObjectStorageId, c)]; ok {
-		// Connect to vn in the same cloud
-		obj.ObjectStorage = o.Resource.(*types.ObjectStorage)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("object storage with id %s not found in %s", arg.ObjectStorageId, c)
+	err := setReference(otherResources, arg.ObjectStorageId, c, &obj.ObjectStorage, resourceId, "object_storage_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
 	return common_resources.CloudSpecificResource{
@@ -365,11 +376,9 @@ func (v PublicIpConverter) ConvertToMultyResource(resourceId string, m proto.Mes
 		Name: arg.Name,
 	}
 
-	if ni, ok := otherResources[common_resources.GetResourceIdForCloud(arg.NetworkInterfaceId, c)]; ok {
-		// Connect to vn in the same cloud
-		obj.NetworkInterfaceId = ni.Resource.(*types.NetworkInterface)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("network interface with id %s not found in %s", arg.NetworkInterfaceId, c)
+	err := setReference(otherResources, arg.NetworkInterfaceId, c, &obj.NetworkInterfaceId, resourceId, "network_interface_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
 	return common_resources.CloudSpecificResource{
@@ -386,13 +395,11 @@ func (v KubernetesClusterConverter) ConvertToMultyResource(resourceId string, m 
 		Name: arg.Name,
 	}
 
-	for _, subnetId := range arg.SubnetIds {
-
-		if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(subnetId, c)]; ok {
-			// Connect to vn in the same cloud
-			kc.SubnetIds = append(kc.SubnetIds, subnet.Resource.(*types.Subnet))
-		} else {
-			return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", subnetId, c)
+	kc.SubnetIds = make([]*types.Subnet, len(arg.SubnetIds))
+	for i, subnetId := range arg.SubnetIds {
+		err := setReference(otherResources, subnetId, c, &kc.SubnetIds[i], resourceId, fmt.Sprintf("subnet_ids[%d]", i))
+		if err != nil {
+			return common_resources.CloudSpecificResource{}, err
 		}
 	}
 
@@ -426,19 +433,16 @@ func (v KubernetesNodePoolConverter) ConvertToMultyResource(resourceId string, m
 		DiskSizeGiB:       int(arg.DiskSizeGb),
 	}
 
-	if kc, ok := otherResources[common_resources.GetResourceIdForCloud(arg.ClusterId, c)]; ok {
-		// Connect to vn in the same cloud
-		knp.ClusterId = kc.Resource.(*types.KubernetesService)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("cluster with id %s not found in %s", arg.ClusterId, c)
+	err := setReference(otherResources, arg.ClusterId, c, &knp.ClusterId, resourceId, "cluster_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
-	for _, subnetId := range arg.SubnetIds {
-		if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(subnetId, c)]; ok {
-			// Connect to vn in the same cloud
-			knp.SubnetIds = append(knp.SubnetIds, subnet.Resource.(*types.Subnet))
-		} else {
-			return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", subnetId, c)
+	knp.SubnetIds = make([]*types.Subnet, len(arg.SubnetIds))
+	for i, subnetId := range arg.SubnetIds {
+		err := setReference(otherResources, subnetId, c, &knp.SubnetIds[i], resourceId, fmt.Sprintf("subnet_ids[%d]", i))
+		if err != nil {
+			return common_resources.CloudSpecificResource{}, err
 		}
 	}
 
@@ -457,11 +461,9 @@ func (v LambdaConverter) ConvertToMultyResource(resourceId string, m proto.Messa
 		Runtime:      arg.Runtime,
 	}
 
-	if o, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SourceCodeObjectId, c)]; ok {
-		// Connect to vn in the same cloud
-		l.SourceCodeObject = o.Resource.(*types.ObjectStorageObject)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("object with id %s not found in %s", arg.SourceCodeObjectId, c)
+	err := setReference(otherResources, arg.SourceCodeObjectId, c, &l.SourceCodeObject, resourceId, "source_code_object_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
 	return common_resources.CloudSpecificResource{
@@ -493,11 +495,9 @@ func (v VaultAccessPolicyConverter) ConvertToMultyResource(resourceId string, m 
 		Access:   strings.ToLower(arg.Access.String()),
 	}
 
-	if v, ok := otherResources[common_resources.GetResourceIdForCloud(arg.VaultId, c)]; ok {
-		// Connect to vn in the same cloud
-		vap.Vault = v.Resource.(*types.Vault)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("vault with id %s not found in %s", arg.VaultId, c)
+	err := setReference(otherResources, arg.VaultId, c, &vap.Vault, resourceId, "vault_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
 	return common_resources.CloudSpecificResource{
@@ -515,11 +515,9 @@ func (v VaultSecretConverter) ConvertToMultyResource(resourceId string, m proto.
 		Value: arg.Value,
 	}
 
-	if v, ok := otherResources[common_resources.GetResourceIdForCloud(arg.VaultId, c)]; ok {
-		// Connect to vn in the same cloud
-		vs.Vault = v.Resource.(*types.Vault)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("vault with id %s not found in %s", arg.VaultId, c)
+	err := setReference(otherResources, arg.VaultId, c, &vs.Vault, resourceId, "vault_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
 	return common_resources.CloudSpecificResource{
@@ -542,32 +540,30 @@ func (v VirtualMachineConverter) ConvertToMultyResource(resourceId string, m pro
 	}
 
 	if arg.PublicIpId != "" {
-		if pid, ok := otherResources[common_resources.GetResourceIdForCloud(arg.PublicIpId, c)]; ok {
-			vm.PublicIpId = pid.Resource.(*types.PublicIp)
-		} else {
-			return common_resources.CloudSpecificResource{}, fmt.Errorf("public ip with id %s not found in %s", arg.PublicIpId, c)
+		err := setReference(otherResources, arg.PublicIpId, c, &vm.PublicIpId, resourceId, "public_ip_id")
+		if err != nil {
+			return common_resources.CloudSpecificResource{}, err
 		}
 	}
 
-	if subnet, ok := otherResources[common_resources.GetResourceIdForCloud(arg.SubnetId, c)]; ok {
-		vm.SubnetId = subnet.Resource.(*types.Subnet)
-	} else {
-		return common_resources.CloudSpecificResource{}, fmt.Errorf("subnet with id %s not found in %s", arg.SubnetId, c)
+	err := setReference(otherResources, arg.SubnetId, c, &vm.SubnetId, resourceId, "subnet_id")
+	if err != nil {
+		return common_resources.CloudSpecificResource{}, err
 	}
 
-	for _, niId := range arg.NetworkInterfaceIds {
-		if ni, ok := otherResources[common_resources.GetResourceIdForCloud(niId, c)]; ok {
-			vm.NetworkInterfaceIds = append(vm.NetworkInterfaceIds, ni.Resource.(*types.NetworkInterface))
-		} else {
-			return common_resources.CloudSpecificResource{}, fmt.Errorf("network interface with id %s not found in %s", niId, c)
+	vm.NetworkInterfaceIds = make([]*types.NetworkInterface, len(arg.NetworkInterfaceIds))
+	for i, niId := range arg.NetworkInterfaceIds {
+		err := setReference(otherResources, niId, c, &vm.NetworkInterfaceIds[i], resourceId, fmt.Sprintf("network_interface_ids[%d]", i))
+		if err != nil {
+			return common_resources.CloudSpecificResource{}, err
 		}
 	}
 
-	for _, nsgId := range arg.NetworkSecurityGroupIds {
-		if nsg, ok := otherResources[common_resources.GetResourceIdForCloud(nsgId, c)]; ok {
-			vm.NetworkSecurityGroupIds = append(vm.NetworkSecurityGroupIds, nsg.Resource.(*types.NetworkSecurityGroup))
-		} else {
-			return common_resources.CloudSpecificResource{}, fmt.Errorf("network security group with id %s not found in %s", nsgId, c)
+	vm.NetworkSecurityGroupIds = make([]*types.NetworkSecurityGroup, len(arg.NetworkSecurityGroupIds))
+	for i, nsgId := range arg.NetworkSecurityGroupIds {
+		err := setReference(otherResources, nsgId, c, &vm.NetworkSecurityGroupIds[i], resourceId, fmt.Sprintf("network_security_group_ids[%d]", i))
+		if err != nil {
+			return common_resources.CloudSpecificResource{}, err
 		}
 	}
 

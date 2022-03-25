@@ -24,7 +24,7 @@ const (
 	OWNER = "owner"
 )
 
-func (r *VaultAccessPolicy) Translate(cloud common.CloudProvider, ctx resources.MultyContext) []output.TfBlock {
+func (r *VaultAccessPolicy) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if cloud == common.AWS {
 		//return []output.TfBlock{
 		//	vault_secret.AwsSsmParameter{
@@ -36,15 +36,19 @@ func (r *VaultAccessPolicy) Translate(cloud common.CloudProvider, ctx resources.
 		//		Value: r.Value,
 		//	},
 		//}
-		return nil
+		return nil, nil
 	} else if cloud == common.AZURE {
+		vaultId, err := r.Vault.GetVaultId(cloud)
+		if err != nil {
+			return nil, err
+		}
 		return []output.TfBlock{
 			AzureClientConfig{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.GetTfResourceId(cloud)}},
 			vault_access_policy.AzureKeyVaultAccessPolicy{
 				AzResource: &common.AzResource{
 					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 				},
-				KeyVaultId: r.Vault.GetVaultId(cloud),
+				KeyVaultId: vaultId,
 				AzureKeyVaultAccessPolicyInline: &vault.AzureKeyVaultAccessPolicyInline{
 					TenantId: fmt.Sprintf(
 						"data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud),
@@ -54,10 +58,9 @@ func (r *VaultAccessPolicy) Translate(cloud common.CloudProvider, ctx resources.
 					AzureKeyVaultPermissions: r.GetAccessPolicyRules(cloud),
 				},
 			},
-		}
+		}, nil
 	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
 }
 
 // fix return
@@ -93,10 +96,9 @@ func (r *VaultAccessPolicy) GetAccessPolicyRules(cloud common.CloudProvider) *va
 				SecretPermissions:      []string{"List", "Get", "Set", "Delete", "Recover", "Backup", "Restore", "Purge"},
 			}
 		}
-	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+
 	}
-	return &vault.AzureKeyVaultPermissions{}
+	return nil
 }
 
 func (r *VaultAccessPolicy) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
@@ -106,14 +108,13 @@ func (r *VaultAccessPolicy) Validate(ctx resources.MultyContext, cloud common.Cl
 	return errs
 }
 
-func (r *VaultAccessPolicy) GetMainResourceName(cloud common.CloudProvider) string {
+func (r *VaultAccessPolicy) GetMainResourceName(cloud common.CloudProvider) (string, error) {
 	switch cloud {
 	case common.AWS:
-		return vault_secret.AwsResourceName
+		return vault_secret.AwsResourceName, nil
 	case common.AZURE:
-		return vault_secret.AzureResourceName
+		return vault_secret.AzureResourceName, nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
-	return ""
 }
