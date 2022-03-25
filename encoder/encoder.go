@@ -33,7 +33,7 @@ func Encode(decodedResources *decoder.DecodedResources) (string, []validate.Vali
 	ctx := resources.MultyContext{Resources: decodedResources.Resources, Location: decodedResources.GlobalConfig.Location}
 
 	translatedResources, errs := TranslateResources(decodedResources, ctx)
-	if errs != nil {
+	if len(errs) > 0 {
 		return "", errs
 	}
 	providers := buildProviders(decodedResources, ctx)

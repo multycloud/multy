@@ -148,7 +148,7 @@ func Translate(c *config.Config, prev *config.Resource, curr *config.Resource) (
 	}
 
 	hclOutput, errs := encoder.Encode(&decodedResources)
-	if errs != nil {
+	if len(errs) > 0 {
 		return hclOutput, errors.ValidationErrors(errs)
 	}
 
