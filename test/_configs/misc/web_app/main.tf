@@ -273,7 +273,6 @@ resource "azurerm_resource_group" "nsg-rg" {
 resource "azurerm_network_security_group" "nsg2_azure" {
   resource_group_name = azurerm_resource_group.nsg-rg.name
   name                = "test-nsg2"
-  description         = "Managed by Multy"
   location            = "eastus"
   security_rule {
     name                       = "0"
