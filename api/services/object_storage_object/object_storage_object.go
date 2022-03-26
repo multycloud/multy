@@ -17,7 +17,7 @@ func (s ObjectStorageObjectService) Convert(resourceId string, args []*resources
 	var result []*resources.CloudSpecificObjectStorageObjectResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificObjectStorageObjectResource{
-			CommonParameters: util.ConvertCommonParams(r.CommonParameters),
+			CommonParameters: util.ConvertCommonChildParams(r.CommonParameters),
 			Name:             r.Name,
 			Acl:              r.Acl,
 			ObjectStorageId:  r.ObjectStorageId,

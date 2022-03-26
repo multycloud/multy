@@ -17,7 +17,7 @@ func (s VaultAccessPolicyService) Convert(resourceId string, args []*resources.C
 	var result []*resources.CloudSpecificVaultAccessPolicyResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificVaultAccessPolicyResource{
-			CommonParameters: util.ConvertCommonParams(r.CommonParameters),
+			CommonParameters: util.ConvertCommonChildParams(r.CommonParameters),
 			VaultId:          r.VaultId,
 			Identity:         r.Identity,
 			Access:           r.Access,

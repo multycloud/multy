@@ -27,7 +27,7 @@ message DeleteKubernetesNodePoolRequest {
 }
 
 message CloudSpecificKubernetesNodePoolArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+  common.CloudSpecificChildResourceCommonArgs common_parameters = 1;
   string name = 2;
   repeated string subnet_ids = 3;
   string cluster_id = 4;
@@ -43,7 +43,7 @@ message CloudSpecificKubernetesNodePoolArgs {
 }
 
 message CloudSpecificKubernetesNodePoolResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+  common.CloudSpecificCommonChildResourceParameters common_parameters = 1;
   string name = 2;
   repeated string subnet_ids = 3;
   string cluster_id = 4;

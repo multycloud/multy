@@ -17,7 +17,7 @@ func (s SubnetService) Convert(resourceId string, args []*resources.CloudSpecifi
 	var result []*resources.CloudSpecificSubnetResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificSubnetResource{
-			CommonParameters: util.ConvertCommonParams(r.CommonParameters),
+			CommonParameters: util.ConvertCommonChildParams(r.CommonParameters),
 			Name:             r.Name,
 			CidrBlock:        r.CidrBlock,
 			AvailabilityZone: r.AvailabilityZone,

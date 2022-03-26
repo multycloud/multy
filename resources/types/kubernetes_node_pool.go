@@ -131,7 +131,11 @@ func (r *KubernetesServiceNodePool) translateAzNodePool(ctx resources.MultyConte
 		return nil, err
 	}
 	return &kubernetes_node_pool.AzureKubernetesNodePool{
-		AzResource:        common.NewAzResource(r.GetTfResourceId(common.AZURE), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, common.AZURE), ctx.GetLocationFromCommonParams(r.CommonResourceParams, common.AZURE)),
+		AzResource: &common.AzResource{
+			TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(common.AZURE)},
+			Name:              r.Name,
+			ResourceGroupName: rg.GetResourceGroupName(r.ResourceGroupId, common.AZURE),
+		},
 		ClusterId:         clusterId,
 		NodeCount:         util.GetOrDefault(r.StartingNodeCount, r.MinNodeCount),
 		MaxSize:           r.MaxNodeCount,
@@ -140,4 +144,8 @@ func (r *KubernetesServiceNodePool) translateAzNodePool(ctx resources.MultyConte
 		EnableAutoScaling: true,
 		VmSize:            common.VMSIZE[r.VmSize][common.AZURE],
 	}, nil
+}
+
+func (r *KubernetesServiceNodePool) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
+	return r.ClusterId.GetLocation(cloud, ctx)
 }

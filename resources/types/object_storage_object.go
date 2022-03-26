@@ -113,3 +113,7 @@ func (r *ObjectStorageObject) GetMainResourceName(cloud common.CloudProvider) (s
 		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
 }
+
+func (r *ObjectStorageObject) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
+	return r.ObjectStorage.GetLocation(cloud, ctx)
+}

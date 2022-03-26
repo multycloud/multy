@@ -36,14 +36,14 @@ message VaultAccess {
 }
 
 message CloudSpecificVaultAccessPolicyArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+  common.CloudSpecificChildResourceCommonArgs common_parameters = 1;
   string vault_id = 2;
   string identity = 3;
   VaultAccess access = 4;
 }
 
 message CloudSpecificVaultAccessPolicyResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+  common.CloudSpecificCommonChildResourceParameters common_parameters = 1;
   string vault_id = 2;
   string identity = 3;
   VaultAccess access = 4;

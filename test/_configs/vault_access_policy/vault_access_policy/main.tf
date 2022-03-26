@@ -40,12 +40,12 @@ data "aws_caller_identity" "vm_aws" {
 data "aws_region" "vm_aws" {
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  name = "iam_for_vm_vm"
+  name = "iam_for_vm_vm_aws"
   role = aws_iam_role.vm_aws.name
 }
 resource "aws_iam_role" "vm_aws" {
   tags               = { "Name" = "test-vm" }
-  name               = "iam_for_vm_vm"
+  name               = "iam_for_vm_vm_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   inline_policy {
     name   = "vault_policy"

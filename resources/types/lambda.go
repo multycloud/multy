@@ -305,7 +305,7 @@ func (r *Lambda) Validate(ctx resources.MultyContext, cloud common.CloudProvider
 }
 
 func (r *Lambda) getAwsIamRoleName() string {
-	return fmt.Sprintf("iam_for_lambda_%s", r.ResourceId)
+	return fmt.Sprintf("iam_for_lambda_%s", r.GetTfResourceId(common.AWS))
 }
 
 func (r *Lambda) getAwsRestApiId() string {

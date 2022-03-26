@@ -27,13 +27,13 @@ message DeleteRouteTableAssociationRequest {
 }
 
 message CloudSpecificRouteTableAssociationArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+  common.CloudSpecificChildResourceCommonArgs common_parameters = 1;
   string subnet_id = 2;
   string route_table_id = 3;
 }
 
 message CloudSpecificRouteTableAssociationResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+  common.CloudSpecificCommonChildResourceParameters common_parameters = 1;
   string subnet_id = 2;
   string route_table_id = 3;
 }

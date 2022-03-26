@@ -14,7 +14,7 @@
           }
         ]
       },
-      "resource_id": "vn"
+      "resource_id": "vn_aws"
     },
     {
       "resource_args": {
@@ -30,7 +30,7 @@
           }
         ]
       },
-      "resource_id": "vn"
+      "resource_id": "vn_azure"
     },
     {
       "resource_args": {
@@ -39,16 +39,12 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 1,
             "cidr_block": "10.0.0.0/24",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
             "name": "subnet1",
-            "virtual_network_id": "vn"
+            "virtual_network_id": "vn_aws"
           }
         ]
       },
-      "resource_id": "subnet1"
+      "resource_id": "subnet1_aws"
     },
     {
       "resource_args": {
@@ -57,16 +53,12 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 2,
             "cidr_block": "10.0.1.0/24",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
             "name": "subnet2",
-            "virtual_network_id": "vn"
+            "virtual_network_id": "vn_aws"
           }
         ]
       },
-      "resource_id": "subnet2"
+      "resource_id": "subnet2_aws"
     },
     {
       "resource_args": {
@@ -75,16 +67,12 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 1,
             "cidr_block": "10.0.0.0/24",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
             "name": "subnet1",
-            "virtual_network_id": "vn"
+            "virtual_network_id": "vn_azure"
           }
         ]
       },
-      "resource_id": "subnet1"
+      "resource_id": "subnet1_azure"
     },
     {
       "resource_args": {
@@ -102,11 +90,11 @@
                 "destination": "INTERNET"
               }
             ],
-            "virtual_network_id": "vn"
+            "virtual_network_id": "vn_aws"
           }
         ]
       },
-      "resource_id": "rt"
+      "resource_id": "rt_aws"
     },
     {
       "resource_args": {
@@ -115,16 +103,12 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 2,
             "cidr_block": "10.0.1.0/24",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
             "name": "subnet2",
-            "virtual_network_id": "vn"
+            "virtual_network_id": "vn_azure"
           }
         ]
       },
-      "resource_id": "subnet2"
+      "resource_id": "subnet2_azure"
     },
     {
       "resource_args": {
@@ -142,59 +126,47 @@
                 "destination": "INTERNET"
               }
             ],
-            "virtual_network_id": "vn"
+            "virtual_network_id": "vn_azure"
           }
         ]
       },
-      "resource_id": "rt"
+      "resource_id": "rt_azure"
     },
     {
       "resource_args": {
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
-            "route_table_id": "rt",
-            "subnet_id": "subnet1"
+            "route_table_id": "rt_aws",
+            "subnet_id": "subnet1_aws"
           }
         ]
       },
-      "resource_id": "rta"
+      "resource_id": "rta_aws"
     },
     {
       "resource_args": {
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
-            "route_table_id": "rt",
-            "subnet_id": "subnet1"
+            "route_table_id": "rt_azure",
+            "subnet_id": "subnet1_azure"
           }
         ]
       },
-      "resource_id": "rta"
+      "resource_id": "rta_azure"
     },
     {
       "resource_args": {
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
-            "route_table_id": "rt",
-            "subnet_id": "subnet2"
+            "route_table_id": "rt_aws",
+            "subnet_id": "subnet2_aws"
           }
         ]
       },
-      "resource_id": "rta2"
+      "resource_id": "rta2_aws"
     },
     {
       "resource_args": {
@@ -213,29 +185,25 @@
             "size": "NANO",
             "storage_gb": 10,
             "subnet_ids": [
-              "subnet1",
-              "subnet2"
+              "subnet1_azure",
+              "subnet2_azure"
             ]
           }
         ]
       },
-      "resource_id": "example_db"
+      "resource_id": "example_db_azure"
     },
     {
       "resource_args": {
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
-            "route_table_id": "rt",
-            "subnet_id": "subnet2"
+            "route_table_id": "rt_azure",
+            "subnet_id": "subnet2_azure"
           }
         ]
       },
-      "resource_id": "rta2"
+      "resource_id": "rta2_azure"
     },
     {
       "resource_args": {
@@ -254,13 +222,13 @@
             "size": "NANO",
             "storage_gb": 10,
             "subnet_ids": [
-              "subnet1",
-              "subnet2"
+              "subnet1_aws",
+              "subnet2_aws"
             ]
           }
         ]
       },
-      "resource_id": "example_db"
+      "resource_id": "example_db_aws"
     }
   ]
 }

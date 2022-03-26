@@ -60,13 +60,6 @@
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
             "acl": "PUBLIC_READ",
-            "clouds": [
-              "aws"
-            ],
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
             "content": "${templatefile(\"index.html\",{\"aws_url\"=\"${aws_api_gateway_deployment.lambda_aws.invoke_url}\",\"azure_url\"=\"https://${azurerm_function_app.lambda_azure.default_hostname}/trigger\"})}",
             "content_type": "text/html",
             "name": "index.html",
