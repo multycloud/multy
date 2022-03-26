@@ -157,7 +157,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		if sshKeyData != "" {
 			keyPair := virtual_machine.AwsKeyPair{
 				AwsResource: common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
-				KeyName:     fmt.Sprintf("%s_multy", vm.ResourceId),
+				KeyName:     fmt.Sprintf("%s_multy", vm.GetTfResourceId(cloud)),
 				PublicKey:   sshKeyData,
 			}
 			ec2.KeyName, err = vm.GetAssociatedKeyPairName(cloud)
@@ -388,5 +388,5 @@ func (vm *VirtualMachine) GetOutputValues(cloud common.CloudProvider) map[string
 }
 
 func (vm *VirtualMachine) getAwsIamRoleName() string {
-	return fmt.Sprintf("iam_for_vm_%s", vm.ResourceId)
+	return fmt.Sprintf("iam_for_vm_%s", vm.GetTfResourceId(common.AWS))
 }

@@ -118,3 +118,7 @@ func (r *VaultAccessPolicy) GetMainResourceName(cloud common.CloudProvider) (str
 		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
 }
+
+func (r *VaultAccessPolicy) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
+	return r.Vault.GetLocation(cloud, ctx)
+}

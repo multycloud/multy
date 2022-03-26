@@ -125,10 +125,6 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 0,
             "cidr_block": "10.0.0.0/24",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
             "name": "example_subnet",
             "rg_vars": {
               "app": "backend"
@@ -146,10 +142,6 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 0,
             "cidr_block": "10.0.0.0/24",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
             "name": "example_subnet",
             "rg_vars": {
               "app": "backend"

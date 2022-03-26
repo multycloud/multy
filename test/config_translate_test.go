@@ -1,9 +1,11 @@
 package test
 
 import (
+	"fmt"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/proto/config"
+	"google.golang.org/grpc/status"
 	"log"
 	"os"
 	"path/filepath"
@@ -81,6 +83,9 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 
 	hclOutput, err := deploy.Translate(&c, nil, nil)
 	if err != nil {
+		if s, ok := status.FromError(err); ok {
+			fmt.Println(s.Details())
+		}
 		t.Fatalf("unable to translate: %v", err)
 	}
 

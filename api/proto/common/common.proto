@@ -56,11 +56,19 @@ message CloudSpecificCommonResourceParameters {
   bool needs_update = 4;
 }
 
+message CloudSpecificCommonChildResourceParameters {
+  bool needs_update = 1;
+}
+
 // Common messages for CREATE and UPDATE requests
 message CloudSpecificResourceCommonArgs {
   string resource_group_id = 1;
   Location location = 2;
   CloudProvider cloud_provider = 3;
+}
+
+
+message CloudSpecificChildResourceCommonArgs {
 }
 
 // Common messages for DELETE requests

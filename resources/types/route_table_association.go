@@ -63,3 +63,7 @@ func (r *RouteTableAssociation) GetMainResourceName(cloud common.CloudProvider) 
 		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
 }
+
+func (r *RouteTableAssociation) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
+	return r.RouteTableId.GetLocation(cloud, ctx)
+}

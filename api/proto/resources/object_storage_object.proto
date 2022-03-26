@@ -32,7 +32,7 @@ enum ObjectStorageObjectAcl {
 }
 
 message CloudSpecificObjectStorageObjectArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+  common.CloudSpecificChildResourceCommonArgs common_parameters = 1;
   string name = 2;
   ObjectStorageObjectAcl acl = 3;
   string object_storage_id = 4;
@@ -42,7 +42,7 @@ message CloudSpecificObjectStorageObjectArgs {
 }
 
 message CloudSpecificObjectStorageObjectResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+  common.CloudSpecificCommonChildResourceParameters common_parameters = 1;
   string name = 2;
   ObjectStorageObjectAcl acl = 3;
   string object_storage_id = 4;

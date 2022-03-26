@@ -9,22 +9,22 @@ resource "aws_lambda_function" "super_long_function_aws" {
   }
 
   function_name    = "super_long_function"
-  role             = aws_iam_role.iam_for_lambda_super_long_function.arn
+  role             = aws_iam_role.iam_for_lambda_super_long_function_aws.arn
   filename         = ".multy/tmp/super_long_function_aws.zip"
   source_code_hash = data.archive_file.super_long_function_aws.output_base64sha256
   runtime          = "python3.9"
   handler          = "lambda_function.lambda_handler"
 }
-resource "aws_iam_role" "iam_for_lambda_super_long_function" {
+resource "aws_iam_role" "iam_for_lambda_super_long_function_aws" {
   tags = {
-    "Name" = "iam_for_lambda_super_long_function"
+    "Name" = "iam_for_lambda_super_long_function_aws"
   }
 
-  name               = "iam_for_lambda_super_long_function"
+  name               = "iam_for_lambda_super_long_function_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "super_long_function_aws" {
-  role       = aws_iam_role.iam_for_lambda_super_long_function.name
+  role       = aws_iam_role.iam_for_lambda_super_long_function_aws.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 resource "aws_api_gateway_rest_api" "super_long_function_aws" {

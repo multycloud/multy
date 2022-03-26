@@ -148,7 +148,7 @@ resource "aws_iam_instance_profile" "vm_aws" {
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
-  name = "iam_for_vm_vm"
+  name = "iam_for_vm_vm_aws"
   role = aws_iam_role.vm_aws.name
 }
 resource "aws_iam_role" "vm_aws" {
@@ -157,7 +157,7 @@ resource "aws_iam_role" "vm_aws" {
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
   tags               = { "Name" = "test-vm" }
-  name               = "iam_for_vm_vm"
+  name               = "iam_for_vm_vm_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   inline_policy {
     name   = "vault_policy"
@@ -170,7 +170,7 @@ resource "aws_key_pair" "vm_aws" {
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
   tags       = { "Name" = "test-vm" }
-  key_name   = "vm_multy"
+  key_name   = "vm_aws_multy"
   public_key = "${file("./ssh_key.pub")}"
 }
 resource "aws_instance" "vm_aws" {

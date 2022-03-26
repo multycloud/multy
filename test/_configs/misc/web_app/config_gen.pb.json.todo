@@ -7,10 +7,6 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 2,
             "cidr_block": "10.0.2.0/24",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
             "name": "subnet2",
             "virtual_network_id": "example_vn"
           }
@@ -25,10 +21,6 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 0,
             "cidr_block": "10.0.3.0/24",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
             "name": "subnet3",
             "virtual_network_id": "example_vn"
           }
@@ -43,10 +35,6 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 1,
             "cidr_block": "10.0.1.0/24",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
             "name": "subnet1",
             "virtual_network_id": "example_vn"
           }
@@ -81,10 +69,6 @@
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
             "route_table_id": "rt",
             "subnet_id": "subnet2"
           }
@@ -351,10 +335,6 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 0,
             "cidr_block": "10.0.3.0/24",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
             "name": "subnet3",
             "virtual_network_id": "example_vn"
           }
@@ -367,10 +347,6 @@
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
             "route_table_id": "rt",
             "subnet_id": "subnet3"
           }
@@ -383,10 +359,6 @@
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
             "route_table_id": "rt",
             "subnet_id": "subnet2"
           }
@@ -399,10 +371,6 @@
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
             "route_table_id": "rt",
             "subnet_id": "subnet1"
           }
@@ -415,10 +383,6 @@
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
             "route_table_id": "rt",
             "subnet_id": "subnet1"
           }
@@ -467,10 +431,6 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 1,
             "cidr_block": "10.0.1.0/24",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
             "name": "subnet1",
             "virtual_network_id": "example_vn"
           }
@@ -526,10 +486,6 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 2,
             "cidr_block": "10.0.2.0/24",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
             "name": "subnet2",
             "virtual_network_id": "example_vn"
           }
@@ -564,10 +520,6 @@
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
             "route_table_id": "rt",
             "subnet_id": "subnet3"
           }

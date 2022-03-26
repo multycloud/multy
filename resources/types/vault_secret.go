@@ -61,3 +61,7 @@ func (r *VaultSecret) GetMainResourceName(cloud common.CloudProvider) (string, e
 		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
 }
+
+func (r *VaultSecret) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
+	return r.Vault.GetLocation(cloud, ctx)
+}

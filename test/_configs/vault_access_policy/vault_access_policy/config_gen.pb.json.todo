@@ -43,10 +43,6 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 0,
             "cidr_block": "10.0.2.0/24",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "UK"
-            },
             "name": "subnet",
             "virtual_network_id": "example_vn"
           }
@@ -61,10 +57,6 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 0,
             "cidr_block": "10.0.2.0/24",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "UK"
-            },
             "name": "subnet",
             "virtual_network_id": "example_vn"
           }

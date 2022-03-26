@@ -106,5 +106,9 @@ func GetOrDefault[V any](v *V, defaultValue V) V {
 }
 
 func GetTfResourceId(resourceId string, cloud string) string {
+	// just a hack so we can keep both config and translate tests for now
+	if strings.HasSuffix(resourceId, "_"+cloud) {
+		return resourceId
+	}
 	return fmt.Sprintf("%s_%s", resourceId, strings.ToLower(cloud))
 }

@@ -174,11 +174,11 @@ resource "aws_subnet" "subnet3_aws" {
 }
 resource "aws_iam_role" "vm_aws" {
   tags               = { "Name" = "test-vm" }
-  name               = "iam_for_vm_vm"
+  name               = "iam_for_vm_vm_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  name = "iam_for_vm_vm"
+  name = "iam_for_vm_vm_aws"
   role = aws_iam_role.vm_aws.name
 }
 resource "aws_instance" "vm_aws" {

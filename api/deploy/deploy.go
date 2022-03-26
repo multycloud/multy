@@ -262,7 +262,7 @@ func addMultyResource(r *config.Resource, translated map[string]common_resources
 		if err != nil {
 			return err
 		}
-		translated[translatedResource.GetResourceId()] = translatedResource
+		translated[translatedResource.Resource.GetResourceId()] = translatedResource
 	}
 	return nil
 }

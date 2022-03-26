@@ -24,6 +24,12 @@ func ConvertCommonParams(parameters *common.CloudSpecificResourceCommonArgs) *co
 	}
 }
 
+func ConvertCommonChildParams(parameters *common.CloudSpecificChildResourceCommonArgs) *common.CloudSpecificCommonChildResourceParameters {
+	return &common.CloudSpecificCommonChildResourceParameters{
+		NeedsUpdate: false,
+	}
+}
+
 func ExtractUserId(ctx context.Context) (string, error) {
 	md, _ := metadata.FromIncomingContext(ctx)
 	userIds := md.Get("user_id")

@@ -27,8 +27,7 @@ type Subnet struct {
 
 func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if cloud == common.AWS {
-		location := s.Location
-		location = common.GetLocationFromCloudLocation(s.VirtualNetwork.CommonResourceParams.GetLocation(cloud, ctx), cloud)
+		location := s.VirtualNetwork.Location
 		if location == "" {
 			location = ctx.Location
 		}
@@ -55,7 +54,7 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 			AzResource: &common.AzResource{
 				TerraformResource: output.TerraformResource{ResourceId: s.GetTfResourceId(cloud)},
 				Name:              s.Name,
-				ResourceGroupName: rg.GetResourceGroupName(s.ResourceGroupId, cloud),
+				ResourceGroupName: rg.GetResourceGroupName(s.VirtualNetwork.ResourceGroupId, cloud),
 			},
 			AddressPrefixes:    []string{s.CidrBlock},
 			VirtualNetworkName: s.VirtualNetwork.GetVirtualNetworkName(cloud),
@@ -140,4 +139,8 @@ func (s *Subnet) GetMainResourceName(cloud common.CloudProvider) (string, error)
 	default:
 		return "", fmt.Errorf("unknown cloud %s", cloud)
 	}
+}
+
+func (s *Subnet) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
+	return s.VirtualNetwork.GetLocation(cloud, ctx)
 }
