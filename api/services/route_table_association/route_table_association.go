@@ -17,7 +17,7 @@ func (s RouteTableAssociationService) Convert(resourceId string, args []*resourc
 	var result []*resources.CloudSpecificRouteTableAssociationResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificRouteTableAssociationResource{
-			CommonParameters: util.ConvertCommonParams(r.CommonParameters),
+			CommonParameters: util.ConvertCommonChildParams(r.CommonParameters),
 			SubnetId:         r.SubnetId,
 			RouteTableId:     r.RouteTableId,
 		})

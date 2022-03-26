@@ -17,7 +17,7 @@ func (s KubernetesNodePoolService) Convert(resourceId string, args []*resources.
 	var result []*resources.CloudSpecificKubernetesNodePoolResource
 	for _, r := range args {
 		result = append(result, &resources.CloudSpecificKubernetesNodePoolResource{
-			CommonParameters:  util.ConvertCommonParams(r.CommonParameters),
+			CommonParameters:  util.ConvertCommonChildParams(r.CommonParameters),
 			Name:              r.Name,
 			SubnetIds:         r.SubnetIds,
 			ClusterId:         r.ClusterId,

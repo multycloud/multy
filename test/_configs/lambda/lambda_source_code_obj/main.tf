@@ -4,22 +4,22 @@ resource "aws_lambda_function" "function2_aws" {
   }
 
   function_name = "publicmultyfun"
-  role          = aws_iam_role.iam_for_lambda_function2.arn
+  role          = aws_iam_role.iam_for_lambda_function2_aws.arn
   runtime       = "python3.9"
   handler       = "lambda_function.lambda_handler"
   s3_bucket     = aws_s3_bucket.obj_storage_aws.id
   s3_key        = aws_s3_bucket_object.public_source_code_aws.key
 }
-resource "aws_iam_role" "iam_for_lambda_function2" {
+resource "aws_iam_role" "iam_for_lambda_function2_aws" {
   tags = {
-    "Name" = "iam_for_lambda_function2"
+    "Name" = "iam_for_lambda_function2_aws"
   }
 
-  name               = "iam_for_lambda_function2"
+  name               = "iam_for_lambda_function2_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "function2_aws" {
-  role       = aws_iam_role.iam_for_lambda_function2.name
+  role       = aws_iam_role.iam_for_lambda_function2_aws.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 resource "aws_api_gateway_rest_api" "function2_aws" {

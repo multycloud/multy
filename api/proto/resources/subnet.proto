@@ -27,7 +27,7 @@ message DeleteSubnetRequest {
 }
 
 message CloudSpecificSubnetArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+  common.CloudSpecificChildResourceCommonArgs common_parameters = 1;
   string name = 2;
   string cidr_block = 3;
   string virtual_network_id = 4;
@@ -35,7 +35,7 @@ message CloudSpecificSubnetArgs {
 }
 
 message CloudSpecificSubnetResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+  common.CloudSpecificCommonChildResourceParameters common_parameters = 1;
   string name = 2;
   string cidr_block = 3;
   string virtual_network_id = 4;

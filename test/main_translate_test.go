@@ -132,7 +132,7 @@ func assertEqualHcl(t *testing.T, hclOutput []byte, expectedFilePath string) {
 	t.Logf("output:\n%s", strings.Join(lines, "\n"))
 
 	hclP := hclparse.NewParser()
-	f, diags := hclP.ParseHCL([]byte(hclOutput), "generated_file")
+	f, diags := hclP.ParseHCL(hclOutput, "generated_file")
 	if diags != nil {
 		t.Fatal(diags)
 	}

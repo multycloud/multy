@@ -76,10 +76,6 @@
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
             "acl": "PUBLIC_READ",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
             "content": "",
             "content_type": "",
             "name": "source_code.zip",
@@ -96,10 +92,6 @@
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
             "acl": "PUBLIC_READ",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
             "content": "",
             "content_type": "",
             "name": "source_code.zip",

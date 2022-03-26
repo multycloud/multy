@@ -182,7 +182,7 @@ resource "aws_iam_role" "vm_iam" {
 }
 resource "aws_key_pair" "vm" {
   tags       = { "Name" = "backend" }
-  key_name   = "vm_multy"
+  key_name   = "vm_aws_multy"
   public_key = file("./ssh_key.pub")
 }
 #resource "aws_instance" "vm" {

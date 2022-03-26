@@ -14,7 +14,7 @@
           }
         ]
       },
-      "resource_id": "example_vn"
+      "resource_id": "example_vn_azure"
     },
     {
       "resource_args": {
@@ -30,7 +30,7 @@
           }
         ]
       },
-      "resource_id": "example_vn"
+      "resource_id": "example_vn_aws"
     },
     {
       "resource_args": {
@@ -39,16 +39,12 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 1,
             "cidr_block": "10.0.1.0/24",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
             "name": "private-subnet",
-            "virtual_network_id": "example_vn"
+            "virtual_network_id": "example_vn_aws"
           }
         ]
       },
-      "resource_id": "subnet1"
+      "resource_id": "subnet1_aws"
     },
     {
       "resource_args": {
@@ -57,16 +53,12 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 1,
             "cidr_block": "10.0.1.0/24",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
             "name": "private-subnet",
-            "virtual_network_id": "example_vn"
+            "virtual_network_id": "example_vn_azure"
           }
         ]
       },
-      "resource_id": "subnet1"
+      "resource_id": "subnet1_azure"
     },
     {
       "resource_args": {
@@ -75,16 +67,12 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 2,
             "cidr_block": "10.0.2.0/24",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
             "name": "public-subnet",
-            "virtual_network_id": "example_vn"
+            "virtual_network_id": "example_vn_aws"
           }
         ]
       },
-      "resource_id": "subnet2"
+      "resource_id": "subnet2_aws"
     },
     {
       "resource_args": {
@@ -93,16 +81,12 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
             "availability_zone": 2,
             "cidr_block": "10.0.2.0/24",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
             "name": "public-subnet",
-            "virtual_network_id": "example_vn"
+            "virtual_network_id": "example_vn_azure"
           }
         ]
       },
-      "resource_id": "subnet2"
+      "resource_id": "subnet2_azure"
     },
     {
       "resource_args": {
@@ -115,13 +99,13 @@
             },
             "name": "example",
             "subnet_ids": [
-              "subnet1",
-              "subnet2"
+              "subnet1_azure",
+              "subnet2_azure"
             ]
           }
         ]
       },
-      "resource_id": "example"
+      "resource_id": "example_azure"
     },
     {
       "resource_args": {
@@ -139,11 +123,11 @@
                 "destination": "INTERNET"
               }
             ],
-            "virtual_network_id": "example_vn"
+            "virtual_network_id": "example_vn_aws"
           }
         ]
       },
-      "resource_id": "rt"
+      "resource_id": "rt_aws"
     },
     {
       "resource_args": {
@@ -161,43 +145,35 @@
                 "destination": "INTERNET"
               }
             ],
-            "virtual_network_id": "example_vn"
+            "virtual_network_id": "example_vn_azure"
           }
         ]
       },
-      "resource_id": "rt"
+      "resource_id": "rt_azure"
     },
     {
       "resource_args": {
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
-            "route_table_id": "rt",
-            "subnet_id": "subnet2"
+            "route_table_id": "rt_aws",
+            "subnet_id": "subnet2_aws"
           }
         ]
       },
-      "resource_id": "rta"
+      "resource_id": "rta_aws"
     },
     {
       "resource_args": {
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
-            "route_table_id": "rt",
-            "subnet_id": "subnet2"
+            "route_table_id": "rt_azure",
+            "subnet_id": "subnet2_azure"
           }
         ]
       },
-      "resource_id": "rta"
+      "resource_id": "rta_azure"
     },
     {
       "resource_args": {
@@ -210,63 +186,55 @@
             },
             "name": "example",
             "subnet_ids": [
-              "subnet1",
-              "subnet2"
+              "subnet1_aws",
+              "subnet2_aws"
             ]
           }
         ]
       },
-      "resource_id": "example"
+      "resource_id": "example_aws"
     },
     {
       "resource_args": {
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificKubernetesNodePoolArgs",
-            "cluster_id": "example",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
+            "cluster_id": "example_aws",
             "disk_size_gb": 0,
             "is_default_pool": true,
             "max_node_count": 1,
             "min_node_count": 1,
             "name": "example",
             "subnet_ids": [
-              "subnet1",
-              "subnet2"
+              "subnet1_aws",
+              "subnet2_aws"
             ],
             "vm_size": "MEDIUM"
           }
         ]
       },
-      "resource_id": "example_pool"
+      "resource_id": "example_pool_aws"
     },
     {
       "resource_args": {
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificKubernetesNodePoolArgs",
-            "cluster_id": "example",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
+            "cluster_id": "example_azure",
             "disk_size_gb": 0,
             "is_default_pool": true,
             "max_node_count": 1,
             "min_node_count": 1,
             "name": "example",
             "subnet_ids": [
-              "subnet1",
-              "subnet2"
+              "subnet1_azure",
+              "subnet2_azure"
             ],
             "vm_size": "MEDIUM"
           }
         ]
       },
-      "resource_id": "example_pool"
+      "resource_id": "example_pool_azure"
     }
   ]
 }

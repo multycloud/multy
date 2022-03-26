@@ -13,7 +13,7 @@
           }
         ]
       },
-      "resource_id": "example"
+      "resource_id": "example_azure"
     },
     {
       "resource_args": {
@@ -28,7 +28,7 @@
           }
         ]
       },
-      "resource_id": "example"
+      "resource_id": "example_aws"
     }
   ]
 }

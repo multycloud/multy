@@ -13,7 +13,7 @@
           }
         ]
       },
-      "resource_id": "obj_storage"
+      "resource_id": "obj_storage_aws"
     },
     {
       "resource_args": {
@@ -28,7 +28,7 @@
           }
         ]
       },
-      "resource_id": "obj_storage"
+      "resource_id": "obj_storage_azure"
     }
   ]
 }

@@ -13,19 +13,19 @@ data "archive_file" "lambda_aws" {
 resource "aws_lambda_function" "lambda_aws" {
   tags             = { "Name" = "multy_function" }
   function_name    = "multy_function"
-  role             = aws_iam_role.iam_for_lambda_lambda.arn
+  role             = aws_iam_role.iam_for_lambda_lambda_aws.arn
   filename         = ".multy/tmp/multy_function_aws.zip"
   source_code_hash = data.archive_file.lambda_aws.output_base64sha256
   runtime          = "python3.9"
   handler          = "lambda_function.lambda_handler"
 }
-resource "aws_iam_role" "iam_for_lambda_lambda" {
-  tags               = { "Name" = "iam_for_lambda_lambda" }
-  name               = "iam_for_lambda_lambda"
+resource "aws_iam_role" "iam_for_lambda_lambda_aws" {
+  tags               = { "Name" = "iam_for_lambda_lambda_aws" }
+  name               = "iam_for_lambda_lambda_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "lambda_aws" {
-  role       = aws_iam_role.iam_for_lambda_lambda.name
+  role       = aws_iam_role.iam_for_lambda_lambda_aws.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 resource "aws_api_gateway_rest_api" "lambda_aws" {
