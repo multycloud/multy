@@ -29,11 +29,13 @@ message DeleteObjectStorageRequest {
 message CloudSpecificObjectStorageArgs {
   common.CloudSpecificResourceCommonArgs common_parameters = 1;
   string name = 2;
+  bool versioning = 3;
 }
 
 message CloudSpecificObjectStorageResource {
   common.CloudSpecificCommonResourceParameters common_parameters = 1;
   string name = 2;
+  bool versioning = 3;
 }
 
 message ObjectStorageResource {
