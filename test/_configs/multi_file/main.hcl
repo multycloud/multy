@@ -1,25 +1,24 @@
 multy "virtual_network" "example_vn" {
-  rg_vars    = {
+  rg_vars = {
     app = "backend"
   }
   name       = "example_vn"
   cidr_block = "10.0.0.0/16"
 }
 multy "subnet" "example_subnet" {
-  rg_vars            = {
+  rg_vars = {
     app = "backend"
   }
-  name               = "example_subnet"
-  cidr_block         = "10.0.0.0/24"
+  name            = "example_subnet"
+  cidr_block      = "10.0.0.0/24"
   virtual_network = example_vn
 }
 multy "public_ip" "example_ip" {
   name = "example_ip"
 }
 multy "object_storage" "obj_storage" {
-  name          = "test-storage"
-  random_suffix = false
-  location      = "uk"
+  name     = "test-storage"
+  location = "uk"
 }
 multy "network_interface" "example_nic" {
   name      = "example_nic"

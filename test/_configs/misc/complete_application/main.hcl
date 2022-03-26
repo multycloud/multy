@@ -1,24 +1,23 @@
 multy "virtual_network" "example_vn" {
-  rg_vars    = {
+  rg_vars = {
     app = "backend"
   }
   name       = "example_vn${var.name_suffix}"
   cidr_block = "10.0.0.0/16"
 }
 multy "subnet" "example_subnet" {
-  rg_vars            = {
+  rg_vars = {
     app = "backend"
   }
-  name               = "example_subnet"
-  cidr_block         = "10.0.0.0/24"
+  name            = "example_subnet"
+  cidr_block      = "10.0.0.0/24"
   virtual_network = example_vn
 }
 multy "public_ip" "example_ip" {
   name = "example_ip"
 }
 multy "object_storage" "obj_storage" {
-  name          = "test-storage-999999"
-  random_suffix = false
+  name = "test-storage-999999"
 }
 multy "network_interface" "example_nic" {
   name      = "example_nic"
@@ -35,7 +34,7 @@ variable "location" {
 }
 variable "name_suffix" {
   type    = string
-  default = cloud_specific_value({aws: "_aws", azure: "_az"})
+  default = cloud_specific_value({ aws : "_aws", azure : "_az" })
 }
 output "aws_vn_name" {
   value = aws.example_vn.name

@@ -13,36 +13,48 @@ import (
 
 type ObjectStorage struct {
 	*resources.CommonResourceParams
-	Name         string     `hcl:"name"`
-	Acl          []AclRules `hcl:"acl,optional"`
-	Versioning   bool       `hcl:"versioning,optional"`
-	RandomSuffix bool       `hcl:"random_suffix,optional"` // name must be unique
+	Name       string     `hcl:"name"`
+	Acl        []AclRules `hcl:"acl,optional"`
+	Versioning bool       `hcl:"versioning,optional"`
 }
 
 type AclRules struct{}
 
 func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	name := r.Name
-	if r.RandomSuffix {
-		name += fmt.Sprintf("-%s", common.RandomString(6))
-	}
 	if cloud == common.AWS {
-		return []output.TfBlock{object_storage.AwsS3Bucket{
+		var awsResources []output.TfBlock
+		s3Bucket := object_storage.AwsS3Bucket{
 			AwsResource: &common.AwsResource{
 				TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 			},
-			Bucket: name}}, nil
+			Bucket: r.Name,
+		}
+		awsResources = append(awsResources, s3Bucket)
+
+		if r.Versioning {
+			awsResources = append(awsResources, object_storage.AwsS3BucketVersioning{
+				AwsResource: &common.AwsResource{
+					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
+				},
+				BucketId:                s3Bucket.GetBucketId(),
+				VersioningConfiguration: object_storage.VersioningConfiguration{Status: "Enabled"},
+			})
+		}
+		return awsResources, nil
 	} else if cloud == common.AZURE {
 		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
 
 		storageAccount := object_storage.AzureStorageAccount{
 			AzResource: common.NewAzResource(
-				r.GetTfResourceId(cloud), common.RemoveSpecialChars(name), rgName,
+				r.GetTfResourceId(cloud), common.RemoveSpecialChars(r.Name), rgName,
 				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 			),
 			AccountTier:                "Standard",
 			AccountReplicationType:     "GZRS",
 			AllowNestedItemsToBePublic: true,
+			BlobProperties: object_storage.BlobProperties{
+				VersioningEnabled: r.Versioning,
+			},
 		}
 
 		return []output.TfBlock{

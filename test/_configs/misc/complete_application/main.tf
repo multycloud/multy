@@ -115,6 +115,9 @@ resource "azurerm_storage_account" "obj_storage_azure" {
   account_tier                    = "Standard"
   account_replication_type        = "GZRS"
   allow_nested_items_to_be_public = true
+  blob_properties {
+    versioning_enabled = false
+  }
 }
 resource "azurerm_storage_container" "obj_storage_azure_public" {
   name                  = "public"
