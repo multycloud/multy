@@ -341,7 +341,8 @@ func (v ObjectStorageConverter) ConvertToMultyResource(resourceId string, m prot
 	arg := m.(*resources.CloudSpecificObjectStorageArgs)
 	c := cloud_providers.CloudProvider(strings.ToLower(arg.CommonParameters.CloudProvider.String()))
 	db := types.ObjectStorage{CommonResourceParams: getCommonParams(resourceId, arg.CommonParameters, c),
-		Name: arg.Name,
+		Name:       arg.Name,
+		Versioning: arg.Versioning,
 	}
 
 	return common_resources.CloudSpecificResource{

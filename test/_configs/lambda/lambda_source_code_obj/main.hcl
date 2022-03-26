@@ -6,14 +6,13 @@
 #}
 
 multy "lambda" "function2" {
-  function_name = "publicmultyfun"
-  runtime = "python3.9"
+  function_name      = "publicmultyfun"
+  runtime            = "python3.9"
   source_code_object = public_source_code
 }
 
 multy "object_storage" "obj_storage" {
-  name          = "function-storage-1722"
-  random_suffix = false
+  name = "function-storage-1722"
 }
 
 #multy "object_storage_object" "private_source_code" {
@@ -24,10 +23,10 @@ multy "object_storage" "obj_storage" {
 #}
 
 multy "object_storage_object" "public_source_code" {
-  name                = "source_code.zip"
-  object_storage      = obj_storage
-  source              = cloud_specific_value({aws: "source_dir/aws_code.zip", azure: "source_dir/azure_code.zip"})
-  acl                 = "public_read"
+  name           = "source_code.zip"
+  object_storage = obj_storage
+  source         = cloud_specific_value({ aws : "source_dir/aws_code.zip", azure : "source_dir/azure_code.zip" })
+  acl            = "public_read"
 }
 
 

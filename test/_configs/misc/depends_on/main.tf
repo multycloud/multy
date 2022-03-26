@@ -24,6 +24,9 @@ resource "azurerm_storage_account" "obj_storage1_azure" {
   account_tier                    = "Standard"
   account_replication_type        = "GZRS"
   allow_nested_items_to_be_public = true
+  blob_properties {
+    versioning_enabled = false
+  }
 }
 resource "azurerm_storage_container" "obj_storage1_azure_public" {
   name                  = "public"
@@ -42,6 +45,9 @@ resource "azurerm_storage_account" "obj_storage2_azure" {
   account_tier                    = "Standard"
   account_replication_type        = "GZRS"
   allow_nested_items_to_be_public = true
+  blob_properties {
+    versioning_enabled = false
+  }
 }
 resource "azurerm_storage_container" "obj_storage2_azure_public" {
   name                  = "public"
@@ -60,7 +66,10 @@ resource "azurerm_storage_account" "obj_storage3_azure" {
   account_tier                    = "Standard"
   account_replication_type        = "GZRS"
   allow_nested_items_to_be_public = true
-  depends_on                      = [
+  blob_properties {
+    versioning_enabled = false
+  }
+  depends_on = [
     aws_s3_bucket.obj_storage1_aws,
     aws_s3_bucket.obj_storage2_aws,
     azurerm_storage_account.obj_storage1_azure,

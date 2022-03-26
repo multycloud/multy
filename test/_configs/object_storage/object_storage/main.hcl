@@ -3,5 +3,6 @@ config {
   clouds   = ["aws", "azure"]
 }
 multy "object_storage" "obj_storage" {
-  name = "test-storage-12384761234"
+  name       = "test-storage-12384761234"
+  versioning = true
 }
