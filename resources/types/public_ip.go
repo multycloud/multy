@@ -23,7 +23,6 @@ type PublicIp struct {
 }
 
 func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-
 	if cloud == common.AWS {
 		nid := ""
 		if r.NetworkInterfaceId != nil {

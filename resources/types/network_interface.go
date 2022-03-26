@@ -13,7 +13,7 @@ import (
 type NetworkInterface struct {
 	*resources.CommonResourceParams
 	Name     string  `hcl:"name"`
-	SubnetId *Subnet `mhcl:"ref=subnet_id,optional"`
+	SubnetId *Subnet `mhcl:"ref=subnet_id"`
 }
 
 func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {

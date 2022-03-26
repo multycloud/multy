@@ -11,34 +11,6 @@ import (
 	"github.com/multycloud/multy/validate"
 )
 
-/*
-AWS: aws_s3_bucket
-Azure: azurerm_storage_account
-*/
-
-/*
-resource "aws_s3_bucket" "b" {
-  bucket = "my-tf-test-bucket"
-  acl    = "private"
-
-  tags = {
-    Name        = "My bucket"
-    Environment = "Dev"
-  }
-}
-resource "azurerm_storage_account" "example" {
-  name                     = "storageaccountname"
-  resource_group_name      = azurerm_resource_group.example.name
-  location                 = azurerm_resource_group.example.location
-  account_tier             = "Standard"
-  account_replication_type = "GRS"
-
-  tags = {
-    environment = "staging"
-  }
-}
-*/
-
 type ObjectStorage struct {
 	*resources.CommonResourceParams
 	Name         string     `hcl:"name"`
@@ -68,9 +40,9 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 				r.GetTfResourceId(cloud), common.RemoveSpecialChars(name), rgName,
 				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
 			),
-			AccountTier:            "Standard",
-			AccountReplicationType: "GZRS",
-			AllowBlobPublicAccess:  true,
+			AccountTier:                "Standard",
+			AccountReplicationType:     "GZRS",
+			AllowNestedItemsToBePublic: true,
 		}
 
 		return []output.TfBlock{
