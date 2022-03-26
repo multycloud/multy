@@ -13,7 +13,7 @@ type AwsS3Bucket struct {
 
 type AwsS3BucketVersioning struct {
 	*common.AwsResource     `hcl:",squash" default:"name=aws_s3_bucket_versioning"`
-	BucketId                string                  `hcl:"bucket"`
+	BucketId                string                  `hcl:"bucket,expr"`
 	VersioningConfiguration VersioningConfiguration `hcl:"versioning_configuration"`
 }
 

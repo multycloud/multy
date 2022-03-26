@@ -1,6 +1,12 @@
 resource "aws_s3_bucket" "obj_storage_aws" {
   bucket = "test-storage-12384761234"
 }
+resource "aws_s3_bucket_versioning" "obj_storage_aws" {
+  bucket = aws_s3_bucket.obj_storage_aws.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
 resource "azurerm_storage_account" "obj_storage_azure" {
   resource_group_name             = azurerm_resource_group.st-rg.name
   name                            = "teststorage12384761234"
@@ -9,7 +15,7 @@ resource "azurerm_storage_account" "obj_storage_azure" {
   account_replication_type        = "GZRS"
   allow_nested_items_to_be_public = true
   blob_properties {
-    versioning_enabled = false
+    versioning_enabled = true
   }
 }
 resource "azurerm_storage_container" "obj_storage_azure_public" {
@@ -30,5 +36,6 @@ provider "aws" {
   region = "eu-west-1"
 }
 provider "azurerm" {
-  features {}
+  features {
+  }
 }
