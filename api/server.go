@@ -56,7 +56,7 @@ func RunServer(ctx context.Context, port int) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	endpoint := "www.api.multy.dev"
+	endpoint := "api.multy.dev"
 	certFile := fmt.Sprintf("/etc/letsencrypt/live/%s/fullchain.pem", endpoint)
 	keyFile := fmt.Sprintf("/etc/letsencrypt/live/%s/privkey.pem", endpoint)
 	creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)
