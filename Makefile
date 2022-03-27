@@ -3,10 +3,10 @@ PORT=8000
 
 build:
 	protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative   api/proto/**/*.proto
-	go build -v ./...
+	go build -v
 
 run: build
-	go run main.go serve --port=$(PORT)
+	sudo ./multy serve --port=$(PORT)
 
 clean:
 	find api/proto -name '*.pb.go' -delete

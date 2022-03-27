@@ -180,6 +180,22 @@ resource "aws_iam_role" "vm_iam" {
     })
   }
 }
+resource "aws_s3_bucket" "tfstate_bucket" {
+  tags   = { "Name" = "backend" }
+  bucket = var.bucket_name
+}
+resource "aws_dynamodb_table" "user_ddb" {
+  tags         = { "Name" = "backend" }
+  name         = "user_table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "user_id"
+
+  attribute {
+    name = "user_id"
+    type = "S"
+  }
+}
+
 resource "aws_key_pair" "vm" {
   tags       = { "Name" = "backend" }
   key_name   = "vm_aws_multy"
@@ -196,25 +212,21 @@ resource "aws_key_pair" "vm" {
 #  key_name             = aws_key_pair.vm.key_name
 #  iam_instance_profile = aws_iam_instance_profile.iam_instance_profile.id
 #}
-resource "aws_s3_bucket" "tfstate_bucket" {
-  tags   = { "Name" = "backend" }
-  bucket = var.bucket_name
-}
-resource "aws_dynamodb_table" "user_ddb" {
-  tags         = { "Name" = "backend" }
-  name         = "user_table"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "user_id"
-
-  attribute {
-    name = "user_id"
-    type = "S"
-  }
-}
 #resource "aws_eip" "ip_aws" {
 #  tags     = { "Name" = "backend" }
 #  instance = aws_instance.vm.id
 #}
+#data "aws_route53_zone" "primary" {
+#  name = "multy.dev"
+#}
+#resource "aws_route53_record" "server1-record" {
+#  zone_id = data.aws_route53_zone.primary.zone_id
+#  name    = "api.multy.dev"
+#  type    = "A"
+#  ttl     = "300"
+#  records = [aws_eip.ip_aws.public_ip]
+#}
+
 terraform {
   backend "s3" {
     bucket = "multy-tfstate"

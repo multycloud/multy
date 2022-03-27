@@ -3,6 +3,8 @@
 {
 export USERS_S3_BUCKET_NAME='${s3_bucket_name}'
 
+# TODO: setup terraform
+
 sudo apt-get update -y
 sudo apt-get -y install git make protobuf-compiler
 
@@ -32,6 +34,5 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
 go install golang.org/x/lint/golint@latest
 go mod tidy
-sudo make run PORT=443
-
+make run PORT=443
 } |& tee -a logs.txt
