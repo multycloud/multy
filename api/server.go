@@ -23,6 +23,7 @@ import (
 	"github.com/multycloud/multy/api/services/virtual_network"
 	"github.com/multycloud/multy/db"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"log"
 	"net"
 )
@@ -54,7 +55,19 @@ func RunServer(ctx context.Context, port int) {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	s := grpc.NewServer()
+
+	endpoint := "www.api.multy.dev"
+	certFile := fmt.Sprintf("/etc/letsencrypt/live/%s/fullchain.pem", endpoint)
+	keyFile := fmt.Sprintf("/etc/letsencrypt/live/%s/privkey.pem", endpoint)
+	creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)
+	var s *grpc.Server
+	if err != nil {
+		log.Printf("unable to read certificate (%s), running in insecure mode", err.Error())
+		s = grpc.NewServer()
+	} else {
+		s = grpc.NewServer(grpc.Creds(creds))
+	}
+
 	go func() {
 		<-ctx.Done()
 		s.GracefulStop()
