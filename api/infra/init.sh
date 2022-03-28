@@ -3,7 +3,12 @@
 {
 export USERS_S3_BUCKET_NAME='${s3_bucket_name}'
 
-# TODO: setup terraform
+mkdir -p "$HOME/.terraform.d/plugin-cache"
+echo plugin_cache_dir = \"$HOME/.terraform.d/plugin-cache\" > "$HOME/.terraformrc"
+sudo apt-get update -y && sudo apt-get install -y gnupg software-properties-common curl
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+sudo apt-get update -y && sudo apt-get -y install terraform
 
 sudo apt-get update -y
 sudo apt-get -y install git make protobuf-compiler

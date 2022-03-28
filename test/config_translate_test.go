@@ -82,7 +82,7 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 	}
 
 	hclOutput, err := deploy.Translate(nil, &c, nil, nil)
-	if err != nil {
+	if err != nil && err != deploy.AwsCredsNotSetErr && err != deploy.AzureCredsNotSetErr {
 		if s, ok := status.FromError(err); ok {
 			fmt.Println(s.Details())
 		}

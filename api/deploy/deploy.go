@@ -25,15 +25,22 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const (
 	tfFile  = "main.tf"
 	tfState = "terraform.tfstate"
+)
+
+var (
+	AwsCredsNotSetErr   = status.Error(codes.InvalidArgument, "aws credentials are required but not set")
+	AzureCredsNotSetErr = status.Error(codes.InvalidArgument, "azure credentials are required but not set")
 )
 
 func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *config.Resource, curr *config.Resource) (string, error) {
@@ -152,15 +159,6 @@ func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *conf
 		Providers: provider,
 	}
 
-	for _, r := range translated {
-		if string(r.Cloud) == "aws" && credentials.GetAwsCreds().GetAccessKey() == "" {
-			return "", status.Error(codes.InvalidArgument, "aws credentials are required but not set")
-		}
-		if string(r.Cloud) == "azure" && credentials.GetAzureCreds().GetSubscriptionId() == "" {
-			return "", status.Error(codes.InvalidArgument, "azure credentials are required but not set")
-		}
-	}
-
 	hclOutput, errs, err := encoder.Encode(&decodedResources, credentials)
 	if len(errs) > 0 {
 		return hclOutput, errors.ValidationErrors(errs)
@@ -169,11 +167,19 @@ func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *conf
 		return hclOutput, err
 	}
 
+	for _, r := range translated {
+		if string(r.Cloud) == "aws" && credentials.GetAwsCreds().GetAccessKey() == "" {
+			return hclOutput, AwsCredsNotSetErr
+		}
+		if string(r.Cloud) == "azure" && credentials.GetAzureCreds().GetSubscriptionId() == "" {
+			return hclOutput, AzureCredsNotSetErr
+		}
+	}
+
 	return hclOutput, nil
 }
 
 func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *config.Resource) (*output.TfState, error) {
-
 	credentials, err := util.ExtractCloudCredentials(ctx)
 	if err != nil {
 		return nil, err
@@ -183,6 +189,9 @@ func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *
 		return nil, err
 	}
 
+	// TODO: move this to a proper place
+	hclOutput = RequiredProviders + hclOutput
+
 	fmt.Println(hclOutput)
 
 	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
@@ -190,8 +199,8 @@ func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error storing configuration", err)
 	}
-
 	fmt.Println("running tf init")
+	startInit := time.Now()
 
 	cmd := exec.Command("terraform", "-chdir="+tmpDir, "init")
 	cmd.Stdout = os.Stdout
@@ -200,8 +209,10 @@ func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
 	}
+	log.Printf("tf init ended in %s", time.Since(startInit))
 
 	fmt.Println("Running tf apply")
+	startApply := time.Now()
 
 	// TODO: only deploy targets given in the args
 	// TODO: parse errors and send them to user
@@ -212,6 +223,7 @@ func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
 	}
+	log.Printf("tf apply ended in %s", time.Since(startApply))
 
 	state, err := GetState(c.UserId)
 	if err != nil {
