@@ -169,10 +169,13 @@ func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *conf
 	}
 
 	for _, r := range translated {
-		if string(r.Cloud) == "aws" && credentials.GetAwsCreds().GetAccessKey() == "" {
+		if string(r.Cloud) == "aws" && (credentials.GetAwsCreds().GetAccessKey() == "" || credentials.GetAwsCreds().GetSecretKey() == "") {
 			return hclOutput, AwsCredsNotSetErr
 		}
-		if string(r.Cloud) == "azure" && credentials.GetAzureCreds().GetSubscriptionId() == "" {
+		if string(r.Cloud) == "azure" && (credentials.GetAzureCreds().GetSubscriptionId() == "" ||
+			credentials.GetAzureCreds().GetClientId() == "" ||
+			credentials.GetAzureCreds().GetTenantId() == "" ||
+			credentials.GetAzureCreds().GetClientSecret() == "") {
 			return hclOutput, AzureCredsNotSetErr
 		}
 	}
