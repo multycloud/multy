@@ -17,7 +17,10 @@ type NetworkInterface struct {
 }
 
 func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	subnetId, _ := resources.GetMainOutputId(r.SubnetId, cloud)
+	subnetId, err := resources.GetMainOutputId(r.SubnetId, cloud)
+	if err != nil {
+		return nil, err
+	}
 
 	if cloud == common.AWS {
 		return []output.TfBlock{

@@ -8,6 +8,7 @@ import (
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/config"
+	"github.com/multycloud/multy/api/proto/creds"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
@@ -40,6 +41,20 @@ func ExtractUserId(ctx context.Context) (string, error) {
 		return "", errors.PermissionDenied(fmt.Sprintf("only expected 1 user id, found %d: %s", len(userIds), strings.Join(userIds, ", ")))
 	}
 	return userIds[0], nil
+}
+
+func ExtractCloudCredentials(ctx context.Context) (*creds.CloudCredentials, error) {
+	md, _ := metadata.FromIncomingContext(ctx)
+	cloudCredsBin := md.Get("cloud-creds-bin")
+	if len(cloudCredsBin) == 0 {
+		return nil, errors.PermissionDenied(fmt.Sprintf("cloud credentials must be set"))
+	}
+	if len(cloudCredsBin) > 1 {
+		return nil, errors.PermissionDenied(fmt.Sprintf("only expected 1 cloud creds id, found %d", len(cloudCredsBin)))
+	}
+	res := creds.CloudCredentials{}
+	err := proto.Unmarshal([]byte(cloudCredsBin[0]), &res)
+	return &res, err
 }
 
 func InsertIntoConfig[Arg proto.Message](in []Arg, c *config.Config) (*config.Resource, error) {

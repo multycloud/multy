@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"github.com/multycloud/multy/api/proto/creds"
 	"github.com/multycloud/multy/decoder"
 	"github.com/multycloud/multy/encoder"
 	"github.com/multycloud/multy/parser"
@@ -62,7 +63,7 @@ func (c *TranslateCommand) Execute(ctx context.Context) error {
 
 	r := decoder.Decode(parsedConfig)
 
-	hclOutput, errs, err := encoder.Encode(r)
+	hclOutput, errs, err := encoder.Encode(r, &creds.CloudCredentials{})
 	if len(errs) > 0 {
 		validate.PrintAllAndExit(errs)
 	}

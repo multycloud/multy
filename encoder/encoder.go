@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/multy-dev/hclencoder"
 	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/creds"
 	"github.com/multycloud/multy/decoder"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/output"
@@ -29,14 +30,14 @@ func (w WithProvider) AddDependency(s string) {
 	w.Resource.AddDependency(s)
 }
 
-func Encode(decodedResources *decoder.DecodedResources) (string, []validate.ValidationError, error) {
+func Encode(decodedResources *decoder.DecodedResources, credentials *creds.CloudCredentials) (string, []validate.ValidationError, error) {
 	ctx := resources.MultyContext{Resources: decodedResources.Resources, Location: decodedResources.GlobalConfig.Location}
 
 	translatedResources, errs, err := TranslateResources(decodedResources, ctx)
 	if len(errs) > 0 || err != nil {
 		return "", errs, err
 	}
-	providers := buildProviders(decodedResources, ctx)
+	providers := buildProviders(decodedResources, ctx, credentials)
 
 	var b bytes.Buffer
 	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
