@@ -35,6 +35,7 @@ import (
 
 const (
 	tfFile  = "main.tf"
+	tfDir   = ".terraform"
 	tfState = "terraform.tfstate"
 )
 
@@ -199,24 +200,18 @@ func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error storing configuration", err)
 	}
-	fmt.Println("running tf init")
-	startInit := time.Now()
 
-	cmd := exec.Command("terraform", "-chdir="+tmpDir, "init")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	err = MaybeInit(c.UserId)
 	if err != nil {
-		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
+		return nil, err
 	}
-	log.Printf("tf init ended in %s", time.Since(startInit))
 
 	fmt.Println("Running tf apply")
 	startApply := time.Now()
 
 	// TODO: only deploy targets given in the args
 	// TODO: parse errors and send them to user
-	cmd = exec.Command("terraform", "-chdir="+tmpDir, "apply", "-auto-approve")
+	cmd := exec.Command("terraform", "-chdir="+tmpDir, "apply", "-auto-approve")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -231,6 +226,27 @@ func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *
 	}
 
 	return state, nil
+}
+
+func MaybeInit(userId string) error {
+	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
+	_, err := os.Stat(filepath.Join(tmpDir, tfDir))
+	if os.IsNotExist(err) {
+		fmt.Println("running tf init")
+		startInit := time.Now()
+
+		cmd := exec.Command("terraform", "-chdir="+tmpDir, "init")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if err != nil {
+			return err
+		}
+		log.Printf("tf init ended in %s", time.Since(startInit))
+	} else if err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetState(userId string) (*output.TfState, error) {

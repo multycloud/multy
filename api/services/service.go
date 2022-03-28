@@ -101,6 +101,10 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 				}
 				convertedArgs = append(convertedArgs, converted.(Arg))
 			}
+			err := deploy.MaybeInit(c.UserId)
+			if err != nil {
+				return *new(OutT), err
+			}
 			state, err := deploy.GetState(c.UserId)
 			if err != nil {
 				return *new(OutT), err
