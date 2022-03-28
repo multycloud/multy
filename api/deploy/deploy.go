@@ -22,6 +22,8 @@ import (
 	"github.com/multycloud/multy/resources/types"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/function"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"os"
 	"os/exec"
@@ -151,11 +153,11 @@ func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *conf
 	}
 
 	for _, r := range translated {
-		if string(r.Cloud) == "aws" && credentials.AwsCreds == nil {
-			return "", fmt.Errorf("aws credentials are required but not set")
+		if string(r.Cloud) == "aws" && credentials.GetAwsCreds().GetAccessKey() == "" {
+			return "", status.Error(codes.InvalidArgument, "aws credentials are required but not set")
 		}
-		if string(r.Cloud) == "azure" && credentials.AzureCreds == nil {
-			return "", fmt.Errorf("azure credentials are required but not set")
+		if string(r.Cloud) == "azure" && credentials.GetAzureCreds().GetSubscriptionId() == "" {
+			return "", status.Error(codes.InvalidArgument, "azure credentials are required but not set")
 		}
 	}
 
