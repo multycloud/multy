@@ -30,7 +30,6 @@ sudo snap refresh core
 sudo snap install --classic certbot
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
 sudo certbot certonly --standalone --non-interactive --agree-tos -m systemalerts@multy.dev --domains api.multy.dev
-sudo certbot renew --dry-run
 
 git clone https://github.com/multycloud/multy.git
 cd multy

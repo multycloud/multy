@@ -3,7 +3,7 @@ package deploy
 import "fmt"
 
 const AwsProviderVersion = "4.8.0"
-const AzureProviderVersion = "4.8.0"
+const AzureProviderVersion = "3.0.2"
 
 var RequiredProviders = fmt.Sprintf(`
 terraform {
