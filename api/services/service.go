@@ -64,7 +64,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	}
 
 	fmt.Printf("Deploying %s\n", resource.ResourceId)
-	_, err = deploy.Deploy(c, nil, resource)
+	_, err = deploy.Deploy(ctx, c, nil, resource)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -132,7 +132,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 		return *new(OutT), err
 	}
 
-	_, err = deploy.Deploy(c, previousResource, find(c, in.GetResourceId()))
+	_, err = deploy.Deploy(nil, c, previousResource, find(c, in.GetResourceId()))
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -164,7 +164,7 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*com
 		return nil, err
 	}
 
-	_, err = deploy.Deploy(c, previousResource, nil)
+	_, err = deploy.Deploy(nil, c, previousResource, nil)
 	if err != nil {
 		return nil, err
 	}

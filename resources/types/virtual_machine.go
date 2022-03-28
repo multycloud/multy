@@ -56,7 +56,10 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		vm.UserData = fmt.Sprintf("%s(\"%s\")", "base64encode", []byte(hclencoder.EscapeString(vm.UserData)))
 	}
 
-	var subnetId, _ = resources.GetMainOutputId(vm.SubnetId, cloud)
+	subnetId, err := resources.GetMainOutputId(vm.SubnetId, cloud)
+	if err != nil {
+		return nil, err
+	}
 
 	sshKeyData := vm.SshKey
 	if vm.SshKey == "" && vm.SshKeyFileName != "" {

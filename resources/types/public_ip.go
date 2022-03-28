@@ -26,7 +26,11 @@ func (r *PublicIp) Translate(cloud common.CloudProvider, ctx resources.MultyCont
 	if cloud == common.AWS {
 		nid := ""
 		if r.NetworkInterfaceId != nil {
-			nid, _ = resources.GetMainOutputId(r.NetworkInterfaceId, cloud)
+			var err error
+			nid, err = resources.GetMainOutputId(r.NetworkInterfaceId, cloud)
+			if err != nil {
+				return nil, err
+			}
 		}
 		return []output.TfBlock{
 			public_ip.AwsElasticIp{

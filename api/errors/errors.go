@@ -3,13 +3,11 @@ package errors
 import (
 	"fmt"
 	pberr "github.com/multycloud/multy/api/proto/errors"
-	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"google.golang.org/genproto/googleapis/rpc/code"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/anypb"
 )
 
 func PermissionDenied(msg string) error {
@@ -35,18 +33,15 @@ func InternalServerErrorWithMessage(msg string, err error) error {
 }
 
 func ValidationErrors(errs []validate.ValidationError) error {
-	return status.ErrorProto(&spb.Status{
-		Code:    int32(code.Code_INVALID_ARGUMENT),
-		Message: fmt.Sprintf("%d validation errors found", len(errs)),
-		Details: util.MapSliceValues(errs, func(e validate.ValidationError) *anypb.Any {
-			a, _ := anypb.New(&pberr.ResourceValidationError{
-				ResourceId:   e.ResourceId,
-				ErrorMessage: e.ErrorMessage,
-				FieldName:    e.FieldName,
-			})
-			return a
-		}),
-	})
+	st := status.New(codes.InvalidArgument, fmt.Sprintf("%d validation errors found", len(errs)))
+	for _, e := range errs {
+		st, _ = st.WithDetails(&pberr.ResourceValidationError{
+			ResourceId:   e.ResourceId,
+			ErrorMessage: e.ErrorMessage,
+			FieldName:    e.FieldName,
+		})
+	}
+	return st.Err()
 }
 
 func ResourceNotFound(resourceId string) error {

@@ -1,6 +1,7 @@
 package encoder
 
 import (
+	"github.com/multycloud/multy/api/proto/creds"
 	"github.com/multycloud/multy/decoder"
 	"github.com/multycloud/multy/mhcl"
 	"github.com/multycloud/multy/resources"
@@ -40,7 +41,7 @@ func getProvider(providers map[common.CloudProvider]map[string]*types.Provider, 
 	return providers[r.Cloud][r.GetLocation(ctx)]
 }
 
-func buildProviders(r *decoder.DecodedResources, ctx resources.MultyContext) map[common.CloudProvider]map[string]*types.Provider {
+func buildProviders(r *decoder.DecodedResources, ctx resources.MultyContext, credentials *creds.CloudCredentials) map[common.CloudProvider]map[string]*types.Provider {
 	providers := r.Providers
 
 	for _, resource := range r.Resources {
@@ -65,6 +66,12 @@ func buildProviders(r *decoder.DecodedResources, ctx resources.MultyContext) map
 				return v.NumResources
 			},
 		)].IsDefaultProvider = true
+	}
+
+	for _, perRegion := range providers {
+		for _, p := range perRegion {
+			p.Credentials = credentials
+		}
 	}
 
 	return providers

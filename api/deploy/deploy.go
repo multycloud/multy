@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
@@ -9,7 +10,9 @@ import (
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/config"
+	"github.com/multycloud/multy/api/proto/creds"
 	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/decoder"
 	"github.com/multycloud/multy/encoder"
 	common_resources "github.com/multycloud/multy/resources"
@@ -31,7 +34,7 @@ const (
 	tfState = "terraform.tfstate"
 )
 
-func Translate(c *config.Config, prev *config.Resource, curr *config.Resource) (string, error) {
+func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *config.Resource, curr *config.Resource) (string, error) {
 	// TODO: get rid of this translation layer and instead use protos directly
 	translated := map[string]common_resources.CloudSpecificResource{}
 	for _, r := range c.Resources {
@@ -147,7 +150,16 @@ func Translate(c *config.Config, prev *config.Resource, curr *config.Resource) (
 		Providers: provider,
 	}
 
-	hclOutput, errs, err := encoder.Encode(&decodedResources)
+	for _, r := range translated {
+		if string(r.Cloud) == "aws" && credentials.AwsCreds == nil {
+			return "", fmt.Errorf("aws credentials are required but not set")
+		}
+		if string(r.Cloud) == "azure" && credentials.AzureCreds == nil {
+			return "", fmt.Errorf("azure credentials are required but not set")
+		}
+	}
+
+	hclOutput, errs, err := encoder.Encode(&decodedResources, credentials)
 	if len(errs) > 0 {
 		return hclOutput, errors.ValidationErrors(errs)
 	}
@@ -158,9 +170,13 @@ func Translate(c *config.Config, prev *config.Resource, curr *config.Resource) (
 	return hclOutput, nil
 }
 
-func Deploy(c *config.Config, prev *config.Resource, curr *config.Resource) (*output.TfState, error) {
+func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *config.Resource) (*output.TfState, error) {
 
-	hclOutput, err := Translate(c, prev, curr)
+	credentials, err := util.ExtractCloudCredentials(ctx)
+	if err != nil {
+		return nil, err
+	}
+	hclOutput, err := Translate(credentials, c, prev, curr)
 	if err != nil {
 		return nil, err
 	}
