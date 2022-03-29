@@ -34,7 +34,7 @@ func NewKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePo
 		knp.Args.StartingNodeCount = args.MinNodeCount
 	}
 
-	rt, err := Get[*KubernetesCluster](others, args.ClusterId)
+	rt, err := resources.Get[*KubernetesCluster](resourceId, others, args.ClusterId)
 	if err != nil {
 		return nil, errors.ValidationErrors([]validate.ValidationError{knp.NewValidationError(err.Error(), "virtual_network_id")})
 	}
@@ -42,7 +42,7 @@ func NewKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePo
 	knp.KubernetesCluster = rt
 
 	subnets, err := util.MapSliceValuesErr(args.SubnetIds, func(subnetId string) (*Subnet, error) {
-		return Get[*Subnet](others, subnetId)
+		return resources.Get[*Subnet](resourceId, others, subnetId)
 	})
 	if err != nil {
 		return nil, err

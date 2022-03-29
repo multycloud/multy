@@ -24,7 +24,7 @@ type PublicIp struct {
 }
 
 func NewPublicIp(resourceId string, args *resourcespb.PublicIpArgs, others resources.Resources) (*PublicIp, error) {
-	ni, _, err := GetOptional[*NetworkInterface](others, args.NetworkInterfaceId)
+	ni, _, err := resources.GetOptional[*NetworkInterface](resourceId, others, args.NetworkInterfaceId)
 	if err != nil {
 		return nil, err
 	}

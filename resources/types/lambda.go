@@ -34,7 +34,7 @@ type lambdaZip struct {
 const SasExpirationDuration = time.Hour * 24 * 365
 
 func NewLambda(resourceId string, args *resourcespb.LambdaArgs, others resources.Resources) (*Lambda, error) {
-	obj, _, err := GetOptional[*ObjectStorageObject](others, args.SourceCodeObjectId)
+	obj, _, err := resources.GetOptional[*ObjectStorageObject](resourceId, others, args.SourceCodeObjectId)
 	if err != nil {
 		return nil, err
 	}

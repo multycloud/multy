@@ -33,7 +33,7 @@ func (w WithProvider) AddDependency(s string) {
 }
 
 type DecodedResources struct {
-	Resources map[string]resources.Resource
+	Resources resources.Resources
 	Outputs   map[string]DecodedOutput
 	Providers map[commonpb.CloudProvider]map[string]*types.Provider
 }
@@ -44,17 +44,23 @@ type DecodedOutput struct {
 	DefinitionRange hcl.Range
 }
 
-func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCredentials) (string, []validate.ValidationError, error) {
-	ctx := resources.MultyContext{Resources: decodedResources.Resources}
+type EncodedResources struct {
+	HclString         string
+	ValidationErrs    []validate.ValidationError
+	DeployedResources map[resources.Resource][]string
+}
+
+func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCredentials) (EncodedResources, error) {
+	ctx := resources.NewMultyContext(decodedResources.Resources.ResourceMap)
 
 	translatedResources, errs, err := TranslateResources(decodedResources, ctx)
 	if len(errs) > 0 || err != nil {
-		return "", errs, err
+		return EncodedResources{ValidationErrs: errs}, err
 	}
 	providers := buildProviders(decodedResources, credentials)
 
 	var b bytes.Buffer
-	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
+	for _, r := range util.GetSortedMapValues(decodedResources.Resources.ResourceMap) {
 		providerAlias := getProvider(providers, r).GetResourceId()
 		for _, translated := range translatedResources[r] {
 			var result output.TfBlock
@@ -66,11 +72,11 @@ func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCreden
 			// If not already wrapped in a tf block, assume it's a resource.
 			block, err := output.WrapWithBlockType(result)
 			if err != nil {
-				return "", nil, err
+				return EncodedResources{}, err
 			}
 			hclStr, err := hclencoder.Encode(block)
 			if err != nil {
-				return "", nil, errors.InternalServerErrorWithMessage("unexpected error encoding resource", err)
+				return EncodedResources{}, errors.InternalServerErrorWithMessage("unexpected error encoding resource", err)
 			}
 			b.Write(hclStr)
 		}
@@ -84,7 +90,7 @@ func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCreden
 				},
 			)
 			if err != nil {
-				return "", nil, errors.InternalServerErrorWithMessage("unexpected error encoding providers", err)
+				return EncodedResources{}, errors.InternalServerErrorWithMessage("unexpected error encoding providers", err)
 			}
 			b.Write(hclStr)
 		}
@@ -106,13 +112,23 @@ func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCreden
 		)
 		if err != nil {
 			if err != nil {
-				return "", nil, errors.InternalServerErrorWithMessage("unexpected error encoding outputs", err)
+				return EncodedResources{}, errors.InternalServerErrorWithMessage("unexpected error encoding outputs", err)
 			}
 		}
 		b.Write(hclOutput)
 	}
 
-	return b.String(), nil, nil
+	res := map[resources.Resource][]string{}
+	for key, blocks := range translatedResources {
+		res[key] = util.MapSliceValues(blocks, func(block output.TfBlock) string {
+			return block.GetFullResourceRef()
+		})
+	}
+
+	return EncodedResources{
+		HclString:         b.String(),
+		DeployedResources: res,
+	}, nil
 }
 
 type providerWrapper struct {

@@ -364,7 +364,7 @@ func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (*commonpb
 		return nil, err
 	}
 
-	err = deploy.EncodeAndStoreTfFile(ctx, c, nil, nil)
+	_, err = deploy.EncodeAndStoreTfFile(ctx, c, nil, nil)
 	if err != nil {
 		return nil, err
 	}

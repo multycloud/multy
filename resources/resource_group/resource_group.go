@@ -41,7 +41,7 @@ func (rg *Type) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	if rg.GetCloud() == common.AZURE {
 		return []output.TfBlock{ResourceGroup{
 			AzResource: &common.AzResource{
-				TerraformResource: output.TerraformResource{ResourceId: rg.ResourceId},
+				TerraformResource: output.TerraformResource{ResourceId: rg.ResourceId, ResourceName: AzureResourceName},
 				Name:              rg.Name,
 			},
 			Location: rg.GetCloudSpecificLocation(),

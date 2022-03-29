@@ -33,7 +33,8 @@ type LockType string
 
 const (
 	MainConfigLock       = "main"
-	lockRetryPeriod      = 10 * time.Second
+	lockRetryPeriod      = 1 * time.Second
+	lockRetryBackoffMult = 1.5
 	lockExpirationPeriod = 2 * time.Hour
 )
 
@@ -55,7 +56,7 @@ type lockErr struct {
 }
 
 func (d *Database) LockConfig(ctx context.Context, userId string) (*ConfigLock, error) {
-
+	retryPeriod := lockRetryPeriod
 	for {
 		configLock, err := d.lockConfig(ctx, userId)
 		if err != nil {
@@ -64,10 +65,12 @@ func (d *Database) LockConfig(ctx context.Context, userId string) (*ConfigLock, 
 			} else {
 				log.Println(err.Error())
 				if configLock != nil {
-					log.Printf("configLock is locked (until %s), waiting for %s and then trying again\n", configLock.expirationTimestamp, lockRetryPeriod)
+					log.Printf("configLock is locked (until %s), waiting for %s and then trying again\n", configLock.expirationTimestamp, retryPeriod)
 				}
 				select {
-				case <-time.After(lockRetryPeriod):
+				case <-time.After(retryPeriod):
+					newRetryPeriod := float64(retryPeriod) * lockRetryBackoffMult
+					retryPeriod = time.Duration(newRetryPeriod)
 				case <-ctx.Done():
 					return nil, ctx.Err()
 				}

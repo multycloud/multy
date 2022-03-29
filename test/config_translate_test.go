@@ -90,7 +90,7 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 		t.Fatalf("unable to parse input file: %v", err)
 	}
 
-	hclOutput, err := deploy.Encode(nil, &c, nil, nil)
+	encoded, err := deploy.Encode(nil, &c, nil, nil)
 	if err != nil && err != deploy.AwsCredsNotSetErr && err != deploy.AzureCredsNotSetErr {
 		if s, ok := status.FromError(err); ok {
 			fmt.Println(s.Details())
@@ -98,7 +98,7 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 		t.Fatalf("unable to translate: %v", err)
 	}
 
-	assertEqualHcl(t, []byte(hclOutput), testFiles.OutputFile)
+	assertEqualHcl(t, []byte(encoded.HclString), testFiles.OutputFile)
 }
 
 var tfConfigFileSchema = &hcl.BodySchema{

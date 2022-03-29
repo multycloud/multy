@@ -26,29 +26,6 @@ type Subnet struct {
 	VirtualNetwork *VirtualNetwork
 }
 
-func Get[T resources.Resource](resources resources.Resources, id string) (T, error) {
-	item, exists, err := GetOptional[T](resources, id)
-	if err != nil {
-		return item, err
-	}
-	if !exists {
-		return item, fmt.Errorf("resource with id %s not found", id)
-	}
-
-	return item, nil
-}
-
-func GetOptional[T resources.Resource](resources resources.Resources, id string) (T, bool, error) {
-	if r, ok := resources[id]; ok {
-		if _, okType := r.(T); !okType {
-			return *new(T), true, fmt.Errorf("resource with id %s is of the wrong type", id)
-		}
-		return r.(T), true, nil
-	}
-
-	return *new(T), false, nil
-}
-
 func NewSubnet(resourceId string, subnet *resourcespb.SubnetArgs, others resources.Resources) (*Subnet, error) {
 	s := &Subnet{
 		ChildResourceWithId: resources.ChildResourceWithId[*VirtualNetwork, *resourcespb.SubnetArgs]{
@@ -56,7 +33,7 @@ func NewSubnet(resourceId string, subnet *resourcespb.SubnetArgs, others resourc
 			Args:       subnet,
 		},
 	}
-	vn, err := Get[*VirtualNetwork](others, subnet.VirtualNetworkId)
+	vn, err := resources.Get[*VirtualNetwork](resourceId, others, subnet.VirtualNetworkId)
 	if err != nil {
 		return nil, errors.ValidationErrors([]validate.ValidationError{s.NewValidationError(err.Error(), "virtual_network_id")})
 	}
@@ -81,12 +58,8 @@ func (r *Subnet) Translate(ctx resources.MultyContext) ([]output.TfBlock, error)
 		// This flag needs to be set so that eks nodes can connect to the kubernetes cluster
 		// https://aws.amazon.com/blogs/containers/upcoming-changes-to-ip-assignment-for-eks-managed-node-groups/
 		// How to tell if this subnet is private?
-		for _, resource := range resources.GetAllResources[*KubernetesNodePool](ctx) {
-			for _, sn := range resource.Subnets {
-				if sn.ResourceId == r.ResourceId {
-					awsSubnet.MapPublicIpOnLaunch = true
-				}
-			}
+		if len(resources.GetAllResourcesWithListRef(ctx, func(k *KubernetesNodePool) []*Subnet { return k.Subnets }, r)) > 0 {
+			awsSubnet.MapPublicIpOnLaunch = true
 		}
 		return []output.TfBlock{awsSubnet}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
@@ -100,11 +73,11 @@ func (r *Subnet) Translate(ctx resources.MultyContext) ([]output.TfBlock, error)
 			AddressPrefixes:    []string{r.Args.CidrBlock},
 			VirtualNetworkName: r.VirtualNetwork.GetVirtualNetworkName(),
 		}
-		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, r.ResourceId)
+		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, r)
 		azResources = append(azResources, azSubnet)
 
 		// there must be a better way to do this
-		if !checkSubnetRouteTableAssociated(ctx, r.ResourceId) {
+		if !checkSubnetRouteTableAssociated(ctx, r) {
 			rt, err := r.VirtualNetwork.GetAssociatedRouteTableId()
 			if err != nil {
 				return nil, err
@@ -133,29 +106,20 @@ func (r *Subnet) GetId() string {
 	return fmt.Sprintf("%s.%s.id", t, r.ResourceId)
 }
 
-func getServiceEndpointSubnetReferences(ctx resources.MultyContext, id string) []string {
+func getServiceEndpointSubnetReferences(ctx resources.MultyContext, r *Subnet) []string {
 	const (
 		DATABASE = "Microsoft.Sql"
 	)
 
 	serviceEndpoints := map[string]bool{}
-	for _, resource := range resources.GetAllResources[*Database](ctx) {
-		for _, sn := range resource.Subnets {
-			if sn.ResourceId == id {
-				serviceEndpoints[DATABASE] = true
-			}
-		}
+	if len(resources.GetAllResourcesWithListRef(ctx, func(db *Database) []*Subnet { return db.Subnets }, r)) > 0 {
+		serviceEndpoints[DATABASE] = true
 	}
 	return util.Keys(serviceEndpoints)
 }
 
-func checkSubnetRouteTableAssociated(ctx resources.MultyContext, sId string) bool {
-	for _, resource := range resources.GetAllResources[*RouteTableAssociation](ctx) {
-		if sId == resource.Subnet.ResourceId {
-			return true
-		}
-	}
-	return false
+func checkSubnetRouteTableAssociated(ctx resources.MultyContext, r *Subnet) bool {
+	return len(resources.GetAllResourcesWithRef(ctx, func(rt *RouteTableAssociation) *Subnet { return rt.Subnet }, r)) > 0
 }
 
 func (r *Subnet) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
