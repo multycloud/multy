@@ -1,6 +1,7 @@
 package output
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -19,11 +20,34 @@ type TfState struct {
 
 func (t *TfState) GetValues(resourceType any, resourceId string) (map[string]interface{}, error) {
 	address := fmt.Sprintf("%s.%s", GetResourceName(resourceType), resourceId)
+	return t.Get(address)
+}
+func (t *TfState) Get(resourceRef string) (map[string]interface{}, error) {
 	for _, r := range t.Values.RootModule.Resources {
-		if r.Address == address {
+		if r.Address == resourceRef {
 			return r.Values, nil
 		}
 	}
 
-	return nil, fmt.Errorf("resource %s doesn't exist", address)
+	return nil, fmt.Errorf("resource %s doesn't exist", resourceRef)
+}
+
+func GetParsed[T any](state *TfState, resourceRef string) (*T, error) {
+	rawResourceState, err := state.Get(resourceRef)
+	if err != nil {
+		return nil, err
+	}
+
+	jsonResourceState, err := json.Marshal(rawResourceState)
+	if err != nil {
+		return nil, err
+	}
+
+	stateResource := new(T)
+	err = json.Unmarshal(jsonResourceState, stateResource)
+	if err != nil {
+		return nil, err
+	}
+
+	return stateResource, nil
 }

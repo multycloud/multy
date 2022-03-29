@@ -39,40 +39,13 @@ var (
 	AzureCredsNotSetErr = status.Error(codes.InvalidArgument, "azure credentials are required but not set")
 )
 
-func Translate(credentials *credspb.CloudCredentials, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (string, error) {
-	// TODO: get rid of this translation layer and instead use protos directly
-	translated := map[string]resources.Resource{}
-
-	for _, r := range c.Resources {
-		resourceMessage := r.ResourceArgs.ResourceArgs
-		added := false
-		for messageType, conv := range converter.Converters {
-			if resourceMessage.MessageIs(messageType) {
-				err := addMultyResourceNew(r, translated, conv)
-				if err != nil {
-					return "", err
-				}
-				added = true
-				break
-			}
-		}
-		if !added {
-			return "", fmt.Errorf("unknown resource type %s", resourceMessage.MessageName())
-		}
-	}
-
-	provider, err := getExistingProvider(prev)
+func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (string, error) {
+	decodedResources, err := GetResources(c, prev)
 	if err != nil {
 		return "", err
 	}
 
-	// TODO add s3 state file backend
-	decodedResources := encoder.DecodedResources{
-		Resources: translated,
-		Providers: provider,
-	}
-
-	hclOutput, errs, err := encoder.Encode(&decodedResources, credentials)
+	hclOutput, errs, err := encoder.Encode(decodedResources, credentials)
 	if len(errs) > 0 {
 		return hclOutput, errors.ValidationErrors(errs)
 	}
@@ -80,7 +53,7 @@ func Translate(credentials *credspb.CloudCredentials, c *configpb.Config, prev *
 		return hclOutput, err
 	}
 
-	for _, r := range translated {
+	for _, r := range decodedResources.Resources {
 		if r.GetCloud() == commonpb.CloudProvider_AWS && (credentials.GetAwsCreds().GetAccessKey() == "" || credentials.GetAwsCreds().GetSecretKey() == "") {
 			return hclOutput, AwsCredsNotSetErr
 		}
@@ -93,6 +66,40 @@ func Translate(credentials *credspb.CloudCredentials, c *configpb.Config, prev *
 	}
 
 	return hclOutput, nil
+}
+
+func GetResources(c *configpb.Config, prev *configpb.Resource) (*encoder.DecodedResources, error) {
+	translated := map[string]resources.Resource{}
+
+	for _, r := range c.Resources {
+		resourceMessage := r.ResourceArgs.ResourceArgs
+		added := false
+		for messageType, conv := range converter.Converters {
+			if resourceMessage.MessageIs(messageType) {
+				err := addMultyResourceNew(r, translated, conv)
+				if err != nil {
+					return nil, err
+				}
+				added = true
+				break
+			}
+		}
+		if !added {
+			return nil, fmt.Errorf("unknown resource type %s", resourceMessage.MessageName())
+		}
+	}
+
+	provider, err := getExistingProvider(prev)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO add s3 state file backend
+	decodedResources := encoder.DecodedResources{
+		Resources: translated,
+		Providers: provider,
+	}
+	return &decodedResources, nil
 }
 
 type tfOutput struct {
@@ -109,7 +116,7 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 	if err != nil {
 		return nil, err
 	}
-	hclOutput, err := Translate(credentials, c, prev, curr)
+	hclOutput, err := Encode(credentials, c, prev, curr)
 	if err != nil {
 		return nil, err
 	}

@@ -35,6 +35,46 @@ func NewVirtualNetwork(resourceId string, vn *resourcespb.VirtualNetworkArgs, _ 
 	}, nil
 }
 
+func (r *VirtualNetwork) FromState(state *output.TfState) (*resourcespb.VirtualNetworkResource, error) {
+	out := new(resourcespb.VirtualNetworkResource)
+
+	id, err := resources.GetMainOutputRef(r)
+	if err != nil {
+		return nil, err
+	}
+
+	switch r.GetCloud() {
+	case common.AWS:
+		stateResource, err := output.GetParsed[virtual_network.AwsVpc](state, id)
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.AwsResource.Tags["Name"]
+		out.CidrBlock = stateResource.CidrBlock
+		out.CommonParameters = &commonpb.CommonResourceParameters{
+			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
+			Location:        r.Args.CommonParameters.Location,
+			CloudProvider:   r.GetCloud(),
+			NeedsUpdate:     false,
+		}
+	case common.AZURE:
+		stateResource, err := output.GetParsed[virtual_network.AzureVnet](state, id)
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.Name
+		out.CidrBlock = stateResource.AddressSpace[0]
+		out.CommonParameters = &commonpb.CommonResourceParameters{
+			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
+			Location:        r.Args.CommonParameters.Location,
+			CloudProvider:   r.GetCloud(),
+			NeedsUpdate:     false,
+		}
+	}
+
+	return out, nil
+}
+
 func (r *VirtualNetwork) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		vpc := virtual_network.AwsVpc{

@@ -10,6 +10,7 @@ import (
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources/output"
 	"google.golang.org/protobuf/proto"
 	"log"
 )
@@ -118,7 +119,15 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 	return s.readFromConfig(c, in)
 }
 
+type stateParser[OutT any] interface {
+	FromState(state *output.TfState) (OutT, error)
+}
+
 func (s Service[Arg, OutT]) readFromConfig(c *configpb.Config, in WithResourceId) (OutT, error) {
+	allResources, err := deploy.GetResources(c, nil)
+	if err != nil {
+		return *new(OutT), err
+	}
 	for _, r := range c.Resources {
 		if r.ResourceId == in.GetResourceId() {
 			converted, err := r.ResourceArgs.ResourceArgs.UnmarshalNew()
@@ -132,6 +141,9 @@ func (s Service[Arg, OutT]) readFromConfig(c *configpb.Config, in WithResourceId
 			state, err := deploy.GetState(c.UserId)
 			if err != nil {
 				return *new(OutT), err
+			}
+			if parser, ok := allResources.Resources[r.ResourceId].(stateParser[OutT]); ok {
+				return parser.FromState(state)
 			}
 			return s.Converters.Convert(in.GetResourceId(), converted.(Arg), state)
 		}

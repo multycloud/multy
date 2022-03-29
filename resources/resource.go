@@ -60,3 +60,11 @@ func GetMainOutputId(r Resource) (string, error) {
 	}
 	return fmt.Sprintf("${%s.%s.id}", name, r.GetResourceId()), nil
 }
+
+func GetMainOutputRef(r Resource) (string, error) {
+	name, err := r.GetMainResourceName()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s.%s", name, r.GetResourceId()), nil
+}
