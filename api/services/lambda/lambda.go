@@ -1,7 +1,6 @@
 package lambda
 
 import (
-	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
@@ -10,29 +9,21 @@ import (
 )
 
 type LambdaService struct {
-	Service services.Service[*resources.CloudSpecificLambdaArgs, *resources.LambdaResource]
+	Service services.Service[*resources.LambdaArgs, *resources.LambdaResource]
 }
 
-func (s LambdaService) Convert(resourceId string, args []*resources.CloudSpecificLambdaArgs, state *output.TfState) (*resources.LambdaResource, error) {
-	var result []*resources.CloudSpecificLambdaResource
-	for _, r := range args {
-		result = append(result, &resources.CloudSpecificLambdaResource{
-			CommonParameters:   util.ConvertCommonParams(r.CommonParameters),
-			Name:               r.Name,
-			Runtime:            r.Runtime,
-			SourceCodeObjectId: r.SourceCodeObjectId,
-		})
-	}
-
+func (s LambdaService) Convert(resourceId string, args *resources.LambdaArgs, state *output.TfState) (*resources.LambdaResource, error) {
 	return &resources.LambdaResource{
-		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
-		Resources:        result,
+		CommonParameters:   util.ConvertCommonParams(resourceId, args.CommonParameters),
+		Name:               args.Name,
+		Runtime:            args.Runtime,
+		SourceCodeObjectId: args.SourceCodeObjectId,
 	}, nil
 }
 
 func NewLambdaService(database *db.Database) LambdaService {
 	ni := LambdaService{
-		Service: services.Service[*resources.CloudSpecificLambdaArgs, *resources.LambdaResource]{
+		Service: services.Service[*resources.LambdaArgs, *resources.LambdaResource]{
 			Db:         database,
 			Converters: nil,
 		},

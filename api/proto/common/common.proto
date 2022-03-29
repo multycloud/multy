@@ -47,28 +47,26 @@ message VmSize {
 // Common messages for READ requests
 message CommonResourceParameters {
   string resource_id = 1;
+  string resource_group_id = 2;
+  Location location = 3;
+  CloudProvider cloud_provider = 4;
+  bool needs_update = 5;
 }
 
-message CloudSpecificCommonResourceParameters {
-  string resource_group_id = 1;
-  Location location = 2;
-  CloudProvider cloud_provider = 3;
-  bool needs_update = 4;
-}
-
-message CloudSpecificCommonChildResourceParameters {
-  bool needs_update = 1;
+message CommonChildResourceParameters {
+  string resource_id = 1;
+  bool needs_update = 2;
 }
 
 // Common messages for CREATE and UPDATE requests
-message CloudSpecificResourceCommonArgs {
+message ResourceCommonArgs {
   string resource_group_id = 1;
   Location location = 2;
   CloudProvider cloud_provider = 3;
 }
 
 
-message CloudSpecificChildResourceCommonArgs {
+message ChildResourceCommonArgs {
 }
 
 // Common messages for DELETE requests

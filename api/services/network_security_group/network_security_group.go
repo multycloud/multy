@@ -1,7 +1,6 @@
 package network_security_group
 
 import (
-	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
@@ -10,29 +9,21 @@ import (
 )
 
 type NetworkSecurityGroupService struct {
-	Service services.Service[*resources.CloudSpecificNetworkSecurityGroupArgs, *resources.NetworkSecurityGroupResource]
+	Service services.Service[*resources.NetworkSecurityGroupArgs, *resources.NetworkSecurityGroupResource]
 }
 
-func (s NetworkSecurityGroupService) Convert(resourceId string, args []*resources.CloudSpecificNetworkSecurityGroupArgs, state *output.TfState) (*resources.NetworkSecurityGroupResource, error) {
-	var result []*resources.CloudSpecificNetworkSecurityGroupResource
-	for _, r := range args {
-		result = append(result, &resources.CloudSpecificNetworkSecurityGroupResource{
-			CommonParameters: util.ConvertCommonParams(r.CommonParameters),
-			Name:             r.Name,
-			VirtualNetworkId: r.VirtualNetworkId,
-			Rules:            r.Rules,
-		})
-	}
-
+func (s NetworkSecurityGroupService) Convert(resourceId string, args *resources.NetworkSecurityGroupArgs, state *output.TfState) (*resources.NetworkSecurityGroupResource, error) {
 	return &resources.NetworkSecurityGroupResource{
-		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
-		Resources:        result,
+		CommonParameters: util.ConvertCommonParams(resourceId, args.CommonParameters),
+		Name:             args.Name,
+		VirtualNetworkId: args.VirtualNetworkId,
+		Rules:            args.Rules,
 	}, nil
 }
 
 func NewNetworkSecurityGroupService(database *db.Database) NetworkSecurityGroupService {
 	nsg := NetworkSecurityGroupService{
-		Service: services.Service[*resources.CloudSpecificNetworkSecurityGroupArgs, *resources.NetworkSecurityGroupResource]{
+		Service: services.Service[*resources.NetworkSecurityGroupArgs, *resources.NetworkSecurityGroupResource]{
 			Db:         database,
 			Converters: nil,
 		},

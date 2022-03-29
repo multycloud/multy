@@ -10,7 +10,7 @@ import "api/proto/common/common.proto";
 package dev.multy.resources;
 
 message CreateNetworkSecurityGroupRequest {
-  repeated CloudSpecificNetworkSecurityGroupArgs resources = 1;
+  NetworkSecurityGroupArgs resource = 1;
 }
 
 message ReadNetworkSecurityGroupRequest {
@@ -19,7 +19,7 @@ message ReadNetworkSecurityGroupRequest {
 
 message UpdateNetworkSecurityGroupRequest {
   string resource_id = 1;
-  repeated CloudSpecificNetworkSecurityGroupArgs resources = 2;
+  NetworkSecurityGroupArgs resource = 2;
 }
 
 message DeleteNetworkSecurityGroupRequest {
@@ -47,15 +47,8 @@ message NetworkSecurityRule {
 
 }
 
-message CloudSpecificNetworkSecurityGroupArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
-  string name = 2;
-  string virtual_network_id = 3;
-  repeated NetworkSecurityRule rules = 4;
-}
-
-message CloudSpecificNetworkSecurityGroupResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+message NetworkSecurityGroupArgs {
+  common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   string virtual_network_id = 3;
   repeated NetworkSecurityRule rules = 4;
@@ -63,5 +56,7 @@ message CloudSpecificNetworkSecurityGroupResource {
 
 message NetworkSecurityGroupResource {
   common.CommonResourceParameters common_parameters = 1;
-  repeated CloudSpecificNetworkSecurityGroupResource resources = 2;
+  string name = 2;
+  string virtual_network_id = 3;
+  repeated NetworkSecurityRule rules = 4;
 }

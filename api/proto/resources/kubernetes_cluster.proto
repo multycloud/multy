@@ -10,7 +10,7 @@ import "api/proto/common/common.proto";
 package dev.multy.resources;
 
 message CreateKubernetesClusterRequest {
-  repeated CloudSpecificKubernetesClusterArgs resources = 1;
+  KubernetesClusterArgs resource = 1;
 }
 
 message ReadKubernetesClusterRequest {
@@ -19,29 +19,24 @@ message ReadKubernetesClusterRequest {
 
 message UpdateKubernetesClusterRequest {
   string resource_id = 1;
-  repeated CloudSpecificKubernetesClusterArgs resources = 2;
+  KubernetesClusterArgs resource = 2;
 }
 
 message DeleteKubernetesClusterRequest {
   string resource_id = 1;
 }
 
-message CloudSpecificKubernetesClusterArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+message KubernetesClusterArgs {
+  common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   repeated string subnet_ids = 3;
 }
 
-message CloudSpecificKubernetesClusterResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+message KubernetesClusterResource {
+  common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   repeated string subnet_ids = 3;
 
   // outputs
   string endpoint = 4;
-}
-
-message KubernetesClusterResource {
-  common.CommonResourceParameters common_parameters = 1;
-  repeated CloudSpecificKubernetesClusterResource resources = 2;
 }

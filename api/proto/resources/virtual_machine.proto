@@ -10,7 +10,7 @@ import "api/proto/common/common.proto";
 package dev.multy.resources;
 
 message CreateVirtualMachineRequest {
-  repeated CloudSpecificVirtualMachineArgs resources = 1;
+  VirtualMachineArgs resource = 1;
 }
 
 message ReadVirtualMachineRequest {
@@ -19,15 +19,15 @@ message ReadVirtualMachineRequest {
 
 message UpdateVirtualMachineRequest {
   string resource_id = 1;
-  repeated CloudSpecificVirtualMachineArgs resources = 2;
+  VirtualMachineArgs resource = 2;
 }
 
 message DeleteVirtualMachineRequest {
   string resource_id = 1;
 }
 
-message CloudSpecificVirtualMachineArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+message VirtualMachineArgs {
+  common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   common.OperatingSystem.Enum operating_system = 3;
   repeated string network_interface_ids = 4;
@@ -40,8 +40,8 @@ message CloudSpecificVirtualMachineArgs {
   bool generate_public_ip = 11;
 }
 
-message CloudSpecificVirtualMachineResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+message VirtualMachineResource {
+  common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   common.OperatingSystem.Enum operating_system = 3;
   repeated string network_interface_ids = 4;
@@ -56,9 +56,4 @@ message CloudSpecificVirtualMachineResource {
   // outputs
   string public_ip = 12;
   string identity_id = 13;
-}
-
-message VirtualMachineResource {
-  common.CommonResourceParameters common_parameters = 1;
-  repeated CloudSpecificVirtualMachineResource resources = 2;
 }

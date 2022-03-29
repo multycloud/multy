@@ -10,7 +10,7 @@ import "api/proto/common/common.proto";
 package dev.multy.resources;
 
 message CreateVaultAccessPolicyRequest {
-  repeated CloudSpecificVaultAccessPolicyArgs resources = 1;
+  VaultAccessPolicyArgs resource = 1;
 }
 
 message ReadVaultAccessPolicyRequest {
@@ -19,7 +19,7 @@ message ReadVaultAccessPolicyRequest {
 
 message UpdateVaultAccessPolicyRequest {
   string resource_id = 1;
-  repeated CloudSpecificVaultAccessPolicyArgs resources = 2;
+  VaultAccessPolicyArgs resource = 2;
 }
 
 message DeleteVaultAccessPolicyRequest {
@@ -35,21 +35,16 @@ message VaultAccess {
   }
 }
 
-message CloudSpecificVaultAccessPolicyArgs {
-  common.CloudSpecificChildResourceCommonArgs common_parameters = 1;
-  string vault_id = 2;
-  string identity = 3;
-  VaultAccess access = 4;
-}
-
-message CloudSpecificVaultAccessPolicyResource {
-  common.CloudSpecificCommonChildResourceParameters common_parameters = 1;
+message VaultAccessPolicyArgs {
+  common.ChildResourceCommonArgs common_parameters = 1;
   string vault_id = 2;
   string identity = 3;
   VaultAccess access = 4;
 }
 
 message VaultAccessPolicyResource {
-  common.CommonResourceParameters common_parameters = 1;
-  repeated CloudSpecificVaultAccessPolicyResource resources = 2;
+  common.CommonChildResourceParameters common_parameters = 1;
+  string vault_id = 2;
+  string identity = 3;
+  VaultAccess access = 4;
 }

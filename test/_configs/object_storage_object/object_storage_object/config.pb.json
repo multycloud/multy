@@ -2,123 +2,107 @@
   "resources": [
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
-            "name": "test-storage-9999919"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "IRELAND"
+          },
+          "name": "test-storage-9999919"
+        }
       },
       "resource_id": "obj_storage_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
-            "name": "test-storage-9999919"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "IRELAND"
+          },
+          "name": "test-storage-9999919"
+        }
       },
       "resource_id": "obj_storage_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
-            "content": "\u003ch1\u003eHi\u003c/h1\u003e",
-            "content_type": "text/html",
-            "name": "index_private.html",
-            "object_storage_id": "obj_storage_aws"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageObjectArgs",
+          "content": "\u003ch1\u003eHi\u003c/h1\u003e",
+          "content_type": "text/html",
+          "name": "index_private.html",
+          "object_storage_id": "obj_storage_aws"
+        }
       },
       "resource_id": "file2_private_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
-            "acl": "PUBLIC_READ",
-            "content": "\u003ch1\u003eHi from AWS\u003c/h1\u003e",
-            "content_type": "text/html",
-            "name": "index.html",
-            "object_storage_id": "obj_storage_aws"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageObjectArgs",
+          "acl": "PUBLIC_READ",
+          "content": "\u003ch1\u003eHi from AWS\u003c/h1\u003e",
+          "content_type": "text/html",
+          "name": "index.html",
+          "object_storage_id": "obj_storage_aws"
+        }
       },
       "resource_id": "file1_public_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
-            "content": "\u003ch1\u003eHi\u003c/h1\u003e",
-            "content_type": "text/html",
-            "name": "index_private.html",
-            "object_storage_id": "obj_storage_azure",
-            "source": ""
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageObjectArgs",
+          "content": "\u003ch1\u003eHi\u003c/h1\u003e",
+          "content_type": "text/html",
+          "name": "index_private.html",
+          "object_storage_id": "obj_storage_azure",
+          "source": ""
+        }
       },
       "resource_id": "file2_private_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
-            "acl": "PUBLIC_READ",
-            "content": "",
-            "content_type": "",
-            "name": "index.html",
-            "object_storage_id": "obj_storage_aws",
-            "source": "test.zip"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageObjectArgs",
+          "acl": "PUBLIC_READ",
+          "content": "",
+          "content_type": "",
+          "name": "index.html",
+          "object_storage_id": "obj_storage_aws",
+          "source": "test.zip"
+        }
       },
       "resource_id": "file3_source_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
-            "acl": "PUBLIC_READ",
-            "content": "",
-            "content_type": "",
-            "name": "index.html",
-            "object_storage_id": "obj_storage_azure",
-            "source": "test.zip"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageObjectArgs",
+          "acl": "PUBLIC_READ",
+          "content": "",
+          "content_type": "",
+          "name": "index.html",
+          "object_storage_id": "obj_storage_azure",
+          "source": "test.zip"
+        }
       },
       "resource_id": "file3_source_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageObjectArgs",
-            "acl": "PUBLIC_READ",
-            "content": "\u003ch1\u003eHi from Azure\u003c/h1\u003e",
-            "content_type": "text/html",
-            "name": "index.html",
-            "object_storage_id": "obj_storage_azure",
-            "source": ""
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageObjectArgs",
+          "acl": "PUBLIC_READ",
+          "content": "\u003ch1\u003eHi from Azure\u003c/h1\u003e",
+          "content_type": "text/html",
+          "name": "index.html",
+          "object_storage_id": "obj_storage_azure",
+          "source": ""
+        }
       },
       "resource_id": "file1_public_azure"
     }

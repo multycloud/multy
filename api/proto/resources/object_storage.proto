@@ -10,7 +10,7 @@ import "api/proto/common/common.proto";
 package dev.multy.resources;
 
 message CreateObjectStorageRequest {
-  repeated CloudSpecificObjectStorageArgs resources = 1;
+  ObjectStorageArgs resource = 1;
 }
 
 message ReadObjectStorageRequest {
@@ -19,26 +19,21 @@ message ReadObjectStorageRequest {
 
 message UpdateObjectStorageRequest {
   string resource_id = 1;
-  repeated CloudSpecificObjectStorageArgs resources = 2;
+  ObjectStorageArgs resource = 2;
 }
 
 message DeleteObjectStorageRequest {
   string resource_id = 1;
 }
 
-message CloudSpecificObjectStorageArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
-  string name = 2;
-  bool versioning = 3;
-}
-
-message CloudSpecificObjectStorageResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+message ObjectStorageArgs {
+  common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   bool versioning = 3;
 }
 
 message ObjectStorageResource {
   common.CommonResourceParameters common_parameters = 1;
-  repeated CloudSpecificObjectStorageResource resources = 2;
+  string name = 2;
+  bool versioning = 3;
 }
