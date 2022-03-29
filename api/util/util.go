@@ -16,8 +16,9 @@ import (
 	"strings"
 )
 
-func ConvertCommonParams(parameters *common.CloudSpecificResourceCommonArgs) *common.CloudSpecificCommonResourceParameters {
-	return &common.CloudSpecificCommonResourceParameters{
+func ConvertCommonParams(resourceId string, parameters *common.ResourceCommonArgs) *common.CommonResourceParameters {
+	return &common.CommonResourceParameters{
+		ResourceId:      resourceId,
 		ResourceGroupId: parameters.ResourceGroupId,
 		Location:        parameters.Location,
 		CloudProvider:   parameters.CloudProvider,
@@ -25,8 +26,8 @@ func ConvertCommonParams(parameters *common.CloudSpecificResourceCommonArgs) *co
 	}
 }
 
-func ConvertCommonChildParams(parameters *common.CloudSpecificChildResourceCommonArgs) *common.CloudSpecificCommonChildResourceParameters {
-	return &common.CloudSpecificCommonChildResourceParameters{
+func ConvertCommonChildParams(resourceId string, parameters *common.ChildResourceCommonArgs) *common.CommonChildResourceParameters {
+	return &common.CommonChildResourceParameters{
 		NeedsUpdate: false,
 	}
 }
@@ -57,7 +58,7 @@ func ExtractCloudCredentials(ctx context.Context) (*creds.CloudCredentials, erro
 	return &res, err
 }
 
-func InsertIntoConfig[Arg proto.Message](in []Arg, c *config.Config) (*config.Resource, error) {
+func InsertIntoConfig[Arg proto.Message](in Arg, c *config.Config) (*config.Resource, error) {
 	args, err := convert(in)
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error marhsalling resource", err)
@@ -70,16 +71,14 @@ func InsertIntoConfig[Arg proto.Message](in []Arg, c *config.Config) (*config.Re
 	return &resource, nil
 }
 
-func convert[Arg proto.Message](in []Arg) (*config.ResourceArgs, error) {
+func convert[Arg proto.Message](in Arg) (*config.ResourceArgs, error) {
 	args := config.ResourceArgs{}
 
-	for _, arg := range in {
-		a, err := anypb.New(arg)
-		if err != nil {
-			return nil, err
-		}
-		args.ResourceArgs = append(args.ResourceArgs, a)
+	a, err := anypb.New(in)
+	if err != nil {
+		return nil, err
 	}
+	args.ResourceArgs = a
 	return &args, nil
 }
 
@@ -90,7 +89,7 @@ func DeleteResourceFromConfig(c *config.Config, resourceId string) error {
 	return nil
 }
 
-func UpdateInConfig[Arg proto.Message](c *config.Config, resourceId string, in []Arg) error {
+func UpdateInConfig[Arg proto.Message](c *config.Config, resourceId string, in Arg) error {
 	if i := slices.IndexFunc(c.Resources, func(r *config.Resource) bool { return r.ResourceId == resourceId }); i != -1 {
 		a, err := convert(in)
 		if err != nil {

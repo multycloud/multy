@@ -10,7 +10,7 @@ import "api/proto/common/common.proto";
 package dev.multy.resources;
 
 message CreateKubernetesNodePoolRequest {
-  repeated CloudSpecificKubernetesNodePoolArgs resources = 1;
+  KubernetesNodePoolArgs resource = 1;
 }
 
 message ReadKubernetesNodePoolRequest {
@@ -19,15 +19,15 @@ message ReadKubernetesNodePoolRequest {
 
 message UpdateKubernetesNodePoolRequest {
   string resource_id = 1;
-  repeated CloudSpecificKubernetesNodePoolArgs resources = 2;
+  KubernetesNodePoolArgs resource = 2;
 }
 
 message DeleteKubernetesNodePoolRequest {
   string resource_id = 1;
 }
 
-message CloudSpecificKubernetesNodePoolArgs {
-  common.CloudSpecificChildResourceCommonArgs common_parameters = 1;
+message KubernetesNodePoolArgs {
+  common.ChildResourceCommonArgs common_parameters = 1;
   string name = 2;
   repeated string subnet_ids = 3;
   string cluster_id = 4;
@@ -40,24 +40,19 @@ message CloudSpecificKubernetesNodePoolArgs {
 
   map<string, string> labels = 11;
 
-}
-
-message CloudSpecificKubernetesNodePoolResource {
-  common.CloudSpecificCommonChildResourceParameters common_parameters = 1;
-  string name = 2;
-  repeated string subnet_ids = 3;
-  string cluster_id = 4;
-  bool is_default_pool = 5;
-  int32 starting_node_count = 6;
-  int32 min_node_count = 7;
-  int32 max_node_count = 8;
-  common.VmSize.Enum vm_size = 9;
-  int64 disk_size_gb = 10;
-
-  map<string, string> labels = 11;
 }
 
 message KubernetesNodePoolResource {
-  common.CommonResourceParameters common_parameters = 1;
-  repeated CloudSpecificKubernetesNodePoolResource resources = 2;
+  common.CommonChildResourceParameters common_parameters = 1;
+  string name = 2;
+  repeated string subnet_ids = 3;
+  string cluster_id = 4;
+  bool is_default_pool = 5;
+  int32 starting_node_count = 6;
+  int32 min_node_count = 7;
+  int32 max_node_count = 8;
+  common.VmSize.Enum vm_size = 9;
+  int64 disk_size_gb = 10;
+
+  map<string, string> labels = 11;
 }

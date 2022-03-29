@@ -1,7 +1,6 @@
 package kubernetes_node_pool
 
 import (
-	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
@@ -10,36 +9,28 @@ import (
 )
 
 type KubernetesNodePoolService struct {
-	Service services.Service[*resources.CloudSpecificKubernetesNodePoolArgs, *resources.KubernetesNodePoolResource]
+	Service services.Service[*resources.KubernetesNodePoolArgs, *resources.KubernetesNodePoolResource]
 }
 
-func (s KubernetesNodePoolService) Convert(resourceId string, args []*resources.CloudSpecificKubernetesNodePoolArgs, state *output.TfState) (*resources.KubernetesNodePoolResource, error) {
-	var result []*resources.CloudSpecificKubernetesNodePoolResource
-	for _, r := range args {
-		result = append(result, &resources.CloudSpecificKubernetesNodePoolResource{
-			CommonParameters:  util.ConvertCommonChildParams(r.CommonParameters),
-			Name:              r.Name,
-			SubnetIds:         r.SubnetIds,
-			ClusterId:         r.ClusterId,
-			IsDefaultPool:     r.IsDefaultPool,
-			StartingNodeCount: r.StartingNodeCount,
-			MinNodeCount:      r.MinNodeCount,
-			MaxNodeCount:      r.MaxNodeCount,
-			VmSize:            r.VmSize,
-			DiskSizeGb:        r.DiskSizeGb,
-			Labels:            r.Labels,
-		})
-	}
-
+func (s KubernetesNodePoolService) Convert(resourceId string, args *resources.KubernetesNodePoolArgs, state *output.TfState) (*resources.KubernetesNodePoolResource, error) {
 	return &resources.KubernetesNodePoolResource{
-		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
-		Resources:        result,
+		CommonParameters:  util.ConvertCommonChildParams(resourceId, args.CommonParameters),
+		Name:              args.Name,
+		SubnetIds:         args.SubnetIds,
+		ClusterId:         args.ClusterId,
+		IsDefaultPool:     args.IsDefaultPool,
+		StartingNodeCount: args.StartingNodeCount,
+		MinNodeCount:      args.MinNodeCount,
+		MaxNodeCount:      args.MaxNodeCount,
+		VmSize:            args.VmSize,
+		DiskSizeGb:        args.DiskSizeGb,
+		Labels:            args.Labels,
 	}, nil
 }
 
 func NewKubernetesNodePoolService(database *db.Database) KubernetesNodePoolService {
 	ni := KubernetesNodePoolService{
-		Service: services.Service[*resources.CloudSpecificKubernetesNodePoolArgs, *resources.KubernetesNodePoolResource]{
+		Service: services.Service[*resources.KubernetesNodePoolArgs, *resources.KubernetesNodePoolResource]{
 			Db:         database,
 			Converters: nil,
 		},

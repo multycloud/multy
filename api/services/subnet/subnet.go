@@ -1,7 +1,6 @@
 package subnet
 
 import (
-	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
@@ -10,30 +9,22 @@ import (
 )
 
 type SubnetService struct {
-	Service services.Service[*resources.CloudSpecificSubnetArgs, *resources.SubnetResource]
+	Service services.Service[*resources.SubnetArgs, *resources.SubnetResource]
 }
 
-func (s SubnetService) Convert(resourceId string, args []*resources.CloudSpecificSubnetArgs, state *output.TfState) (*resources.SubnetResource, error) {
-	var result []*resources.CloudSpecificSubnetResource
-	for _, r := range args {
-		result = append(result, &resources.CloudSpecificSubnetResource{
-			CommonParameters: util.ConvertCommonChildParams(r.CommonParameters),
-			Name:             r.Name,
-			CidrBlock:        r.CidrBlock,
-			AvailabilityZone: r.AvailabilityZone,
-			VirtualNetworkId: r.VirtualNetworkId,
-		})
-	}
-
+func (s SubnetService) Convert(resourceId string, args *resources.SubnetArgs, state *output.TfState) (*resources.SubnetResource, error) {
 	return &resources.SubnetResource{
-		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
-		Resources:        result,
+		CommonParameters: util.ConvertCommonChildParams(resourceId, args.CommonParameters),
+		Name:             args.Name,
+		CidrBlock:        args.CidrBlock,
+		AvailabilityZone: args.AvailabilityZone,
+		VirtualNetworkId: args.VirtualNetworkId,
 	}, nil
 }
 
 func NewSubnetService(database *db.Database) SubnetService {
 	vn := SubnetService{
-		Service: services.Service[*resources.CloudSpecificSubnetArgs, *resources.SubnetResource]{
+		Service: services.Service[*resources.SubnetArgs, *resources.SubnetResource]{
 			Db:         database,
 			Converters: nil,
 		},

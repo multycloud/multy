@@ -13,28 +13,20 @@ import (
 )
 
 type KubernetesClusterService struct {
-	Service services.Service[*resources.CloudSpecificKubernetesClusterArgs, *resources.KubernetesClusterResource]
+	Service services.Service[*resources.KubernetesClusterArgs, *resources.KubernetesClusterResource]
 }
 
-func (s KubernetesClusterService) Convert(resourceId string, args []*resources.CloudSpecificKubernetesClusterArgs, state *output.TfState) (*resources.KubernetesClusterResource, error) {
-	var result []*resources.CloudSpecificKubernetesClusterResource
-	for _, r := range args {
-		endpoint, err := getEndpoint(resourceId, state, r.CommonParameters.CloudProvider)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, &resources.CloudSpecificKubernetesClusterResource{
-			CommonParameters: util.ConvertCommonParams(r.CommonParameters),
-			Name:             r.Name,
-			SubnetIds:        r.SubnetIds,
-
-			Endpoint: endpoint,
-		})
+func (s KubernetesClusterService) Convert(resourceId string, args *resources.KubernetesClusterArgs, state *output.TfState) (*resources.KubernetesClusterResource, error) {
+	endpoint, err := getEndpoint(resourceId, state, args.CommonParameters.CloudProvider)
+	if err != nil {
+		return nil, err
 	}
 
 	return &resources.KubernetesClusterResource{
-		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
-		Resources:        result,
+		CommonParameters: util.ConvertCommonParams(resourceId, args.CommonParameters),
+		Name:             args.Name,
+		SubnetIds:        args.SubnetIds,
+		Endpoint:         endpoint,
 	}, nil
 }
 
@@ -60,7 +52,7 @@ func getEndpoint(resourceId string, state *output.TfState, cloud common.CloudPro
 
 func NewKubernetesClusterService(database *db.Database) KubernetesClusterService {
 	ni := KubernetesClusterService{
-		Service: services.Service[*resources.CloudSpecificKubernetesClusterArgs, *resources.KubernetesClusterResource]{
+		Service: services.Service[*resources.KubernetesClusterArgs, *resources.KubernetesClusterResource]{
 			Db:         database,
 			Converters: nil,
 		},

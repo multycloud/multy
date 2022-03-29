@@ -15,12 +15,12 @@ import (
 )
 
 type CreateRequest[Arg proto.Message] interface {
-	GetResources() []Arg
+	GetResource() Arg
 	proto.Message
 }
 
 type UpdateRequest[Arg proto.Message] interface {
-	GetResources() []Arg
+	GetResource() Arg
 	WithResourceId
 }
 
@@ -58,7 +58,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	if err != nil {
 		return *new(OutT), err
 	}
-	resource, err := util.InsertIntoConfig(in.GetResources(), c)
+	resource, err := util.InsertIntoConfig(in.GetResource(), c)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -93,15 +93,11 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 	}
 	for _, r := range c.Resources {
 		if r.ResourceId == in.GetResourceId() {
-			var convertedArgs []Arg
-			for _, arg := range r.ResourceArgs.ResourceArgs {
-				converted, err := arg.UnmarshalNew()
-				if err != nil {
-					return *new(OutT), err
-				}
-				convertedArgs = append(convertedArgs, converted.(Arg))
+			converted, err := r.ResourceArgs.ResourceArgs.UnmarshalNew()
+			if err != nil {
+				return *new(OutT), err
 			}
-			err := deploy.MaybeInit(c.UserId)
+			err = deploy.MaybeInit(c.UserId)
 			if err != nil {
 				return *new(OutT), err
 			}
@@ -109,7 +105,7 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 			if err != nil {
 				return *new(OutT), err
 			}
-			return s.Converters.Convert(in.GetResourceId(), convertedArgs, state)
+			return s.Converters.Convert(in.GetResourceId(), converted.(Arg), state)
 		}
 	}
 
@@ -131,7 +127,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 		return *new(OutT), err
 	}
 	previousResource := find(c, in.GetResourceId())
-	err = util.UpdateInConfig(c, in.GetResourceId(), in.GetResources())
+	err = util.UpdateInConfig(c, in.GetResourceId(), in.GetResource())
 	if err != nil {
 		return *new(OutT), err
 	}

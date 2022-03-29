@@ -13,33 +13,25 @@ import (
 )
 
 type DatabaseService struct {
-	Service services.Service[*resources.CloudSpecificDatabaseArgs, *resources.DatabaseResource]
+	Service services.Service[*resources.DatabaseArgs, *resources.DatabaseResource]
 }
 
-func (s DatabaseService) Convert(resourceId string, args []*resources.CloudSpecificDatabaseArgs, state *output.TfState) (*resources.DatabaseResource, error) {
-	var result []*resources.CloudSpecificDatabaseResource
-	for _, r := range args {
-		host, err := getHost(resourceId, state, r.CommonParameters.CloudProvider)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, &resources.CloudSpecificDatabaseResource{
-			CommonParameters: util.ConvertCommonParams(r.CommonParameters),
-			Name:             r.Name,
-			Engine:           r.Engine,
-			EngineVersion:    r.EngineVersion,
-			StorageGb:        r.StorageGb,
-			Size:             r.Size,
-			Username:         r.Username,
-			Password:         r.Password,
-			SubnetIds:        r.SubnetIds,
-			Host:             host,
-		})
+func (s DatabaseService) Convert(resourceId string, args *resources.DatabaseArgs, state *output.TfState) (*resources.DatabaseResource, error) {
+	host, err := getHost(resourceId, state, args.CommonParameters.CloudProvider)
+	if err != nil {
+		return nil, err
 	}
-
 	return &resources.DatabaseResource{
-		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
-		Resources:        result,
+		CommonParameters: util.ConvertCommonParams(resourceId, args.CommonParameters),
+		Name:             args.Name,
+		Engine:           args.Engine,
+		EngineVersion:    args.EngineVersion,
+		StorageGb:        args.StorageGb,
+		Size:             args.Size,
+		Username:         args.Username,
+		Password:         args.Password,
+		SubnetIds:        args.SubnetIds,
+		Host:             host,
 	}, nil
 }
 
@@ -65,7 +57,7 @@ func getHost(resourceId string, state *output.TfState, cloud common.CloudProvide
 
 func NewDatabaseService(database *db.Database) DatabaseService {
 	ni := DatabaseService{
-		Service: services.Service[*resources.CloudSpecificDatabaseArgs, *resources.DatabaseResource]{
+		Service: services.Service[*resources.DatabaseArgs, *resources.DatabaseResource]{
 			Db:         database,
 			Converters: nil,
 		},

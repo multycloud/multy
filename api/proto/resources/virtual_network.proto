@@ -10,7 +10,7 @@ import "api/proto/common/common.proto";
 package dev.multy.resources;
 
 message CreateVirtualNetworkRequest {
-  repeated CloudSpecificVirtualNetworkArgs resources = 1;
+  VirtualNetworkArgs resource = 1;
 }
 
 message ReadVirtualNetworkRequest {
@@ -19,26 +19,21 @@ message ReadVirtualNetworkRequest {
 
 message UpdateVirtualNetworkRequest {
   string resource_id = 1;
-  repeated CloudSpecificVirtualNetworkArgs resources = 2;
+  VirtualNetworkArgs resource = 2;
 }
 
 message DeleteVirtualNetworkRequest {
   string resource_id = 1;
 }
 
-message CloudSpecificVirtualNetworkArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
-  string name = 2;
-  string cidr_block = 3;
-}
-
-message CloudSpecificVirtualNetworkResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+message VirtualNetworkArgs {
+  common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   string cidr_block = 3;
 }
 
 message VirtualNetworkResource {
   common.CommonResourceParameters common_parameters = 1;
-  repeated CloudSpecificVirtualNetworkResource resources = 2;
+  string name = 2;
+  string cidr_block = 3;
 }

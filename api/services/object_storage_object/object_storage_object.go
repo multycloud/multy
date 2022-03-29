@@ -1,7 +1,6 @@
 package object_storage_object
 
 import (
-	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
@@ -10,32 +9,24 @@ import (
 )
 
 type ObjectStorageObjectService struct {
-	Service services.Service[*resources.CloudSpecificObjectStorageObjectArgs, *resources.ObjectStorageObjectResource]
+	Service services.Service[*resources.ObjectStorageObjectArgs, *resources.ObjectStorageObjectResource]
 }
 
-func (s ObjectStorageObjectService) Convert(resourceId string, args []*resources.CloudSpecificObjectStorageObjectArgs, state *output.TfState) (*resources.ObjectStorageObjectResource, error) {
-	var result []*resources.CloudSpecificObjectStorageObjectResource
-	for _, r := range args {
-		result = append(result, &resources.CloudSpecificObjectStorageObjectResource{
-			CommonParameters: util.ConvertCommonChildParams(r.CommonParameters),
-			Name:             r.Name,
-			Acl:              r.Acl,
-			ObjectStorageId:  r.ObjectStorageId,
-			Content:          r.Content,
-			ContentType:      r.ContentType,
-			Source:           r.Source,
-		})
-	}
-
+func (s ObjectStorageObjectService) Convert(resourceId string, args *resources.ObjectStorageObjectArgs, state *output.TfState) (*resources.ObjectStorageObjectResource, error) {
 	return &resources.ObjectStorageObjectResource{
-		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
-		Resources:        result,
+		CommonParameters: util.ConvertCommonChildParams(resourceId, args.CommonParameters),
+		Name:             args.Name,
+		Acl:              args.Acl,
+		ObjectStorageId:  args.ObjectStorageId,
+		Content:          args.Content,
+		ContentType:      args.ContentType,
+		Source:           args.Source,
 	}, nil
 }
 
 func NewObjectStorageObjectService(database *db.Database) ObjectStorageObjectService {
 	nsg := ObjectStorageObjectService{
-		Service: services.Service[*resources.CloudSpecificObjectStorageObjectArgs, *resources.ObjectStorageObjectResource]{
+		Service: services.Service[*resources.ObjectStorageObjectArgs, *resources.ObjectStorageObjectResource]{
 			Db:         database,
 			Converters: nil,
 		},

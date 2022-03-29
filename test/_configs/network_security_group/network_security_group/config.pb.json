@@ -2,295 +2,267 @@
   "resources": [
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
-            "cidr_block": "10.0.0.0/16",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
-            "name": "example_vn"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualNetworkArgs",
+          "cidr_block": "10.0.0.0/16",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "IRELAND"
+          },
+          "name": "example_vn"
+        }
       },
       "resource_id": "example_vn_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
-            "cidr_block": "10.0.0.0/16",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
-            "name": "example_vn"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualNetworkArgs",
+          "cidr_block": "10.0.0.0/16",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "IRELAND"
+          },
+          "name": "example_vn"
+        }
       },
       "resource_id": "example_vn_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
-            "availability_zone": 0,
-            "cidr_block": "10.0.1.0/24",
-            "name": "subnet1",
-            "virtual_network_id": "example_vn_aws"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.SubnetArgs",
+          "availability_zone": 0,
+          "cidr_block": "10.0.1.0/24",
+          "name": "subnet1",
+          "virtual_network_id": "example_vn_aws"
+        }
       },
       "resource_id": "subnet1_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
-            "availability_zone": 0,
-            "cidr_block": "10.0.1.0/24",
-            "name": "subnet1",
-            "virtual_network_id": "example_vn_azure"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.SubnetArgs",
+          "availability_zone": 0,
+          "cidr_block": "10.0.1.0/24",
+          "name": "subnet1",
+          "virtual_network_id": "example_vn_azure"
+        }
       },
       "resource_id": "subnet1_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
-            "name": "test-rt",
-            "routes": [
-              {
-                "cidr_block": "0.0.0.0/0",
-                "destination": "INTERNET"
-              }
-            ],
-            "virtual_network_id": "example_vn_azure"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.RouteTableArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "IRELAND"
+          },
+          "name": "test-rt",
+          "routes": [
+            {
+              "cidr_block": "0.0.0.0/0",
+              "destination": "INTERNET"
+            }
+          ],
+          "virtual_network_id": "example_vn_azure"
+        }
       },
       "resource_id": "rt_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
-            "name": "test-rt",
-            "routes": [
-              {
-                "cidr_block": "0.0.0.0/0",
-                "destination": "INTERNET"
-              }
-            ],
-            "virtual_network_id": "example_vn_aws"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.RouteTableArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "IRELAND"
+          },
+          "name": "test-rt",
+          "routes": [
+            {
+              "cidr_block": "0.0.0.0/0",
+              "destination": "INTERNET"
+            }
+          ],
+          "virtual_network_id": "example_vn_aws"
+        }
       },
       "resource_id": "rt_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "route_table_id": "rt_aws",
-            "subnet_id": "subnet1_aws"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs",
+          "route_table_id": "rt_aws",
+          "subnet_id": "subnet1_aws"
+        }
       },
       "resource_id": "rta_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificNetworkSecurityGroupArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
-            "name": "test-nsg2",
-            "rules": [
-              {
-                "cidr_block": "0.0.0.0/0",
-                "direction": "BOTH_DIRECTIONS",
-                "port_range": {
-                  "from": 22,
-                  "to": 22
-                },
-                "priority": 120,
-                "protocol": "tcp"
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.NetworkSecurityGroupArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "IRELAND"
+          },
+          "name": "test-nsg2",
+          "rules": [
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "BOTH_DIRECTIONS",
+              "port_range": {
+                "from": 22,
+                "to": 22
               },
-              {
-                "cidr_block": "0.0.0.0/0",
-                "direction": "BOTH_DIRECTIONS",
-                "port_range": {
-                  "from": 443,
-                  "to": 443
-                },
-                "priority": 140,
-                "protocol": "tcp"
-              }
-            ],
-            "virtual_network_id": "example_vn_azure"
-          }
-        ]
+              "priority": 120,
+              "protocol": "tcp"
+            },
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "BOTH_DIRECTIONS",
+              "port_range": {
+                "from": 443,
+                "to": 443
+              },
+              "priority": 140,
+              "protocol": "tcp"
+            }
+          ],
+          "virtual_network_id": "example_vn_azure"
+        }
       },
       "resource_id": "nsg2_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificNetworkSecurityGroupArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
-            "name": "test-nsg2",
-            "rules": [
-              {
-                "cidr_block": "0.0.0.0/0",
-                "direction": "BOTH_DIRECTIONS",
-                "port_range": {
-                  "from": 22,
-                  "to": 22
-                },
-                "priority": 120,
-                "protocol": "tcp"
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.NetworkSecurityGroupArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "IRELAND"
+          },
+          "name": "test-nsg2",
+          "rules": [
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "BOTH_DIRECTIONS",
+              "port_range": {
+                "from": 22,
+                "to": 22
               },
-              {
-                "cidr_block": "0.0.0.0/0",
-                "direction": "BOTH_DIRECTIONS",
-                "port_range": {
-                  "from": 443,
-                  "to": 443
-                },
-                "priority": 140,
-                "protocol": "tcp"
-              }
-            ],
-            "virtual_network_id": "example_vn_aws"
-          }
-        ]
+              "priority": 120,
+              "protocol": "tcp"
+            },
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "BOTH_DIRECTIONS",
+              "port_range": {
+                "from": 443,
+                "to": 443
+              },
+              "priority": 140,
+              "protocol": "tcp"
+            }
+          ],
+          "virtual_network_id": "example_vn_aws"
+        }
       },
       "resource_id": "nsg2_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableAssociationArgs",
-            "route_table_id": "rt_azure",
-            "subnet_id": "subnet1_azure"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs",
+          "route_table_id": "rt_azure",
+          "subnet_id": "subnet1_azure"
+        }
       },
       "resource_id": "rta_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
-            "name": "test-vm2",
-            "network_security_group_ids": [
-              "nsg2_aws"
-            ],
-            "operating_system": "LINUX",
-            "generate_public_ip": true,
-            "vm_size": "MICRO",
-            "public_ssh_key": "",
-            "subnet_id": "subnet1_aws",
-            "user_data": "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on AWS\u003c/h1\u003e\" \u003e /var/www/html/index.html"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "IRELAND"
+          },
+          "name": "test-vm2",
+          "network_security_group_ids": [
+            "nsg2_aws"
+          ],
+          "operating_system": "LINUX",
+          "generate_public_ip": true,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet1_aws",
+          "user_data": "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on AWS\u003c/h1\u003e\" \u003e /var/www/html/index.html"
+        }
       },
       "resource_id": "vm2_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
-            "name": "test-vm",
-            "operating_system": "LINUX",
-            "generate_public_ip": true,
-            "vm_size": "MICRO",
-            "public_ssh_key": "",
-            "subnet_id": "subnet1_aws",
-            "user_data": "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on AWS\u003c/h1\u003e\" \u003e /var/www/html/index.html"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "IRELAND"
+          },
+          "name": "test-vm",
+          "operating_system": "LINUX",
+          "generate_public_ip": true,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet1_aws",
+          "user_data": "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on AWS\u003c/h1\u003e\" \u003e /var/www/html/index.html"
+        }
       },
       "resource_id": "vm_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
-            "name": "test-vm",
-            "operating_system": "LINUX",
-            "generate_public_ip": true,
-            "vm_size": "MICRO",
-            "public_ssh_key": "",
-            "subnet_id": "subnet1_azure",
-            "user_data": "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on Azure\u003c/h1\u003e\" \u003e /var/www/html/index.html"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "IRELAND"
+          },
+          "name": "test-vm",
+          "operating_system": "LINUX",
+          "generate_public_ip": true,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet1_azure",
+          "user_data": "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on Azure\u003c/h1\u003e\" \u003e /var/www/html/index.html"
+        }
       },
       "resource_id": "vm_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
-            "name": "test-vm2",
-            "network_security_group_ids": [
-              "nsg2_azure"
-            ],
-            "operating_system": "LINUX",
-            "generate_public_ip": true,
-            "vm_size": "MICRO",
-            "public_ssh_key": "",
-            "subnet_id": "subnet1_azure",
-            "user_data": "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on Azure\u003c/h1\u003e\" \u003e /var/www/html/index.html"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "IRELAND"
+          },
+          "name": "test-vm2",
+          "network_security_group_ids": [
+            "nsg2_azure"
+          ],
+          "operating_system": "LINUX",
+          "generate_public_ip": true,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet1_azure",
+          "user_data": "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on Azure\u003c/h1\u003e\" \u003e /var/www/html/index.html"
+        }
       },
       "resource_id": "vm2_azure"
     }

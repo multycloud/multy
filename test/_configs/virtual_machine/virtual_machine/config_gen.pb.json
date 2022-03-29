@@ -2,145 +2,129 @@
   "resources": [
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
-            "cidr_block": "10.0.0.0/16",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
-            "name": "example_vn"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualNetworkArgs",
+          "cidr_block": "10.0.0.0/16",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "IRELAND"
+          },
+          "name": "example_vn"
+        }
       },
       "resource_id": "example_vn_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualNetworkArgs",
-            "cidr_block": "10.0.0.0/16",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
-            "name": "example_vn"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualNetworkArgs",
+          "cidr_block": "10.0.0.0/16",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "IRELAND"
+          },
+          "name": "example_vn"
+        }
       },
       "resource_id": "example_vn_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
-            "availability_zone": 2,
-            "cidr_block": "10.0.2.0/24",
-            "name": "subnet",
-            "virtual_network_id": "example_vn_aws"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.SubnetArgs",
+          "availability_zone": 2,
+          "cidr_block": "10.0.2.0/24",
+          "name": "subnet",
+          "virtual_network_id": "example_vn_aws"
+        }
       },
       "resource_id": "subnet_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificSubnetArgs",
-            "availability_zone": 2,
-            "cidr_block": "10.0.2.0/24",
-            "name": "subnet",
-            "virtual_network_id": "example_vn_azure"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.SubnetArgs",
+          "availability_zone": 2,
+          "cidr_block": "10.0.2.0/24",
+          "name": "subnet",
+          "virtual_network_id": "example_vn_azure"
+        }
       },
       "resource_id": "subnet_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
-            "name": "test-vm",
-            "operating_system": "LINUX",
-            "generate_public_ip": false,
-            "vm_size": "MICRO",
-            "public_ssh_key": "",
-            "subnet_id": "subnet_aws",
-            "user_data": "echo 'Hello World'"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "IRELAND"
+          },
+          "name": "test-vm",
+          "operating_system": "LINUX",
+          "generate_public_ip": false,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet_aws",
+          "user_data": "echo 'Hello World'"
+        }
       },
       "resource_id": "vm_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
-            "name": "test-vm",
-            "operating_system": "LINUX",
-            "generate_public_ip": false,
-            "vm_size": "MICRO",
-            "public_ssh_key": "",
-            "subnet_id": "subnet_azure",
-            "user_data": "echo 'Hello World'"
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "IRELAND"
+          },
+          "name": "test-vm",
+          "operating_system": "LINUX",
+          "generate_public_ip": false,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet_azure",
+          "user_data": "echo 'Hello World'"
+        }
       },
       "resource_id": "vm_azure"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "IRELAND"
-            },
-            "name": "test-vm",
-            "operating_system": "LINUX",
-            "generate_public_ip": false,
-            "vm_size": "MICRO",
-            "public_ssh_key": "",
-            "subnet_id": "subnet_aws",
-            "user_data": ""
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "IRELAND"
+          },
+          "name": "test-vm",
+          "operating_system": "LINUX",
+          "generate_public_ip": false,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet_aws",
+          "user_data": ""
+        }
       },
       "resource_id": "vm2_aws"
     },
     {
       "resource_args": {
-        "resource_args": [
-          {
-            "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "IRELAND"
-            },
-            "name": "test-vm",
-            "operating_system": "LINUX",
-            "generate_public_ip": false,
-            "vm_size": "MICRO",
-            "public_ssh_key": "",
-            "subnet_id": "subnet_azure",
-            "user_data": ""
-          }
-        ]
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "IRELAND"
+          },
+          "name": "test-vm",
+          "operating_system": "LINUX",
+          "generate_public_ip": false,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet_azure",
+          "user_data": ""
+        }
       },
       "resource_id": "vm2_azure"
     }

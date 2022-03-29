@@ -10,7 +10,7 @@ import "api/proto/common/common.proto";
 package dev.multy.resources;
 
 message CreateObjectStorageObjectRequest {
-  repeated CloudSpecificObjectStorageObjectArgs resources = 1;
+  ObjectStorageObjectArgs resource = 1;
 }
 
 message ReadObjectStorageObjectRequest {
@@ -19,7 +19,7 @@ message ReadObjectStorageObjectRequest {
 
 message UpdateObjectStorageObjectRequest {
   string resource_id = 1;
-  repeated CloudSpecificObjectStorageObjectArgs resources = 2;
+  ObjectStorageObjectArgs resource = 2;
 }
 
 message DeleteObjectStorageObjectRequest {
@@ -31,18 +31,8 @@ enum ObjectStorageObjectAcl {
   PUBLIC_READ = 1;
 }
 
-message CloudSpecificObjectStorageObjectArgs {
-  common.CloudSpecificChildResourceCommonArgs common_parameters = 1;
-  string name = 2;
-  ObjectStorageObjectAcl acl = 3;
-  string object_storage_id = 4;
-  string content = 5;
-  string content_type = 6;
-  string source = 7;
-}
-
-message CloudSpecificObjectStorageObjectResource {
-  common.CloudSpecificCommonChildResourceParameters common_parameters = 1;
+message ObjectStorageObjectArgs {
+  common.ChildResourceCommonArgs common_parameters = 1;
   string name = 2;
   ObjectStorageObjectAcl acl = 3;
   string object_storage_id = 4;
@@ -52,6 +42,11 @@ message CloudSpecificObjectStorageObjectResource {
 }
 
 message ObjectStorageObjectResource {
-  common.CommonResourceParameters common_parameters = 1;
-  repeated CloudSpecificObjectStorageObjectResource resources = 2;
+  common.CommonChildResourceParameters common_parameters = 1;
+  string name = 2;
+  ObjectStorageObjectAcl acl = 3;
+  string object_storage_id = 4;
+  string content = 5;
+  string content_type = 6;
+  string source = 7;
 }

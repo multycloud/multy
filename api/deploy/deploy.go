@@ -24,7 +24,6 @@ import (
 	"github.com/zclconf/go-cty/cty/function"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 	"log"
 	"os"
 	"os/exec"
@@ -48,93 +47,89 @@ func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *conf
 	// TODO: get rid of this translation layer and instead use protos directly
 	translated := map[string]common_resources.CloudSpecificResource{}
 	for _, r := range c.Resources {
-		if len(r.ResourceArgs.ResourceArgs) == 0 {
-			continue
-		}
-
 		// TODO: move this to Converters
-		resourceMessage := r.ResourceArgs.ResourceArgs[0]
-		if resourceMessage.MessageIs(&resources.CloudSpecificVirtualNetworkArgs{}) {
+		resourceMessage := r.ResourceArgs.ResourceArgs
+		if resourceMessage.MessageIs(&resources.VirtualNetworkArgs{}) {
 			err := addMultyResource(r, translated, &converter.VnConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificSubnetArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.SubnetArgs{}) {
 			err := addMultyResource(r, translated, &converter.SubnetConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificNetworkInterfaceArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.NetworkInterfaceArgs{}) {
 			err := addMultyResource(r, translated, &converter.NetworkInterfaceConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificRouteTableArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.RouteTableArgs{}) {
 			err := addMultyResource(r, translated, &converter.RouteTableConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificRouteTableAssociationArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.RouteTableAssociationArgs{}) {
 			err := addMultyResource(r, translated, &converter.RouteTableAssociationConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificNetworkSecurityGroupArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.NetworkSecurityGroupArgs{}) {
 			err := addMultyResource(r, translated, &converter.NetworkSecurityGroupConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificDatabaseArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.DatabaseArgs{}) {
 			err := addMultyResource(r, translated, &converter.DatabaseConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificObjectStorageArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.ObjectStorageArgs{}) {
 			err := addMultyResource(r, translated, &converter.ObjectStorageConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificObjectStorageObjectArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.ObjectStorageObjectArgs{}) {
 			err := addMultyResource(r, translated, &converter.ObjectStorageObjectConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificPublicIpArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.PublicIpArgs{}) {
 			err := addMultyResource(r, translated, &converter.PublicIpConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificKubernetesClusterArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.KubernetesClusterArgs{}) {
 			err := addMultyResource(r, translated, &converter.KubernetesClusterConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificKubernetesNodePoolArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.KubernetesNodePoolArgs{}) {
 			err := addMultyResource(r, translated, &converter.KubernetesNodePoolConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificLambdaArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.LambdaArgs{}) {
 			err := addMultyResource(r, translated, &converter.LambdaConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificVaultArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.VaultArgs{}) {
 			err := addMultyResource(r, translated, &converter.VaultConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificVaultAccessPolicyArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.VaultAccessPolicyArgs{}) {
 			err := addMultyResource(r, translated, &converter.VaultAccessPolicyConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificVaultSecretArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.VaultSecretArgs{}) {
 			err := addMultyResource(r, translated, &converter.VaultSecretConverter{})
 			if err != nil {
 				return "", err
 			}
-		} else if resourceMessage.MessageIs(&resources.CloudSpecificVirtualMachineArgs{}) {
+		} else if resourceMessage.MessageIs(&resources.VirtualMachineArgs{}) {
 			err := addMultyResource(r, translated, &converter.VirtualMachineConverter{})
 			if err != nil {
 				return "", err
@@ -272,81 +267,76 @@ func GetState(userId string) (*output.TfState, error) {
 }
 
 type hasCommonArgs interface {
-	GetCommonParameters() *common.CloudSpecificResourceCommonArgs
+	GetCommonParameters() *common.ResourceCommonArgs
 }
 
 func addMultyResource(r *config.Resource, translated map[string]common_resources.CloudSpecificResource, c converter.MultyResourceConverter) error {
-	var allResources []proto.Message
-	for _, args := range r.ResourceArgs.ResourceArgs {
-		m, err := args.UnmarshalNew()
-		if err != nil {
-			return err
-		}
-		allResources = append(allResources, m)
-		// TODO: refactor this
-		if commonArgs, ok := m.(hasCommonArgs); ok {
-			if commonArgs.GetCommonParameters().ResourceGroupId == "" {
-				rgId, _ := decoder.GetRgId(rg.GetDefaultResourceGroupId(), nil, &hcl.EvalContext{
-					Variables: map[string]cty.Value{},
-					Functions: map[string]function.Function{},
-				}, c.GetResourceType())
-				if rgId != "" {
-					commonArgs.GetCommonParameters().ResourceGroupId = rgId
-					resourceGroup := common_resources.CloudSpecificResource{
-						ImplicitlyCreated: true,
-						Cloud:             cloud_providers.CloudProvider(strings.ToLower(commonArgs.GetCommonParameters().CloudProvider.String())),
-						Resource: &rg.Type{
-							ResourceId: rgId,
-							Name:       rgId,
-							Location:   strings.ToLower(commonArgs.GetCommonParameters().Location.String()),
-						},
-					}
-					translated[resourceGroup.GetResourceId()] = resourceGroup
+	m, err := r.ResourceArgs.ResourceArgs.UnmarshalNew()
+	if err != nil {
+		return err
+	}
+	// TODO: refactor this
+	if commonArgs, ok := m.(hasCommonArgs); ok {
+		if commonArgs.GetCommonParameters().ResourceGroupId == "" {
+			rgId, _ := decoder.GetRgId(rg.GetDefaultResourceGroupId(), nil, &hcl.EvalContext{
+				Variables: map[string]cty.Value{},
+				Functions: map[string]function.Function{},
+			}, c.GetResourceType())
+			if rgId != "" {
+				commonArgs.GetCommonParameters().ResourceGroupId = rgId
+				resourceGroup := common_resources.CloudSpecificResource{
+					ImplicitlyCreated: true,
+					Cloud:             cloud_providers.CloudProvider(strings.ToLower(commonArgs.GetCommonParameters().CloudProvider.String())),
+					Resource: &rg.Type{
+						ResourceId: rgId,
+						Name:       rgId,
+						Location:   strings.ToLower(commonArgs.GetCommonParameters().Location.String()),
+					},
 				}
+				translated[resourceGroup.GetResourceId()] = resourceGroup
 			}
 		}
 	}
-	for _, cloudR := range allResources {
-		translatedResource, err := c.ConvertToMultyResource(r.ResourceId, cloudR, translated)
-		if err != nil {
-			return err
-		}
-		translated[translatedResource.Resource.GetResourceId()] = translatedResource
+
+	translatedResource, err := c.ConvertToMultyResource(r.ResourceId, m, translated)
+	if err != nil {
+		return err
 	}
+	translated[translatedResource.Resource.GetResourceId()] = translatedResource
+
 	return nil
 }
 
 type WithCommonParams interface {
-	GetCommonParameters() *common.CloudSpecificResourceCommonArgs
+	GetCommonParameters() *common.ResourceCommonArgs
 }
 
 func getExistingProvider(r *config.Resource) (map[cloud_providers.CloudProvider]map[string]*types.Provider, error) {
 	if r != nil {
 		args := r.GetResourceArgs().GetResourceArgs()
-		for _, arg := range args {
-			m, err := arg.UnmarshalNew()
+		m, err := args.UnmarshalNew()
+		if err != nil {
+			return nil, err
+		}
+		if wcp, ok := m.(WithCommonParams); ok {
+			cloud := cloud_providers.CloudProvider(strings.ToLower(wcp.GetCommonParameters().CloudProvider.String()))
+			location, err := cloud_providers.GetCloudLocation(strings.ToLower(wcp.GetCommonParameters().Location.String()), cloud)
 			if err != nil {
 				return nil, err
 			}
-			if wcp, ok := m.(WithCommonParams); ok {
-				cloud := cloud_providers.CloudProvider(strings.ToLower(wcp.GetCommonParameters().CloudProvider.String()))
-				location, err := cloud_providers.GetCloudLocation(strings.ToLower(wcp.GetCommonParameters().Location.String()), cloud)
-				if err != nil {
-					return nil, err
-				}
-				return map[cloud_providers.CloudProvider]map[string]*types.Provider{
-					cloud: {
-						location: &types.Provider{
-							Cloud:             cloud,
-							Location:          location,
-							IsDefaultProvider: false,
-							NumResources:      1,
-						},
+			return map[cloud_providers.CloudProvider]map[string]*types.Provider{
+				cloud: {
+					location: &types.Provider{
+						Cloud:             cloud,
+						Location:          location,
+						IsDefaultProvider: false,
+						NumResources:      1,
 					},
-				}, nil
+				},
+			}, nil
 
-			}
 		}
+
 	}
 
 	return map[cloud_providers.CloudProvider]map[string]*types.Provider{}, nil

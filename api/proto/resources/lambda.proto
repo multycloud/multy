@@ -10,7 +10,7 @@ import "api/proto/common/common.proto";
 package dev.multy.resources;
 
 message CreateLambdaRequest {
-  repeated CloudSpecificLambdaArgs resources = 1;
+  LambdaArgs resource = 1;
 }
 
 message ReadLambdaRequest {
@@ -19,15 +19,15 @@ message ReadLambdaRequest {
 
 message UpdateLambdaRequest {
   string resource_id = 1;
-  repeated CloudSpecificLambdaArgs resources = 2;
+  LambdaArgs resource = 2;
 }
 
 message DeleteLambdaRequest {
   string resource_id = 1;
 }
 
-message CloudSpecificLambdaArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+message LambdaArgs {
+  common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   string runtime = 3;
   string source_code_object_id = 4;
@@ -36,14 +36,9 @@ message CloudSpecificLambdaArgs {
   string url = 5;
 }
 
-message CloudSpecificLambdaResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+message LambdaResource {
+  common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   string runtime = 3;
   string source_code_object_id = 4;
-}
-
-message LambdaResource {
-  common.CommonResourceParameters common_parameters = 1;
-  repeated CloudSpecificLambdaResource resources = 2;
 }

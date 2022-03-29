@@ -15,41 +15,35 @@ import (
 )
 
 type VirtualMachineService struct {
-	Service services.Service[*resources.CloudSpecificVirtualMachineArgs, *resources.VirtualMachineResource]
+	Service services.Service[*resources.VirtualMachineArgs, *resources.VirtualMachineResource]
 }
 
-func (s VirtualMachineService) Convert(resourceId string, args []*resources.CloudSpecificVirtualMachineArgs, state *output.TfState) (*resources.VirtualMachineResource, error) {
-	var result []*resources.CloudSpecificVirtualMachineResource
-	for _, r := range args {
-		ip, err := getPublicIp(resourceId, state, r.CommonParameters.CloudProvider)
-		if err != nil {
-			return nil, err
-		}
-		identityId, err := getIdentityId(resourceId, state, r.CommonParameters.CloudProvider)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, &resources.CloudSpecificVirtualMachineResource{
-			CommonParameters:        util.ConvertCommonParams(r.CommonParameters),
-			Name:                    r.Name,
-			OperatingSystem:         r.OperatingSystem,
-			NetworkInterfaceIds:     r.NetworkInterfaceIds,
-			NetworkSecurityGroupIds: r.NetworkSecurityGroupIds,
-			VmSize:                  r.VmSize,
-			UserData:                r.UserData,
-			SubnetId:                r.SubnetId,
-			PublicSshKey:            r.PublicSshKey,
-			PublicIpId:              r.PublicIpId,
-			GeneratePublicIp:        r.GeneratePublicIp,
+func (s VirtualMachineService) Convert(resourceId string, args *resources.VirtualMachineArgs, state *output.TfState) (*resources.VirtualMachineResource, error) {
 
-			PublicIp:   ip,
-			IdentityId: identityId,
-		})
+	ip, err := getPublicIp(resourceId, state, args.CommonParameters.CloudProvider)
+	if err != nil {
+		return nil, err
+	}
+	identityId, err := getIdentityId(resourceId, state, args.CommonParameters.CloudProvider)
+	if err != nil {
+		return nil, err
 	}
 
 	return &resources.VirtualMachineResource{
-		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
-		Resources:        result,
+		CommonParameters:        util.ConvertCommonParams(resourceId, args.CommonParameters),
+		Name:                    args.Name,
+		OperatingSystem:         args.OperatingSystem,
+		NetworkInterfaceIds:     args.NetworkInterfaceIds,
+		NetworkSecurityGroupIds: args.NetworkSecurityGroupIds,
+		VmSize:                  args.VmSize,
+		UserData:                args.UserData,
+		SubnetId:                args.SubnetId,
+		PublicSshKey:            args.PublicSshKey,
+		PublicIpId:              args.PublicIpId,
+		GeneratePublicIp:        args.GeneratePublicIp,
+
+		PublicIp:   ip,
+		IdentityId: identityId,
 	}, nil
 }
 
@@ -95,7 +89,7 @@ func getIdentityId(resourceId string, state *output.TfState, cloud common.CloudP
 
 func NewVirtualMachineService(database *db.Database) VirtualMachineService {
 	VirtualMachine := VirtualMachineService{
-		Service: services.Service[*resources.CloudSpecificVirtualMachineArgs, *resources.VirtualMachineResource]{
+		Service: services.Service[*resources.VirtualMachineArgs, *resources.VirtualMachineResource]{
 			Db:         database,
 			Converters: nil,
 		},

@@ -10,7 +10,7 @@ import "api/proto/common/common.proto";
 package dev.multy.resources;
 
 message CreateDatabaseRequest {
-  repeated CloudSpecificDatabaseArgs resources = 1;
+  DatabaseArgs resource = 1;
 }
 
 message ReadDatabaseRequest {
@@ -19,7 +19,7 @@ message ReadDatabaseRequest {
 
 message UpdateDatabaseRequest {
   string resource_id = 1;
-  repeated CloudSpecificDatabaseArgs resources = 2;
+  DatabaseArgs resource = 2;
 }
 
 message DeleteDatabaseRequest {
@@ -31,8 +31,8 @@ enum DatabaseEngine {
   MYSQL = 1;
 }
 
-message CloudSpecificDatabaseArgs {
-  common.CloudSpecificResourceCommonArgs common_parameters = 1;
+message DatabaseArgs {
+  common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   DatabaseEngine engine = 3;
   string engine_version = 4;
@@ -43,8 +43,8 @@ message CloudSpecificDatabaseArgs {
   repeated string subnet_ids = 9;
 }
 
-message CloudSpecificDatabaseResource {
-  common.CloudSpecificCommonResourceParameters common_parameters = 1;
+message DatabaseResource {
+  common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   DatabaseEngine engine = 3;
   string engine_version = 4;
@@ -56,9 +56,4 @@ message CloudSpecificDatabaseResource {
 
   //outputs
   string host = 10;
-}
-
-message DatabaseResource {
-  common.CommonResourceParameters common_parameters = 1;
-  repeated CloudSpecificDatabaseResource resources = 2;
 }

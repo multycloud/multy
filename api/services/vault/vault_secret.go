@@ -1,7 +1,6 @@
 package vault
 
 import (
-	"github.com/multycloud/multy/api/proto/common"
 	"github.com/multycloud/multy/api/proto/resources"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
@@ -10,29 +9,21 @@ import (
 )
 
 type VaultSecretService struct {
-	Service services.Service[*resources.CloudSpecificVaultSecretArgs, *resources.VaultSecretResource]
+	Service services.Service[*resources.VaultSecretArgs, *resources.VaultSecretResource]
 }
 
-func (s VaultSecretService) Convert(resourceId string, args []*resources.CloudSpecificVaultSecretArgs, state *output.TfState) (*resources.VaultSecretResource, error) {
-	var result []*resources.CloudSpecificVaultSecretResource
-	for _, r := range args {
-		result = append(result, &resources.CloudSpecificVaultSecretResource{
-			CommonParameters: util.ConvertCommonChildParams(r.CommonParameters),
-			Name:             r.Name,
-			Value:            r.Value,
-			VaultId:          r.VaultId,
-		})
-	}
-
+func (s VaultSecretService) Convert(resourceId string, args *resources.VaultSecretArgs, state *output.TfState) (*resources.VaultSecretResource, error) {
 	return &resources.VaultSecretResource{
-		CommonParameters: &common.CommonResourceParameters{ResourceId: resourceId},
-		Resources:        result,
+		CommonParameters: util.ConvertCommonChildParams(resourceId, args.CommonParameters),
+		Name:             args.Name,
+		Value:            args.Value,
+		VaultId:          args.VaultId,
 	}, nil
 }
 
 func NewVaultSecretService(database *db.Database) VaultSecretService {
 	ni := VaultSecretService{
-		Service: services.Service[*resources.CloudSpecificVaultSecretArgs, *resources.VaultSecretResource]{
+		Service: services.Service[*resources.VaultSecretArgs, *resources.VaultSecretResource]{
 			Db:         database,
 			Converters: nil,
 		},
