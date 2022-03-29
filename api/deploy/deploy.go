@@ -22,6 +22,7 @@ import (
 	"github.com/multycloud/multy/resources/types"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/function"
+	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
@@ -43,7 +44,10 @@ var (
 	AzureCredsNotSetErr = status.Error(codes.InvalidArgument, "azure credentials are required but not set")
 )
 
-func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *config.Resource, curr *config.Resource) (string, error) {
+func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *config.Resource, curr *config.Resource) (string, []string, error) {
+	if curr != nil {
+		curr.DeployedResources = nil
+	}
 	// TODO: get rid of this translation layer and instead use protos directly
 	translated := map[string]common_resources.CloudSpecificResource{}
 	for _, r := range c.Resources {
@@ -52,96 +56,96 @@ func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *conf
 		if resourceMessage.MessageIs(&resources.VirtualNetworkArgs{}) {
 			err := addMultyResource(r, translated, &converter.VnConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.SubnetArgs{}) {
 			err := addMultyResource(r, translated, &converter.SubnetConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.NetworkInterfaceArgs{}) {
 			err := addMultyResource(r, translated, &converter.NetworkInterfaceConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.RouteTableArgs{}) {
 			err := addMultyResource(r, translated, &converter.RouteTableConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.RouteTableAssociationArgs{}) {
 			err := addMultyResource(r, translated, &converter.RouteTableAssociationConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.NetworkSecurityGroupArgs{}) {
 			err := addMultyResource(r, translated, &converter.NetworkSecurityGroupConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.DatabaseArgs{}) {
 			err := addMultyResource(r, translated, &converter.DatabaseConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.ObjectStorageArgs{}) {
 			err := addMultyResource(r, translated, &converter.ObjectStorageConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.ObjectStorageObjectArgs{}) {
 			err := addMultyResource(r, translated, &converter.ObjectStorageObjectConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.PublicIpArgs{}) {
 			err := addMultyResource(r, translated, &converter.PublicIpConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.KubernetesClusterArgs{}) {
 			err := addMultyResource(r, translated, &converter.KubernetesClusterConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.KubernetesNodePoolArgs{}) {
 			err := addMultyResource(r, translated, &converter.KubernetesNodePoolConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.LambdaArgs{}) {
 			err := addMultyResource(r, translated, &converter.LambdaConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.VaultArgs{}) {
 			err := addMultyResource(r, translated, &converter.VaultConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.VaultAccessPolicyArgs{}) {
 			err := addMultyResource(r, translated, &converter.VaultAccessPolicyConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.VaultSecretArgs{}) {
 			err := addMultyResource(r, translated, &converter.VaultSecretConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else if resourceMessage.MessageIs(&resources.VirtualMachineArgs{}) {
 			err := addMultyResource(r, translated, &converter.VirtualMachineConverter{})
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 		} else {
-			return "", fmt.Errorf("unknown resource type %s", resourceMessage.MessageName())
+			return "", nil, fmt.Errorf("unknown resource type %s", resourceMessage.MessageName())
 		}
 	}
 
 	provider, err := getExistingProvider(prev)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	// TODO add s3 state file backend
@@ -157,25 +161,43 @@ func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *conf
 
 	hclOutput, errs, err := encoder.Encode(&decodedResources, credentials)
 	if len(errs) > 0 {
-		return hclOutput, errors.ValidationErrors(errs)
+		return hclOutput, nil, errors.ValidationErrors(errs)
 	}
 	if err != nil {
-		return hclOutput, err
+		return hclOutput, nil, err
 	}
 
 	for _, r := range translated {
 		if string(r.Cloud) == "aws" && (credentials.GetAwsCreds().GetAccessKey() == "" || credentials.GetAwsCreds().GetSecretKey() == "") {
-			return hclOutput, AwsCredsNotSetErr
+			return hclOutput, nil, AwsCredsNotSetErr
 		}
 		if string(r.Cloud) == "azure" && (credentials.GetAzureCreds().GetSubscriptionId() == "" ||
 			credentials.GetAzureCreds().GetClientId() == "" ||
 			credentials.GetAzureCreds().GetTenantId() == "" ||
 			credentials.GetAzureCreds().GetClientSecret() == "") {
-			return hclOutput, AzureCredsNotSetErr
+			return hclOutput, nil, AzureCredsNotSetErr
 		}
 	}
 
-	return hclOutput, nil
+	translatedResources, _, err := encoder.TranslateResources(&decodedResources, common_resources.MultyContext{Resources: decodedResources.Resources})
+	if err != nil {
+		return "", nil, err
+	}
+
+	affectedResources := slices.Clone(prev.GetDeployedResources())
+	for k, v := range translatedResources {
+		if curr != nil && k.Resource.GetResourceId() == curr.ResourceId {
+			for _, vr := range v {
+				ref := vr.GetFullResourceRef()
+				if !slices.Contains(affectedResources, ref) {
+					affectedResources = append(affectedResources, ref)
+				}
+				curr.DeployedResources = append(curr.DeployedResources, ref)
+			}
+		}
+	}
+
+	return hclOutput, affectedResources, nil
 }
 
 func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *config.Resource) (*output.TfState, error) {
@@ -183,12 +205,11 @@ func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *
 	if err != nil {
 		return nil, err
 	}
-	hclOutput, err := Translate(credentials, c, prev, curr)
+	hclOutput, ids, err := Translate(credentials, c, prev, curr)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: move this to a proper place
 	hclOutput = RequiredProviders + hclOutput
 
 	fmt.Println(hclOutput)
@@ -204,19 +225,27 @@ func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *
 		return nil, err
 	}
 
-	fmt.Println("Running tf apply")
-	startApply := time.Now()
-
-	// TODO: only deploy targets given in the args
-	// TODO: parse errors and send them to user
-	cmd := exec.Command("terraform", "-chdir="+tmpDir, "apply", "-auto-approve")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
+	var targetArgs []string
+	for _, id := range ids {
+		targetArgs = append(targetArgs, "-target="+id)
 	}
-	log.Printf("tf apply ended in %s", time.Since(startApply))
+
+	if len(ids) != 0 {
+		fmt.Printf("Running tf apply for resources %+v\n", ids)
+		startApply := time.Now()
+
+		// TODO: parse errors and send them to user
+		cmd := exec.Command("terraform", append([]string{"-chdir=" + tmpDir, "apply", "-auto-approve"}, targetArgs...)...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
+			return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
+		}
+		log.Printf("tf apply ended in %s", time.Since(startApply))
+	} else {
+		log.Println("skipping apply because there are no target resources")
+	}
 
 	state, err := GetState(c.UserId)
 	if err != nil {
@@ -294,6 +323,13 @@ func addMultyResource(r *config.Resource, translated map[string]common_resources
 					},
 				}
 				translated[resourceGroup.GetResourceId()] = resourceGroup
+				if rg, _ := resourceGroup.Translate(common_resources.MultyContext{}); rg != nil {
+					for _, rgr := range rg {
+						if !slices.Contains(r.DeployedResources, rgr.GetFullResourceRef()) {
+							r.DeployedResources = append(r.DeployedResources, rgr.GetFullResourceRef())
+						}
+					}
+				}
 			}
 		}
 	}
