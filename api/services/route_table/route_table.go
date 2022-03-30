@@ -14,7 +14,7 @@ type RouteTableService struct {
 
 func (s RouteTableService) Convert(resourceId string, args *resources.RouteTableArgs, state *output.TfState) (*resources.RouteTableResource, error) {
 	return &resources.RouteTableResource{
-		CommonParameters: util.ConvertCommonParams(resourceId, args.CommonParameters),
+		CommonParameters: util.ConvertCommonChildParams(resourceId, args.CommonParameters),
 		Name:             args.Name,
 		VirtualNetworkId: args.VirtualNetworkId,
 		Routes:           args.Routes,

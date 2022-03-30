@@ -59,6 +59,7 @@ func (r *PublicIp) GetId(cloud common.CloudProvider) string {
 }
 
 func (r *PublicIp) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
 	//if r.NetworkInterfaceId != "" && r.InstanceId != "" {
 	//	errs = append(errs, r.NewError(r.ResourceId, "instance_id", "cannot set both network_interface_id and instance_id"))
 	//}

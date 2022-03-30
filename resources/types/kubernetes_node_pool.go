@@ -27,6 +27,7 @@ type KubernetesServiceNodePool struct {
 }
 
 func (r *KubernetesServiceNodePool) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
 	if r.MinNodeCount < 1 {
 		errs = append(errs, r.NewError("min_node_count", "node pool must have a min node count of at least 1"))
 	}

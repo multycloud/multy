@@ -323,6 +323,7 @@ func getVaultAssociatedIdentity(ctx resources.MultyContext, identity string) *Va
 }
 
 func (vm *VirtualMachine) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	errs = append(errs, vm.CommonResourceParams.Validate(ctx, cloud)...)
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
 	//if vn.Size valid { return false }

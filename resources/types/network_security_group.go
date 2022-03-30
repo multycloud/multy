@@ -222,6 +222,7 @@ func validatePort(s string) bool {
 }
 
 func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
 	for _, rule := range r.Rules {
 		// TODO: get better source ranges
 		if !validateRuleDirection(rule.Direction) {
