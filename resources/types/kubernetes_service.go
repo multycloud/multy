@@ -21,6 +21,7 @@ type KubernetesService struct {
 }
 
 func (r *KubernetesService) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
 	if len(r.SubnetIds) < 2 {
 		errs = append(errs, r.NewError("subnet_ids", "at least 2 subnet ids must be provided"))
 	}

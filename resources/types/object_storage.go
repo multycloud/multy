@@ -107,6 +107,7 @@ func (r *ObjectStorage) GetResourceName(cloud common.CloudProvider) string {
 }
 
 func (r *ObjectStorage) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
 	return errs
 }
 

@@ -20,7 +20,7 @@ Azure: Internet route nextHop Internet
 type RouteTable struct {
 	*resources.CommonResourceParams
 	Name           string            `hcl:"name"`
-	VirtualNetwork *VirtualNetwork   `mhcl:"ref=virtual_network,optional"`
+	VirtualNetwork *VirtualNetwork   `mhcl:"ref=virtual_network"`
 	Routes         []RouteTableRoute `hcl:"routes,optional"`
 }
 
@@ -95,6 +95,7 @@ func (r *RouteTable) GetId(cloud common.CloudProvider) string {
 }
 
 func (r *RouteTable) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
 	if len(r.Routes) > 20 {
 		errs = append(errs, r.NewError("routes", fmt.Sprintf("\"%d\" exceeds routes limit is 20", len(r.Routes))))
 	}

@@ -119,6 +119,7 @@ func checkSubnetRouteTableAssociated(ctx resources.MultyContext, sId string) boo
 }
 
 func (s *Subnet) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	errs = append(errs, s.CommonResourceParams.Validate(ctx, cloud)...)
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
 	//if vn.CidrBlock valid CIDR { return false }

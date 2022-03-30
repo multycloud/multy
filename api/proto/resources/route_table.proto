@@ -37,14 +37,14 @@ message Route {
 }
 
 message RouteTableArgs {
-  common.ResourceCommonArgs common_parameters = 1;
+  common.ChildResourceCommonArgs common_parameters = 1;
   string name = 2;
   string virtual_network_id = 3;
   repeated Route routes = 4;
 }
 
 message RouteTableResource {
-  common.CommonResourceParameters common_parameters = 1;
+  common.CommonChildResourceParameters common_parameters = 1;
   string name = 2;
   string virtual_network_id = 3;
   repeated Route routes = 4;

@@ -104,10 +104,6 @@
       "resource_args": {
         "resource_args": {
           "@type": "type.googleapis.com/dev.multy.resources.RouteTableArgs",
-          "common_parameters": {
-            "cloud_provider": "AWS",
-            "location": "IRELAND"
-          },
           "name": "test-rt",
           "routes": [
             {
@@ -124,10 +120,6 @@
       "resource_args": {
         "resource_args": {
           "@type": "type.googleapis.com/dev.multy.resources.RouteTableArgs",
-          "common_parameters": {
-            "cloud_provider": "AZURE",
-            "location": "IRELAND"
-          },
           "name": "test-rt",
           "routes": [
             {

@@ -50,6 +50,7 @@ func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resour
 }
 
 func (r *RouteTableAssociation) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
 	return errs
 }
 

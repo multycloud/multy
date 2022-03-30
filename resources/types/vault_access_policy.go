@@ -102,6 +102,7 @@ func (r *VaultAccessPolicy) GetAccessPolicyRules(cloud common.CloudProvider) *va
 }
 
 func (r *VaultAccessPolicy) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
 	if r.Access != READ && r.Access != OWNER && r.Access != WRITE {
 		errs = append(errs, r.NewError("access", fmt.Sprintf("%s access is invalid", r.ResourceId)))
 	}

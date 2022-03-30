@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"fmt"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
@@ -47,4 +48,12 @@ func (c *CommonResourceParams) GetDependencies(ctx MultyContext) []CloudSpecific
 			return t.GetResourceId()
 		},
 	)
+}
+
+func (c *CommonResourceParams) Validate(ctx MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
+	if _, ok := common.LOCATION[c.Location]; c.Location != "" && !ok {
+		errs = append(errs, c.NewError("location", fmt.Sprintf("location %s is not defined", c.Location)))
+	}
+
+	return errs
 }

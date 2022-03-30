@@ -47,10 +47,6 @@
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableArgs",
-            "common_parameters": {
-              "cloud_provider": "AZURE",
-              "location": "US_EAST"
-            },
             "name": "test-rt",
             "routes": [
               {
@@ -498,10 +494,6 @@
         "resource_args": [
           {
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificRouteTableArgs",
-            "common_parameters": {
-              "cloud_provider": "AWS",
-              "location": "US_EAST"
-            },
             "name": "test-rt",
             "routes": [
               {
