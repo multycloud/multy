@@ -141,7 +141,7 @@ resource "aws_iam_role" "vm_iam" {
         {
           "Effect" : "Allow",
           "Action" : "s3:*",
-          "Resource" : aws_s3_bucket.tfstate_bucket.arn
+          "Resource" : "${aws_s3_bucket.tfstate_bucket.arn}/*"
         },
         {
           "Effect" : "Allow",
