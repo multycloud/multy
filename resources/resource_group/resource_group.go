@@ -41,7 +41,7 @@ func (rg *Type) Translate(cloud common.CloudProvider, ctx resources.MultyContext
 	if cloud == common.AZURE {
 		return []output.TfBlock{ResourceGroup{
 			AzResource: &common.AzResource{
-				TerraformResource: output.TerraformResource{ResourceId: rg.ResourceId, ResourceName: AzureResourceName},
+				TerraformResource: output.TerraformResource{ResourceId: rg.ResourceId},
 				Name:              rg.Name,
 			},
 			Location: ctx.GetLocation(rg.Location, cloud),

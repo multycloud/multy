@@ -18,7 +18,6 @@ message Config {
 message Resource {
   string resource_id = 1;
   ResourceArgs resource_args = 2;
-  repeated string deployed_resources = 3;
 }
 
 message ResourceArgs {
