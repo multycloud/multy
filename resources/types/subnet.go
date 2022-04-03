@@ -2,6 +2,9 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -18,63 +21,97 @@ Azure: New subnets will be associated with a default route table to block traffi
 */
 
 type Subnet struct {
-	*resources.CommonResourceParams
-	Name             string          `hcl:"name"`
-	CidrBlock        string          `hcl:"cidr_block"`
-	VirtualNetwork   *VirtualNetwork `mhcl:"ref=virtual_network"`
-	AvailabilityZone int             `hcl:"availability_zone,optional"`
+	resources.ChildResourceWithId[*VirtualNetwork, *resourcespb.SubnetArgs]
+
+	VirtualNetwork *VirtualNetwork
 }
 
-func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	if cloud == common.AWS {
-		location := s.VirtualNetwork.Location
-		if location == "" {
-			location = ctx.Location
+func Get[T resources.Resource](resources resources.Resources, id string) (T, error) {
+	item, exists, err := GetOptional[T](resources, id)
+	if err != nil {
+		return item, err
+	}
+	if !exists {
+		return item, fmt.Errorf("resource with id %s not found", id)
+	}
+
+	return item, nil
+}
+
+func GetOptional[T resources.Resource](resources resources.Resources, id string) (T, bool, error) {
+	if r, ok := resources[id]; ok {
+		if _, okType := r.(T); !okType {
+			return *new(T), true, fmt.Errorf("resource with id %s is of the wrong type", id)
 		}
+		return r.(T), true, nil
+	}
+
+	return *new(T), false, nil
+}
+
+func NewSubnet(resourceId string, subnet *resourcespb.SubnetArgs, others resources.Resources) (*Subnet, error) {
+	s := &Subnet{
+		ChildResourceWithId: resources.ChildResourceWithId[*VirtualNetwork, *resourcespb.SubnetArgs]{
+			ResourceId: resourceId,
+			Args:       subnet,
+		},
+	}
+	vn, err := Get[*VirtualNetwork](others, subnet.VirtualNetworkId)
+	if err != nil {
+		return nil, errors.ValidationErrors([]validate.ValidationError{s.NewValidationError(err.Error(), "virtual_network_id")})
+	}
+	s.Parent = vn
+	s.VirtualNetwork = vn
+	return s, nil
+}
+
+func (r *Subnet) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		location := r.VirtualNetwork.GetLocation()
 		awsSubnet := subnet.AwsSubnet{
-			AwsResource:      common.NewAwsResource(s.GetTfResourceId(cloud), s.Name),
-			CidrBlock:        s.CidrBlock,
-			VpcId:            s.VirtualNetwork.GetVirtualNetworkId(cloud),
-			AvailabilityZone: common.GetAvailabilityZone(location, s.AvailabilityZone, cloud),
+			AwsResource:      common.NewAwsResource(r.ResourceId, r.Args.Name),
+			CidrBlock:        r.Args.CidrBlock,
+			VpcId:            r.VirtualNetwork.GetVirtualNetworkId(),
+			AvailabilityZone: common.GetAvailabilityZone(location, int(r.Args.AvailabilityZone), r.GetCloud()),
 		}
 		// This flag needs to be set so that eks nodes can connect to the kubernetes cluster
 		// https://aws.amazon.com/blogs/containers/upcoming-changes-to-ip-assignment-for-eks-managed-node-groups/
 		// How to tell if this subnet is private?
-		for _, resource := range resources.GetAllResources[*KubernetesServiceNodePool](ctx) {
-			for _, sn := range resource.SubnetIds {
-				if sn.ResourceId == s.ResourceId {
+		for _, resource := range resources.GetAllResources[*KubernetesNodePool](ctx) {
+			for _, sn := range resource.Subnets {
+				if sn.ResourceId == r.ResourceId {
 					awsSubnet.MapPublicIpOnLaunch = true
 				}
 			}
 		}
 		return []output.TfBlock{awsSubnet}, nil
-	} else if cloud == common.AZURE {
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		var azResources []output.TfBlock
 		azSubnet := subnet.AzureSubnet{
 			AzResource: &common.AzResource{
-				TerraformResource: output.TerraformResource{ResourceId: s.GetTfResourceId(cloud)},
-				Name:              s.Name,
-				ResourceGroupName: rg.GetResourceGroupName(s.VirtualNetwork.ResourceGroupId, cloud),
+				TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
+				Name:              r.Args.Name,
+				ResourceGroupName: rg.GetResourceGroupName(r.VirtualNetwork.Args.GetCommonParameters().GetResourceGroupId()),
 			},
-			AddressPrefixes:    []string{s.CidrBlock},
-			VirtualNetworkName: s.VirtualNetwork.GetVirtualNetworkName(cloud),
+			AddressPrefixes:    []string{r.Args.CidrBlock},
+			VirtualNetworkName: r.VirtualNetwork.GetVirtualNetworkName(),
 		}
-		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, s.ResourceId)
+		azSubnet.ServiceEndpoints = getServiceEndpointSubnetReferences(ctx, r.ResourceId)
 		azResources = append(azResources, azSubnet)
 
 		// there must be a better way to do this
-		if !checkSubnetRouteTableAssociated(ctx, s.ResourceId) {
-			rt, err := s.VirtualNetwork.GetAssociatedRouteTableId(cloud)
+		if !checkSubnetRouteTableAssociated(ctx, r.ResourceId) {
+			rt, err := r.VirtualNetwork.GetAssociatedRouteTableId()
 			if err != nil {
 				return nil, err
 			}
-			subnetId, err := resources.GetMainOutputId(s, cloud)
+			subnetId, err := resources.GetMainOutputId(r)
 			if err != nil {
 				return nil, err
 			}
 			rtAssociation := route_table_association.AzureRouteTableAssociation{
 				AzResource: &common.AzResource{
-					TerraformResource: output.TerraformResource{ResourceId: s.GetTfResourceId(cloud)},
+					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 				},
 				SubnetId:     subnetId,
 				RouteTableId: rt,
@@ -84,13 +121,12 @@ func (s *Subnet) Translate(cloud common.CloudProvider, ctx resources.MultyContex
 
 		return azResources, nil
 	}
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
-	return nil, nil
+	return nil, fmt.Errorf("cloud %r is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (s *Subnet) GetId(cloud common.CloudProvider) string {
-	types := map[common.CloudProvider]string{common.AWS: "aws_subnet", common.AZURE: "azurerm_subnet"}
-	return fmt.Sprintf("%s.%s.id", types[cloud], s.GetTfResourceId(cloud))
+func (r *Subnet) GetId() string {
+	t, _ := r.GetMainResourceName()
+	return fmt.Sprintf("%s.%s.id", t, r.ResourceId)
 }
 
 func getServiceEndpointSubnetReferences(ctx resources.MultyContext, id string) []string {
@@ -100,7 +136,7 @@ func getServiceEndpointSubnetReferences(ctx resources.MultyContext, id string) [
 
 	serviceEndpoints := map[string]bool{}
 	for _, resource := range resources.GetAllResources[*Database](ctx) {
-		for _, sn := range resource.SubnetIds {
+		for _, sn := range resource.Subnets {
 			if sn.ResourceId == id {
 				serviceEndpoints[DATABASE] = true
 			}
@@ -111,37 +147,36 @@ func getServiceEndpointSubnetReferences(ctx resources.MultyContext, id string) [
 
 func checkSubnetRouteTableAssociated(ctx resources.MultyContext, sId string) bool {
 	for _, resource := range resources.GetAllResources[*RouteTableAssociation](ctx) {
-		if sId == resource.SubnetId.ResourceId {
+		if sId == resource.Subnet.ResourceId {
 			return true
 		}
 	}
 	return false
 }
 
-func (s *Subnet) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, s.CommonResourceParams.Validate(ctx, cloud)...)
+func (r *Subnet) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
 	//if vn.CidrBlock valid CIDR { return false }
 	//if vn.AvailbilityZone valid { return false }
-	if len(s.CidrBlock) == 0 { // max len?
-		s.NewError("cidr_block", fmt.Sprintf("%s cidr_block length is invalid", s.ResourceId))
+	if len(r.Args.CidrBlock) == 0 { // max len?
+		errs = append(errs, r.NewValidationError(fmt.Sprintf("%r cidr_block length is invalid", r.ResourceId), "cidr_block"))
 	}
 
 	return errs
 }
 
-func (s *Subnet) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
+func (r *Subnet) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
 	case common.AWS:
 		return subnet.AwsResourceName, nil
 	case common.AZURE:
 		return subnet.AzureResourceName, nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %r", r.GetCloud().String())
 	}
 }
 
-func (s *Subnet) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
-	return s.VirtualNetwork.GetLocation(cloud, ctx)
+func (r *Subnet) GetCloudSpecificLocation() string {
+	return r.VirtualNetwork.GetCloudSpecificLocation()
 }

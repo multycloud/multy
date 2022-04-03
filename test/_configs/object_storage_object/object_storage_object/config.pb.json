@@ -69,34 +69,6 @@
         "resource_args": {
           "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageObjectArgs",
           "acl": "PUBLIC_READ",
-          "content": "",
-          "content_type": "",
-          "name": "index.html",
-          "object_storage_id": "obj_storage_aws",
-          "source": "test.zip"
-        }
-      },
-      "resource_id": "file3_source_aws"
-    },
-    {
-      "resource_args": {
-        "resource_args": {
-          "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageObjectArgs",
-          "acl": "PUBLIC_READ",
-          "content": "",
-          "content_type": "",
-          "name": "index.html",
-          "object_storage_id": "obj_storage_azure",
-          "source": "test.zip"
-        }
-      },
-      "resource_id": "file3_source_azure"
-    },
-    {
-      "resource_args": {
-        "resource_args": {
-          "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageObjectArgs",
-          "acl": "PUBLIC_READ",
           "content": "\u003ch1\u003eHi from Azure\u003c/h1\u003e",
           "content_type": "text/html",
           "name": "index.html",

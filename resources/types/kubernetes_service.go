@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -14,76 +16,92 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-type KubernetesService struct {
-	*resources.CommonResourceParams
-	Name      string    `hcl:"name"`
-	SubnetIds []*Subnet `mhcl:"ref=subnet_ids"`
+type KubernetesCluster struct {
+	resources.ResourceWithId[*resourcespb.KubernetesClusterArgs]
+
+	Subnets []*Subnet
 }
 
-func (r *KubernetesService) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
-	if len(r.SubnetIds) < 2 {
-		errs = append(errs, r.NewError("subnet_ids", "at least 2 subnet ids must be provided"))
-	}
-	associatedNodes := 0
-	for _, node := range resources.GetAllResourcesInCloud[*KubernetesServiceNodePool](ctx, cloud) {
-		if node.ClusterId.ResourceId == r.ResourceId && node.IsDefaultPool {
-			associatedNodes += 1
-		}
-	}
-	if associatedNodes != 1 {
-		errs = append(errs, r.NewError("", fmt.Sprintf("cluster must have exactly 1 default node pool for cloud %s, found %d", cloud, associatedNodes)))
-	}
-	return errs
-}
-
-func (r *KubernetesService) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	if cloud == common.AWS {
-		return output.GetResourceName(kubernetes_service.AwsEksCluster{}), nil
-	} else if cloud == common.AZURE {
-		return output.GetResourceName(kubernetes_service.AzureEksCluster{}), nil
-	}
-	return "", fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
-}
-
-func (r *KubernetesService) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	subnetIds, err := util.MapSliceValuesErr(r.SubnetIds, func(v *Subnet) (string, error) {
-		return resources.GetMainOutputId(v, cloud)
+func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesClusterArgs, others resources.Resources) (*KubernetesCluster, error) {
+	subnets, err := util.MapSliceValuesErr(args.SubnetIds, func(subnetId string) (*Subnet, error) {
+		return Get[*Subnet](others, subnetId)
 	})
 	if err != nil {
 		return nil, err
 	}
-	if cloud == common.AWS {
-		roleName := fmt.Sprintf("iam_for_k8cluster_%s", r.Name)
+	return &KubernetesCluster{
+		ResourceWithId: resources.ResourceWithId[*resourcespb.KubernetesClusterArgs]{
+			ResourceId: resourceId,
+			Args:       args,
+		},
+		Subnets: subnets,
+	}, nil
+}
+
+func (r *KubernetesCluster) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	errs = append(errs, r.ResourceWithId.Validate()...)
+	if len(r.Subnets) < 2 {
+		errs = append(errs, r.NewValidationError("at least 2 subnet ids must be provided", "subnet_ids"))
+	}
+	associatedNodes := 0
+	for _, node := range resources.GetAllResourcesInCloud[*KubernetesNodePool](ctx, r.GetCloud()) {
+		if node.KubernetesCluster.ResourceId == r.ResourceId && node.Args.IsDefaultPool {
+			associatedNodes += 1
+		}
+	}
+	if associatedNodes != 1 {
+		errs = append(errs, r.NewValidationError(fmt.Sprintf("cluster must have exactly 1 default node pool, found %d", associatedNodes), ""))
+	}
+	return errs
+}
+
+func (r *KubernetesCluster) GetMainResourceName() (string, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		return output.GetResourceName(kubernetes_service.AwsEksCluster{}), nil
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
+		return output.GetResourceName(kubernetes_service.AzureEksCluster{}), nil
+	}
+	return "", fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
+}
+
+func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
+	subnetIds, err := util.MapSliceValuesErr(r.Subnets, func(v *Subnet) (string, error) {
+		return resources.GetMainOutputId(v)
+	})
+	if err != nil {
+		return nil, err
+	}
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		roleName := fmt.Sprintf("iam_for_k8cluster_%s", r.Args.Name)
 		role := iam.AwsIamRole{
-			AwsResource:      common.NewAwsResource(r.GetTfResourceId(cloud), roleName),
-			Name:             fmt.Sprintf("iam_for_k8cluster_%s", r.Name),
+			AwsResource:      common.NewAwsResource(r.ResourceId, roleName),
+			Name:             fmt.Sprintf("iam_for_k8cluster_%s", r.Args.Name),
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("eks.amazonaws.com"),
 		}
 		return []output.TfBlock{
 			&role,
 			iam.AwsIamRolePolicyAttachment{
-				AwsResource: common.NewAwsResourceWithIdOnly(fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "AmazonEKSClusterPolicy")),
-				Role:        fmt.Sprintf("aws_iam_role.%s.name", r.GetTfResourceId(cloud)),
+				AwsResource: common.NewAwsResourceWithIdOnly(fmt.Sprintf("%s_%s", r.ResourceId, "AmazonEKSClusterPolicy")),
+				Role:        fmt.Sprintf("aws_iam_role.%s.name", r.ResourceId),
 				PolicyArn:   "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
 			},
 			iam.AwsIamRolePolicyAttachment{
-				AwsResource: common.NewAwsResourceWithIdOnly(fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "AmazonEKSVPCResourceController")),
-				Role:        fmt.Sprintf("aws_iam_role.%s.name", r.GetTfResourceId(cloud)),
+				AwsResource: common.NewAwsResourceWithIdOnly(fmt.Sprintf("%s_%s", r.ResourceId, "AmazonEKSVPCResourceController")),
+				Role:        fmt.Sprintf("aws_iam_role.%s.name", r.ResourceId),
 				PolicyArn:   "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController",
 			},
 			&kubernetes_service.AwsEksCluster{
-				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
-				RoleArn:     fmt.Sprintf("aws_iam_role.%s.arn", r.GetTfResourceId(cloud)),
+				AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
+				RoleArn:     fmt.Sprintf("aws_iam_role.%s.arn", r.ResourceId),
 				VpcConfig:   kubernetes_service.VpcConfig{SubnetIds: subnetIds},
-				Name:        r.Name,
+				Name:        r.Args.Name,
 			},
 		}, nil
-	} else if cloud == common.AZURE {
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		var defaultPool *kubernetes_node_pool.AzureKubernetesNodePool
-		for _, node := range resources.GetAllResources[*KubernetesServiceNodePool](ctx) {
-			if node.ClusterId.ResourceId == r.ResourceId && node.IsDefaultPool {
-				defaultPool, err = node.translateAzNodePool(ctx)
+		for _, node := range resources.GetAllResources[*KubernetesNodePool](ctx) {
+			if node.KubernetesCluster.ResourceId == r.ResourceId && node.Args.IsDefaultPool {
+				defaultPool, err = node.translateAzNodePool()
 				if err != nil {
 					return nil, err
 				}
@@ -94,30 +112,30 @@ func (r *KubernetesService) Translate(cloud common.CloudProvider, ctx resources.
 		}
 		return []output.TfBlock{
 			&kubernetes_service.AzureEksCluster{
-				AzResource:      common.NewAzResource(r.GetTfResourceId(cloud), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, cloud), ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud)),
+				AzResource:      common.NewAzResource(r.ResourceId, r.Args.Name, rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId), r.GetCloudSpecificLocation()),
 				DefaultNodePool: defaultPool,
-				DnsPrefix:       r.Name,
+				DnsPrefix:       r.Args.Name,
 				Identity:        kubernetes_service.AzureIdentity{Type: "SystemAssigned"},
 			},
 		}, nil
 	}
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (r *KubernetesService) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
+func (r *KubernetesCluster) GetOutputValues(cloud commonpb.CloudProvider) map[string]cty.Value {
 	switch cloud {
 	case common.AWS:
 		return map[string]cty.Value{
 			"endpoint": cty.StringVal(
 				fmt.Sprintf(
 					"${%s.%s.endpoint}", output.GetResourceName(kubernetes_service.AwsEksCluster{}),
-					r.GetTfResourceId(cloud),
+					r.ResourceId,
 				),
 			),
 			"ca_certificate": cty.StringVal(
 				fmt.Sprintf(
 					"${%s.%s.certificate_authority[0].data}", output.GetResourceName(kubernetes_service.AwsEksCluster{}),
-					r.GetTfResourceId(cloud),
+					r.ResourceId,
 				),
 			),
 		}
@@ -126,13 +144,13 @@ func (r *KubernetesService) GetOutputValues(cloud common.CloudProvider) map[stri
 			"endpoint": cty.StringVal(
 				fmt.Sprintf(
 					"${%s.%s.kube_config.0.host}", output.GetResourceName(kubernetes_service.AzureEksCluster{}),
-					r.GetTfResourceId(cloud),
+					r.ResourceId,
 				),
 			),
 			"ca_certificate": cty.StringVal(
 				fmt.Sprintf(
 					"${%s.%s.kube_config.0.cluster_ca_certificate}", output.GetResourceName(kubernetes_service.AzureEksCluster{}),
-					r.GetTfResourceId(cloud),
+					r.ResourceId,
 				),
 			),
 		}

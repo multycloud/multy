@@ -2,6 +2,9 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -12,20 +15,28 @@ import (
 )
 
 type VaultAccessPolicy struct {
-	*resources.CommonResourceParams
-	Vault    *Vault `mhcl:"ref=vault"`
-	Identity string `hcl:"identity"`
-	Access   string `hcl:"access"`
+	resources.ChildResourceWithId[*Vault, *resourcespb.VaultAccessPolicyArgs]
+	Vault *Vault
 }
 
-const (
-	READ  = "read"
-	WRITE = "write"
-	OWNER = "owner"
-)
+func NewVaultAccessPolicy(resourceId string, args *resourcespb.VaultAccessPolicyArgs, others resources.Resources) (*VaultAccessPolicy, error) {
+	vap := &VaultAccessPolicy{
+		ChildResourceWithId: resources.ChildResourceWithId[*Vault, *resourcespb.VaultAccessPolicyArgs]{
+			ResourceId: resourceId,
+			Args:       args,
+		},
+	}
+	v, err := Get[*Vault](others, args.VaultId)
+	if err != nil {
+		return nil, errors.ValidationErrors([]validate.ValidationError{vap.NewValidationError(err.Error(), "vault_id")})
+	}
+	vap.Parent = v
+	vap.Vault = v
+	return vap, nil
+}
 
-func (r *VaultAccessPolicy) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	if cloud == common.AWS {
+func (r *VaultAccessPolicy) Translate(resources.MultyContext) ([]output.TfBlock, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		//return []output.TfBlock{
 		//	vault_secret.AwsSsmParameter{
 		//		AwsResource: &common.AwsResource{
@@ -37,59 +48,59 @@ func (r *VaultAccessPolicy) Translate(cloud common.CloudProvider, ctx resources.
 		//	},
 		//}
 		return nil, nil
-	} else if cloud == common.AZURE {
-		vaultId, err := r.Vault.GetVaultId(cloud)
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
+		vaultId, err := r.Vault.GetVaultId()
 		if err != nil {
 			return nil, err
 		}
 		return []output.TfBlock{
-			AzureClientConfig{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.GetTfResourceId(cloud)}},
+			AzureClientConfig{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.ResourceId}},
 			vault_access_policy.AzureKeyVaultAccessPolicy{
 				AzResource: &common.AzResource{
-					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
+					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 				},
 				KeyVaultId: vaultId,
 				AzureKeyVaultAccessPolicyInline: &vault.AzureKeyVaultAccessPolicyInline{
 					TenantId: fmt.Sprintf(
-						"data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud),
+						"data.azurerm_client_config.%s.tenant_id", r.ResourceId,
 					),
-					ObjectId: "\"" + r.Identity + "\"",
+					ObjectId: "\"" + r.Args.Identity + "\"",
 					// fixme
-					AzureKeyVaultPermissions: r.GetAccessPolicyRules(cloud),
+					AzureKeyVaultPermissions: r.GetAccessPolicyRules(),
 				},
 			},
 		}, nil
 	}
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
 // fix return
-func (r *VaultAccessPolicy) GetAccessPolicyRules(cloud common.CloudProvider) *vault.AzureKeyVaultPermissions {
-	switch cloud {
+func (r *VaultAccessPolicy) GetAccessPolicyRules() *vault.AzureKeyVaultPermissions {
+	switch r.GetCloud() {
 	case common.AWS:
-		switch r.Access {
-		case "read":
+		switch r.Args.Access {
+		case resourcespb.VaultAccess_READ:
 			return &vault.AzureKeyVaultPermissions{}
-		case "write":
+		case resourcespb.VaultAccess_WRITE:
 			return &vault.AzureKeyVaultPermissions{}
-		case "owner":
+		case resourcespb.VaultAccess_OWNER:
 			return &vault.AzureKeyVaultPermissions{}
 		}
 	case common.AZURE:
-		switch r.Access {
-		case "read":
+		switch r.Args.Access {
+		case resourcespb.VaultAccess_READ:
 			return &vault.AzureKeyVaultPermissions{
 				CertificatePermissions: []string{},
 				KeyPermissions:         []string{},
 				SecretPermissions:      []string{"List", "Get"},
 			}
-		case "write":
+		case resourcespb.VaultAccess_WRITE:
 			return &vault.AzureKeyVaultPermissions{
 				CertificatePermissions: []string{},
 				KeyPermissions:         []string{},
 				SecretPermissions:      []string{"Set", "Delete"},
 			}
-		case "owner":
+		case resourcespb.VaultAccess_OWNER:
 			return &vault.AzureKeyVaultPermissions{
 				CertificatePermissions: []string{},
 				KeyPermissions:         []string{},
@@ -101,25 +112,24 @@ func (r *VaultAccessPolicy) GetAccessPolicyRules(cloud common.CloudProvider) *va
 	return nil
 }
 
-func (r *VaultAccessPolicy) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
-	if r.Access != READ && r.Access != OWNER && r.Access != WRITE {
-		errs = append(errs, r.NewError("access", fmt.Sprintf("%s access is invalid", r.ResourceId)))
+func (r *VaultAccessPolicy) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	if r.Args.Access == resourcespb.VaultAccess_UNKNOWN {
+		errs = append(errs, r.NewValidationError("unknown vault access", "access"))
 	}
 	return errs
 }
 
-func (r *VaultAccessPolicy) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
+func (r *VaultAccessPolicy) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
 	case common.AWS:
 		return vault_secret.AwsResourceName, nil
 	case common.AZURE:
 		return vault_secret.AzureResourceName, nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
 }
 
-func (r *VaultAccessPolicy) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
-	return r.Vault.GetLocation(cloud, ctx)
+func (r *VaultAccessPolicy) GetCloudSpecificLocation() string {
+	return r.Vault.GetCloudSpecificLocation()
 }

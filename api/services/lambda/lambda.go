@@ -1,7 +1,7 @@
 package lambda
 
 import (
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -9,11 +9,11 @@ import (
 )
 
 type LambdaService struct {
-	Service services.Service[*resources.LambdaArgs, *resources.LambdaResource]
+	Service services.Service[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]
 }
 
-func (s LambdaService) Convert(resourceId string, args *resources.LambdaArgs, state *output.TfState) (*resources.LambdaResource, error) {
-	return &resources.LambdaResource{
+func (s LambdaService) Convert(resourceId string, args *resourcespb.LambdaArgs, state *output.TfState) (*resourcespb.LambdaResource, error) {
+	return &resourcespb.LambdaResource{
 		CommonParameters:   util.ConvertCommonParams(resourceId, args.CommonParameters),
 		Name:               args.Name,
 		Runtime:            args.Runtime,
@@ -23,7 +23,7 @@ func (s LambdaService) Convert(resourceId string, args *resources.LambdaArgs, st
 
 func NewLambdaService(database *db.Database) LambdaService {
 	ni := LambdaService{
-		Service: services.Service[*resources.LambdaArgs, *resources.LambdaResource]{
+		Service: services.Service[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]{
 			Db:         database,
 			Converters: nil,
 		},

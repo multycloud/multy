@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -21,22 +23,29 @@ AZ: Route table created to restrict traffic on vnet
 */
 
 type VirtualNetwork struct {
-	*resources.CommonResourceParams `hcl:",block"`
-	Name                            string `hcl:"name"`
-	CidrBlock                       string `hcl:"cidr_block"`
+	resources.ResourceWithId[*resourcespb.VirtualNetworkArgs]
 }
 
-func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	if cloud == common.AWS {
+func NewVirtualNetwork(resourceId string, vn *resourcespb.VirtualNetworkArgs, _ resources.Resources) (*VirtualNetwork, error) {
+	return &VirtualNetwork{
+		ResourceWithId: resources.ResourceWithId[*resourcespb.VirtualNetworkArgs]{
+			ResourceId: resourceId,
+			Args:       vn,
+		},
+	}, nil
+}
+
+func (r *VirtualNetwork) Translate(resources.MultyContext) ([]output.TfBlock, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		vpc := virtual_network.AwsVpc{
-			AwsResource:        common.NewAwsResource(vn.GetTfResourceId(cloud), vn.Name),
-			CidrBlock:          vn.CidrBlock,
+			AwsResource:        common.NewAwsResource(r.ResourceId, r.Args.Name),
+			CidrBlock:          r.Args.CidrBlock,
 			EnableDnsHostnames: true,
 		}
 		// TODO make conditional on route_table_association with Internet Destination
 		igw := virtual_network.AwsInternetGateway{
-			AwsResource: common.NewAwsResource(vn.GetTfResourceId(cloud), vn.Name),
-			VpcId:       vn.GetVirtualNetworkId(common.AWS),
+			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
+			VpcId:       r.GetVirtualNetworkId(),
 		}
 		allowAllSgRule := []network_security_group.AwsSecurityGroupRule{{
 			Protocol:   "-1",
@@ -46,8 +55,8 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 			Self:       true,
 		}}
 		sg := network_security_group.AwsDefaultSecurityGroup{
-			AwsResource: common.NewAwsResource(vn.GetTfResourceId(cloud), vn.Name),
-			VpcId:       vn.GetVirtualNetworkId(common.AWS),
+			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
+			VpcId:       r.GetVirtualNetworkId(),
 			Ingress:     allowAllSgRule,
 			Egress:      allowAllSgRule,
 		}
@@ -56,17 +65,17 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 			igw,
 			sg,
 		}, nil
-	} else if cloud == common.AZURE {
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		return []output.TfBlock{virtual_network.AzureVnet{
 			AzResource: common.NewAzResource(
-				vn.GetTfResourceId(cloud), vn.Name, rg.GetResourceGroupName(vn.ResourceGroupId, cloud),
-				ctx.GetLocationFromCommonParams(vn.CommonResourceParams, cloud),
+				r.ResourceId, r.Args.Name, rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId),
+				r.GetCloudSpecificLocation(),
 			),
-			AddressSpace: []string{vn.CidrBlock},
+			AddressSpace: []string{r.Args.CidrBlock},
 		}, route_table.AzureRouteTable{
 			AzResource: common.NewAzResource(
-				vn.GetTfResourceId(cloud), vn.Name, rg.GetResourceGroupName(vn.ResourceGroupId, cloud),
-				ctx.GetLocationFromCommonParams(vn.CommonResourceParams, cloud),
+				r.ResourceId, r.Args.Name, rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId),
+				r.GetCloudSpecificLocation(),
 			),
 			Routes: []route_table.AzureRouteTableRoute{{
 				Name:          "local",
@@ -76,53 +85,57 @@ func (vn *VirtualNetwork) Translate(cloud common.CloudProvider, ctx resources.Mu
 		}}, nil
 	}
 
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (vn *VirtualNetwork) GetVirtualNetworkId(cloud common.CloudProvider) string {
-	types := map[common.CloudProvider]string{common.AWS: "aws_vpc", common.AZURE: "azurerm_virtual_network"}
-	return fmt.Sprintf("%s.%s.id", types[cloud], vn.GetTfResourceId(cloud))
+func (r *VirtualNetwork) GetVirtualNetworkId() string {
+	t, _ := r.GetMainResourceName()
+	return fmt.Sprintf("%s.%s.id", t, r.ResourceId)
 }
 
-func (vn *VirtualNetwork) GetVirtualNetworkName(cloud common.CloudProvider) string {
-	types := map[common.CloudProvider]string{common.AWS: "aws_vpc", common.AZURE: "azurerm_virtual_network"}
-	return fmt.Sprintf("%s.%s.name", types[cloud], vn.GetTfResourceId(cloud))
+func (r *VirtualNetwork) GetVirtualNetworkName() string {
+	t, _ := r.GetMainResourceName()
+	return fmt.Sprintf("%s.%s.name", t, r.ResourceId)
 }
 
-func (vn *VirtualNetwork) GetAssociatedRouteTableId(cloud common.CloudProvider) (string, error) {
-	if cloud == common.AZURE {
-		return fmt.Sprintf("${%s.%s.id}", route_table.AzureResourceName, vn.GetTfResourceId(common.AZURE)), nil
+func (r *VirtualNetwork) GetAssociatedRouteTableId() (string, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AZURE {
+		return fmt.Sprintf("${%s.%s.id}", route_table.AzureResourceName, r.ResourceId), nil
 	}
-	return "", fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return "", fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (vn *VirtualNetwork) GetAssociatedInternetGateway(cloud common.CloudProvider) (string, error) {
-	if cloud == common.AWS {
-		return fmt.Sprintf("%s.%s.id", virtual_network.AwsInternetGatewayName, vn.GetTfResourceId(common.AWS)), nil
+func (r *VirtualNetwork) GetAssociatedInternetGateway() (string, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		return fmt.Sprintf("%s.%s.id", virtual_network.AwsInternetGatewayName, r.ResourceId), nil
 	}
-	return "", fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return "", fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-// TODO validate commonparams
-func (vn *VirtualNetwork) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, vn.CommonResourceParams.Validate(ctx, cloud)...)
-	//if vn.Name contains not letters,numbers,_,- { return false }
-	//if vn.Name length? { return false }
-	//if vn.CidrBlock valid CIDR { return false }
-	if len(vn.CidrBlock) == 0 { // max len?
-		errs = append(errs, vn.NewError("cidr_block", "cidr_block length is invalid"))
+//// TODO validate commonparams
+func (r *VirtualNetwork) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	errs = append(errs, r.ResourceWithId.Validate()...)
+	//if r.Name contains not letters,numbers,_,- { return false }
+	//if r.Name length? { return false }
+	//if r.CidrBlock valid CIDR { return false }
+	if len(r.Args.CidrBlock) == 0 { // max len?
+		errs = append(errs, validate.ValidationError{
+			ErrorMessage: "cidr_block length is invalid",
+			ResourceId:   r.ResourceId,
+			FieldName:    "cidr_block",
+		})
 	}
 	return errs
 }
 
-func (vn *VirtualNetwork) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
-	case common.AWS:
+func (r *VirtualNetwork) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
+	case commonpb.CloudProvider_AWS:
 		return virtual_network.AwsResourceName, nil
-	case common.AZURE:
+	case commonpb.CloudProvider_AZURE:
 		return virtual_network.AzureResourceName, nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
 }
 

@@ -2,6 +2,9 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -11,60 +14,78 @@ import (
 
 // route_table_association
 type RouteTableAssociation struct {
-	*resources.CommonResourceParams
-	SubnetId     *Subnet     `mhcl:"ref=subnet_id"`
-	RouteTableId *RouteTable `mhcl:"ref=route_table_id"`
+	resources.ChildResourceWithId[*RouteTable, *resourcespb.RouteTableAssociationArgs]
+
+	RouteTable *RouteTable
+	Subnet     *Subnet
 }
 
-func (r *RouteTableAssociation) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	rtId, err := resources.GetMainOutputId(r.RouteTableId, cloud)
+func NewRouteTableAssociation(resourceId string, args *resourcespb.RouteTableAssociationArgs, others resources.Resources) (*RouteTableAssociation, error) {
+	rta := &RouteTableAssociation{
+		ChildResourceWithId: resources.ChildResourceWithId[*RouteTable, *resourcespb.RouteTableAssociationArgs]{
+			ResourceId: resourceId,
+			Args:       args,
+		},
+	}
+	rt, err := Get[*RouteTable](others, args.RouteTableId)
+	if err != nil {
+		return nil, errors.ValidationErrors([]validate.ValidationError{rta.NewValidationError(err.Error(), "virtual_network_id")})
+	}
+	rta.Parent = rt
+	rta.RouteTable = rt
+
+	subnet, err := Get[*Subnet](others, args.SubnetId)
+	if err != nil {
+		return nil, errors.ValidationErrors([]validate.ValidationError{rta.NewValidationError(err.Error(), "subnet_id")})
+	}
+	rta.Subnet = subnet
+	return rta, nil
+}
+
+func (r *RouteTableAssociation) Translate(resources.MultyContext) ([]output.TfBlock, error) {
+	rtId, err := resources.GetMainOutputId(r.RouteTable)
 	if err != nil {
 		return nil, err
 	}
-	subnetId, err := resources.GetMainOutputId(r.SubnetId, cloud)
+	subnetId, err := resources.GetMainOutputId(r.Subnet)
 	if err != nil {
 		return nil, err
 	}
-	if cloud == common.AWS {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		return []output.TfBlock{
 			route_table_association.AwsRouteTableAssociation{
 				AwsResource: &common.AwsResource{
-					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
+					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 				},
 				RouteTableId: rtId,
 				SubnetId:     subnetId,
 			},
 		}, nil
-	} else if cloud == common.AZURE {
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		return []output.TfBlock{
 			route_table_association.AzureRouteTableAssociation{
 				AzResource: &common.AzResource{
-					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
+					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 				},
 				RouteTableId: rtId,
 				SubnetId:     subnetId,
 			},
 		}, nil
 	}
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (r *RouteTableAssociation) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
+func (r *RouteTableAssociation) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	return errs
 }
 
-func (r *RouteTableAssociation) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
-	case common.AWS:
+func (r *RouteTableAssociation) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
+	case commonpb.CloudProvider_AWS:
 		return route_table_association.AwsResourceName, nil
-	case common.AZURE:
+	case commonpb.CloudProvider_AZURE:
 		return route_table_association.AzureResourceName, nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
-}
-
-func (r *RouteTableAssociation) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
-	return r.RouteTableId.GetLocation(cloud, ctx)
 }

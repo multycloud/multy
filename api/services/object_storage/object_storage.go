@@ -1,7 +1,7 @@
 package object_storage
 
 import (
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -9,11 +9,11 @@ import (
 )
 
 type ObjectStorageService struct {
-	Service services.Service[*resources.ObjectStorageArgs, *resources.ObjectStorageResource]
+	Service services.Service[*resourcespb.ObjectStorageArgs, *resourcespb.ObjectStorageResource]
 }
 
-func (s ObjectStorageService) Convert(resourceId string, args *resources.ObjectStorageArgs, state *output.TfState) (*resources.ObjectStorageResource, error) {
-	return &resources.ObjectStorageResource{
+func (s ObjectStorageService) Convert(resourceId string, args *resourcespb.ObjectStorageArgs, state *output.TfState) (*resourcespb.ObjectStorageResource, error) {
+	return &resourcespb.ObjectStorageResource{
 		CommonParameters: util.ConvertCommonParams(resourceId, args.CommonParameters),
 		Name:             args.Name,
 		Versioning:       args.Versioning,
@@ -22,7 +22,7 @@ func (s ObjectStorageService) Convert(resourceId string, args *resources.ObjectS
 
 func NewObjectStorageService(database *db.Database) ObjectStorageService {
 	nsg := ObjectStorageService{
-		Service: services.Service[*resources.ObjectStorageArgs, *resources.ObjectStorageResource]{
+		Service: services.Service[*resourcespb.ObjectStorageArgs, *resourcespb.ObjectStorageResource]{
 			Db:         database,
 			Converters: nil,
 		},

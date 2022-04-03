@@ -6,9 +6,9 @@ import (
 	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/errors"
-	"github.com/multycloud/multy/api/proto/common"
-	"github.com/multycloud/multy/api/proto/config"
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/configpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
 	"google.golang.org/protobuf/proto"
@@ -73,7 +73,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	if err != nil {
 		return *new(OutT), err
 	}
-	return s.Read(ctx, &resources.ReadVirtualNetworkRequest{ResourceId: resource.ResourceId})
+	return s.Read(ctx, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.ResourceId})
 }
 
 func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, error) {
@@ -144,11 +144,11 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 	return s.Read(ctx, in)
 }
 
-func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*common.Empty, error) {
+func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
 	return WrappingErrors(s.delete)(ctx, in)
 }
 
-func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*common.Empty, error) {
+func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
 	fmt.Printf("Service delete: %s\n", in.GetResourceId())
 	userId, err := util.ExtractUserId(ctx)
 	if err != nil {
@@ -173,10 +173,10 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*com
 	if err != nil {
 		return nil, err
 	}
-	return &common.Empty{}, nil
+	return &commonpb.Empty{}, nil
 }
 
-func find(c *config.Config, resourceId string) *config.Resource {
+func find(c *configpb.Config, resourceId string) *configpb.Resource {
 	for _, r := range c.Resources {
 		if r.ResourceId == resourceId {
 			return r

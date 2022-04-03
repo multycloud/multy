@@ -151,7 +151,7 @@
           "engine": "MYSQL",
           "engine_version": "5.7",
           "name": "example-db",
-          "size": "NANO",
+          "size": "MICRO",
           "storage_gb": 10,
           "subnet_ids": [
             "subnet1_azure",
@@ -184,7 +184,7 @@
           "engine": "MYSQL",
           "engine_version": "5.7",
           "name": "example-db",
-          "size": "NANO",
+          "size": "MICRO",
           "storage_gb": 10,
           "subnet_ids": [
             "subnet1_aws",

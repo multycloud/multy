@@ -5,23 +5,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/hcl/v2"
 	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/errors"
-	"github.com/multycloud/multy/api/proto/common"
-	"github.com/multycloud/multy/api/proto/config"
-	"github.com/multycloud/multy/api/proto/creds"
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/configpb"
+	"github.com/multycloud/multy/api/proto/credspb"
 	"github.com/multycloud/multy/api/util"
-	"github.com/multycloud/multy/decoder"
 	"github.com/multycloud/multy/encoder"
-	common_resources "github.com/multycloud/multy/resources"
-	cloud_providers "github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/resources/types"
-	"github.com/zclconf/go-cty/cty"
-	"github.com/zclconf/go-cty/cty/function"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
@@ -43,98 +38,24 @@ var (
 	AzureCredsNotSetErr = status.Error(codes.InvalidArgument, "azure credentials are required but not set")
 )
 
-func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *config.Resource, curr *config.Resource) (string, error) {
+func Translate(credentials *credspb.CloudCredentials, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (string, error) {
 	// TODO: get rid of this translation layer and instead use protos directly
-	translated := map[string]common_resources.CloudSpecificResource{}
+	translated := map[string]resources.Resource{}
+
 	for _, r := range c.Resources {
-		// TODO: move this to Converters
 		resourceMessage := r.ResourceArgs.ResourceArgs
-		if resourceMessage.MessageIs(&resources.VirtualNetworkArgs{}) {
-			err := addMultyResource(r, translated, &converter.VnConverter{})
-			if err != nil {
-				return "", err
+		added := false
+		for messageType, conv := range converter.Converters {
+			if resourceMessage.MessageIs(messageType) {
+				err := addMultyResourceNew(r, translated, conv)
+				if err != nil {
+					return "", err
+				}
+				added = true
+				break
 			}
-		} else if resourceMessage.MessageIs(&resources.SubnetArgs{}) {
-			err := addMultyResource(r, translated, &converter.SubnetConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.NetworkInterfaceArgs{}) {
-			err := addMultyResource(r, translated, &converter.NetworkInterfaceConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.RouteTableArgs{}) {
-			err := addMultyResource(r, translated, &converter.RouteTableConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.RouteTableAssociationArgs{}) {
-			err := addMultyResource(r, translated, &converter.RouteTableAssociationConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.NetworkSecurityGroupArgs{}) {
-			err := addMultyResource(r, translated, &converter.NetworkSecurityGroupConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.DatabaseArgs{}) {
-			err := addMultyResource(r, translated, &converter.DatabaseConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.ObjectStorageArgs{}) {
-			err := addMultyResource(r, translated, &converter.ObjectStorageConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.ObjectStorageObjectArgs{}) {
-			err := addMultyResource(r, translated, &converter.ObjectStorageObjectConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.PublicIpArgs{}) {
-			err := addMultyResource(r, translated, &converter.PublicIpConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.KubernetesClusterArgs{}) {
-			err := addMultyResource(r, translated, &converter.KubernetesClusterConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.KubernetesNodePoolArgs{}) {
-			err := addMultyResource(r, translated, &converter.KubernetesNodePoolConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.LambdaArgs{}) {
-			err := addMultyResource(r, translated, &converter.LambdaConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.VaultArgs{}) {
-			err := addMultyResource(r, translated, &converter.VaultConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.VaultAccessPolicyArgs{}) {
-			err := addMultyResource(r, translated, &converter.VaultAccessPolicyConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.VaultSecretArgs{}) {
-			err := addMultyResource(r, translated, &converter.VaultSecretConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else if resourceMessage.MessageIs(&resources.VirtualMachineArgs{}) {
-			err := addMultyResource(r, translated, &converter.VirtualMachineConverter{})
-			if err != nil {
-				return "", err
-			}
-		} else {
+		}
+		if !added {
 			return "", fmt.Errorf("unknown resource type %s", resourceMessage.MessageName())
 		}
 	}
@@ -145,13 +66,8 @@ func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *conf
 	}
 
 	// TODO add s3 state file backend
-	decodedResources := decoder.DecodedResources{
+	decodedResources := encoder.DecodedResources{
 		Resources: translated,
-		GlobalConfig: decoder.DecodedGlobalConfig{
-			Location:      "ireland",
-			Clouds:        cloud_providers.GetAllCloudProviders(),
-			DefaultRgName: rg.GetDefaultResourceGroupId(),
-		},
 		Providers: provider,
 	}
 
@@ -164,10 +80,10 @@ func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *conf
 	}
 
 	for _, r := range translated {
-		if string(r.Cloud) == "aws" && (credentials.GetAwsCreds().GetAccessKey() == "" || credentials.GetAwsCreds().GetSecretKey() == "") {
+		if r.GetCloud() == commonpb.CloudProvider_AWS && (credentials.GetAwsCreds().GetAccessKey() == "" || credentials.GetAwsCreds().GetSecretKey() == "") {
 			return hclOutput, AwsCredsNotSetErr
 		}
-		if string(r.Cloud) == "azure" && (credentials.GetAzureCreds().GetSubscriptionId() == "" ||
+		if r.GetCloud() == commonpb.CloudProvider_AZURE && (credentials.GetAzureCreds().GetSubscriptionId() == "" ||
 			credentials.GetAzureCreds().GetClientId() == "" ||
 			credentials.GetAzureCreds().GetTenantId() == "" ||
 			credentials.GetAzureCreds().GetClientSecret() == "") {
@@ -178,7 +94,7 @@ func Translate(credentials *creds.CloudCredentials, c *config.Config, prev *conf
 	return hclOutput, nil
 }
 
-func Deploy(ctx context.Context, c *config.Config, prev *config.Resource, curr *config.Resource) (*output.TfState, error) {
+func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (*output.TfState, error) {
 	credentials, err := util.ExtractCloudCredentials(ctx)
 	if err != nil {
 		return nil, err
@@ -267,10 +183,10 @@ func GetState(userId string) (*output.TfState, error) {
 }
 
 type hasCommonArgs interface {
-	GetCommonParameters() *common.ResourceCommonArgs
+	GetCommonParameters() *commonpb.ResourceCommonArgs
 }
 
-func addMultyResource(r *config.Resource, translated map[string]common_resources.CloudSpecificResource, c converter.MultyResourceConverter) error {
+func addMultyResourceNew(r *configpb.Resource, translated map[string]resources.Resource, metadata converter.ResourceMetadata) error {
 	m, err := r.ResourceArgs.ResourceArgs.UnmarshalNew()
 	if err != nil {
 		return err
@@ -278,40 +194,38 @@ func addMultyResource(r *config.Resource, translated map[string]common_resources
 	// TODO: refactor this
 	if commonArgs, ok := m.(hasCommonArgs); ok {
 		if commonArgs.GetCommonParameters().ResourceGroupId == "" {
-			rgId, _ := decoder.GetRgId(rg.GetDefaultResourceGroupId(), nil, &hcl.EvalContext{
-				Variables: map[string]cty.Value{},
-				Functions: map[string]function.Function{},
-			}, c.GetResourceType())
+			rgId := rg.GetDefaultResourceGroupIdString(metadata.AbbreviatedName)
 			if rgId != "" {
 				commonArgs.GetCommonParameters().ResourceGroupId = rgId
-				resourceGroup := common_resources.CloudSpecificResource{
-					ImplicitlyCreated: true,
-					Cloud:             cloud_providers.CloudProvider(strings.ToLower(commonArgs.GetCommonParameters().CloudProvider.String())),
-					Resource: &rg.Type{
-						ResourceId: rgId,
-						Name:       rgId,
-						Location:   strings.ToLower(commonArgs.GetCommonParameters().Location.String()),
-					},
+				if commonArgs.GetCommonParameters().CloudProvider == commonpb.CloudProvider_AZURE {
+					resourceGroup :=
+						&rg.Type{
+							ResourceId: rgId,
+							Name:       rgId,
+							Location:   strings.ToLower(commonArgs.GetCommonParameters().Location.String()),
+							Cloud:      commonArgs.GetCommonParameters().CloudProvider,
+						}
+
+					translated[resourceGroup.GetResourceId()] = resourceGroup
 				}
-				translated[resourceGroup.GetResourceId()] = resourceGroup
 			}
 		}
 	}
 
-	translatedResource, err := c.ConvertToMultyResource(r.ResourceId, m, translated)
+	translatedResource, err := metadata.InitFunc(r.ResourceId, m, translated)
 	if err != nil {
 		return err
 	}
-	translated[translatedResource.Resource.GetResourceId()] = translatedResource
+	translated[translatedResource.GetResourceId()] = translatedResource
 
 	return nil
 }
 
 type WithCommonParams interface {
-	GetCommonParameters() *common.ResourceCommonArgs
+	GetCommonParameters() *commonpb.ResourceCommonArgs
 }
 
-func getExistingProvider(r *config.Resource) (map[cloud_providers.CloudProvider]map[string]*types.Provider, error) {
+func getExistingProvider(r *configpb.Resource) (map[commonpb.CloudProvider]map[string]*types.Provider, error) {
 	if r != nil {
 		args := r.GetResourceArgs().GetResourceArgs()
 		m, err := args.UnmarshalNew()
@@ -319,15 +233,14 @@ func getExistingProvider(r *config.Resource) (map[cloud_providers.CloudProvider]
 			return nil, err
 		}
 		if wcp, ok := m.(WithCommonParams); ok {
-			cloud := cloud_providers.CloudProvider(strings.ToLower(wcp.GetCommonParameters().CloudProvider.String()))
-			location, err := cloud_providers.GetCloudLocation(strings.ToLower(wcp.GetCommonParameters().Location.String()), cloud)
+			location, err := common.GetCloudLocation(strings.ToLower(wcp.GetCommonParameters().Location.String()), wcp.GetCommonParameters().CloudProvider)
 			if err != nil {
 				return nil, err
 			}
-			return map[cloud_providers.CloudProvider]map[string]*types.Provider{
-				cloud: {
+			return map[commonpb.CloudProvider]map[string]*types.Provider{
+				wcp.GetCommonParameters().CloudProvider: {
 					location: &types.Provider{
-						Cloud:             cloud,
+						Cloud:             wcp.GetCommonParameters().CloudProvider,
 						Location:          location,
 						IsDefaultProvider: false,
 						NumResources:      1,
@@ -339,5 +252,5 @@ func getExistingProvider(r *config.Resource) (map[cloud_providers.CloudProvider]
 
 	}
 
-	return map[cloud_providers.CloudProvider]map[string]*types.Provider{}, nil
+	return map[commonpb.CloudProvider]map[string]*types.Provider{}, nil
 }

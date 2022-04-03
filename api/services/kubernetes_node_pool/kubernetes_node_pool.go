@@ -1,7 +1,7 @@
 package kubernetes_node_pool
 
 import (
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -9,11 +9,11 @@ import (
 )
 
 type KubernetesNodePoolService struct {
-	Service services.Service[*resources.KubernetesNodePoolArgs, *resources.KubernetesNodePoolResource]
+	Service services.Service[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]
 }
 
-func (s KubernetesNodePoolService) Convert(resourceId string, args *resources.KubernetesNodePoolArgs, state *output.TfState) (*resources.KubernetesNodePoolResource, error) {
-	return &resources.KubernetesNodePoolResource{
+func (s KubernetesNodePoolService) Convert(resourceId string, args *resourcespb.KubernetesNodePoolArgs, state *output.TfState) (*resourcespb.KubernetesNodePoolResource, error) {
+	return &resourcespb.KubernetesNodePoolResource{
 		CommonParameters:  util.ConvertCommonChildParams(resourceId, args.CommonParameters),
 		Name:              args.Name,
 		SubnetIds:         args.SubnetIds,
@@ -30,7 +30,7 @@ func (s KubernetesNodePoolService) Convert(resourceId string, args *resources.Ku
 
 func NewKubernetesNodePoolService(database *db.Database) KubernetesNodePoolService {
 	ni := KubernetesNodePoolService{
-		Service: services.Service[*resources.KubernetesNodePoolArgs, *resources.KubernetesNodePoolResource]{
+		Service: services.Service[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]{
 			Db:         database,
 			Converters: nil,
 		},

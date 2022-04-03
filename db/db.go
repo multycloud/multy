@@ -6,7 +6,7 @@ import (
 	aws_client "github.com/multycloud/multy/api/aws"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto"
-	"github.com/multycloud/multy/api/proto/config"
+	"github.com/multycloud/multy/api/proto/configpb"
 	"os"
 	"path/filepath"
 )
@@ -24,7 +24,7 @@ const (
 	multyLocalUser = "multy_local"
 )
 
-func (d *Database) StoreUserConfig(config *config.Config) error {
+func (d *Database) StoreUserConfig(config *configpb.Config) error {
 	fmt.Printf("Storing user config from api_key %s\n", config.UserId)
 	str, err := d.marshaler.MarshalToString(config)
 	if err != nil {
@@ -53,9 +53,9 @@ func (d *Database) StoreUserConfig(config *config.Config) error {
 	return nil
 }
 
-func (d *Database) LoadUserConfig(userId string) (*config.Config, error) {
+func (d *Database) LoadUserConfig(userId string) (*configpb.Config, error) {
 	fmt.Printf("Loading config from api_key %s\n", userId)
-	result := config.Config{
+	result := configpb.Config{
 		UserId: userId,
 	}
 

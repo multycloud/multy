@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -11,30 +13,44 @@ import (
 )
 
 type NetworkInterface struct {
-	*resources.CommonResourceParams
-	Name     string  `hcl:"name"`
-	SubnetId *Subnet `mhcl:"ref=subnet_id"`
+	resources.ResourceWithId[*resourcespb.NetworkInterfaceArgs]
+
+	Subnet *Subnet
 }
 
-func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	subnetId, err := resources.GetMainOutputId(r.SubnetId, cloud)
+func NewNetworkInterface(resourceId string, args *resourcespb.NetworkInterfaceArgs, others resources.Resources) (*NetworkInterface, error) {
+	subnet, err := Get[*Subnet](others, args.SubnetId)
+	if err != nil {
+		return nil, err
+	}
+	return &NetworkInterface{
+		ResourceWithId: resources.ResourceWithId[*resourcespb.NetworkInterfaceArgs]{
+			ResourceId: resourceId,
+			Args:       args,
+		},
+		Subnet: subnet,
+	}, nil
+}
+
+func (r *NetworkInterface) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
+	subnetId, err := resources.GetMainOutputId(r.Subnet)
 	if err != nil {
 		return nil, err
 	}
 
-	if cloud == common.AWS {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		return []output.TfBlock{
 			network_interface.AwsNetworkInterface{
-				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
+				AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
 				SubnetId:    subnetId,
 			},
 		}, nil
-	} else if cloud == common.AZURE {
-		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
+		rgName := rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId)
 		nic := network_interface.AzureNetworkInterface{
 			AzResource: common.NewAzResource(
-				r.GetTfResourceId(cloud), r.Name, rgName,
-				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+				r.ResourceId, r.Args.Name, rgName,
+				r.GetCloudSpecificLocation(),
 			),
 			// by default, virtual_machine will have a private ip
 			IpConfigurations: []network_interface.AzureIpConfiguration{{
@@ -51,21 +67,21 @@ func (r *NetworkInterface) Translate(cloud common.CloudProvider, ctx resources.M
 		return []output.TfBlock{nic}, nil
 	}
 
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (r *NetworkInterface) GetId(cloud common.CloudProvider) string {
-	types := map[common.CloudProvider]string{common.AWS: network_interface.AwsResourceName, common.AZURE: network_interface.AzureResourceName}
-	return fmt.Sprintf("%s.%s.id", types[cloud], r.GetTfResourceId(cloud))
+func (r *NetworkInterface) GetId(cloud commonpb.CloudProvider) string {
+	types := map[commonpb.CloudProvider]string{common.AWS: network_interface.AwsResourceName, common.AZURE: network_interface.AzureResourceName}
+	return fmt.Sprintf("%s.%s.id", types[cloud], r.ResourceId)
 }
 
 func getPublicIpReferences(ctx resources.MultyContext, subnetId string) []network_interface.AzureIpConfiguration {
 	var ipConfigurations []network_interface.AzureIpConfiguration
 	for _, resource := range resources.GetAllResources[*PublicIp](ctx) {
-		if resource.NetworkInterfaceId != nil && resources.GetCloudSpecificResourceId(resource, common.AZURE) == resource.NetworkInterfaceId.ResourceId {
+		if resource.NetworkInterface != nil && resources.GetCloudSpecificResourceId(resource, common.AZURE) == resource.NetworkInterface.ResourceId {
 			ipConfigurations = append(
 				ipConfigurations, network_interface.AzureIpConfiguration{
-					Name:                       fmt.Sprintf("external-%s", resource.Name),
+					Name:                       fmt.Sprintf("external-%s", resource.Args.Name),
 					PrivateIpAddressAllocation: "Dynamic",
 					PublicIpAddressId:          resource.GetId(common.AZURE),
 					SubnetId:                   subnetId,
@@ -77,18 +93,18 @@ func getPublicIpReferences(ctx resources.MultyContext, subnetId string) []networ
 	return ipConfigurations
 }
 
-func (r *NetworkInterface) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
+func (r *NetworkInterface) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	errs = append(errs, r.ResourceWithId.Validate()...)
 	return errs
 }
 
-func (r *NetworkInterface) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
-	case common.AWS:
+func (r *NetworkInterface) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
+	case commonpb.CloudProvider_AWS:
 		return network_interface.AwsResourceName, nil
-	case common.AZURE:
+	case commonpb.CloudProvider_AZURE:
 		return network_interface.AzureResourceName, nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
 }

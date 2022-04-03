@@ -1,7 +1,7 @@
 package route_table_association
 
 import (
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -9,11 +9,11 @@ import (
 )
 
 type RouteTableAssociationService struct {
-	Service services.Service[*resources.RouteTableAssociationArgs, *resources.RouteTableAssociationResource]
+	Service services.Service[*resourcespb.RouteTableAssociationArgs, *resourcespb.RouteTableAssociationResource]
 }
 
-func (s RouteTableAssociationService) Convert(resourceId string, args *resources.RouteTableAssociationArgs, state *output.TfState) (*resources.RouteTableAssociationResource, error) {
-	return &resources.RouteTableAssociationResource{
+func (s RouteTableAssociationService) Convert(resourceId string, args *resourcespb.RouteTableAssociationArgs, state *output.TfState) (*resourcespb.RouteTableAssociationResource, error) {
+	return &resourcespb.RouteTableAssociationResource{
 		CommonParameters: util.ConvertCommonChildParams(resourceId, args.CommonParameters),
 		SubnetId:         args.SubnetId,
 		RouteTableId:     args.RouteTableId,
@@ -22,7 +22,7 @@ func (s RouteTableAssociationService) Convert(resourceId string, args *resources
 
 func NewRouteTableAssociationService(database *db.Database) RouteTableAssociationService {
 	rta := RouteTableAssociationService{
-		Service: services.Service[*resources.RouteTableAssociationArgs, *resources.RouteTableAssociationResource]{
+		Service: services.Service[*resourcespb.RouteTableAssociationArgs, *resourcespb.RouteTableAssociationResource]{
 			Db:         database,
 			Converters: nil,
 		},

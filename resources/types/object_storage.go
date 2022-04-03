@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -12,48 +14,54 @@ import (
 )
 
 type ObjectStorage struct {
-	*resources.CommonResourceParams
-	Name       string     `hcl:"name"`
-	Acl        []AclRules `hcl:"acl,optional"`
-	Versioning bool       `hcl:"versioning,optional"`
+	resources.ResourceWithId[*resourcespb.ObjectStorageArgs]
+}
+
+func NewObjectStorage(resourceId string, db *resourcespb.ObjectStorageArgs, _ resources.Resources) (*ObjectStorage, error) {
+	return &ObjectStorage{
+		ResourceWithId: resources.ResourceWithId[*resourcespb.ObjectStorageArgs]{
+			ResourceId: resourceId,
+			Args:       db,
+		},
+	}, nil
 }
 
 type AclRules struct{}
 
-func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	if cloud == common.AWS {
+func (r *ObjectStorage) Translate(resources.MultyContext) ([]output.TfBlock, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		var awsResources []output.TfBlock
 		s3Bucket := object_storage.AwsS3Bucket{
 			AwsResource: &common.AwsResource{
-				TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
+				TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 			},
-			Bucket: r.Name,
+			Bucket: r.Args.Name,
 		}
 		awsResources = append(awsResources, s3Bucket)
 
-		if r.Versioning {
+		if r.Args.Versioning {
 			awsResources = append(awsResources, object_storage.AwsS3BucketVersioning{
 				AwsResource: &common.AwsResource{
-					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
+					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 				},
 				BucketId:                s3Bucket.GetBucketId(),
 				VersioningConfiguration: object_storage.VersioningConfiguration{Status: "Enabled"},
 			})
 		}
 		return awsResources, nil
-	} else if cloud == common.AZURE {
-		rgName := rg.GetResourceGroupName(r.ResourceGroupId, cloud)
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
+		rgName := rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId)
 
 		storageAccount := object_storage.AzureStorageAccount{
 			AzResource: common.NewAzResource(
-				r.GetTfResourceId(cloud), common.RemoveSpecialChars(r.Name), rgName,
-				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+				r.ResourceId, common.RemoveSpecialChars(r.Args.Name), rgName,
+				r.GetCloudSpecificLocation(),
 			),
 			AccountTier:                "Standard",
 			AccountReplicationType:     "GZRS",
 			AllowNestedItemsToBePublic: true,
 			BlobProperties: object_storage.BlobProperties{
-				VersioningEnabled: r.Versioning,
+				VersioningEnabled: r.Args.Versioning,
 			},
 		}
 
@@ -62,7 +70,7 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 			object_storage_object.AzureStorageContainer{
 				AzResource: &common.AzResource{
 					TerraformResource: output.TerraformResource{
-						ResourceId: fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "public"),
+						ResourceId: fmt.Sprintf("%s_%s", r.ResourceId, "public"),
 					},
 					Name: "public",
 				},
@@ -71,7 +79,7 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 			}, object_storage_object.AzureStorageContainer{
 				AzResource: &common.AzResource{
 					TerraformResource: output.TerraformResource{
-						ResourceId: fmt.Sprintf("%s_%s", r.GetTfResourceId(cloud), "private"),
+						ResourceId: fmt.Sprintf("%s_%s", r.ResourceId, "private"),
 					},
 					Name: "private",
 				},
@@ -80,44 +88,44 @@ func (r *ObjectStorage) Translate(cloud common.CloudProvider, ctx resources.Mult
 			}}, nil
 	}
 
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (r *ObjectStorage) GetAssociatedPublicContainerResourceName(cloud common.CloudProvider) string {
-	if cloud == common.AZURE {
-		return fmt.Sprintf("azurerm_storage_container.%s_public.name", r.GetTfResourceId(common.AZURE))
+func (r *ObjectStorage) GetAssociatedPublicContainerResourceName() string {
+	if r.GetCloud() == commonpb.CloudProvider_AZURE {
+		return fmt.Sprintf("azurerm_storage_container.%s_public.name", r.ResourceId)
 	}
 	return ""
 }
 
-func (r *ObjectStorage) GetAssociatedPrivateContainerResourceName(cloud common.CloudProvider) string {
-	if cloud == common.AZURE {
-		return fmt.Sprintf("azurerm_storage_container.%s_private.name", r.GetTfResourceId(common.AZURE))
+func (r *ObjectStorage) GetAssociatedPrivateContainerResourceName() string {
+	if r.GetCloud() == commonpb.CloudProvider_AZURE {
+		return fmt.Sprintf("azurerm_storage_container.%s_private.name", r.ResourceId)
 	}
 	return ""
 }
 
-func (r *ObjectStorage) GetResourceName(cloud common.CloudProvider) string {
-	if cloud == common.AWS {
-		return fmt.Sprintf("aws_s3_bucket.%s.id", r.GetTfResourceId(common.AWS))
-	} else if cloud == common.AZURE {
-		return fmt.Sprintf("azurerm_storage_account.%s.name", r.GetTfResourceId(common.AZURE))
+func (r *ObjectStorage) GetResourceName() string {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		return fmt.Sprintf("aws_s3_bucket.%s.id", r.ResourceId)
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
+		return fmt.Sprintf("azurerm_storage_account.%s.name", r.ResourceId)
 	}
 	return ""
 }
 
-func (r *ObjectStorage) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
+func (r *ObjectStorage) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	errs = append(errs, r.ResourceWithId.Validate()...)
 	return errs
 }
 
-func (r *ObjectStorage) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
-	case common.AWS:
+func (r *ObjectStorage) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
+	case commonpb.CloudProvider_AWS:
 		return "aws_s3_bucket", nil
-	case common.AZURE:
+	case commonpb.CloudProvider_AZURE:
 		return "azurerm_storage_account", nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
 }

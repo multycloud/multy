@@ -1,7 +1,7 @@
 package subnet
 
 import (
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -9,11 +9,11 @@ import (
 )
 
 type SubnetService struct {
-	Service services.Service[*resources.SubnetArgs, *resources.SubnetResource]
+	Service services.Service[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]
 }
 
-func (s SubnetService) Convert(resourceId string, args *resources.SubnetArgs, state *output.TfState) (*resources.SubnetResource, error) {
-	return &resources.SubnetResource{
+func (s SubnetService) Convert(resourceId string, args *resourcespb.SubnetArgs, state *output.TfState) (*resourcespb.SubnetResource, error) {
+	return &resourcespb.SubnetResource{
 		CommonParameters: util.ConvertCommonChildParams(resourceId, args.CommonParameters),
 		Name:             args.Name,
 		CidrBlock:        args.CidrBlock,
@@ -24,7 +24,7 @@ func (s SubnetService) Convert(resourceId string, args *resources.SubnetArgs, st
 
 func NewSubnetService(database *db.Database) SubnetService {
 	vn := SubnetService{
-		Service: services.Service[*resources.SubnetArgs, *resources.SubnetResource]{
+		Service: services.Service[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]{
 			Db:         database,
 			Converters: nil,
 		},

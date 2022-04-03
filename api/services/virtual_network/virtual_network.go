@@ -1,7 +1,7 @@
 package virtual_network
 
 import (
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -9,11 +9,11 @@ import (
 )
 
 type VnService struct {
-	Service services.Service[*resources.VirtualNetworkArgs, *resources.VirtualNetworkResource]
+	Service services.Service[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]
 }
 
-func (s VnService) Convert(resourceId string, args *resources.VirtualNetworkArgs, state *output.TfState) (*resources.VirtualNetworkResource, error) {
-	return &resources.VirtualNetworkResource{
+func (s VnService) Convert(resourceId string, args *resourcespb.VirtualNetworkArgs, state *output.TfState) (*resourcespb.VirtualNetworkResource, error) {
+	return &resourcespb.VirtualNetworkResource{
 		CommonParameters: util.ConvertCommonParams(resourceId, args.CommonParameters),
 		Name:             args.Name,
 		CidrBlock:        args.CidrBlock,
@@ -22,7 +22,7 @@ func (s VnService) Convert(resourceId string, args *resources.VirtualNetworkArgs
 
 func NewVnService(database *db.Database) VnService {
 	vn := VnService{
-		Service: services.Service[*resources.VirtualNetworkArgs, *resources.VirtualNetworkResource]{
+		Service: services.Service[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]{
 			Db:         database,
 			Converters: nil,
 		},

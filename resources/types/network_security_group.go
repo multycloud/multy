@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -20,10 +22,9 @@ AWS: VPC traffic is always added as an extra rule
 */
 
 type NetworkSecurityGroup struct {
-	*resources.CommonResourceParams
-	Name           string          `hcl:"name"`
-	VirtualNetwork *VirtualNetwork `mhcl:"ref=virtual_network"`
-	Rules          []RuleType      `hcl:"rules,optional"`
+	resources.ResourceWithId[*resourcespb.NetworkSecurityGroupArgs]
+
+	VirtualNetwork *VirtualNetwork
 }
 
 type RuleType struct {
@@ -43,82 +44,77 @@ const (
 	DENY    = "deny"
 )
 
-func (r *NetworkSecurityGroup) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	if cloud == common.AWS {
-		awsRules := translateAwsNsgRules(r, r.Rules)
+func NewNetworkSecurityGroup(resourceId string, args *resourcespb.NetworkSecurityGroupArgs, others resources.Resources) (*NetworkSecurityGroup, error) {
+	vn, err := Get[*VirtualNetwork](others, args.VirtualNetworkId)
+	if err != nil {
+		return nil, err
+	}
+	return &NetworkSecurityGroup{
+		ResourceWithId: resources.ResourceWithId[*resourcespb.NetworkSecurityGroupArgs]{
+			ResourceId: resourceId,
+			Args:       args,
+		},
+		VirtualNetwork: vn,
+	}, nil
+}
+
+func (r *NetworkSecurityGroup) Translate(resources.MultyContext) ([]output.TfBlock, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		awsRules := translateAwsNsgRules(r.Args.Rules)
 
 		allowVpcTraffic := network_security_group.AwsSecurityGroupRule{
 			Protocol:   "-1",
 			FromPort:   0,
 			ToPort:     0,
-			CidrBlocks: []string{r.VirtualNetwork.CidrBlock},
+			CidrBlocks: []string{r.VirtualNetwork.Args.CidrBlock},
 		}
 
 		awsRules[INGRESS] = append(awsRules[INGRESS], allowVpcTraffic)
 		awsRules[EGRESS] = append(awsRules[EGRESS], allowVpcTraffic)
 
-		vnId, err := resources.GetMainOutputId(r.VirtualNetwork, cloud)
+		vnId, err := resources.GetMainOutputId(r.VirtualNetwork)
 		if err != nil {
 			return nil, err
 		}
 		return []output.TfBlock{
 			network_security_group.AwsSecurityGroup{
-				AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
+				AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
 				VpcId:       vnId,
-				Name:        r.Name,
+				Name:        r.Args.Name,
 				Description: "Managed by Multy",
 				Ingress:     awsRules["ingress"],
 				Egress:      awsRules["egress"],
 			},
 		}, nil
-	} else if cloud == common.AZURE {
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		return []output.TfBlock{
 			network_security_group.AzureNsg{
 				AzResource: common.NewAzResource(
-					r.GetTfResourceId(cloud), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, cloud),
-					ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+					r.ResourceId, r.Args.Name, rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId),
+					r.GetCloudSpecificLocation(),
 				),
-				Rules: translateAzNsgRules(r.Rules),
+				Rules: translateAzNsgRules(r.Args.Rules),
 			},
 		}, nil
 	}
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func translateAwsNsgRules(r *NetworkSecurityGroup, rules []RuleType) map[string][]network_security_group.AwsSecurityGroupRule {
+func translateAwsNsgRules(rules []*resourcespb.NetworkSecurityRule) map[string][]network_security_group.AwsSecurityGroupRule {
 	awsRules := map[string][]network_security_group.AwsSecurityGroupRule{}
 
 	for _, rule := range rules {
-		var awsFromPort, awsToPort int
-		var awsProtocol string
-		var err error
+		awsFromPort := int(rule.PortRange.From)
+		awsToPort := int(rule.PortRange.To)
 
-		if rule.FromPort == "*" {
-			awsFromPort = 0
-		} else {
-			awsFromPort, err = strconv.Atoi(rule.FromPort)
-			if err != nil {
-				r.LogFatal(r.ResourceId, "rules", fmt.Sprintf("Invalid FromPort: %s", err.Error()))
-			}
-		}
-
-		if rule.ToPort == "*" {
-			awsToPort = 0
-		} else {
-			awsToPort, err = strconv.Atoi(rule.FromPort)
-			if err != nil {
-				r.LogFatal(r.ResourceId, "rules", fmt.Sprintf("Invalid ToPort: %s", err.Error()))
-			}
-		}
-
-		awsProtocol = rule.Protocol
+		awsProtocol := rule.Protocol
 		if rule.Protocol == "*" {
 			awsProtocol = "-1"
 			awsFromPort = 0
 			awsToPort = 0
 		}
 
-		if rule.Direction == BOTH {
+		if rule.Direction == resourcespb.Direction_BOTH_DIRECTIONS {
 			awsRules[INGRESS] = append(
 				awsRules[INGRESS], network_security_group.AwsSecurityGroupRule{
 					Protocol:   awsProtocol,
@@ -136,8 +132,8 @@ func translateAwsNsgRules(r *NetworkSecurityGroup, rules []RuleType) map[string]
 				},
 			)
 		} else {
-			awsRules[rule.Direction] = append(
-				awsRules[rule.Direction], network_security_group.AwsSecurityGroupRule{
+			awsRules[BOTH] = append(
+				awsRules[BOTH], network_security_group.AwsSecurityGroupRule{
 					Protocol:   awsProtocol,
 					FromPort:   awsFromPort,
 					ToPort:     awsToPort,
@@ -149,41 +145,53 @@ func translateAwsNsgRules(r *NetworkSecurityGroup, rules []RuleType) map[string]
 	return awsRules
 }
 
-func translateAzNsgRules(rules []RuleType) []network_security_group.AzureRule {
-	m := map[string]string{
-		"ingress": "Inbound",
-		"egress":  "Outbound",
+func translatePortRange(pr *resourcespb.PortRange) string {
+	from := "*"
+	if pr.From != 0 {
+		from = strconv.Itoa(int(pr.From))
+	}
+	to := "*"
+	if pr.To != 0 {
+		to = strconv.Itoa(int(pr.To))
+	}
+	return fmt.Sprintf("%s-%s", from, to)
+}
+
+func translateAzNsgRules(rules []*resourcespb.NetworkSecurityRule) []network_security_group.AzureRule {
+	m := map[resourcespb.Direction]string{
+		resourcespb.Direction_INGRESS: "Inbound",
+		resourcespb.Direction_EGRESS:  "Outbound",
 	}
 
 	var rls []network_security_group.AzureRule
 
 	for _, rule := range rules {
 		protocol := strings.Title(strings.ToLower(rule.Protocol))
-		if rule.Direction == BOTH {
+		if rule.Direction == resourcespb.Direction_BOTH_DIRECTIONS {
 			rls = append(
 				rls, network_security_group.AzureRule{
 					Name:                     strconv.Itoa(len(rls)),
 					Protocol:                 protocol,
-					Priority:                 rule.Priority,
+					Priority:                 int(rule.Priority),
 					Access:                   "Allow",
 					SourcePortRange:          "*",
 					SourceAddressPrefix:      "*",
-					DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
+					DestinationPortRange:     translatePortRange(rule.PortRange),
 					DestinationAddressPrefix: "*",
-					Direction:                m[INGRESS],
+					Direction:                m[resourcespb.Direction_INGRESS],
 				},
 			)
 			rls = append(
 				rls, network_security_group.AzureRule{
 					Name:                     strconv.Itoa(len(rls)),
 					Protocol:                 protocol,
-					Priority:                 rule.Priority,
+					Priority:                 int(rule.Priority),
 					Access:                   "Allow",
 					SourcePortRange:          "*",
 					SourceAddressPrefix:      "*",
-					DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
+					DestinationPortRange:     translatePortRange(rule.PortRange),
 					DestinationAddressPrefix: "*",
-					Direction:                m[EGRESS],
+					Direction:                m[resourcespb.Direction_EGRESS],
 				},
 			)
 		} else {
@@ -191,11 +199,11 @@ func translateAzNsgRules(rules []RuleType) []network_security_group.AzureRule {
 				rls, network_security_group.AzureRule{
 					Name:                     strconv.Itoa(len(rls)),
 					Protocol:                 protocol,
-					Priority:                 rule.Priority,
+					Priority:                 int(rule.Priority),
 					Access:                   "Allow",
 					SourcePortRange:          "*",
 					SourceAddressPrefix:      "*",
-					DestinationPortRange:     fmt.Sprintf("%s-%s", rule.ToPort, rule.FromPort),
+					DestinationPortRange:     translatePortRange(rule.PortRange),
 					DestinationAddressPrefix: "*",
 					Direction:                m[rule.Direction],
 				},
@@ -214,28 +222,18 @@ func validateRuleAction(s string) bool {
 	return s == ALLOW || s == DENY
 }
 
-func validatePort(s string) bool {
-	if i, err := strconv.Atoi(s); err != nil || i < -1 {
-		return false
-	}
-	return true
+func validatePort(port int32) bool {
+	return port >= 0 && port <= 65535
 }
 
-func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
-	for _, rule := range r.Rules {
-		// TODO: get better source ranges
-		if !validateRuleDirection(rule.Direction) {
-			r.NewError("rules", fmt.Sprintf(
-				"rule direction \"%s\" is not valid. direction must be \"%s\", \"%s\" or \"%s\"", rule.Direction,
-				INGRESS, EGRESS, BOTH,
-			))
+func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	errs = append(errs, r.ResourceWithId.Validate()...)
+	for _, rule := range r.Args.Rules {
+		if !validatePort(rule.PortRange.To) {
+			errs = append(errs, r.NewValidationError(fmt.Sprintf("rule to_port \"%d\" is not valid", rule.PortRange.To), "rules"))
 		}
-		if !validatePort(rule.ToPort) {
-			errs = append(errs, r.NewError("rules", fmt.Sprintf("rule to_port \"%s\" is not valid", rule.ToPort)))
-		}
-		if !validatePort(rule.FromPort) {
-			errs = append(errs, r.NewError("rules", fmt.Sprintf("rule from_port \"%s\" is not valid", rule.FromPort)))
+		if !validatePort(rule.PortRange.From) {
+			errs = append(errs, r.NewValidationError(fmt.Sprintf("rule from_port \"%d\" is not valid", rule.PortRange.From), "rules"))
 		}
 		// TODO validate CIDR
 		//		validate protocol
@@ -244,13 +242,13 @@ func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext, cloud common
 	return errs
 }
 
-func (r *NetworkSecurityGroup) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
-	case common.AWS:
+func (r *NetworkSecurityGroup) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
+	case commonpb.CloudProvider_AWS:
 		return network_security_group.AwsSecurityGroupResourceName, nil
-	case common.AZURE:
+	case commonpb.CloudProvider_AZURE:
 		return network_security_group.AzureNetworkSecurityGroupResourceName, nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
 }

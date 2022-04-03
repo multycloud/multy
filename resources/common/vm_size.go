@@ -1,20 +1,17 @@
 package common
 
 import (
-	"fmt"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
-	"strings"
+	"github.com/multycloud/multy/api/proto/commonpb"
 )
 
-var VMSIZE = map[string]map[CloudProvider]string{
-	MICRO: {
-		AWS:   "t2.nano",
-		AZURE: "Standard_B1ls",
+var VMSIZE = map[commonpb.VmSize_Enum]map[commonpb.CloudProvider]string{
+	commonpb.VmSize_MICRO: {
+		commonpb.CloudProvider_AWS:   "t2.nano",
+		commonpb.CloudProvider_AZURE: "Standard_B1ls",
 	},
-	MEDIUM: {
-		AWS:   "t2.medium",
-		AZURE: "Standard_A2_v2",
+	commonpb.VmSize_MEDIUM: {
+		commonpb.CloudProvider_AWS:   "t2.medium",
+		commonpb.CloudProvider_AZURE: "Standard_A2_v2",
 	},
 }
 
@@ -25,16 +22,9 @@ const (
 	MEDIUM = "medium"
 )
 
-var DBSIZE = map[string]map[CloudProvider]string{
-	MICRO: {
-		AWS:   "db.t2.micro",
-		AZURE: "GP_Gen5_2",
+var DBSIZE = map[commonpb.DatabaseSize_Enum]map[commonpb.CloudProvider]string{
+	commonpb.DatabaseSize_MICRO: {
+		commonpb.CloudProvider_AWS:   "db.t2.micro",
+		commonpb.CloudProvider_AZURE: "GP_Gen5_2",
 	},
-}
-
-func CheckIfSizeIsValid(size string) error {
-	if !slices.Contains(maps.Keys(VMSIZE), size) {
-		return fmt.Errorf("%s is not a valid vm size, supported sizes are: %s", size, strings.Join(maps.Keys(VMSIZE), ", "))
-	}
-	return nil
 }

@@ -1,7 +1,7 @@
 package network_interface
 
 import (
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -9,11 +9,11 @@ import (
 )
 
 type NetworkInterfaceService struct {
-	Service services.Service[*resources.NetworkInterfaceArgs, *resources.NetworkInterfaceResource]
+	Service services.Service[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]
 }
 
-func (s NetworkInterfaceService) Convert(resourceId string, args *resources.NetworkInterfaceArgs, state *output.TfState) (*resources.NetworkInterfaceResource, error) {
-	return &resources.NetworkInterfaceResource{
+func (s NetworkInterfaceService) Convert(resourceId string, args *resourcespb.NetworkInterfaceArgs, state *output.TfState) (*resourcespb.NetworkInterfaceResource, error) {
+	return &resourcespb.NetworkInterfaceResource{
 		CommonParameters: util.ConvertCommonParams(resourceId, args.CommonParameters),
 		Name:             args.Name,
 		SubnetId:         args.SubnetId,
@@ -22,7 +22,7 @@ func (s NetworkInterfaceService) Convert(resourceId string, args *resources.Netw
 
 func NewNetworkInterfaceService(database *db.Database) NetworkInterfaceService {
 	ni := NetworkInterfaceService{
-		Service: services.Service[*resources.NetworkInterfaceArgs, *resources.NetworkInterfaceResource]{
+		Service: services.Service[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]{
 			Db:         database,
 			Converters: nil,
 		},
