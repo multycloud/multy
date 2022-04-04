@@ -28,6 +28,7 @@ func ConvertCommonParams(resourceId string, parameters *commonpb.ResourceCommonA
 
 func ConvertCommonChildParams(resourceId string, parameters *commonpb.ChildResourceCommonArgs) *commonpb.CommonChildResourceParameters {
 	return &commonpb.CommonChildResourceParameters{
+		ResourceId:  resourceId,
 		NeedsUpdate: false,
 	}
 }
