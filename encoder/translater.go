@@ -1,11 +1,10 @@
 package encoder
 
 import (
-	"github.com/multycloud/multy/api/proto/creds"
-	"github.com/multycloud/multy/decoder"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/credspb"
 	"github.com/multycloud/multy/mhcl"
 	"github.com/multycloud/multy/resources"
-	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/types"
 	"github.com/multycloud/multy/util"
@@ -13,10 +12,10 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-func TranslateResources(decodedResources *decoder.DecodedResources, ctx resources.MultyContext) (map[resources.CloudSpecificResource][]output.TfBlock, []validate.ValidationError, error) {
+func TranslateResources(decodedResources *DecodedResources, ctx resources.MultyContext) (map[resources.Resource][]output.TfBlock, []validate.ValidationError, error) {
 	defaultTagProcessor := mhcl.DefaultTagProcessor{}
 
-	translationCache := map[resources.CloudSpecificResource][]output.TfBlock{}
+	translationCache := map[resources.Resource][]output.TfBlock{}
 
 	errors := map[validate.ValidationError]bool{}
 	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
@@ -29,7 +28,7 @@ func TranslateResources(decodedResources *decoder.DecodedResources, ctx resource
 			defaultTagProcessor.Process(translated)
 		}
 		// we need to use a set here because errors are duplicated for multiple clouds
-		for _, err := range r.Resource.Validate(ctx, r.Cloud) {
+		for _, err := range r.Validate(ctx) {
 			errors[err] = true
 		}
 	}
@@ -37,26 +36,27 @@ func TranslateResources(decodedResources *decoder.DecodedResources, ctx resource
 	return translationCache, maps.Keys(errors), nil
 }
 
-func getProvider(providers map[common.CloudProvider]map[string]*types.Provider, r resources.CloudSpecificResource, ctx resources.MultyContext) *types.Provider {
-	return providers[r.Cloud][r.GetLocation(ctx)]
+func getProvider(providers map[commonpb.CloudProvider]map[string]*types.Provider, r resources.Resource) *types.Provider {
+	return providers[r.GetCloud()][r.GetCloudSpecificLocation()]
 }
 
-func buildProviders(r *decoder.DecodedResources, ctx resources.MultyContext, credentials *creds.CloudCredentials) map[common.CloudProvider]map[string]*types.Provider {
+func buildProviders(r *DecodedResources, credentials *credspb.CloudCredentials) map[commonpb.CloudProvider]map[string]*types.Provider {
 	providers := r.Providers
 
 	for _, resource := range r.Resources {
-		if _, ok := providers[resource.Cloud]; !ok {
-			providers[resource.Cloud] = map[string]*types.Provider{}
+		if _, ok := providers[resource.GetCloud()]; !ok {
+			providers[resource.GetCloud()] = map[string]*types.Provider{}
 		}
-		if _, ok := providers[resource.Cloud][resource.GetLocation(ctx)]; !ok {
+		location := resource.GetCloudSpecificLocation()
+		if _, ok := providers[resource.GetCloud()][location]; !ok {
 			provider := &types.Provider{
-				Cloud:        resource.Cloud,
-				Location:     resource.GetLocation(ctx),
+				Cloud:        resource.GetCloud(),
+				Location:     location,
 				NumResources: 1,
 			}
-			providers[resource.Cloud][resource.GetLocation(ctx)] = provider
+			providers[resource.GetCloud()][location] = provider
 		} else {
-			providers[resource.Cloud][resource.GetLocation(ctx)].NumResources += 1
+			providers[resource.GetCloud()][location].NumResources += 1
 		}
 	}
 
@@ -77,7 +77,7 @@ func buildProviders(r *decoder.DecodedResources, ctx resources.MultyContext, cre
 	return providers
 }
 
-func flatten(p map[common.CloudProvider]map[string]*types.Provider) []*types.Provider {
+func flatten(p map[commonpb.CloudProvider]map[string]*types.Provider) []*types.Provider {
 	var result []*types.Provider
 	for _, providers := range p {
 		for _, provider := range providers {

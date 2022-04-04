@@ -2,12 +2,14 @@ package encoder
 
 import (
 	"bytes"
+	"github.com/hashicorp/hcl/v2"
 	"github.com/multy-dev/hclencoder"
 	"github.com/multycloud/multy/api/errors"
-	"github.com/multycloud/multy/api/proto/creds"
-	"github.com/multycloud/multy/decoder"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/credspb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/types"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
@@ -30,29 +32,35 @@ func (w WithProvider) AddDependency(s string) {
 	w.Resource.AddDependency(s)
 }
 
-func Encode(decodedResources *decoder.DecodedResources, credentials *creds.CloudCredentials) (string, []validate.ValidationError, error) {
-	ctx := resources.MultyContext{Resources: decodedResources.Resources, Location: decodedResources.GlobalConfig.Location}
+type DecodedResources struct {
+	Resources map[string]resources.Resource
+	Outputs   map[string]DecodedOutput
+	Providers map[commonpb.CloudProvider]map[string]*types.Provider
+}
+
+type DecodedOutput struct {
+	OutputId        string
+	Value           cty.Value
+	DefinitionRange hcl.Range
+}
+
+func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCredentials) (string, []validate.ValidationError, error) {
+	ctx := resources.MultyContext{Resources: decodedResources.Resources}
 
 	translatedResources, errs, err := TranslateResources(decodedResources, ctx)
 	if len(errs) > 0 || err != nil {
 		return "", errs, err
 	}
-	providers := buildProviders(decodedResources, ctx, credentials)
+	providers := buildProviders(decodedResources, credentials)
 
 	var b bytes.Buffer
 	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
-		providerAlias := getProvider(providers, r, ctx).GetResourceId()
+		providerAlias := getProvider(providers, r).GetResourceId()
 		for _, translated := range translatedResources[r] {
 			var result output.TfBlock
 			result = WithProvider{
 				Resource:      translated,
 				ProviderAlias: providerAlias,
-			}
-
-			for _, dep := range r.Resource.GetDependencies(ctx) {
-				for _, translatedDep := range translatedResources[dep] {
-					translated.AddDependency(translatedDep.GetFullResourceRef())
-				}
 			}
 
 			// If not already wrapped in a tf block, assume it's a resource.

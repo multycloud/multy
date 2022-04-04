@@ -1,9 +1,7 @@
 package public_ip
 
 import (
-	"fmt"
 	"github.com/multycloud/multy/resources/common"
-	"github.com/multycloud/multy/validate"
 )
 
 const AwsResourceName = "aws_eip"
@@ -14,12 +12,4 @@ type AwsElasticIp struct {
 	InstanceId          string `hcl:"instance" hcle:"omitempty"`
 	Vpc                 bool   `hcl:"vpc,optional" hcle:"omitempty"`
 	NetworkInterfaceId  string `hcl:"network_interface" hcle:"omitempty"`
-}
-
-func (eIp AwsElasticIp) GetId(cloud common.CloudProvider) string {
-	if cloud == common.AZURE {
-		return fmt.Sprintf("%s.%s.id", AwsResourceName, eIp.ResourceId)
-	}
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
-	return ""
 }

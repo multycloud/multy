@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -9,133 +11,108 @@ import (
 	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
-	"github.com/zclconf/go-cty/cty"
+	"strings"
 )
 
 type Database struct {
-	*resources.CommonResourceParams
-	Name          string    `hcl:"name"`
-	Engine        string    `hcl:"engine"`
-	EngineVersion string    `hcl:"engine_version"`
-	Storage       int       `hcl:"storage"`
-	Size          string    `hcl:"size"`
-	DbUsername    string    `hcl:"db_username"`
-	DbPassword    string    `hcl:"db_password"`
-	SubnetIds     []*Subnet `mhcl:"ref=subnet_ids"`
+	resources.ResourceWithId[*resourcespb.DatabaseArgs]
+
+	Subnets []*Subnet
 }
 
-func (db *Database) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	subnetIds, err := util.MapSliceValuesErr(db.SubnetIds, func(v *Subnet) (string, error) {
-		return resources.GetMainOutputId(v, cloud)
+func NewDatabase(resourceId string, db *resourcespb.DatabaseArgs, others resources.Resources) (*Database, error) {
+	subnets, err := util.MapSliceValuesErr(db.SubnetIds, func(subnetId string) (*Subnet, error) {
+		return Get[*Subnet](others, subnetId)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &Database{
+		ResourceWithId: resources.ResourceWithId[*resourcespb.DatabaseArgs]{
+			ResourceId: resourceId,
+			Args:       db,
+		},
+		Subnets: subnets,
+	}, nil
+}
+
+func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
+	subnetIds, err := util.MapSliceValuesErr(r.Subnets, func(v *Subnet) (string, error) {
+		return resources.GetMainOutputId(v)
 	})
 	if err != nil {
 		return nil, err
 	}
 	// TODO validate subnet configuration (minimum 2 different AZs)
-	if cloud == common.AWS {
-		name := common.RemoveSpecialChars(db.Name)
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		name := common.RemoveSpecialChars(r.Args.Name)
 		dbSubnetGroup := database.AwsDbSubnetGroup{
-			AwsResource: common.NewAwsResource(db.GetTfResourceId(cloud), db.Name),
-			Name:        db.Name,
+			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
+			Name:        r.Args.Name,
 			SubnetIds:   subnetIds,
 		}
 		return []output.TfBlock{
 			dbSubnetGroup,
 			database.AwsDbInstance{
-				AwsResource:        common.NewAwsResource(db.GetTfResourceId(cloud), name),
+				AwsResource:        common.NewAwsResource(r.ResourceId, name),
 				Name:               name,
-				AllocatedStorage:   db.Storage,
-				Engine:             db.Engine,
-				EngineVersion:      db.EngineVersion,
-				Username:           db.DbUsername,
-				Password:           db.DbPassword,
-				InstanceClass:      common.DBSIZE[db.Size][cloud],
-				Identifier:         db.Name,
+				AllocatedStorage:   int(r.Args.StorageGb),
+				Engine:             strings.ToLower(r.Args.Engine.String()),
+				EngineVersion:      r.Args.EngineVersion,
+				Username:           r.Args.Username,
+				Password:           r.Args.Password,
+				InstanceClass:      common.DBSIZE[r.Args.Size][r.GetCloud()],
+				Identifier:         r.Args.Name,
 				SkipFinalSnapshot:  true,
 				DbSubnetGroupName:  dbSubnetGroup.GetResourceName(),
 				PubliclyAccessible: true,
 			},
 		}, nil
-	} else if cloud == common.AZURE {
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		return database.NewAzureDatabase(
 			database.AzureDbServer{
 				AzResource: &common.AzResource{
-					TerraformResource: output.TerraformResource{ResourceId: db.GetTfResourceId(cloud)},
-					Name:              db.Name,
-					ResourceGroupName: rg.GetResourceGroupName(db.ResourceGroupId, cloud),
-					Location:          ctx.GetLocationFromCommonParams(db.CommonResourceParams, cloud),
+					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
+					Name:              r.Args.Name,
+					ResourceGroupName: rg.GetResourceGroupName(r.Args.GetCommonParameters().ResourceGroupId),
+					Location:          r.GetCloudSpecificLocation(),
 				},
-				Engine:                     db.Engine,
-				Version:                    db.EngineVersion,
-				StorageMb:                  db.Storage * 1024,
-				AdministratorLogin:         db.DbUsername,
-				AdministratorLoginPassword: db.DbPassword,
-				SkuName:                    common.DBSIZE[db.Size][cloud],
+				Engine:                     strings.ToLower(r.Args.Engine.String()),
+				Version:                    r.Args.EngineVersion,
+				StorageMb:                  int(r.Args.StorageGb * 1024),
+				AdministratorLogin:         r.Args.Username,
+				AdministratorLoginPassword: r.Args.Password,
+				SkuName:                    common.DBSIZE[r.Args.Size][r.GetCloud()],
 				SubnetIds:                  subnetIds,
 			},
 		), nil
 	}
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (db *Database) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, db.CommonResourceParams.Validate(ctx, cloud)...)
-	if db.Engine != "mysql" {
-		errs = append(errs, db.NewError("engine", fmt.Sprintf("\"%s\" is not valid a valid Engine", db.Engine)))
+func (r *Database) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	errs = append(errs, r.ResourceWithId.Validate()...)
+	if r.Args.Engine == resourcespb.DatabaseEngine_UNKNOWN_ENGINE {
+		errs = append(errs, r.NewValidationError("unknown database engine provided", "engine"))
 	}
-	if db.Storage < 10 || db.Storage > 20 {
-		errs = append(errs, db.NewError("storage", "storage must be between 10 and 20"))
+	if r.Args.StorageGb < 10 || r.Args.StorageGb > 20 {
+		errs = append(errs, r.NewValidationError("storage must be between 10 and 20", "storage"))
 	}
-	// TODO regex validate db username && password
+	// TODO regex validate r username && password
 	// TODO validate DB Size
 	return errs
 }
 
-func (db *Database) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
-	case common.AWS:
+func (r *Database) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
+	case commonpb.CloudProvider_AWS:
 		return database.AwsResourceName, nil
-	case common.AZURE:
-		if db.Engine == "mysql" {
+	case commonpb.CloudProvider_AZURE:
+		if r.Args.Engine == resourcespb.DatabaseEngine_MYSQL {
 			return database.AzureMysqlResourceName, nil
 		}
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
 	return "", nil
-}
-
-func (db *Database) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
-	switch cloud {
-	case common.AWS:
-		return map[string]cty.Value{
-			"password": cty.StringVal(db.DbPassword),
-			"host": cty.StringVal(
-				fmt.Sprintf(
-					"${%s.%s.address}", output.GetResourceName(database.AwsDbInstance{}),
-					db.GetTfResourceId(cloud),
-				),
-			),
-			"username": cty.StringVal(
-				fmt.Sprintf(
-					"${%s.%s.username}", output.GetResourceName(database.AwsDbInstance{}),
-					db.GetTfResourceId(cloud),
-				),
-			),
-		}
-	case common.AZURE:
-		return map[string]cty.Value{
-			"password": cty.StringVal(db.DbPassword),
-			"host": cty.StringVal(
-				fmt.Sprintf(
-					"${%s.%s.fqdn}", output.GetResourceName(database.AzureMySqlServer{}),
-					db.GetTfResourceId(cloud),
-				),
-			),
-			"username": cty.StringVal(
-				fmt.Sprintf("%s@%s", db.DbUsername, db.Name),
-			),
-		}
-	}
-	return nil
 }

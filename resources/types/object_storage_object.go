@@ -2,6 +2,9 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -16,105 +19,108 @@ import (
 var SUPPORTED_CONTENT_TYPES = []string{"text/html", "application/zip"}
 
 type ObjectStorageObject struct {
-	*resources.CommonResourceParams
-	Name          string         `hcl:"name"`
-	Content       string         `hcl:"content,optional"`
+	resources.ChildResourceWithId[*ObjectStorage, *resourcespb.ObjectStorageObjectArgs]
+
 	ObjectStorage *ObjectStorage `mhcl:"ref=object_storage"`
-	ContentType   string         `hcl:"content_type,optional"`
-	Acl           string         `hcl:"acl,optional"`
-	Source        string         `hcl:"source,optional"`
 }
 
-func (r *ObjectStorageObject) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
+func NewObjectStorageObject(resourceId string, args *resourcespb.ObjectStorageObjectArgs, others resources.Resources) (*ObjectStorageObject, error) {
+	o := &ObjectStorageObject{
+		ChildResourceWithId: resources.ChildResourceWithId[*ObjectStorage, *resourcespb.ObjectStorageObjectArgs]{
+			ResourceId: resourceId,
+			Args:       args,
+		},
+	}
+	obj, err := Get[*ObjectStorage](others, args.ObjectStorageId)
+	if err != nil {
+		return nil, errors.ValidationErrors([]validate.ValidationError{o.NewValidationError(err.Error(), "object_storage_id")})
+	}
+	o.Parent = obj
+	o.ObjectStorage = obj
+	return o, nil
+}
+
+func (r *ObjectStorageObject) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	var acl string
-	if r.Acl == "public_read" {
+	if r.Args.Acl == resourcespb.ObjectStorageObjectAcl_PUBLIC_READ {
 		acl = "public-read"
 	} else {
 		acl = "private"
 	}
-	if cloud == common.AWS {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		return []output.TfBlock{object_storage_object.AwsS3BucketObject{
 			AwsResource: &common.AwsResource{
-				TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
+				TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 			},
-			Bucket:      r.ObjectStorage.GetResourceName(cloud),
-			Key:         r.Name,
+			Bucket:      r.ObjectStorage.GetResourceName(),
+			Key:         r.Args.Name,
 			Acl:         acl,
-			Content:     r.Content,
-			ContentType: r.ContentType,
-			Source:      r.Source,
+			Content:     r.Args.Content,
+			ContentType: r.Args.ContentType,
+			Source:      r.Args.Source,
 		}}, nil
-	} else if cloud == common.AZURE {
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		var containerName string
-		if r.Acl == "public_read" {
-			containerName = r.ObjectStorage.GetAssociatedPublicContainerResourceName(cloud)
+		if r.Args.Acl == resourcespb.ObjectStorageObjectAcl_PUBLIC_READ {
+			containerName = r.ObjectStorage.GetAssociatedPublicContainerResourceName()
 		} else {
-			containerName = r.ObjectStorage.GetAssociatedPrivateContainerResourceName(cloud)
+			containerName = r.ObjectStorage.GetAssociatedPrivateContainerResourceName()
 		}
 		return []output.TfBlock{
 			object_storage_object.AzureStorageAccountBlob{
 				AzResource: &common.AzResource{
-					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
-					Name:              r.Name,
+					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
+					Name:              r.Args.Name,
 				},
-				StorageAccountName:   r.ObjectStorage.GetResourceName(cloud),
+				StorageAccountName:   r.ObjectStorage.GetResourceName(),
 				StorageContainerName: containerName,
 				Type:                 "Block",
-				SourceContent:        r.Content,
-				ContentType:          r.ContentType,
-				Source:               r.Source,
+				SourceContent:        r.Args.Content,
+				ContentType:          r.Args.ContentType,
+				Source:               r.Args.Source,
 			}}, nil
 	}
 
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
 func (r *ObjectStorageObject) GetS3Key() string {
-	return fmt.Sprintf("%s.%s.key", "aws_s3_bucket_object", r.GetTfResourceId(common.AWS))
+	return fmt.Sprintf("%s.%s.key", "aws_s3_bucket_object", r.ResourceId)
 }
 
 func (r *ObjectStorageObject) GetAzureBlobName() string {
-	return fmt.Sprintf("%s.%s.name", "azurerm_storage_blob", r.GetTfResourceId(common.AZURE))
+	return fmt.Sprintf("%s.%s.name", "azurerm_storage_blob", r.ResourceId)
 }
 
 func (r *ObjectStorageObject) GetAzureBlobUrl() string {
-	return fmt.Sprintf("%s.%s.url", "azurerm_storage_blob", r.GetTfResourceId(common.AZURE))
+	return fmt.Sprintf("%s.%s.url", "azurerm_storage_blob", r.ResourceId)
 }
 
 func (r *ObjectStorageObject) IsPrivate() bool {
-	return r.Acl == "private"
+	return r.Args.Acl == resourcespb.ObjectStorageObjectAcl_PRIVATE
 }
 
-func (r *ObjectStorageObject) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
-	if len(r.Content) > 0 && len(r.Source) > 0 {
-		errs = append(errs, r.NewError("content", "content can't be set if source is already set"))
+func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	if len(r.Args.Content) == 0 {
+		errs = append(errs, r.NewValidationError("content must be set", ""))
 	}
-	if len(r.Content) == 0 && len(r.Source) == 0 {
-		errs = append(errs, r.NewError("", "content or source must be set"))
-	}
-	if len(r.Content) > 0 {
-		if !util.Contains(SUPPORTED_CONTENT_TYPES, r.ContentType) {
-			errs = append(errs, r.NewError("content_type", fmt.Sprintf("%s not a valid content_type", r.ContentType)))
-		}
-	}
-	if r.Acl != "" && r.Acl != "public_read" && r.Acl != "private" {
-		errs = append(errs, r.NewError("acl", fmt.Sprintf("%s not a valid acl", r.Acl)))
+	if !util.Contains(SUPPORTED_CONTENT_TYPES, r.Args.ContentType) {
+		errs = append(errs, r.NewValidationError(fmt.Sprintf("%s not a valid content_type", r.Args.ContentType), "content_type"))
 	}
 	return errs
 }
 
-func (r *ObjectStorageObject) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
-	case common.AWS:
+func (r *ObjectStorageObject) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
+	case commonpb.CloudProvider_AWS:
 		return "aws_s3_bucket_object", nil
-	case common.AZURE:
+	case commonpb.CloudProvider_AZURE:
 		return "azurerm_storage_blob", nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
 }
 
-func (r *ObjectStorageObject) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
-	return r.ObjectStorage.GetLocation(cloud, ctx)
+func (r *ObjectStorageObject) GetCloudSpecificLocation() string {
+	return r.ObjectStorage.GetCloudSpecificLocation()
 }

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/multy-dev/hclencoder"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -16,7 +18,6 @@ import (
 	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
-	"github.com/zclconf/go-cty/cty"
 )
 
 /*
@@ -28,19 +29,45 @@ Azure: To have a private IP by default, if no NIC is passed, one will be created
 */
 
 type VirtualMachine struct {
-	*resources.CommonResourceParams
-	Name                    string                  `hcl:"name"`
-	OperatingSystem         string                  `hcl:"os"`
-	NetworkInterfaceIds     []*NetworkInterface     `mhcl:"ref=network_interface_ids,optional"`
-	NetworkSecurityGroupIds []*NetworkSecurityGroup `mhcl:"ref=network_security_group_ids,optional"`
-	Size                    string                  `hcl:"size"`
-	UserData                string                  `hcl:"user_data,optional"`
-	SubnetId                *Subnet                 `mhcl:"ref=subnet_id"`
-	SshKeyFileName          string                  `hcl:"ssh_key_file_path,optional"`
-	SshKey                  string                  `hcl:"ssh_key,optional"`
-	PublicIpId              *PublicIp               `mhcl:"ref=public_ip_id,optional"`
-	// PublicIp auto-generate public IP
-	PublicIp bool `hcl:"public_ip,optional"`
+	resources.ResourceWithId[*resourcespb.VirtualMachineArgs]
+
+	NetworkInterface      []*NetworkInterface
+	NetworkSecurityGroups []*NetworkSecurityGroup
+	Subnet                *Subnet
+	PublicIp              *PublicIp
+}
+
+func NewVirtualMachine(resourceId string, args *resourcespb.VirtualMachineArgs, others resources.Resources) (*VirtualMachine, error) {
+	networkInterfaces, err := util.MapSliceValuesErr(args.NetworkInterfaceIds, func(id string) (*NetworkInterface, error) {
+		return Get[*NetworkInterface](others, id)
+	})
+	if err != nil {
+		return nil, err
+	}
+	networkSecurityGroups, err := util.MapSliceValuesErr(args.NetworkSecurityGroupIds, func(id string) (*NetworkSecurityGroup, error) {
+		return Get[*NetworkSecurityGroup](others, id)
+	})
+	if err != nil {
+		return nil, err
+	}
+	subnet, err := Get[*Subnet](others, args.SubnetId)
+	if err != nil {
+		return nil, err
+	}
+	publicIp, _, err := GetOptional[*PublicIp](others, args.PublicIpId)
+	if err != nil {
+		return nil, err
+	}
+	return &VirtualMachine{
+		ResourceWithId: resources.ResourceWithId[*resourcespb.VirtualMachineArgs]{
+			ResourceId: resourceId,
+			Args:       args,
+		},
+		NetworkInterface:      networkInterfaces,
+		NetworkSecurityGroups: networkSecurityGroups,
+		Subnet:                subnet,
+		PublicIp:              publicIp,
+	}, nil
 }
 
 type AwsCallerIdentityData struct {
@@ -51,25 +78,21 @@ type AwsRegionData struct {
 	*output.TerraformDataSource `hcl:",squash" default:"name=aws_region"`
 }
 
-func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	if vm.UserData != "" {
-		vm.UserData = fmt.Sprintf("%s(\"%s\")", "base64encode", []byte(hclencoder.EscapeString(vm.UserData)))
+func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
+	if r.Args.UserData != "" {
+		r.Args.UserData = fmt.Sprintf("%s(\"%s\")", "base64encode", []byte(hclencoder.EscapeString(r.Args.UserData)))
 	}
 
-	subnetId, err := resources.GetMainOutputId(vm.SubnetId, cloud)
+	subnetId, err := resources.GetMainOutputId(r.Subnet)
 	if err != nil {
 		return nil, err
 	}
 
-	sshKeyData := vm.SshKey
-	if vm.SshKey == "" && vm.SshKeyFileName != "" {
-		sshKeyData = fmt.Sprintf("${file(\"%s\")}", vm.SshKeyFileName)
-	}
-	if cloud == common.AWS {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		var awsResources []output.TfBlock
 		var ec2NicIds []virtual_machine.AwsEc2NetworkInterface
-		for i, ni := range vm.NetworkInterfaceIds {
-			niId, err := resources.GetMainOutputId(ni, cloud)
+		for i, ni := range r.NetworkInterface {
+			niId, err := resources.GetMainOutputId(ni)
 			if err != nil {
 				return nil, err
 			}
@@ -81,19 +104,19 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 			)
 		}
 
-		nsgIds, err := util.MapSliceValuesErr(vm.NetworkSecurityGroupIds, func(v *NetworkSecurityGroup) (string, error) {
-			return resources.GetMainOutputId(v, cloud)
+		nsgIds, err := util.MapSliceValuesErr(r.NetworkSecurityGroups, func(v *NetworkSecurityGroup) (string, error) {
+			return resources.GetMainOutputId(v)
 		})
 		if err != nil {
 			return nil, err
 		}
 
 		ec2 := virtual_machine.AwsEC2{
-			AwsResource:              common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
-			Ami:                      common.AMIMAP[ctx.GetLocationFromCommonParams(vm.CommonResourceParams, cloud)],
-			InstanceType:             common.VMSIZE[common.MICRO][cloud],
-			AssociatePublicIpAddress: vm.PublicIp,
-			UserDataBase64:           vm.UserData,
+			AwsResource:              common.NewAwsResource(r.ResourceId, r.Args.Name),
+			Ami:                      common.AMIMAP[r.GetCloudSpecificLocation()],
+			InstanceType:             common.VMSIZE[r.Args.VmSize][r.GetCloud()],
+			AssociatePublicIpAddress: r.Args.GeneratePublicIp,
+			UserDataBase64:           r.Args.UserData,
 			SubnetId:                 subnetId,
 			NetworkInterfaces:        ec2NicIds,
 			SecurityGroupIds:         nsgIds,
@@ -105,21 +128,21 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		}
 
 		iamRole := iam.AwsIamRole{
-			AwsResource:      common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
-			Name:             vm.getAwsIamRoleName(),
+			AwsResource:      common.NewAwsResource(r.ResourceId, r.Args.Name),
+			Name:             r.getAwsIamRoleName(),
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("ec2.amazonaws.com"),
 		}
 
 		if vault := getVaultAssociatedIdentity(ctx, iamRole.GetId()); vault != nil {
 			awsResources = append(awsResources,
-				AwsCallerIdentityData{TerraformDataSource: &output.TerraformDataSource{ResourceId: vm.GetTfResourceId(cloud)}},
-				AwsRegionData{TerraformDataSource: &output.TerraformDataSource{ResourceId: vm.GetTfResourceId(cloud)}})
+				AwsCallerIdentityData{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.ResourceId}},
+				AwsRegionData{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.ResourceId}})
 
 			policy, err := json.Marshal(iam.AwsIamPolicy{
 				Statement: []iam.AwsIamPolicyStatement{{
 					Action:   []string{"ssm:GetParameter*"},
 					Effect:   "Allow",
-					Resource: fmt.Sprintf("arn:aws:ssm:${data.aws_region.%s.name}:${data.aws_caller_identity.%s.account_id}:parameter/%s/*", vm.GetTfResourceId(cloud), vm.GetTfResourceId(cloud), vault.Name),
+					Resource: fmt.Sprintf("arn:aws:ssm:${data.aws_region.%s.name}:${data.aws_caller_identity.%s.account_id}:parameter/%s/*", r.ResourceId, r.ResourceId, vault.Args.Name),
 				}, {
 					Action:   []string{"ssm:DescribeParameters"},
 					Effect:   "Allow",
@@ -139,8 +162,8 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		}
 
 		iamInstanceProfile := iam.AwsIamInstanceProfile{
-			AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: vm.GetTfResourceId(cloud)}},
-			Name:        vm.getAwsIamRoleName(),
+			AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: r.ResourceId}},
+			Name:        r.getAwsIamRoleName(),
 			Role: fmt.Sprintf(
 				"%s.%s.name", output.GetResourceName(iam.AwsIamRole{}), iamRole.ResourceId,
 			),
@@ -155,15 +178,15 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 
 		// this gives permission to write cloudwatch logs
 
-		// adding ssh key to vm requires aws key pair resource
+		// adding ssh key to r requires aws key pair resource
 		// key pair will be added and referenced via key_name parameter
-		if sshKeyData != "" {
+		if r.Args.PublicSshKey != "" {
 			keyPair := virtual_machine.AwsKeyPair{
-				AwsResource: common.NewAwsResource(vm.GetTfResourceId(cloud), vm.Name),
-				KeyName:     fmt.Sprintf("%s_multy", vm.GetTfResourceId(cloud)),
-				PublicKey:   sshKeyData,
+				AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
+				KeyName:     fmt.Sprintf("%s_multy", r.ResourceId),
+				PublicKey:   r.Args.PublicSshKey,
 			}
-			ec2.KeyName, err = vm.GetAssociatedKeyPairName(cloud)
+			ec2.KeyName, err = r.GetAssociatedKeyPairName()
 			if err != nil {
 				return nil, err
 			}
@@ -172,44 +195,44 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 
 		awsResources = append(awsResources, ec2)
 		return awsResources, nil
-	} else if cloud == common.AZURE {
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		// TODO validate that NIC is on the same VNET
 		var azResources []output.TfBlock
-		rgName := rg.GetResourceGroupName(vm.ResourceGroupId, cloud)
-		nicIds, err := util.MapSliceValuesErr(vm.NetworkInterfaceIds, func(v *NetworkInterface) (string, error) {
-			return resources.GetMainOutputId(v, cloud)
+		rgName := rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId)
+		nicIds, err := util.MapSliceValuesErr(r.NetworkInterface, func(v *NetworkInterface) (string, error) {
+			return resources.GetMainOutputId(v)
 		})
 		if err != nil {
 			return nil, err
 		}
 
-		if len(vm.NetworkInterfaceIds) == 0 {
+		if len(r.NetworkInterface) == 0 {
 			nic := network_interface.AzureNetworkInterface{
 				AzResource: common.NewAzResource(
-					vm.GetTfResourceId(cloud), vm.Name, rgName,
-					ctx.GetLocationFromCommonParams(vm.CommonResourceParams, cloud),
+					r.ResourceId, r.Args.Name, rgName,
+					r.GetCloudSpecificLocation(),
 				),
 				IpConfigurations: []network_interface.AzureIpConfiguration{{
-					Name:                       "internal", // this name shouldn't be vm.name
+					Name:                       "internal", // this name shouldn't be r.name
 					PrivateIpAddressAllocation: "Dynamic",
 					SubnetId:                   subnetId,
 					Primary:                    true,
 				}},
 			}
 
-			if vm.PublicIp {
+			if r.Args.GeneratePublicIp {
 				pIp := public_ip.AzurePublicIp{
 					AzResource: common.NewAzResource(
-						vm.GetTfResourceId(cloud), vm.Name, rgName,
-						ctx.GetLocationFromCommonParams(vm.CommonResourceParams, cloud),
+						r.ResourceId, r.Args.Name, rgName,
+						r.GetCloudSpecificLocation(),
 					),
 					AllocationMethod: "Static",
 				}
 				nic.IpConfigurations = []network_interface.AzureIpConfiguration{{
-					Name:                       "external", // this name shouldn't be vm.name
+					Name:                       "external", // this name shouldn't be r.name
 					PrivateIpAddressAllocation: "Dynamic",
 					SubnetId:                   subnetId,
-					PublicIpAddressId:          pIp.GetId(cloud),
+					PublicIpAddressId:          pIp.GetId(),
 					Primary:                    true,
 				}}
 				azResources = append(azResources, &pIp)
@@ -219,10 +242,10 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		}
 
 		// TODO change this to multy nsg_nic_attachment resource and use aws_network_interface_sg_attachment
-		if len(vm.NetworkSecurityGroupIds) != 0 {
-			for _, nsg := range vm.NetworkSecurityGroupIds {
+		if len(r.NetworkSecurityGroups) != 0 {
+			for _, nsg := range r.NetworkSecurityGroups {
 				for _, nicId := range nicIds {
-					nsgId, err := resources.GetMainOutputId(nsg, cloud)
+					nsgId, err := resources.GetMainOutputId(nsg)
 					if err != nil {
 						return nil, err
 					}
@@ -230,7 +253,7 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 						azResources, network_security_group.AzureNetworkInterfaceSecurityGroupAssociation{
 							AzResource: &common.AzResource{
 								TerraformResource: output.TerraformResource{
-									ResourceId: vm.GetTfResourceId(cloud),
+									ResourceId: r.ResourceId,
 								},
 							},
 							NetworkInterfaceId:     nicId,
@@ -248,16 +271,16 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		var azureSshKey virtual_machine.AzureAdminSshKey
 		var vmPassword string
 		disablePassAuth := false
-		if sshKeyData != "" {
+		if r.Args.PublicSshKey != "" {
 			azureSshKey = virtual_machine.AzureAdminSshKey{
 				Username:  "adminuser",
-				PublicKey: sshKeyData,
+				PublicKey: r.Args.PublicSshKey,
 			}
 			disablePassAuth = true
 		} else {
 			randomPassword := terraform.RandomPassword{
 				TerraformResource: &output.TerraformResource{
-					ResourceId: vm.GetTfResourceId(cloud),
+					ResourceId: r.ResourceId,
 				},
 				Length:  16,
 				Special: true,
@@ -272,14 +295,14 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		azResources = append(
 			azResources, virtual_machine.AzureVirtualMachine{
 				AzResource: &common.AzResource{
-					TerraformResource: output.TerraformResource{ResourceId: vm.GetTfResourceId(cloud)},
+					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 					ResourceGroupName: rgName,
-					Name:              vm.Name,
+					Name:              r.Args.Name,
 				},
-				Location:            ctx.GetLocationFromCommonParams(vm.CommonResourceParams, cloud),
-				Size:                common.VMSIZE[common.MICRO][cloud],
+				Location:            r.GetCloudSpecificLocation(),
+				Size:                common.VMSIZE[r.Args.VmSize][r.GetCloud()],
 				NetworkInterfaceIds: nicIds,
-				CustomData:          vm.UserData,
+				CustomData:          r.Args.UserData,
 				OsDisk: virtual_machine.AzureOsDisk{
 					Caching:            "None",
 					StorageAccountType: "Standard_LRS",
@@ -301,96 +324,52 @@ func (vm *VirtualMachine) Translate(cloud common.CloudProvider, ctx resources.Mu
 		return azResources, nil
 	}
 
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (vm *VirtualMachine) GetAssociatedKeyPairName(cloud common.CloudProvider) (string, error) {
-	if cloud == common.AWS {
-		return fmt.Sprintf("%s.%s.key_name", virtual_machine.AwsKeyPairResourceName, vm.GetTfResourceId(common.AWS)), nil
+func (r *VirtualMachine) GetAssociatedKeyPairName() (string, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		return fmt.Sprintf("%s.%s.key_name", virtual_machine.AwsKeyPairResourceName, r.ResourceId), nil
 	}
-	return "", fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return "", fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
 // check if VM identity is associated with vault (vault_access_policy)
 // get Vault name by vault_access_policy that uses VM identity
 func getVaultAssociatedIdentity(ctx resources.MultyContext, identity string) *Vault {
 	for _, resource := range resources.GetAllResources[*VaultAccessPolicy](ctx) {
-		if identity == resource.Identity {
+		if identity == resource.Args.Identity {
 			return resource.Vault
 		}
 	}
 	return nil
 }
 
-func (vm *VirtualMachine) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, vm.CommonResourceParams.Validate(ctx, cloud)...)
+func (r *VirtualMachine) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	errs = append(errs, r.ResourceWithId.Validate()...)
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
 	//if vn.Size valid { return false }
-	if vm.OperatingSystem != "linux" { // max len?
-		errs = append(errs, vm.NewError("os", "invalid operating system"))
+	if r.Args.GeneratePublicIp && len(r.NetworkInterface) != 0 {
+		errs = append(errs, r.NewValidationError("generate public ip can't be set with network interface ids", "generate_public_ip"))
 	}
-	if vm.PublicIp && len(vm.NetworkInterfaceIds) != 0 {
-		errs = append(errs, vm.NewError("public_ip", "public ip can't be set with network interface ids"))
-	}
-	if vm.PublicIp && vm.PublicIpId != nil {
-		errs = append(errs, vm.NewError("public_ip", "conflict between public_ip and public_ip_id"))
-	}
-	if common.ValidateVmSize(vm.Size) {
-		errs = append(errs, vm.NewError("size", fmt.Sprintf("\"%s\" is not []", vm.Size)))
+	if r.Args.GeneratePublicIp && r.PublicIp != nil {
+		errs = append(errs, r.NewValidationError("conflict between generate_public_ip and public_ip_id", "generate_public_ip"))
 	}
 	return errs
 }
 
-func (vm *VirtualMachine) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
+func (r *VirtualMachine) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
 	case common.AWS:
 		return virtual_machine.AwsResourceName, nil
 	case common.AZURE:
 		return virtual_machine.AzureResourceName, nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
-	return "", nil
 }
 
-func (vm *VirtualMachine) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
-	if vm.PublicIp {
-		if cloud == common.AWS {
-			return map[string]cty.Value{
-				"public_ip": cty.StringVal(
-					fmt.Sprintf(
-						"${%s.%s.public_ip}", output.GetResourceName(virtual_machine.AwsEC2{}),
-						vm.GetTfResourceId(cloud),
-					),
-				),
-				"identity": cty.StringVal(
-					fmt.Sprintf(
-						"${%s.%s.id}", output.GetResourceName(iam.AwsIamRole{}),
-						vm.GetTfResourceId(cloud),
-					),
-				),
-			}
-		} else if cloud == common.AZURE {
-			return map[string]cty.Value{
-				"public_ip": cty.StringVal(
-					fmt.Sprintf(
-						"${%s.%s.ip_address}", output.GetResourceName(public_ip.AzurePublicIp{}),
-						vm.GetTfResourceId(cloud),
-					),
-				),
-				"identity": cty.StringVal(
-					fmt.Sprintf(
-						"${%s.%s.identity[0].principal_id}", output.GetResourceName(virtual_machine.AzureVirtualMachine{}),
-						vm.GetTfResourceId(cloud),
-					),
-				),
-			}
-		}
-	}
-	return map[string]cty.Value{}
-}
-
-func (vm *VirtualMachine) getAwsIamRoleName() string {
-	return fmt.Sprintf("iam_for_vm_%s", vm.GetTfResourceId(common.AWS))
+func (r *VirtualMachine) getAwsIamRoleName() string {
+	return fmt.Sprintf("iam_for_vm_%s", r.ResourceId)
 }

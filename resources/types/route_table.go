@@ -2,13 +2,15 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/route_table"
 	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/validate"
-	"strings"
 )
 
 /*
@@ -18,10 +20,9 @@ Azure: Internet route nextHop Internet
 */
 
 type RouteTable struct {
-	*resources.CommonResourceParams
-	Name           string            `hcl:"name"`
-	VirtualNetwork *VirtualNetwork   `mhcl:"ref=virtual_network"`
-	Routes         []RouteTableRoute `hcl:"routes,optional"`
+	resources.ChildResourceWithId[*VirtualNetwork, *resourcespb.RouteTableArgs]
+
+	VirtualNetwork *VirtualNetwork `mhcl:"ref=virtual_network"`
 }
 
 type RouteTableRoute struct {
@@ -34,24 +35,40 @@ const (
 	VIRTUALNETWORK = "VirtualNetwork"
 )
 
-func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	if cloud == common.AWS {
-		vpcId, err := resources.GetMainOutputId(r.VirtualNetwork, cloud)
+func NewRouteTable(resourceId string, args *resourcespb.RouteTableArgs, others resources.Resources) (*RouteTable, error) {
+	rt := &RouteTable{
+		ChildResourceWithId: resources.ChildResourceWithId[*VirtualNetwork, *resourcespb.RouteTableArgs]{
+			ResourceId: resourceId,
+			Args:       args,
+		},
+	}
+	vn, err := Get[*VirtualNetwork](others, args.VirtualNetworkId)
+	if err != nil {
+		return nil, errors.ValidationErrors([]validate.ValidationError{rt.NewValidationError(err.Error(), "virtual_network_id")})
+	}
+	rt.Parent = vn
+	rt.VirtualNetwork = vn
+	return rt, nil
+}
+
+func (r *RouteTable) Translate(resources.MultyContext) ([]output.TfBlock, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		vpcId, err := resources.GetMainOutputId(r.VirtualNetwork)
 		if err != nil {
 			return nil, err
 		}
 		rt := route_table.AwsRouteTable{
-			AwsResource: common.NewAwsResource(r.GetTfResourceId(cloud), r.Name),
+			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
 			VpcId:       vpcId,
 		}
-		gtw, err := r.VirtualNetwork.GetAssociatedInternetGateway(cloud)
+		gtw, err := r.VirtualNetwork.GetAssociatedInternetGateway()
 		if err != nil {
 			return nil, err
 		}
 
 		var routes []route_table.AwsRouteTableRoute
-		for _, route := range r.Routes {
-			if strings.EqualFold(route.Destination, INTERNET) {
+		for _, route := range r.Args.Routes {
+			if route.Destination == resourcespb.RouteDestination_INTERNET {
 				routes = append(
 					routes, route_table.AwsRouteTableRoute{
 						CidrBlock: route.CidrBlock,
@@ -63,17 +80,17 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 		rt.Routes = routes
 
 		return []output.TfBlock{rt}, nil
-	} else if cloud == common.AZURE {
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		rt := route_table.AzureRouteTable{
 			AzResource: common.NewAzResource(
-				r.GetTfResourceId(cloud), r.Name, rg.GetResourceGroupName(r.ResourceGroupId, cloud),
-				ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+				r.ResourceId, r.Args.Name, rg.GetResourceGroupName(r.VirtualNetwork.Args.GetCommonParameters().ResourceGroupId),
+				r.GetCloudSpecificLocation(),
 			),
 		}
 
 		var routes []route_table.AzureRouteTableRoute
-		for _, route := range r.Routes {
-			if strings.EqualFold(route.Destination, INTERNET) {
+		for _, route := range r.Args.Routes {
+			if route.Destination == resourcespb.RouteDestination_INTERNET {
 				routes = append(
 					routes, route_table.AzureRouteTableRoute{
 						Name:          "internet",
@@ -86,35 +103,34 @@ func (r *RouteTable) Translate(cloud common.CloudProvider, ctx resources.MultyCo
 		rt.Routes = routes
 		return []output.TfBlock{rt}, nil
 	}
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (r *RouteTable) GetId(cloud common.CloudProvider) string {
-	types := map[common.CloudProvider]string{common.AWS: route_table.AwsResourceName, common.AZURE: route_table.AzureResourceName}
-	return fmt.Sprintf("%s.%s.id", types[cloud], r.GetTfResourceId(cloud))
+func (r *RouteTable) GetId(cloud commonpb.CloudProvider) string {
+	types := map[commonpb.CloudProvider]string{common.AWS: route_table.AwsResourceName, common.AZURE: route_table.AzureResourceName}
+	return fmt.Sprintf("%s.%s.id", types[cloud], r.ResourceId)
 }
 
-func (r *RouteTable) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
-	if len(r.Routes) > 20 {
-		errs = append(errs, r.NewError("routes", fmt.Sprintf("\"%d\" exceeds routes limit is 20", len(r.Routes))))
+func (r *RouteTable) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	if len(r.Args.Routes) > 20 {
+		errs = append(errs, r.NewValidationError(fmt.Sprintf("\"%d\" exceeds routes limit is 20", len(r.Args.Routes)), "routes"))
 	}
-	for _, route := range r.Routes {
-		if !strings.EqualFold(route.Destination, INTERNET) {
-			errs = append(errs, r.NewError("route", fmt.Sprintf("\"%s\" must be Internet", route.Destination)))
+	for _, route := range r.Args.Routes {
+		if route.Destination == resourcespb.RouteDestination_UNKNOWN_DESTINATION {
+			errs = append(errs, r.NewValidationError("unknown route destination", "route"))
 		}
 		//	if route.CidrBlock valid CIDR
 	}
 	return errs
 }
 
-func (r *RouteTable) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
-	case common.AWS:
+func (r *RouteTable) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
+	case commonpb.CloudProvider_AWS:
 		return route_table.AwsResourceName, nil
-	case common.AZURE:
+	case commonpb.CloudProvider_AZURE:
 		return route_table.AzureResourceName, nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
 }

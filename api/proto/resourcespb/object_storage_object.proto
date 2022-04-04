@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option go_package = "github.com/multycloud/multy/api/proto/resourcespb";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.resources";
+option java_outer_classname = "ResourcesProto";
+
+import "api/proto/commonpb/common.proto";
+
+package dev.multy.resources;
+
+message CreateObjectStorageObjectRequest {
+  ObjectStorageObjectArgs resource = 1;
+}
+
+message ReadObjectStorageObjectRequest {
+  string resource_id = 1;
+}
+
+message UpdateObjectStorageObjectRequest {
+  string resource_id = 1;
+  ObjectStorageObjectArgs resource = 2;
+}
+
+message DeleteObjectStorageObjectRequest {
+  string resource_id = 1;
+}
+
+enum ObjectStorageObjectAcl {
+  PRIVATE = 0;
+  PUBLIC_READ = 1;
+}
+
+message ObjectStorageObjectArgs {
+  common.ChildResourceCommonArgs common_parameters = 1;
+  string name = 2;
+  ObjectStorageObjectAcl acl = 3;
+  string object_storage_id = 4;
+  string content = 5;
+  string content_type = 6;
+  string source = 7;
+}
+
+message ObjectStorageObjectResource {
+  common.CommonChildResourceParameters common_parameters = 1;
+  string name = 2;
+  ObjectStorageObjectAcl acl = 3;
+  string object_storage_id = 4;
+  string content = 5;
+  string content_type = 6;
+  string source = 7;
+}

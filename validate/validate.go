@@ -61,7 +61,7 @@ func (e ValidationError) Print() {
 	}
 }
 
-func (info *ResourceValidationInfo) NewError(fieldName string, errorMessage string) ValidationError {
+func (info *ResourceValidationInfo) NewError(errorMessage string, fieldName string) ValidationError {
 	if _, ok := info.SourceRanges[fieldName]; ok {
 		sourceRange := info.SourceRanges[fieldName]
 		return ValidationError{

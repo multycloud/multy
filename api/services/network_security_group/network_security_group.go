@@ -1,7 +1,7 @@
 package network_security_group
 
 import (
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -9,11 +9,11 @@ import (
 )
 
 type NetworkSecurityGroupService struct {
-	Service services.Service[*resources.NetworkSecurityGroupArgs, *resources.NetworkSecurityGroupResource]
+	Service services.Service[*resourcespb.NetworkSecurityGroupArgs, *resourcespb.NetworkSecurityGroupResource]
 }
 
-func (s NetworkSecurityGroupService) Convert(resourceId string, args *resources.NetworkSecurityGroupArgs, state *output.TfState) (*resources.NetworkSecurityGroupResource, error) {
-	return &resources.NetworkSecurityGroupResource{
+func (s NetworkSecurityGroupService) Convert(resourceId string, args *resourcespb.NetworkSecurityGroupArgs, state *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {
+	return &resourcespb.NetworkSecurityGroupResource{
 		CommonParameters: util.ConvertCommonParams(resourceId, args.CommonParameters),
 		Name:             args.Name,
 		VirtualNetworkId: args.VirtualNetworkId,
@@ -23,7 +23,7 @@ func (s NetworkSecurityGroupService) Convert(resourceId string, args *resources.
 
 func NewNetworkSecurityGroupService(database *db.Database) NetworkSecurityGroupService {
 	nsg := NetworkSecurityGroupService{
-		Service: services.Service[*resources.NetworkSecurityGroupArgs, *resources.NetworkSecurityGroupResource]{
+		Service: services.Service[*resourcespb.NetworkSecurityGroupArgs, *resourcespb.NetworkSecurityGroupResource]{
 			Db:         database,
 			Converters: nil,
 		},

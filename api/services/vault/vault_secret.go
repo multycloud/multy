@@ -1,7 +1,7 @@
 package vault
 
 import (
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -9,11 +9,11 @@ import (
 )
 
 type VaultSecretService struct {
-	Service services.Service[*resources.VaultSecretArgs, *resources.VaultSecretResource]
+	Service services.Service[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]
 }
 
-func (s VaultSecretService) Convert(resourceId string, args *resources.VaultSecretArgs, state *output.TfState) (*resources.VaultSecretResource, error) {
-	return &resources.VaultSecretResource{
+func (s VaultSecretService) Convert(resourceId string, args *resourcespb.VaultSecretArgs, state *output.TfState) (*resourcespb.VaultSecretResource, error) {
+	return &resourcespb.VaultSecretResource{
 		CommonParameters: util.ConvertCommonChildParams(resourceId, args.CommonParameters),
 		Name:             args.Name,
 		Value:            args.Value,
@@ -23,7 +23,7 @@ func (s VaultSecretService) Convert(resourceId string, args *resources.VaultSecr
 
 func NewVaultSecretService(database *db.Database) VaultSecretService {
 	ni := VaultSecretService{
-		Service: services.Service[*resources.VaultSecretArgs, *resources.VaultSecretResource]{
+		Service: services.Service[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]{
 			Db:         database,
 			Converters: nil,
 		},

@@ -2,21 +2,21 @@ package types
 
 import (
 	"fmt"
-	"github.com/multycloud/multy/api/proto/creds"
-	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/credspb"
 	"github.com/multycloud/multy/resources/output/provider"
 )
 
 type Provider struct {
-	Cloud             common.CloudProvider
+	Cloud             commonpb.CloudProvider
 	Location          string
 	IsDefaultProvider bool
 	NumResources      int
-	Credentials       *creds.CloudCredentials
+	Credentials       *credspb.CloudCredentials
 }
 
 func (p *Provider) Translate() []any {
-	if p.Cloud == common.AWS {
+	if p.Cloud == commonpb.CloudProvider_AWS {
 		return []any{provider.AwsProvider{
 			ResourceName: provider.AwsResourceName,
 			Region:       p.Location,
@@ -24,7 +24,7 @@ func (p *Provider) Translate() []any {
 			AccessKey:    p.Credentials.GetAwsCreds().GetAccessKey(),
 			SecretKey:    p.Credentials.GetAwsCreds().GetSecretKey(),
 		}}
-	} else if p.Cloud == common.AZURE {
+	} else if p.Cloud == commonpb.CloudProvider_AZURE {
 		if !p.IsDefaultProvider {
 			return []any{}
 		}
@@ -45,7 +45,7 @@ func (p *Provider) GetId() string {
 }
 
 func (p *Provider) getAlias() string {
-	if p.Cloud == common.AWS && !p.IsDefaultProvider {
+	if p.Cloud == commonpb.CloudProvider_AWS && !p.IsDefaultProvider {
 		return p.Location
 	} else {
 		return ""

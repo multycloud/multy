@@ -2,8 +2,8 @@ package virtual_machine
 
 import (
 	"fmt"
-	"github.com/multycloud/multy/api/proto/common"
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -15,10 +15,10 @@ import (
 )
 
 type VirtualMachineService struct {
-	Service services.Service[*resources.VirtualMachineArgs, *resources.VirtualMachineResource]
+	Service services.Service[*resourcespb.VirtualMachineArgs, *resourcespb.VirtualMachineResource]
 }
 
-func (s VirtualMachineService) Convert(resourceId string, args *resources.VirtualMachineArgs, state *output.TfState) (*resources.VirtualMachineResource, error) {
+func (s VirtualMachineService) Convert(resourceId string, args *resourcespb.VirtualMachineArgs, state *output.TfState) (*resourcespb.VirtualMachineResource, error) {
 
 	ip, err := getPublicIp(resourceId, state, args.CommonParameters.CloudProvider)
 	if err != nil {
@@ -29,7 +29,7 @@ func (s VirtualMachineService) Convert(resourceId string, args *resources.Virtua
 		return nil, err
 	}
 
-	return &resources.VirtualMachineResource{
+	return &resourcespb.VirtualMachineResource{
 		CommonParameters:        util.ConvertCommonParams(resourceId, args.CommonParameters),
 		Name:                    args.Name,
 		OperatingSystem:         args.OperatingSystem,
@@ -47,16 +47,16 @@ func (s VirtualMachineService) Convert(resourceId string, args *resources.Virtua
 	}, nil
 }
 
-func getPublicIp(resourceId string, state *output.TfState, cloud common.CloudProvider) (string, error) {
+func getPublicIp(resourceId string, state *output.TfState, cloud commonpb.CloudProvider) (string, error) {
 	rId := common_util.GetTfResourceId(resourceId, cloud.String())
 	switch cloud {
-	case common.CloudProvider_AWS:
+	case commonpb.CloudProvider_AWS:
 		values, err := state.GetValues(virtual_machine.AwsEC2{}, rId)
 		if err != nil {
 			return "", err
 		}
 		return values["public_ip"].(string), nil
-	case common.CloudProvider_AZURE:
+	case commonpb.CloudProvider_AZURE:
 		values, err := state.GetValues(public_ip.AzurePublicIp{}, rId)
 		if err != nil {
 			return "", err
@@ -67,16 +67,16 @@ func getPublicIp(resourceId string, state *output.TfState, cloud common.CloudPro
 	return "", fmt.Errorf("unknown cloud: %s", cloud.String())
 }
 
-func getIdentityId(resourceId string, state *output.TfState, cloud common.CloudProvider) (string, error) {
+func getIdentityId(resourceId string, state *output.TfState, cloud commonpb.CloudProvider) (string, error) {
 	rId := common_util.GetTfResourceId(resourceId, cloud.String())
 	switch cloud {
-	case common.CloudProvider_AWS:
+	case commonpb.CloudProvider_AWS:
 		values, err := state.GetValues(iam.AwsIamRole{}, rId)
 		if err != nil {
 			return "", err
 		}
 		return values["id"].(string), nil
-	case common.CloudProvider_AZURE:
+	case commonpb.CloudProvider_AZURE:
 		values, err := state.GetValues(virtual_machine.AzureVirtualMachine{}, rId)
 		if err != nil {
 			return "", err
@@ -89,7 +89,7 @@ func getIdentityId(resourceId string, state *output.TfState, cloud common.CloudP
 
 func NewVirtualMachineService(database *db.Database) VirtualMachineService {
 	VirtualMachine := VirtualMachineService{
-		Service: services.Service[*resources.VirtualMachineArgs, *resources.VirtualMachineResource]{
+		Service: services.Service[*resourcespb.VirtualMachineArgs, *resourcespb.VirtualMachineResource]{
 			Db:         database,
 			Converters: nil,
 		},

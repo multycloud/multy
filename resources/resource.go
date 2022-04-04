@@ -2,23 +2,23 @@ package resources
 
 import (
 	"fmt"
-	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/resources/output"
-	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
-	"github.com/zclconf/go-cty/cty"
 )
 
-func GetCloudSpecificResourceId(r Resource, cloud common.CloudProvider) string {
+type Resources map[string]Resource
+
+func GetCloudSpecificResourceId(r Resource, cloud commonpb.CloudProvider) string {
 	return GetResourceIdForCloud(r.GetResourceId(), cloud)
 }
 
-func GetResourceIdForCloud(resourceId string, cloud common.CloudProvider) string {
+func GetResourceIdForCloud(resourceId string, cloud commonpb.CloudProvider) string {
 	return fmt.Sprintf("%s.%s", cloud, resourceId)
 }
 
 type CloudSpecificResource struct {
-	Cloud             common.CloudProvider
+	Cloud             commonpb.CloudProvider
 	Resource          Resource
 	ImplicitlyCreated bool
 }
@@ -28,37 +28,35 @@ func (c *CloudSpecificResource) GetResourceId() string {
 }
 
 func (c *CloudSpecificResource) GetLocation(ctx MultyContext) string {
-	return c.Resource.GetLocation(c.Cloud, ctx)
+	return c.Resource.GetCloudSpecificLocation()
 }
 
 func (c *CloudSpecificResource) Translate(ctx MultyContext) ([]output.TfBlock, error) {
-	return c.Resource.Translate(c.Cloud, ctx)
+	return c.Resource.Translate(ctx)
 }
 
 type Resource interface {
-	Translate(cloud common.CloudProvider, ctx MultyContext) ([]output.TfBlock, error)
-	// GetOutputValues returns values that should be passed around when parsing the remainder of the config file.
-	GetOutputValues(cloud common.CloudProvider) map[string]cty.Value
+	Translate(ctx MultyContext) ([]output.TfBlock, error)
 
 	GetResourceId() string
 
-	GetLocation(cloud common.CloudProvider, ctx MultyContext) string
+	GetCloudSpecificLocation() string
 
-	Validate(ctx MultyContext, cloud common.CloudProvider) []validate.ValidationError
+	Validate(ctx MultyContext) []validate.ValidationError
 
-	GetMainResourceName(cloud common.CloudProvider) (string, error)
+	GetMainResourceName() (string, error)
 
-	GetDependencies(ctx MultyContext) []CloudSpecificResource
+	GetCloud() commonpb.CloudProvider
 }
 
 func (c *CloudSpecificResource) GetMainOutputId() (string, error) {
-	return GetMainOutputId(c.Resource, c.Cloud)
+	return GetMainOutputId(c.Resource)
 }
 
-func GetMainOutputId(r Resource, cloud common.CloudProvider) (string, error) {
-	name, err := r.GetMainResourceName(cloud)
+func GetMainOutputId(r Resource) (string, error) {
+	name, err := r.GetMainResourceName()
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("${%s.%s.id}", name, util.GetTfResourceId(r.GetResourceId(), string(cloud))), nil
+	return fmt.Sprintf("${%s.%s.id}", name, r.GetResourceId()), nil
 }

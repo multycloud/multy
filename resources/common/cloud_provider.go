@@ -2,37 +2,22 @@ package common
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/validate"
 )
 
-type CloudProvider string
-
 const (
-	AWS   CloudProvider = "aws"
-	AZURE               = "azure"
+	AWS   = commonpb.CloudProvider_AWS
+	AZURE = commonpb.CloudProvider_AZURE
 )
-
-func GetAllCloudProviders() []CloudProvider {
-	return []CloudProvider{AWS, AZURE}
-}
-
-func AsCloudProvider(s string) (CloudProvider, bool) {
-	for _, cloud := range GetAllCloudProviders() {
-		if string(cloud) == s {
-			return cloud, true
-		}
-	}
-	return "", false
-}
-
 const (
 	IRELAND = "ireland"
 	UK      = "uk"
 	USEAST  = "us_east"
 )
 
-var LOCATION = map[string]map[CloudProvider]string{
+var LOCATION = map[string]map[commonpb.CloudProvider]string{
 	UK: {
 		AWS:   "eu-west-2",
 		AZURE: "ukwest",
@@ -47,7 +32,7 @@ var LOCATION = map[string]map[CloudProvider]string{
 	},
 }
 
-var AVAILABILITY_ZONES = map[string]map[CloudProvider][]string{
+var AVAILABILITY_ZONES = map[string]map[commonpb.CloudProvider][]string{
 	UK: {
 		AWS:   []string{"eu-west-2a", "eu-west-2b", "eu-west-2c"},
 		AZURE: []string{"1", "2", "3"},
@@ -62,25 +47,6 @@ var AVAILABILITY_ZONES = map[string]map[CloudProvider][]string{
 	},
 }
 
-var RESOURCETYPES = map[string]string{
-	"virtual_network":        "vn",
-	"subnet":                 "vn",
-	"route_table":            "vn",
-	"database":               "db",
-	"virtual_machine":        "vm",
-	"network_security_group": "nsg",
-	"object_storage":         "st",
-	"object_storage_object":  "st",
-	"public_ip":              "pip",
-	"network_interface":      "nic",
-	"vault":                  "kv",
-	"vault_secret":           "kv",
-	"vault_access_policy":    "kv",
-	"lambda":                 "fun",
-	"kubernetes_service":     "ks",
-	"kubernetes_node_pool":   "ks",
-}
-
 // eu-west-2 "ami-0fc15d50d39e4503c"
 // amzn2-ami-hvm-2.0.20211103.0-x86_64-gp2
 //https://cloud-images.ubuntu.com/locator/ec2/
@@ -89,15 +55,7 @@ var AMIMAP = map[string]string{
 	"us-east-1": "ami-04ad2567c9e3d7893",
 }
 
-func GetResourceTypeAbbreviation(t string) string {
-	if val, ok := RESOURCETYPES[t]; ok {
-		return val
-	}
-	validate.LogInternalError("no resource abbreviation for: %s", t)
-	return ""
-}
-
-func GetAvailabilityZone(location string, az int, cloud CloudProvider) string {
+func GetAvailabilityZone(location string, az int, cloud commonpb.CloudProvider) string {
 	if AVAILABILITY_ZONES[location] == nil {
 		validate.LogInternalError("invalid location: %s", location)
 	}
@@ -112,7 +70,17 @@ func GetAvailabilityZone(location string, az int, cloud CloudProvider) string {
 	return ""
 }
 
-func GetCloudLocation(location string, provider CloudProvider) (string, error) {
+func GetCloudLocation(location string, provider commonpb.CloudProvider) (string, error) {
+	if _, ok := LOCATION[location]; !ok {
+		return "", fmt.Errorf("location %s is not defined", location)
+	}
+	if _, ok := LOCATION[location][provider]; !ok {
+		return "", fmt.Errorf("location %s is not defined for cloud %s", location, provider)
+	}
+	return LOCATION[location][provider], nil
+}
+
+func GetCloudLocationPb(location string, provider commonpb.CloudProvider) (string, error) {
 	if _, ok := LOCATION[location]; !ok {
 		return "", fmt.Errorf("location %s is not defined", location)
 	}
@@ -123,7 +91,7 @@ func GetCloudLocation(location string, provider CloudProvider) (string, error) {
 }
 
 // GetLocationFromCloudLocation get multy location from cloud specific location (eu-west-1 -> ireland)
-func GetLocationFromCloudLocation(location string, cloud CloudProvider) string {
+func GetLocationFromCloudLocation(location string, cloud commonpb.CloudProvider) string {
 	for s, m := range LOCATION {
 		if m[cloud] == location {
 			return s
@@ -131,11 +99,6 @@ func GetLocationFromCloudLocation(location string, cloud CloudProvider) string {
 	}
 	validate.LogInternalError("location %s is not defined for cloud %s", location, cloud)
 	return ""
-}
-
-func ValidateVmSize(s string) bool {
-	_, ok := VMSIZE[s]
-	return ok
 }
 
 type AzResource struct {

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/multycloud/multy/api/errors"
-	"github.com/multycloud/multy/api/proto/common"
-	"github.com/multycloud/multy/api/proto/config"
-	"github.com/multycloud/multy/api/proto/creds"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/configpb"
+	"github.com/multycloud/multy/api/proto/credspb"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
@@ -16,8 +16,8 @@ import (
 	"strings"
 )
 
-func ConvertCommonParams(resourceId string, parameters *common.ResourceCommonArgs) *common.CommonResourceParameters {
-	return &common.CommonResourceParameters{
+func ConvertCommonParams(resourceId string, parameters *commonpb.ResourceCommonArgs) *commonpb.CommonResourceParameters {
+	return &commonpb.CommonResourceParameters{
 		ResourceId:      resourceId,
 		ResourceGroupId: parameters.ResourceGroupId,
 		Location:        parameters.Location,
@@ -26,8 +26,8 @@ func ConvertCommonParams(resourceId string, parameters *common.ResourceCommonArg
 	}
 }
 
-func ConvertCommonChildParams(resourceId string, parameters *common.ChildResourceCommonArgs) *common.CommonChildResourceParameters {
-	return &common.CommonChildResourceParameters{
+func ConvertCommonChildParams(resourceId string, parameters *commonpb.ChildResourceCommonArgs) *commonpb.CommonChildResourceParameters {
+	return &commonpb.CommonChildResourceParameters{
 		NeedsUpdate: false,
 	}
 }
@@ -44,7 +44,7 @@ func ExtractUserId(ctx context.Context) (string, error) {
 	return userIds[0], nil
 }
 
-func ExtractCloudCredentials(ctx context.Context) (*creds.CloudCredentials, error) {
+func ExtractCloudCredentials(ctx context.Context) (*credspb.CloudCredentials, error) {
 	md, _ := metadata.FromIncomingContext(ctx)
 	cloudCredsBin := md.Get("cloud-creds-bin")
 	if len(cloudCredsBin) == 0 {
@@ -53,17 +53,17 @@ func ExtractCloudCredentials(ctx context.Context) (*creds.CloudCredentials, erro
 	if len(cloudCredsBin) > 1 {
 		return nil, errors.PermissionDenied(fmt.Sprintf("only expected 1 cloud creds id, found %d", len(cloudCredsBin)))
 	}
-	res := creds.CloudCredentials{}
+	res := credspb.CloudCredentials{}
 	err := proto.Unmarshal([]byte(cloudCredsBin[0]), &res)
 	return &res, err
 }
 
-func InsertIntoConfig[Arg proto.Message](in Arg, c *config.Config) (*config.Resource, error) {
+func InsertIntoConfig[Arg proto.Message](in Arg, c *configpb.Config) (*configpb.Resource, error) {
 	args, err := convert(in)
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error marhsalling resource", err)
 	}
-	resource := config.Resource{
+	resource := configpb.Resource{
 		ResourceId:   base64.StdEncoding.EncodeToString([]byte(uuid.New().String())),
 		ResourceArgs: args,
 	}
@@ -71,8 +71,8 @@ func InsertIntoConfig[Arg proto.Message](in Arg, c *config.Config) (*config.Reso
 	return &resource, nil
 }
 
-func convert[Arg proto.Message](in Arg) (*config.ResourceArgs, error) {
-	args := config.ResourceArgs{}
+func convert[Arg proto.Message](in Arg) (*configpb.ResourceArgs, error) {
+	args := configpb.ResourceArgs{}
 
 	a, err := anypb.New(in)
 	if err != nil {
@@ -82,15 +82,15 @@ func convert[Arg proto.Message](in Arg) (*config.ResourceArgs, error) {
 	return &args, nil
 }
 
-func DeleteResourceFromConfig(c *config.Config, resourceId string) error {
-	if i := slices.IndexFunc(c.Resources, func(r *config.Resource) bool { return r.ResourceId == resourceId }); i != -1 {
+func DeleteResourceFromConfig(c *configpb.Config, resourceId string) error {
+	if i := slices.IndexFunc(c.Resources, func(r *configpb.Resource) bool { return r.ResourceId == resourceId }); i != -1 {
 		c.Resources = append(c.Resources[:i], c.Resources[i+1:]...)
 	}
 	return nil
 }
 
-func UpdateInConfig[Arg proto.Message](c *config.Config, resourceId string, in Arg) error {
-	if i := slices.IndexFunc(c.Resources, func(r *config.Resource) bool { return r.ResourceId == resourceId }); i != -1 {
+func UpdateInConfig[Arg proto.Message](c *configpb.Config, resourceId string, in Arg) error {
+	if i := slices.IndexFunc(c.Resources, func(r *configpb.Resource) bool { return r.ResourceId == resourceId }); i != -1 {
 		a, err := convert(in)
 		if err != nil {
 			return err

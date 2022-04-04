@@ -1,7 +1,7 @@
 package vault
 
 import (
-	"github.com/multycloud/multy/api/proto/resources"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
@@ -9,12 +9,12 @@ import (
 )
 
 type VaultAccessPolicyService struct {
-	Service services.Service[*resources.VaultAccessPolicyArgs, *resources.VaultAccessPolicyResource]
+	Service services.Service[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]
 }
 
-func (s VaultAccessPolicyService) Convert(resourceId string, args *resources.VaultAccessPolicyArgs, state *output.TfState) (*resources.VaultAccessPolicyResource, error) {
+func (s VaultAccessPolicyService) Convert(resourceId string, args *resourcespb.VaultAccessPolicyArgs, state *output.TfState) (*resourcespb.VaultAccessPolicyResource, error) {
 
-	return &resources.VaultAccessPolicyResource{
+	return &resourcespb.VaultAccessPolicyResource{
 		CommonParameters: util.ConvertCommonChildParams(resourceId, args.CommonParameters),
 		VaultId:          args.VaultId,
 		Identity:         args.Identity,
@@ -24,7 +24,7 @@ func (s VaultAccessPolicyService) Convert(resourceId string, args *resources.Vau
 
 func NewVaultAccessPolicyService(database *db.Database) VaultAccessPolicyService {
 	ni := VaultAccessPolicyService{
-		Service: services.Service[*resources.VaultAccessPolicyArgs, *resources.VaultAccessPolicyResource]{
+		Service: services.Service[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]{
 			Db:         database,
 			Converters: nil,
 		},

@@ -2,8 +2,7 @@ package rg
 
 import (
 	"fmt"
-	"github.com/hashicorp/hcl/v2"
-	"github.com/multycloud/multy/hclutil"
+	commonpb "github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -28,6 +27,7 @@ type Type struct {
 	Name       string `hcl:"name"`
 	Location   string `hcl:"location"`
 	App        string `hcl:"app"`
+	Cloud      commonpb.CloudProvider
 }
 
 type ResourceGroup struct {
@@ -37,75 +37,71 @@ type ResourceGroup struct {
 
 const AzureResourceName = "azurerm_resource_group"
 
-func (rg *Type) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	if cloud == common.AZURE {
+func (rg *Type) Translate(resources.MultyContext) ([]output.TfBlock, error) {
+	if rg.GetCloud() == common.AZURE {
 		return []output.TfBlock{ResourceGroup{
 			AzResource: &common.AzResource{
 				TerraformResource: output.TerraformResource{ResourceId: rg.ResourceId},
 				Name:              rg.Name,
 			},
-			Location: ctx.GetLocation(rg.Location, cloud),
+			Location: rg.GetCloudSpecificLocation(),
 		}}, nil
-	} else if cloud == common.AWS {
+	} else if rg.GetCloud() == common.AWS {
 		return nil, nil
 	}
 
-	validate.LogInternalError("cloud %s is not supported for this resource type ", cloud)
+	validate.LogInternalError("cloud %s is not supported for this resource type ", rg.GetCloud())
 	return nil, nil
 }
 
-func (rg *Type) GetOutputValues(cloud common.CloudProvider) map[string]cty.Value {
+func (rg *Type) GetOutputValues(cloud commonpb.CloudProvider) map[string]cty.Value {
 	return map[string]cty.Value{}
 }
 
-func GetResourceGroupName(name string, cloud common.CloudProvider) string {
-	if cloud == common.AZURE {
-		return fmt.Sprintf("azurerm_resource_group.%s.name", name)
-
-	}
-	validate.LogInternalError("cloud %s is not supported for resource groups ", cloud)
-	return ""
+func GetResourceGroupName(name string) string {
+	return fmt.Sprintf("azurerm_resource_group.%s.name", name)
 }
-
-func GetDefaultResourceGroupId() hcl.Expression {
-	name, err := hclutil.StringToHclExpression("${resource_type}-rg")
-	if err != nil {
-		validate.LogInternalError("error setting default rg name: %s", err.Error())
-	}
-	return name
-}
-
-func DefaultResourceGroup(id string) *Type {
-	return &Type{
-		ResourceId: id,
-		Name:       id,
-	}
+func GetDefaultResourceGroupIdString(resourceType string) string {
+	return fmt.Sprintf("%s-rg", resourceType)
 }
 
 func (rg *Type) GetResourceId() string {
+	if rg.Cloud != commonpb.CloudProvider_AZURE {
+		// this should never be used, as the translate will not return anything
+		return "_"
+	}
 	return rg.ResourceId
 }
 
-func (rg *Type) GetLocation(cloud common.CloudProvider, ctx resources.MultyContext) string {
-	return ctx.GetLocation(rg.Location, cloud)
+func (rg *Type) GetCloudSpecificLocation() string {
+	if result, err := common.GetCloudLocationPb(rg.Location, rg.GetCloud()); err != nil {
+		validate.LogInternalError(err.Error())
+		return ""
+	} else {
+		return result
+	}
 }
 
-func (rg *Type) Validate(ctx resources.MultyContext, cloud common.CloudProvider) []validate.ValidationError {
+func (rg *Type) Validate(ctx resources.MultyContext) []validate.ValidationError {
 	return nil
 }
 
-func (rg *Type) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
+func (rg *Type) GetMainResourceName() (string, error) {
+	switch rg.GetCloud() {
 	case common.AWS:
 		return "", nil
 	case common.AZURE:
 		return "AzureResourceName", nil
 	default:
-		validate.LogInternalError("unknown cloud %s", cloud)
+		validate.LogInternalError("unknown cloud %s", rg.GetCloud())
 	}
 	return "", nil
 }
 
 func (rg *Type) GetDependencies(ctx resources.MultyContext) []resources.CloudSpecificResource {
 	return nil
+}
+
+func (rg *Type) GetCloud() commonpb.CloudProvider {
+	return rg.Cloud
 }

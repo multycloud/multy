@@ -4,8 +4,8 @@ package proto
 
 import (
 	context "context"
-	common "github.com/multycloud/multy/api/proto/common"
-	resources "github.com/multycloud/multy/api/proto/resources"
+	commonpb "github.com/multycloud/multy/api/proto/commonpb"
+	resourcespb "github.com/multycloud/multy/api/proto/resourcespb"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -20,74 +20,74 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MultyResourceServiceClient interface {
-	CreateSubnet(ctx context.Context, in *resources.CreateSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error)
-	ReadSubnet(ctx context.Context, in *resources.ReadSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error)
-	UpdateSubnet(ctx context.Context, in *resources.UpdateSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error)
-	DeleteSubnet(ctx context.Context, in *resources.DeleteSubnetRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateVirtualNetwork(ctx context.Context, in *resources.CreateVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error)
-	ReadVirtualNetwork(ctx context.Context, in *resources.ReadVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error)
-	UpdateVirtualNetwork(ctx context.Context, in *resources.UpdateVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error)
-	DeleteVirtualNetwork(ctx context.Context, in *resources.DeleteVirtualNetworkRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateNetworkInterface(ctx context.Context, in *resources.CreateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error)
-	ReadNetworkInterface(ctx context.Context, in *resources.ReadNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error)
-	UpdateNetworkInterface(ctx context.Context, in *resources.UpdateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error)
-	DeleteNetworkInterface(ctx context.Context, in *resources.DeleteNetworkInterfaceRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateRouteTable(ctx context.Context, in *resources.CreateRouteTableRequest, opts ...grpc.CallOption) (*resources.RouteTableResource, error)
-	ReadRouteTable(ctx context.Context, in *resources.ReadRouteTableRequest, opts ...grpc.CallOption) (*resources.RouteTableResource, error)
-	UpdateRouteTable(ctx context.Context, in *resources.UpdateRouteTableRequest, opts ...grpc.CallOption) (*resources.RouteTableResource, error)
-	DeleteRouteTable(ctx context.Context, in *resources.DeleteRouteTableRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateRouteTableAssociation(ctx context.Context, in *resources.CreateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error)
-	ReadRouteTableAssociation(ctx context.Context, in *resources.ReadRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error)
-	UpdateRouteTableAssociation(ctx context.Context, in *resources.UpdateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error)
-	DeleteRouteTableAssociation(ctx context.Context, in *resources.DeleteRouteTableAssociationRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateNetworkSecurityGroup(ctx context.Context, in *resources.CreateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error)
-	ReadNetworkSecurityGroup(ctx context.Context, in *resources.ReadNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error)
-	UpdateNetworkSecurityGroup(ctx context.Context, in *resources.UpdateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error)
-	DeleteNetworkSecurityGroup(ctx context.Context, in *resources.DeleteNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateDatabase(ctx context.Context, in *resources.CreateDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error)
-	ReadDatabase(ctx context.Context, in *resources.ReadDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error)
-	UpdateDatabase(ctx context.Context, in *resources.UpdateDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error)
-	DeleteDatabase(ctx context.Context, in *resources.DeleteDatabaseRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateObjectStorage(ctx context.Context, in *resources.CreateObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error)
-	ReadObjectStorage(ctx context.Context, in *resources.ReadObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error)
-	UpdateObjectStorage(ctx context.Context, in *resources.UpdateObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error)
-	DeleteObjectStorage(ctx context.Context, in *resources.DeleteObjectStorageRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateObjectStorageObject(ctx context.Context, in *resources.CreateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error)
-	ReadObjectStorageObject(ctx context.Context, in *resources.ReadObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error)
-	UpdateObjectStorageObject(ctx context.Context, in *resources.UpdateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error)
-	DeleteObjectStorageObject(ctx context.Context, in *resources.DeleteObjectStorageObjectRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreatePublicIp(ctx context.Context, in *resources.CreatePublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error)
-	ReadPublicIp(ctx context.Context, in *resources.ReadPublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error)
-	UpdatePublicIp(ctx context.Context, in *resources.UpdatePublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error)
-	DeletePublicIp(ctx context.Context, in *resources.DeletePublicIpRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateKubernetesCluster(ctx context.Context, in *resources.CreateKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error)
-	ReadKubernetesCluster(ctx context.Context, in *resources.ReadKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error)
-	UpdateKubernetesCluster(ctx context.Context, in *resources.UpdateKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error)
-	DeleteKubernetesCluster(ctx context.Context, in *resources.DeleteKubernetesClusterRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateKubernetesNodePool(ctx context.Context, in *resources.CreateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error)
-	ReadKubernetesNodePool(ctx context.Context, in *resources.ReadKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error)
-	UpdateKubernetesNodePool(ctx context.Context, in *resources.UpdateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error)
-	DeleteKubernetesNodePool(ctx context.Context, in *resources.DeleteKubernetesNodePoolRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateLambda(ctx context.Context, in *resources.CreateLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error)
-	ReadLambda(ctx context.Context, in *resources.ReadLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error)
-	UpdateLambda(ctx context.Context, in *resources.UpdateLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error)
-	DeleteLambda(ctx context.Context, in *resources.DeleteLambdaRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateVault(ctx context.Context, in *resources.CreateVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error)
-	ReadVault(ctx context.Context, in *resources.ReadVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error)
-	UpdateVault(ctx context.Context, in *resources.UpdateVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error)
-	DeleteVault(ctx context.Context, in *resources.DeleteVaultRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateVaultAccessPolicy(ctx context.Context, in *resources.CreateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error)
-	ReadVaultAccessPolicy(ctx context.Context, in *resources.ReadVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error)
-	UpdateVaultAccessPolicy(ctx context.Context, in *resources.UpdateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error)
-	DeleteVaultAccessPolicy(ctx context.Context, in *resources.DeleteVaultAccessPolicyRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateVaultSecret(ctx context.Context, in *resources.CreateVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error)
-	ReadVaultSecret(ctx context.Context, in *resources.ReadVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error)
-	UpdateVaultSecret(ctx context.Context, in *resources.UpdateVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error)
-	DeleteVaultSecret(ctx context.Context, in *resources.DeleteVaultSecretRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	CreateVirtualMachine(ctx context.Context, in *resources.CreateVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error)
-	ReadVirtualMachine(ctx context.Context, in *resources.ReadVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error)
-	UpdateVirtualMachine(ctx context.Context, in *resources.UpdateVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error)
-	DeleteVirtualMachine(ctx context.Context, in *resources.DeleteVirtualMachineRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	CreateSubnet(ctx context.Context, in *resourcespb.CreateSubnetRequest, opts ...grpc.CallOption) (*resourcespb.SubnetResource, error)
+	ReadSubnet(ctx context.Context, in *resourcespb.ReadSubnetRequest, opts ...grpc.CallOption) (*resourcespb.SubnetResource, error)
+	UpdateSubnet(ctx context.Context, in *resourcespb.UpdateSubnetRequest, opts ...grpc.CallOption) (*resourcespb.SubnetResource, error)
+	DeleteSubnet(ctx context.Context, in *resourcespb.DeleteSubnetRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateVirtualNetwork(ctx context.Context, in *resourcespb.CreateVirtualNetworkRequest, opts ...grpc.CallOption) (*resourcespb.VirtualNetworkResource, error)
+	ReadVirtualNetwork(ctx context.Context, in *resourcespb.ReadVirtualNetworkRequest, opts ...grpc.CallOption) (*resourcespb.VirtualNetworkResource, error)
+	UpdateVirtualNetwork(ctx context.Context, in *resourcespb.UpdateVirtualNetworkRequest, opts ...grpc.CallOption) (*resourcespb.VirtualNetworkResource, error)
+	DeleteVirtualNetwork(ctx context.Context, in *resourcespb.DeleteVirtualNetworkRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateNetworkInterface(ctx context.Context, in *resourcespb.CreateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceResource, error)
+	ReadNetworkInterface(ctx context.Context, in *resourcespb.ReadNetworkInterfaceRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceResource, error)
+	UpdateNetworkInterface(ctx context.Context, in *resourcespb.UpdateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceResource, error)
+	DeleteNetworkInterface(ctx context.Context, in *resourcespb.DeleteNetworkInterfaceRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateRouteTable(ctx context.Context, in *resourcespb.CreateRouteTableRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableResource, error)
+	ReadRouteTable(ctx context.Context, in *resourcespb.ReadRouteTableRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableResource, error)
+	UpdateRouteTable(ctx context.Context, in *resourcespb.UpdateRouteTableRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableResource, error)
+	DeleteRouteTable(ctx context.Context, in *resourcespb.DeleteRouteTableRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateRouteTableAssociation(ctx context.Context, in *resourcespb.CreateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableAssociationResource, error)
+	ReadRouteTableAssociation(ctx context.Context, in *resourcespb.ReadRouteTableAssociationRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableAssociationResource, error)
+	UpdateRouteTableAssociation(ctx context.Context, in *resourcespb.UpdateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableAssociationResource, error)
+	DeleteRouteTableAssociation(ctx context.Context, in *resourcespb.DeleteRouteTableAssociationRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateNetworkSecurityGroup(ctx context.Context, in *resourcespb.CreateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resourcespb.NetworkSecurityGroupResource, error)
+	ReadNetworkSecurityGroup(ctx context.Context, in *resourcespb.ReadNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resourcespb.NetworkSecurityGroupResource, error)
+	UpdateNetworkSecurityGroup(ctx context.Context, in *resourcespb.UpdateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resourcespb.NetworkSecurityGroupResource, error)
+	DeleteNetworkSecurityGroup(ctx context.Context, in *resourcespb.DeleteNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateDatabase(ctx context.Context, in *resourcespb.CreateDatabaseRequest, opts ...grpc.CallOption) (*resourcespb.DatabaseResource, error)
+	ReadDatabase(ctx context.Context, in *resourcespb.ReadDatabaseRequest, opts ...grpc.CallOption) (*resourcespb.DatabaseResource, error)
+	UpdateDatabase(ctx context.Context, in *resourcespb.UpdateDatabaseRequest, opts ...grpc.CallOption) (*resourcespb.DatabaseResource, error)
+	DeleteDatabase(ctx context.Context, in *resourcespb.DeleteDatabaseRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateObjectStorage(ctx context.Context, in *resourcespb.CreateObjectStorageRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageResource, error)
+	ReadObjectStorage(ctx context.Context, in *resourcespb.ReadObjectStorageRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageResource, error)
+	UpdateObjectStorage(ctx context.Context, in *resourcespb.UpdateObjectStorageRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageResource, error)
+	DeleteObjectStorage(ctx context.Context, in *resourcespb.DeleteObjectStorageRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateObjectStorageObject(ctx context.Context, in *resourcespb.CreateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageObjectResource, error)
+	ReadObjectStorageObject(ctx context.Context, in *resourcespb.ReadObjectStorageObjectRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageObjectResource, error)
+	UpdateObjectStorageObject(ctx context.Context, in *resourcespb.UpdateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageObjectResource, error)
+	DeleteObjectStorageObject(ctx context.Context, in *resourcespb.DeleteObjectStorageObjectRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreatePublicIp(ctx context.Context, in *resourcespb.CreatePublicIpRequest, opts ...grpc.CallOption) (*resourcespb.PublicIpResource, error)
+	ReadPublicIp(ctx context.Context, in *resourcespb.ReadPublicIpRequest, opts ...grpc.CallOption) (*resourcespb.PublicIpResource, error)
+	UpdatePublicIp(ctx context.Context, in *resourcespb.UpdatePublicIpRequest, opts ...grpc.CallOption) (*resourcespb.PublicIpResource, error)
+	DeletePublicIp(ctx context.Context, in *resourcespb.DeletePublicIpRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateKubernetesCluster(ctx context.Context, in *resourcespb.CreateKubernetesClusterRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesClusterResource, error)
+	ReadKubernetesCluster(ctx context.Context, in *resourcespb.ReadKubernetesClusterRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesClusterResource, error)
+	UpdateKubernetesCluster(ctx context.Context, in *resourcespb.UpdateKubernetesClusterRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesClusterResource, error)
+	DeleteKubernetesCluster(ctx context.Context, in *resourcespb.DeleteKubernetesClusterRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateKubernetesNodePool(ctx context.Context, in *resourcespb.CreateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesNodePoolResource, error)
+	ReadKubernetesNodePool(ctx context.Context, in *resourcespb.ReadKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesNodePoolResource, error)
+	UpdateKubernetesNodePool(ctx context.Context, in *resourcespb.UpdateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesNodePoolResource, error)
+	DeleteKubernetesNodePool(ctx context.Context, in *resourcespb.DeleteKubernetesNodePoolRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateLambda(ctx context.Context, in *resourcespb.CreateLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error)
+	ReadLambda(ctx context.Context, in *resourcespb.ReadLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error)
+	UpdateLambda(ctx context.Context, in *resourcespb.UpdateLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error)
+	DeleteLambda(ctx context.Context, in *resourcespb.DeleteLambdaRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateVault(ctx context.Context, in *resourcespb.CreateVaultRequest, opts ...grpc.CallOption) (*resourcespb.VaultResource, error)
+	ReadVault(ctx context.Context, in *resourcespb.ReadVaultRequest, opts ...grpc.CallOption) (*resourcespb.VaultResource, error)
+	UpdateVault(ctx context.Context, in *resourcespb.UpdateVaultRequest, opts ...grpc.CallOption) (*resourcespb.VaultResource, error)
+	DeleteVault(ctx context.Context, in *resourcespb.DeleteVaultRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateVaultAccessPolicy(ctx context.Context, in *resourcespb.CreateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resourcespb.VaultAccessPolicyResource, error)
+	ReadVaultAccessPolicy(ctx context.Context, in *resourcespb.ReadVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resourcespb.VaultAccessPolicyResource, error)
+	UpdateVaultAccessPolicy(ctx context.Context, in *resourcespb.UpdateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resourcespb.VaultAccessPolicyResource, error)
+	DeleteVaultAccessPolicy(ctx context.Context, in *resourcespb.DeleteVaultAccessPolicyRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateVaultSecret(ctx context.Context, in *resourcespb.CreateVaultSecretRequest, opts ...grpc.CallOption) (*resourcespb.VaultSecretResource, error)
+	ReadVaultSecret(ctx context.Context, in *resourcespb.ReadVaultSecretRequest, opts ...grpc.CallOption) (*resourcespb.VaultSecretResource, error)
+	UpdateVaultSecret(ctx context.Context, in *resourcespb.UpdateVaultSecretRequest, opts ...grpc.CallOption) (*resourcespb.VaultSecretResource, error)
+	DeleteVaultSecret(ctx context.Context, in *resourcespb.DeleteVaultSecretRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateVirtualMachine(ctx context.Context, in *resourcespb.CreateVirtualMachineRequest, opts ...grpc.CallOption) (*resourcespb.VirtualMachineResource, error)
+	ReadVirtualMachine(ctx context.Context, in *resourcespb.ReadVirtualMachineRequest, opts ...grpc.CallOption) (*resourcespb.VirtualMachineResource, error)
+	UpdateVirtualMachine(ctx context.Context, in *resourcespb.UpdateVirtualMachineRequest, opts ...grpc.CallOption) (*resourcespb.VirtualMachineResource, error)
+	DeleteVirtualMachine(ctx context.Context, in *resourcespb.DeleteVirtualMachineRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -98,8 +98,8 @@ func NewMultyResourceServiceClient(cc grpc.ClientConnInterface) MultyResourceSer
 	return &multyResourceServiceClient{cc}
 }
 
-func (c *multyResourceServiceClient) CreateSubnet(ctx context.Context, in *resources.CreateSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error) {
-	out := new(resources.SubnetResource)
+func (c *multyResourceServiceClient) CreateSubnet(ctx context.Context, in *resourcespb.CreateSubnetRequest, opts ...grpc.CallOption) (*resourcespb.SubnetResource, error) {
+	out := new(resourcespb.SubnetResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateSubnet", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -107,8 +107,8 @@ func (c *multyResourceServiceClient) CreateSubnet(ctx context.Context, in *resou
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadSubnet(ctx context.Context, in *resources.ReadSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error) {
-	out := new(resources.SubnetResource)
+func (c *multyResourceServiceClient) ReadSubnet(ctx context.Context, in *resourcespb.ReadSubnetRequest, opts ...grpc.CallOption) (*resourcespb.SubnetResource, error) {
+	out := new(resourcespb.SubnetResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadSubnet", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -116,8 +116,8 @@ func (c *multyResourceServiceClient) ReadSubnet(ctx context.Context, in *resourc
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateSubnet(ctx context.Context, in *resources.UpdateSubnetRequest, opts ...grpc.CallOption) (*resources.SubnetResource, error) {
-	out := new(resources.SubnetResource)
+func (c *multyResourceServiceClient) UpdateSubnet(ctx context.Context, in *resourcespb.UpdateSubnetRequest, opts ...grpc.CallOption) (*resourcespb.SubnetResource, error) {
+	out := new(resourcespb.SubnetResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateSubnet", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -125,8 +125,8 @@ func (c *multyResourceServiceClient) UpdateSubnet(ctx context.Context, in *resou
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteSubnet(ctx context.Context, in *resources.DeleteSubnetRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteSubnet(ctx context.Context, in *resourcespb.DeleteSubnetRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteSubnet", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -134,8 +134,8 @@ func (c *multyResourceServiceClient) DeleteSubnet(ctx context.Context, in *resou
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateVirtualNetwork(ctx context.Context, in *resources.CreateVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error) {
-	out := new(resources.VirtualNetworkResource)
+func (c *multyResourceServiceClient) CreateVirtualNetwork(ctx context.Context, in *resourcespb.CreateVirtualNetworkRequest, opts ...grpc.CallOption) (*resourcespb.VirtualNetworkResource, error) {
+	out := new(resourcespb.VirtualNetworkResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateVirtualNetwork", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -143,8 +143,8 @@ func (c *multyResourceServiceClient) CreateVirtualNetwork(ctx context.Context, i
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadVirtualNetwork(ctx context.Context, in *resources.ReadVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error) {
-	out := new(resources.VirtualNetworkResource)
+func (c *multyResourceServiceClient) ReadVirtualNetwork(ctx context.Context, in *resourcespb.ReadVirtualNetworkRequest, opts ...grpc.CallOption) (*resourcespb.VirtualNetworkResource, error) {
+	out := new(resourcespb.VirtualNetworkResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadVirtualNetwork", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -152,8 +152,8 @@ func (c *multyResourceServiceClient) ReadVirtualNetwork(ctx context.Context, in 
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateVirtualNetwork(ctx context.Context, in *resources.UpdateVirtualNetworkRequest, opts ...grpc.CallOption) (*resources.VirtualNetworkResource, error) {
-	out := new(resources.VirtualNetworkResource)
+func (c *multyResourceServiceClient) UpdateVirtualNetwork(ctx context.Context, in *resourcespb.UpdateVirtualNetworkRequest, opts ...grpc.CallOption) (*resourcespb.VirtualNetworkResource, error) {
+	out := new(resourcespb.VirtualNetworkResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateVirtualNetwork", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -161,8 +161,8 @@ func (c *multyResourceServiceClient) UpdateVirtualNetwork(ctx context.Context, i
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteVirtualNetwork(ctx context.Context, in *resources.DeleteVirtualNetworkRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteVirtualNetwork(ctx context.Context, in *resourcespb.DeleteVirtualNetworkRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteVirtualNetwork", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -170,8 +170,8 @@ func (c *multyResourceServiceClient) DeleteVirtualNetwork(ctx context.Context, i
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateNetworkInterface(ctx context.Context, in *resources.CreateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error) {
-	out := new(resources.NetworkInterfaceResource)
+func (c *multyResourceServiceClient) CreateNetworkInterface(ctx context.Context, in *resourcespb.CreateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceResource, error) {
+	out := new(resourcespb.NetworkInterfaceResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateNetworkInterface", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -179,8 +179,8 @@ func (c *multyResourceServiceClient) CreateNetworkInterface(ctx context.Context,
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadNetworkInterface(ctx context.Context, in *resources.ReadNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error) {
-	out := new(resources.NetworkInterfaceResource)
+func (c *multyResourceServiceClient) ReadNetworkInterface(ctx context.Context, in *resourcespb.ReadNetworkInterfaceRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceResource, error) {
+	out := new(resourcespb.NetworkInterfaceResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadNetworkInterface", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -188,8 +188,8 @@ func (c *multyResourceServiceClient) ReadNetworkInterface(ctx context.Context, i
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateNetworkInterface(ctx context.Context, in *resources.UpdateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resources.NetworkInterfaceResource, error) {
-	out := new(resources.NetworkInterfaceResource)
+func (c *multyResourceServiceClient) UpdateNetworkInterface(ctx context.Context, in *resourcespb.UpdateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceResource, error) {
+	out := new(resourcespb.NetworkInterfaceResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateNetworkInterface", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -197,8 +197,8 @@ func (c *multyResourceServiceClient) UpdateNetworkInterface(ctx context.Context,
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteNetworkInterface(ctx context.Context, in *resources.DeleteNetworkInterfaceRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteNetworkInterface(ctx context.Context, in *resourcespb.DeleteNetworkInterfaceRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteNetworkInterface", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -206,8 +206,8 @@ func (c *multyResourceServiceClient) DeleteNetworkInterface(ctx context.Context,
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateRouteTable(ctx context.Context, in *resources.CreateRouteTableRequest, opts ...grpc.CallOption) (*resources.RouteTableResource, error) {
-	out := new(resources.RouteTableResource)
+func (c *multyResourceServiceClient) CreateRouteTable(ctx context.Context, in *resourcespb.CreateRouteTableRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableResource, error) {
+	out := new(resourcespb.RouteTableResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateRouteTable", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -215,8 +215,8 @@ func (c *multyResourceServiceClient) CreateRouteTable(ctx context.Context, in *r
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadRouteTable(ctx context.Context, in *resources.ReadRouteTableRequest, opts ...grpc.CallOption) (*resources.RouteTableResource, error) {
-	out := new(resources.RouteTableResource)
+func (c *multyResourceServiceClient) ReadRouteTable(ctx context.Context, in *resourcespb.ReadRouteTableRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableResource, error) {
+	out := new(resourcespb.RouteTableResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadRouteTable", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -224,8 +224,8 @@ func (c *multyResourceServiceClient) ReadRouteTable(ctx context.Context, in *res
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateRouteTable(ctx context.Context, in *resources.UpdateRouteTableRequest, opts ...grpc.CallOption) (*resources.RouteTableResource, error) {
-	out := new(resources.RouteTableResource)
+func (c *multyResourceServiceClient) UpdateRouteTable(ctx context.Context, in *resourcespb.UpdateRouteTableRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableResource, error) {
+	out := new(resourcespb.RouteTableResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateRouteTable", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -233,8 +233,8 @@ func (c *multyResourceServiceClient) UpdateRouteTable(ctx context.Context, in *r
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteRouteTable(ctx context.Context, in *resources.DeleteRouteTableRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteRouteTable(ctx context.Context, in *resourcespb.DeleteRouteTableRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteRouteTable", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -242,8 +242,8 @@ func (c *multyResourceServiceClient) DeleteRouteTable(ctx context.Context, in *r
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateRouteTableAssociation(ctx context.Context, in *resources.CreateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error) {
-	out := new(resources.RouteTableAssociationResource)
+func (c *multyResourceServiceClient) CreateRouteTableAssociation(ctx context.Context, in *resourcespb.CreateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableAssociationResource, error) {
+	out := new(resourcespb.RouteTableAssociationResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateRouteTableAssociation", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -251,8 +251,8 @@ func (c *multyResourceServiceClient) CreateRouteTableAssociation(ctx context.Con
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadRouteTableAssociation(ctx context.Context, in *resources.ReadRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error) {
-	out := new(resources.RouteTableAssociationResource)
+func (c *multyResourceServiceClient) ReadRouteTableAssociation(ctx context.Context, in *resourcespb.ReadRouteTableAssociationRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableAssociationResource, error) {
+	out := new(resourcespb.RouteTableAssociationResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadRouteTableAssociation", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -260,8 +260,8 @@ func (c *multyResourceServiceClient) ReadRouteTableAssociation(ctx context.Conte
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateRouteTableAssociation(ctx context.Context, in *resources.UpdateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resources.RouteTableAssociationResource, error) {
-	out := new(resources.RouteTableAssociationResource)
+func (c *multyResourceServiceClient) UpdateRouteTableAssociation(ctx context.Context, in *resourcespb.UpdateRouteTableAssociationRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableAssociationResource, error) {
+	out := new(resourcespb.RouteTableAssociationResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateRouteTableAssociation", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -269,8 +269,8 @@ func (c *multyResourceServiceClient) UpdateRouteTableAssociation(ctx context.Con
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteRouteTableAssociation(ctx context.Context, in *resources.DeleteRouteTableAssociationRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteRouteTableAssociation(ctx context.Context, in *resourcespb.DeleteRouteTableAssociationRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteRouteTableAssociation", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -278,8 +278,8 @@ func (c *multyResourceServiceClient) DeleteRouteTableAssociation(ctx context.Con
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateNetworkSecurityGroup(ctx context.Context, in *resources.CreateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error) {
-	out := new(resources.NetworkSecurityGroupResource)
+func (c *multyResourceServiceClient) CreateNetworkSecurityGroup(ctx context.Context, in *resourcespb.CreateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resourcespb.NetworkSecurityGroupResource, error) {
+	out := new(resourcespb.NetworkSecurityGroupResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateNetworkSecurityGroup", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -287,8 +287,8 @@ func (c *multyResourceServiceClient) CreateNetworkSecurityGroup(ctx context.Cont
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadNetworkSecurityGroup(ctx context.Context, in *resources.ReadNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error) {
-	out := new(resources.NetworkSecurityGroupResource)
+func (c *multyResourceServiceClient) ReadNetworkSecurityGroup(ctx context.Context, in *resourcespb.ReadNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resourcespb.NetworkSecurityGroupResource, error) {
+	out := new(resourcespb.NetworkSecurityGroupResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadNetworkSecurityGroup", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -296,8 +296,8 @@ func (c *multyResourceServiceClient) ReadNetworkSecurityGroup(ctx context.Contex
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateNetworkSecurityGroup(ctx context.Context, in *resources.UpdateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resources.NetworkSecurityGroupResource, error) {
-	out := new(resources.NetworkSecurityGroupResource)
+func (c *multyResourceServiceClient) UpdateNetworkSecurityGroup(ctx context.Context, in *resourcespb.UpdateNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*resourcespb.NetworkSecurityGroupResource, error) {
+	out := new(resourcespb.NetworkSecurityGroupResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateNetworkSecurityGroup", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -305,8 +305,8 @@ func (c *multyResourceServiceClient) UpdateNetworkSecurityGroup(ctx context.Cont
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteNetworkSecurityGroup(ctx context.Context, in *resources.DeleteNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteNetworkSecurityGroup(ctx context.Context, in *resourcespb.DeleteNetworkSecurityGroupRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteNetworkSecurityGroup", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -314,8 +314,8 @@ func (c *multyResourceServiceClient) DeleteNetworkSecurityGroup(ctx context.Cont
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateDatabase(ctx context.Context, in *resources.CreateDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error) {
-	out := new(resources.DatabaseResource)
+func (c *multyResourceServiceClient) CreateDatabase(ctx context.Context, in *resourcespb.CreateDatabaseRequest, opts ...grpc.CallOption) (*resourcespb.DatabaseResource, error) {
+	out := new(resourcespb.DatabaseResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateDatabase", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -323,8 +323,8 @@ func (c *multyResourceServiceClient) CreateDatabase(ctx context.Context, in *res
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadDatabase(ctx context.Context, in *resources.ReadDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error) {
-	out := new(resources.DatabaseResource)
+func (c *multyResourceServiceClient) ReadDatabase(ctx context.Context, in *resourcespb.ReadDatabaseRequest, opts ...grpc.CallOption) (*resourcespb.DatabaseResource, error) {
+	out := new(resourcespb.DatabaseResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadDatabase", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -332,8 +332,8 @@ func (c *multyResourceServiceClient) ReadDatabase(ctx context.Context, in *resou
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateDatabase(ctx context.Context, in *resources.UpdateDatabaseRequest, opts ...grpc.CallOption) (*resources.DatabaseResource, error) {
-	out := new(resources.DatabaseResource)
+func (c *multyResourceServiceClient) UpdateDatabase(ctx context.Context, in *resourcespb.UpdateDatabaseRequest, opts ...grpc.CallOption) (*resourcespb.DatabaseResource, error) {
+	out := new(resourcespb.DatabaseResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateDatabase", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -341,8 +341,8 @@ func (c *multyResourceServiceClient) UpdateDatabase(ctx context.Context, in *res
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteDatabase(ctx context.Context, in *resources.DeleteDatabaseRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteDatabase(ctx context.Context, in *resourcespb.DeleteDatabaseRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteDatabase", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -350,8 +350,8 @@ func (c *multyResourceServiceClient) DeleteDatabase(ctx context.Context, in *res
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateObjectStorage(ctx context.Context, in *resources.CreateObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error) {
-	out := new(resources.ObjectStorageResource)
+func (c *multyResourceServiceClient) CreateObjectStorage(ctx context.Context, in *resourcespb.CreateObjectStorageRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageResource, error) {
+	out := new(resourcespb.ObjectStorageResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateObjectStorage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -359,8 +359,8 @@ func (c *multyResourceServiceClient) CreateObjectStorage(ctx context.Context, in
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadObjectStorage(ctx context.Context, in *resources.ReadObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error) {
-	out := new(resources.ObjectStorageResource)
+func (c *multyResourceServiceClient) ReadObjectStorage(ctx context.Context, in *resourcespb.ReadObjectStorageRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageResource, error) {
+	out := new(resourcespb.ObjectStorageResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadObjectStorage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -368,8 +368,8 @@ func (c *multyResourceServiceClient) ReadObjectStorage(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateObjectStorage(ctx context.Context, in *resources.UpdateObjectStorageRequest, opts ...grpc.CallOption) (*resources.ObjectStorageResource, error) {
-	out := new(resources.ObjectStorageResource)
+func (c *multyResourceServiceClient) UpdateObjectStorage(ctx context.Context, in *resourcespb.UpdateObjectStorageRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageResource, error) {
+	out := new(resourcespb.ObjectStorageResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateObjectStorage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -377,8 +377,8 @@ func (c *multyResourceServiceClient) UpdateObjectStorage(ctx context.Context, in
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteObjectStorage(ctx context.Context, in *resources.DeleteObjectStorageRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteObjectStorage(ctx context.Context, in *resourcespb.DeleteObjectStorageRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteObjectStorage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -386,8 +386,8 @@ func (c *multyResourceServiceClient) DeleteObjectStorage(ctx context.Context, in
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateObjectStorageObject(ctx context.Context, in *resources.CreateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error) {
-	out := new(resources.ObjectStorageObjectResource)
+func (c *multyResourceServiceClient) CreateObjectStorageObject(ctx context.Context, in *resourcespb.CreateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageObjectResource, error) {
+	out := new(resourcespb.ObjectStorageObjectResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateObjectStorageObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -395,8 +395,8 @@ func (c *multyResourceServiceClient) CreateObjectStorageObject(ctx context.Conte
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadObjectStorageObject(ctx context.Context, in *resources.ReadObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error) {
-	out := new(resources.ObjectStorageObjectResource)
+func (c *multyResourceServiceClient) ReadObjectStorageObject(ctx context.Context, in *resourcespb.ReadObjectStorageObjectRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageObjectResource, error) {
+	out := new(resourcespb.ObjectStorageObjectResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadObjectStorageObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -404,8 +404,8 @@ func (c *multyResourceServiceClient) ReadObjectStorageObject(ctx context.Context
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateObjectStorageObject(ctx context.Context, in *resources.UpdateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resources.ObjectStorageObjectResource, error) {
-	out := new(resources.ObjectStorageObjectResource)
+func (c *multyResourceServiceClient) UpdateObjectStorageObject(ctx context.Context, in *resourcespb.UpdateObjectStorageObjectRequest, opts ...grpc.CallOption) (*resourcespb.ObjectStorageObjectResource, error) {
+	out := new(resourcespb.ObjectStorageObjectResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateObjectStorageObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -413,8 +413,8 @@ func (c *multyResourceServiceClient) UpdateObjectStorageObject(ctx context.Conte
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteObjectStorageObject(ctx context.Context, in *resources.DeleteObjectStorageObjectRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteObjectStorageObject(ctx context.Context, in *resourcespb.DeleteObjectStorageObjectRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteObjectStorageObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -422,8 +422,8 @@ func (c *multyResourceServiceClient) DeleteObjectStorageObject(ctx context.Conte
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreatePublicIp(ctx context.Context, in *resources.CreatePublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error) {
-	out := new(resources.PublicIpResource)
+func (c *multyResourceServiceClient) CreatePublicIp(ctx context.Context, in *resourcespb.CreatePublicIpRequest, opts ...grpc.CallOption) (*resourcespb.PublicIpResource, error) {
+	out := new(resourcespb.PublicIpResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreatePublicIp", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -431,8 +431,8 @@ func (c *multyResourceServiceClient) CreatePublicIp(ctx context.Context, in *res
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadPublicIp(ctx context.Context, in *resources.ReadPublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error) {
-	out := new(resources.PublicIpResource)
+func (c *multyResourceServiceClient) ReadPublicIp(ctx context.Context, in *resourcespb.ReadPublicIpRequest, opts ...grpc.CallOption) (*resourcespb.PublicIpResource, error) {
+	out := new(resourcespb.PublicIpResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadPublicIp", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -440,8 +440,8 @@ func (c *multyResourceServiceClient) ReadPublicIp(ctx context.Context, in *resou
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdatePublicIp(ctx context.Context, in *resources.UpdatePublicIpRequest, opts ...grpc.CallOption) (*resources.PublicIpResource, error) {
-	out := new(resources.PublicIpResource)
+func (c *multyResourceServiceClient) UpdatePublicIp(ctx context.Context, in *resourcespb.UpdatePublicIpRequest, opts ...grpc.CallOption) (*resourcespb.PublicIpResource, error) {
+	out := new(resourcespb.PublicIpResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdatePublicIp", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -449,8 +449,8 @@ func (c *multyResourceServiceClient) UpdatePublicIp(ctx context.Context, in *res
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeletePublicIp(ctx context.Context, in *resources.DeletePublicIpRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeletePublicIp(ctx context.Context, in *resourcespb.DeletePublicIpRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeletePublicIp", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -458,8 +458,8 @@ func (c *multyResourceServiceClient) DeletePublicIp(ctx context.Context, in *res
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateKubernetesCluster(ctx context.Context, in *resources.CreateKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error) {
-	out := new(resources.KubernetesClusterResource)
+func (c *multyResourceServiceClient) CreateKubernetesCluster(ctx context.Context, in *resourcespb.CreateKubernetesClusterRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesClusterResource, error) {
+	out := new(resourcespb.KubernetesClusterResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateKubernetesCluster", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -467,8 +467,8 @@ func (c *multyResourceServiceClient) CreateKubernetesCluster(ctx context.Context
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadKubernetesCluster(ctx context.Context, in *resources.ReadKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error) {
-	out := new(resources.KubernetesClusterResource)
+func (c *multyResourceServiceClient) ReadKubernetesCluster(ctx context.Context, in *resourcespb.ReadKubernetesClusterRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesClusterResource, error) {
+	out := new(resourcespb.KubernetesClusterResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadKubernetesCluster", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -476,8 +476,8 @@ func (c *multyResourceServiceClient) ReadKubernetesCluster(ctx context.Context, 
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateKubernetesCluster(ctx context.Context, in *resources.UpdateKubernetesClusterRequest, opts ...grpc.CallOption) (*resources.KubernetesClusterResource, error) {
-	out := new(resources.KubernetesClusterResource)
+func (c *multyResourceServiceClient) UpdateKubernetesCluster(ctx context.Context, in *resourcespb.UpdateKubernetesClusterRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesClusterResource, error) {
+	out := new(resourcespb.KubernetesClusterResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateKubernetesCluster", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -485,8 +485,8 @@ func (c *multyResourceServiceClient) UpdateKubernetesCluster(ctx context.Context
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteKubernetesCluster(ctx context.Context, in *resources.DeleteKubernetesClusterRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteKubernetesCluster(ctx context.Context, in *resourcespb.DeleteKubernetesClusterRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteKubernetesCluster", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -494,8 +494,8 @@ func (c *multyResourceServiceClient) DeleteKubernetesCluster(ctx context.Context
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateKubernetesNodePool(ctx context.Context, in *resources.CreateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error) {
-	out := new(resources.KubernetesNodePoolResource)
+func (c *multyResourceServiceClient) CreateKubernetesNodePool(ctx context.Context, in *resourcespb.CreateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesNodePoolResource, error) {
+	out := new(resourcespb.KubernetesNodePoolResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateKubernetesNodePool", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -503,8 +503,8 @@ func (c *multyResourceServiceClient) CreateKubernetesNodePool(ctx context.Contex
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadKubernetesNodePool(ctx context.Context, in *resources.ReadKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error) {
-	out := new(resources.KubernetesNodePoolResource)
+func (c *multyResourceServiceClient) ReadKubernetesNodePool(ctx context.Context, in *resourcespb.ReadKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesNodePoolResource, error) {
+	out := new(resourcespb.KubernetesNodePoolResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadKubernetesNodePool", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -512,8 +512,8 @@ func (c *multyResourceServiceClient) ReadKubernetesNodePool(ctx context.Context,
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateKubernetesNodePool(ctx context.Context, in *resources.UpdateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resources.KubernetesNodePoolResource, error) {
-	out := new(resources.KubernetesNodePoolResource)
+func (c *multyResourceServiceClient) UpdateKubernetesNodePool(ctx context.Context, in *resourcespb.UpdateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesNodePoolResource, error) {
+	out := new(resourcespb.KubernetesNodePoolResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateKubernetesNodePool", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -521,8 +521,8 @@ func (c *multyResourceServiceClient) UpdateKubernetesNodePool(ctx context.Contex
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteKubernetesNodePool(ctx context.Context, in *resources.DeleteKubernetesNodePoolRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteKubernetesNodePool(ctx context.Context, in *resourcespb.DeleteKubernetesNodePoolRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteKubernetesNodePool", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -530,8 +530,8 @@ func (c *multyResourceServiceClient) DeleteKubernetesNodePool(ctx context.Contex
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateLambda(ctx context.Context, in *resources.CreateLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error) {
-	out := new(resources.LambdaResource)
+func (c *multyResourceServiceClient) CreateLambda(ctx context.Context, in *resourcespb.CreateLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error) {
+	out := new(resourcespb.LambdaResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateLambda", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -539,8 +539,8 @@ func (c *multyResourceServiceClient) CreateLambda(ctx context.Context, in *resou
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadLambda(ctx context.Context, in *resources.ReadLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error) {
-	out := new(resources.LambdaResource)
+func (c *multyResourceServiceClient) ReadLambda(ctx context.Context, in *resourcespb.ReadLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error) {
+	out := new(resourcespb.LambdaResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadLambda", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -548,8 +548,8 @@ func (c *multyResourceServiceClient) ReadLambda(ctx context.Context, in *resourc
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateLambda(ctx context.Context, in *resources.UpdateLambdaRequest, opts ...grpc.CallOption) (*resources.LambdaResource, error) {
-	out := new(resources.LambdaResource)
+func (c *multyResourceServiceClient) UpdateLambda(ctx context.Context, in *resourcespb.UpdateLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error) {
+	out := new(resourcespb.LambdaResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateLambda", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -557,8 +557,8 @@ func (c *multyResourceServiceClient) UpdateLambda(ctx context.Context, in *resou
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteLambda(ctx context.Context, in *resources.DeleteLambdaRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteLambda(ctx context.Context, in *resourcespb.DeleteLambdaRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteLambda", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -566,8 +566,8 @@ func (c *multyResourceServiceClient) DeleteLambda(ctx context.Context, in *resou
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateVault(ctx context.Context, in *resources.CreateVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error) {
-	out := new(resources.VaultResource)
+func (c *multyResourceServiceClient) CreateVault(ctx context.Context, in *resourcespb.CreateVaultRequest, opts ...grpc.CallOption) (*resourcespb.VaultResource, error) {
+	out := new(resourcespb.VaultResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateVault", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -575,8 +575,8 @@ func (c *multyResourceServiceClient) CreateVault(ctx context.Context, in *resour
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadVault(ctx context.Context, in *resources.ReadVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error) {
-	out := new(resources.VaultResource)
+func (c *multyResourceServiceClient) ReadVault(ctx context.Context, in *resourcespb.ReadVaultRequest, opts ...grpc.CallOption) (*resourcespb.VaultResource, error) {
+	out := new(resourcespb.VaultResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadVault", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -584,8 +584,8 @@ func (c *multyResourceServiceClient) ReadVault(ctx context.Context, in *resource
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateVault(ctx context.Context, in *resources.UpdateVaultRequest, opts ...grpc.CallOption) (*resources.VaultResource, error) {
-	out := new(resources.VaultResource)
+func (c *multyResourceServiceClient) UpdateVault(ctx context.Context, in *resourcespb.UpdateVaultRequest, opts ...grpc.CallOption) (*resourcespb.VaultResource, error) {
+	out := new(resourcespb.VaultResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateVault", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -593,8 +593,8 @@ func (c *multyResourceServiceClient) UpdateVault(ctx context.Context, in *resour
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteVault(ctx context.Context, in *resources.DeleteVaultRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteVault(ctx context.Context, in *resourcespb.DeleteVaultRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteVault", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -602,8 +602,8 @@ func (c *multyResourceServiceClient) DeleteVault(ctx context.Context, in *resour
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateVaultAccessPolicy(ctx context.Context, in *resources.CreateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error) {
-	out := new(resources.VaultAccessPolicyResource)
+func (c *multyResourceServiceClient) CreateVaultAccessPolicy(ctx context.Context, in *resourcespb.CreateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resourcespb.VaultAccessPolicyResource, error) {
+	out := new(resourcespb.VaultAccessPolicyResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateVaultAccessPolicy", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -611,8 +611,8 @@ func (c *multyResourceServiceClient) CreateVaultAccessPolicy(ctx context.Context
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadVaultAccessPolicy(ctx context.Context, in *resources.ReadVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error) {
-	out := new(resources.VaultAccessPolicyResource)
+func (c *multyResourceServiceClient) ReadVaultAccessPolicy(ctx context.Context, in *resourcespb.ReadVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resourcespb.VaultAccessPolicyResource, error) {
+	out := new(resourcespb.VaultAccessPolicyResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadVaultAccessPolicy", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -620,8 +620,8 @@ func (c *multyResourceServiceClient) ReadVaultAccessPolicy(ctx context.Context, 
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateVaultAccessPolicy(ctx context.Context, in *resources.UpdateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resources.VaultAccessPolicyResource, error) {
-	out := new(resources.VaultAccessPolicyResource)
+func (c *multyResourceServiceClient) UpdateVaultAccessPolicy(ctx context.Context, in *resourcespb.UpdateVaultAccessPolicyRequest, opts ...grpc.CallOption) (*resourcespb.VaultAccessPolicyResource, error) {
+	out := new(resourcespb.VaultAccessPolicyResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateVaultAccessPolicy", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -629,8 +629,8 @@ func (c *multyResourceServiceClient) UpdateVaultAccessPolicy(ctx context.Context
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteVaultAccessPolicy(ctx context.Context, in *resources.DeleteVaultAccessPolicyRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteVaultAccessPolicy(ctx context.Context, in *resourcespb.DeleteVaultAccessPolicyRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteVaultAccessPolicy", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -638,8 +638,8 @@ func (c *multyResourceServiceClient) DeleteVaultAccessPolicy(ctx context.Context
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateVaultSecret(ctx context.Context, in *resources.CreateVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error) {
-	out := new(resources.VaultSecretResource)
+func (c *multyResourceServiceClient) CreateVaultSecret(ctx context.Context, in *resourcespb.CreateVaultSecretRequest, opts ...grpc.CallOption) (*resourcespb.VaultSecretResource, error) {
+	out := new(resourcespb.VaultSecretResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateVaultSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -647,8 +647,8 @@ func (c *multyResourceServiceClient) CreateVaultSecret(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadVaultSecret(ctx context.Context, in *resources.ReadVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error) {
-	out := new(resources.VaultSecretResource)
+func (c *multyResourceServiceClient) ReadVaultSecret(ctx context.Context, in *resourcespb.ReadVaultSecretRequest, opts ...grpc.CallOption) (*resourcespb.VaultSecretResource, error) {
+	out := new(resourcespb.VaultSecretResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadVaultSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -656,8 +656,8 @@ func (c *multyResourceServiceClient) ReadVaultSecret(ctx context.Context, in *re
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateVaultSecret(ctx context.Context, in *resources.UpdateVaultSecretRequest, opts ...grpc.CallOption) (*resources.VaultSecretResource, error) {
-	out := new(resources.VaultSecretResource)
+func (c *multyResourceServiceClient) UpdateVaultSecret(ctx context.Context, in *resourcespb.UpdateVaultSecretRequest, opts ...grpc.CallOption) (*resourcespb.VaultSecretResource, error) {
+	out := new(resourcespb.VaultSecretResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateVaultSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -665,8 +665,8 @@ func (c *multyResourceServiceClient) UpdateVaultSecret(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteVaultSecret(ctx context.Context, in *resources.DeleteVaultSecretRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteVaultSecret(ctx context.Context, in *resourcespb.DeleteVaultSecretRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteVaultSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -674,8 +674,8 @@ func (c *multyResourceServiceClient) DeleteVaultSecret(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateVirtualMachine(ctx context.Context, in *resources.CreateVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error) {
-	out := new(resources.VirtualMachineResource)
+func (c *multyResourceServiceClient) CreateVirtualMachine(ctx context.Context, in *resourcespb.CreateVirtualMachineRequest, opts ...grpc.CallOption) (*resourcespb.VirtualMachineResource, error) {
+	out := new(resourcespb.VirtualMachineResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateVirtualMachine", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -683,8 +683,8 @@ func (c *multyResourceServiceClient) CreateVirtualMachine(ctx context.Context, i
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) ReadVirtualMachine(ctx context.Context, in *resources.ReadVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error) {
-	out := new(resources.VirtualMachineResource)
+func (c *multyResourceServiceClient) ReadVirtualMachine(ctx context.Context, in *resourcespb.ReadVirtualMachineRequest, opts ...grpc.CallOption) (*resourcespb.VirtualMachineResource, error) {
+	out := new(resourcespb.VirtualMachineResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadVirtualMachine", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -692,8 +692,8 @@ func (c *multyResourceServiceClient) ReadVirtualMachine(ctx context.Context, in 
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) UpdateVirtualMachine(ctx context.Context, in *resources.UpdateVirtualMachineRequest, opts ...grpc.CallOption) (*resources.VirtualMachineResource, error) {
-	out := new(resources.VirtualMachineResource)
+func (c *multyResourceServiceClient) UpdateVirtualMachine(ctx context.Context, in *resourcespb.UpdateVirtualMachineRequest, opts ...grpc.CallOption) (*resourcespb.VirtualMachineResource, error) {
+	out := new(resourcespb.VirtualMachineResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateVirtualMachine", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -701,8 +701,8 @@ func (c *multyResourceServiceClient) UpdateVirtualMachine(ctx context.Context, i
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) DeleteVirtualMachine(ctx context.Context, in *resources.DeleteVirtualMachineRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
+func (c *multyResourceServiceClient) DeleteVirtualMachine(ctx context.Context, in *resourcespb.DeleteVirtualMachineRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteVirtualMachine", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -714,74 +714,74 @@ func (c *multyResourceServiceClient) DeleteVirtualMachine(ctx context.Context, i
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
 type MultyResourceServiceServer interface {
-	CreateSubnet(context.Context, *resources.CreateSubnetRequest) (*resources.SubnetResource, error)
-	ReadSubnet(context.Context, *resources.ReadSubnetRequest) (*resources.SubnetResource, error)
-	UpdateSubnet(context.Context, *resources.UpdateSubnetRequest) (*resources.SubnetResource, error)
-	DeleteSubnet(context.Context, *resources.DeleteSubnetRequest) (*common.Empty, error)
-	CreateVirtualNetwork(context.Context, *resources.CreateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error)
-	ReadVirtualNetwork(context.Context, *resources.ReadVirtualNetworkRequest) (*resources.VirtualNetworkResource, error)
-	UpdateVirtualNetwork(context.Context, *resources.UpdateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error)
-	DeleteVirtualNetwork(context.Context, *resources.DeleteVirtualNetworkRequest) (*common.Empty, error)
-	CreateNetworkInterface(context.Context, *resources.CreateNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error)
-	ReadNetworkInterface(context.Context, *resources.ReadNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error)
-	UpdateNetworkInterface(context.Context, *resources.UpdateNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error)
-	DeleteNetworkInterface(context.Context, *resources.DeleteNetworkInterfaceRequest) (*common.Empty, error)
-	CreateRouteTable(context.Context, *resources.CreateRouteTableRequest) (*resources.RouteTableResource, error)
-	ReadRouteTable(context.Context, *resources.ReadRouteTableRequest) (*resources.RouteTableResource, error)
-	UpdateRouteTable(context.Context, *resources.UpdateRouteTableRequest) (*resources.RouteTableResource, error)
-	DeleteRouteTable(context.Context, *resources.DeleteRouteTableRequest) (*common.Empty, error)
-	CreateRouteTableAssociation(context.Context, *resources.CreateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error)
-	ReadRouteTableAssociation(context.Context, *resources.ReadRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error)
-	UpdateRouteTableAssociation(context.Context, *resources.UpdateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error)
-	DeleteRouteTableAssociation(context.Context, *resources.DeleteRouteTableAssociationRequest) (*common.Empty, error)
-	CreateNetworkSecurityGroup(context.Context, *resources.CreateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error)
-	ReadNetworkSecurityGroup(context.Context, *resources.ReadNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error)
-	UpdateNetworkSecurityGroup(context.Context, *resources.UpdateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error)
-	DeleteNetworkSecurityGroup(context.Context, *resources.DeleteNetworkSecurityGroupRequest) (*common.Empty, error)
-	CreateDatabase(context.Context, *resources.CreateDatabaseRequest) (*resources.DatabaseResource, error)
-	ReadDatabase(context.Context, *resources.ReadDatabaseRequest) (*resources.DatabaseResource, error)
-	UpdateDatabase(context.Context, *resources.UpdateDatabaseRequest) (*resources.DatabaseResource, error)
-	DeleteDatabase(context.Context, *resources.DeleteDatabaseRequest) (*common.Empty, error)
-	CreateObjectStorage(context.Context, *resources.CreateObjectStorageRequest) (*resources.ObjectStorageResource, error)
-	ReadObjectStorage(context.Context, *resources.ReadObjectStorageRequest) (*resources.ObjectStorageResource, error)
-	UpdateObjectStorage(context.Context, *resources.UpdateObjectStorageRequest) (*resources.ObjectStorageResource, error)
-	DeleteObjectStorage(context.Context, *resources.DeleteObjectStorageRequest) (*common.Empty, error)
-	CreateObjectStorageObject(context.Context, *resources.CreateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error)
-	ReadObjectStorageObject(context.Context, *resources.ReadObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error)
-	UpdateObjectStorageObject(context.Context, *resources.UpdateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error)
-	DeleteObjectStorageObject(context.Context, *resources.DeleteObjectStorageObjectRequest) (*common.Empty, error)
-	CreatePublicIp(context.Context, *resources.CreatePublicIpRequest) (*resources.PublicIpResource, error)
-	ReadPublicIp(context.Context, *resources.ReadPublicIpRequest) (*resources.PublicIpResource, error)
-	UpdatePublicIp(context.Context, *resources.UpdatePublicIpRequest) (*resources.PublicIpResource, error)
-	DeletePublicIp(context.Context, *resources.DeletePublicIpRequest) (*common.Empty, error)
-	CreateKubernetesCluster(context.Context, *resources.CreateKubernetesClusterRequest) (*resources.KubernetesClusterResource, error)
-	ReadKubernetesCluster(context.Context, *resources.ReadKubernetesClusterRequest) (*resources.KubernetesClusterResource, error)
-	UpdateKubernetesCluster(context.Context, *resources.UpdateKubernetesClusterRequest) (*resources.KubernetesClusterResource, error)
-	DeleteKubernetesCluster(context.Context, *resources.DeleteKubernetesClusterRequest) (*common.Empty, error)
-	CreateKubernetesNodePool(context.Context, *resources.CreateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error)
-	ReadKubernetesNodePool(context.Context, *resources.ReadKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error)
-	UpdateKubernetesNodePool(context.Context, *resources.UpdateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error)
-	DeleteKubernetesNodePool(context.Context, *resources.DeleteKubernetesNodePoolRequest) (*common.Empty, error)
-	CreateLambda(context.Context, *resources.CreateLambdaRequest) (*resources.LambdaResource, error)
-	ReadLambda(context.Context, *resources.ReadLambdaRequest) (*resources.LambdaResource, error)
-	UpdateLambda(context.Context, *resources.UpdateLambdaRequest) (*resources.LambdaResource, error)
-	DeleteLambda(context.Context, *resources.DeleteLambdaRequest) (*common.Empty, error)
-	CreateVault(context.Context, *resources.CreateVaultRequest) (*resources.VaultResource, error)
-	ReadVault(context.Context, *resources.ReadVaultRequest) (*resources.VaultResource, error)
-	UpdateVault(context.Context, *resources.UpdateVaultRequest) (*resources.VaultResource, error)
-	DeleteVault(context.Context, *resources.DeleteVaultRequest) (*common.Empty, error)
-	CreateVaultAccessPolicy(context.Context, *resources.CreateVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error)
-	ReadVaultAccessPolicy(context.Context, *resources.ReadVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error)
-	UpdateVaultAccessPolicy(context.Context, *resources.UpdateVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error)
-	DeleteVaultAccessPolicy(context.Context, *resources.DeleteVaultAccessPolicyRequest) (*common.Empty, error)
-	CreateVaultSecret(context.Context, *resources.CreateVaultSecretRequest) (*resources.VaultSecretResource, error)
-	ReadVaultSecret(context.Context, *resources.ReadVaultSecretRequest) (*resources.VaultSecretResource, error)
-	UpdateVaultSecret(context.Context, *resources.UpdateVaultSecretRequest) (*resources.VaultSecretResource, error)
-	DeleteVaultSecret(context.Context, *resources.DeleteVaultSecretRequest) (*common.Empty, error)
-	CreateVirtualMachine(context.Context, *resources.CreateVirtualMachineRequest) (*resources.VirtualMachineResource, error)
-	ReadVirtualMachine(context.Context, *resources.ReadVirtualMachineRequest) (*resources.VirtualMachineResource, error)
-	UpdateVirtualMachine(context.Context, *resources.UpdateVirtualMachineRequest) (*resources.VirtualMachineResource, error)
-	DeleteVirtualMachine(context.Context, *resources.DeleteVirtualMachineRequest) (*common.Empty, error)
+	CreateSubnet(context.Context, *resourcespb.CreateSubnetRequest) (*resourcespb.SubnetResource, error)
+	ReadSubnet(context.Context, *resourcespb.ReadSubnetRequest) (*resourcespb.SubnetResource, error)
+	UpdateSubnet(context.Context, *resourcespb.UpdateSubnetRequest) (*resourcespb.SubnetResource, error)
+	DeleteSubnet(context.Context, *resourcespb.DeleteSubnetRequest) (*commonpb.Empty, error)
+	CreateVirtualNetwork(context.Context, *resourcespb.CreateVirtualNetworkRequest) (*resourcespb.VirtualNetworkResource, error)
+	ReadVirtualNetwork(context.Context, *resourcespb.ReadVirtualNetworkRequest) (*resourcespb.VirtualNetworkResource, error)
+	UpdateVirtualNetwork(context.Context, *resourcespb.UpdateVirtualNetworkRequest) (*resourcespb.VirtualNetworkResource, error)
+	DeleteVirtualNetwork(context.Context, *resourcespb.DeleteVirtualNetworkRequest) (*commonpb.Empty, error)
+	CreateNetworkInterface(context.Context, *resourcespb.CreateNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error)
+	ReadNetworkInterface(context.Context, *resourcespb.ReadNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error)
+	UpdateNetworkInterface(context.Context, *resourcespb.UpdateNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error)
+	DeleteNetworkInterface(context.Context, *resourcespb.DeleteNetworkInterfaceRequest) (*commonpb.Empty, error)
+	CreateRouteTable(context.Context, *resourcespb.CreateRouteTableRequest) (*resourcespb.RouteTableResource, error)
+	ReadRouteTable(context.Context, *resourcespb.ReadRouteTableRequest) (*resourcespb.RouteTableResource, error)
+	UpdateRouteTable(context.Context, *resourcespb.UpdateRouteTableRequest) (*resourcespb.RouteTableResource, error)
+	DeleteRouteTable(context.Context, *resourcespb.DeleteRouteTableRequest) (*commonpb.Empty, error)
+	CreateRouteTableAssociation(context.Context, *resourcespb.CreateRouteTableAssociationRequest) (*resourcespb.RouteTableAssociationResource, error)
+	ReadRouteTableAssociation(context.Context, *resourcespb.ReadRouteTableAssociationRequest) (*resourcespb.RouteTableAssociationResource, error)
+	UpdateRouteTableAssociation(context.Context, *resourcespb.UpdateRouteTableAssociationRequest) (*resourcespb.RouteTableAssociationResource, error)
+	DeleteRouteTableAssociation(context.Context, *resourcespb.DeleteRouteTableAssociationRequest) (*commonpb.Empty, error)
+	CreateNetworkSecurityGroup(context.Context, *resourcespb.CreateNetworkSecurityGroupRequest) (*resourcespb.NetworkSecurityGroupResource, error)
+	ReadNetworkSecurityGroup(context.Context, *resourcespb.ReadNetworkSecurityGroupRequest) (*resourcespb.NetworkSecurityGroupResource, error)
+	UpdateNetworkSecurityGroup(context.Context, *resourcespb.UpdateNetworkSecurityGroupRequest) (*resourcespb.NetworkSecurityGroupResource, error)
+	DeleteNetworkSecurityGroup(context.Context, *resourcespb.DeleteNetworkSecurityGroupRequest) (*commonpb.Empty, error)
+	CreateDatabase(context.Context, *resourcespb.CreateDatabaseRequest) (*resourcespb.DatabaseResource, error)
+	ReadDatabase(context.Context, *resourcespb.ReadDatabaseRequest) (*resourcespb.DatabaseResource, error)
+	UpdateDatabase(context.Context, *resourcespb.UpdateDatabaseRequest) (*resourcespb.DatabaseResource, error)
+	DeleteDatabase(context.Context, *resourcespb.DeleteDatabaseRequest) (*commonpb.Empty, error)
+	CreateObjectStorage(context.Context, *resourcespb.CreateObjectStorageRequest) (*resourcespb.ObjectStorageResource, error)
+	ReadObjectStorage(context.Context, *resourcespb.ReadObjectStorageRequest) (*resourcespb.ObjectStorageResource, error)
+	UpdateObjectStorage(context.Context, *resourcespb.UpdateObjectStorageRequest) (*resourcespb.ObjectStorageResource, error)
+	DeleteObjectStorage(context.Context, *resourcespb.DeleteObjectStorageRequest) (*commonpb.Empty, error)
+	CreateObjectStorageObject(context.Context, *resourcespb.CreateObjectStorageObjectRequest) (*resourcespb.ObjectStorageObjectResource, error)
+	ReadObjectStorageObject(context.Context, *resourcespb.ReadObjectStorageObjectRequest) (*resourcespb.ObjectStorageObjectResource, error)
+	UpdateObjectStorageObject(context.Context, *resourcespb.UpdateObjectStorageObjectRequest) (*resourcespb.ObjectStorageObjectResource, error)
+	DeleteObjectStorageObject(context.Context, *resourcespb.DeleteObjectStorageObjectRequest) (*commonpb.Empty, error)
+	CreatePublicIp(context.Context, *resourcespb.CreatePublicIpRequest) (*resourcespb.PublicIpResource, error)
+	ReadPublicIp(context.Context, *resourcespb.ReadPublicIpRequest) (*resourcespb.PublicIpResource, error)
+	UpdatePublicIp(context.Context, *resourcespb.UpdatePublicIpRequest) (*resourcespb.PublicIpResource, error)
+	DeletePublicIp(context.Context, *resourcespb.DeletePublicIpRequest) (*commonpb.Empty, error)
+	CreateKubernetesCluster(context.Context, *resourcespb.CreateKubernetesClusterRequest) (*resourcespb.KubernetesClusterResource, error)
+	ReadKubernetesCluster(context.Context, *resourcespb.ReadKubernetesClusterRequest) (*resourcespb.KubernetesClusterResource, error)
+	UpdateKubernetesCluster(context.Context, *resourcespb.UpdateKubernetesClusterRequest) (*resourcespb.KubernetesClusterResource, error)
+	DeleteKubernetesCluster(context.Context, *resourcespb.DeleteKubernetesClusterRequest) (*commonpb.Empty, error)
+	CreateKubernetesNodePool(context.Context, *resourcespb.CreateKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error)
+	ReadKubernetesNodePool(context.Context, *resourcespb.ReadKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error)
+	UpdateKubernetesNodePool(context.Context, *resourcespb.UpdateKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error)
+	DeleteKubernetesNodePool(context.Context, *resourcespb.DeleteKubernetesNodePoolRequest) (*commonpb.Empty, error)
+	CreateLambda(context.Context, *resourcespb.CreateLambdaRequest) (*resourcespb.LambdaResource, error)
+	ReadLambda(context.Context, *resourcespb.ReadLambdaRequest) (*resourcespb.LambdaResource, error)
+	UpdateLambda(context.Context, *resourcespb.UpdateLambdaRequest) (*resourcespb.LambdaResource, error)
+	DeleteLambda(context.Context, *resourcespb.DeleteLambdaRequest) (*commonpb.Empty, error)
+	CreateVault(context.Context, *resourcespb.CreateVaultRequest) (*resourcespb.VaultResource, error)
+	ReadVault(context.Context, *resourcespb.ReadVaultRequest) (*resourcespb.VaultResource, error)
+	UpdateVault(context.Context, *resourcespb.UpdateVaultRequest) (*resourcespb.VaultResource, error)
+	DeleteVault(context.Context, *resourcespb.DeleteVaultRequest) (*commonpb.Empty, error)
+	CreateVaultAccessPolicy(context.Context, *resourcespb.CreateVaultAccessPolicyRequest) (*resourcespb.VaultAccessPolicyResource, error)
+	ReadVaultAccessPolicy(context.Context, *resourcespb.ReadVaultAccessPolicyRequest) (*resourcespb.VaultAccessPolicyResource, error)
+	UpdateVaultAccessPolicy(context.Context, *resourcespb.UpdateVaultAccessPolicyRequest) (*resourcespb.VaultAccessPolicyResource, error)
+	DeleteVaultAccessPolicy(context.Context, *resourcespb.DeleteVaultAccessPolicyRequest) (*commonpb.Empty, error)
+	CreateVaultSecret(context.Context, *resourcespb.CreateVaultSecretRequest) (*resourcespb.VaultSecretResource, error)
+	ReadVaultSecret(context.Context, *resourcespb.ReadVaultSecretRequest) (*resourcespb.VaultSecretResource, error)
+	UpdateVaultSecret(context.Context, *resourcespb.UpdateVaultSecretRequest) (*resourcespb.VaultSecretResource, error)
+	DeleteVaultSecret(context.Context, *resourcespb.DeleteVaultSecretRequest) (*commonpb.Empty, error)
+	CreateVirtualMachine(context.Context, *resourcespb.CreateVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error)
+	ReadVirtualMachine(context.Context, *resourcespb.ReadVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error)
+	UpdateVirtualMachine(context.Context, *resourcespb.UpdateVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error)
+	DeleteVirtualMachine(context.Context, *resourcespb.DeleteVirtualMachineRequest) (*commonpb.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -789,208 +789,208 @@ type MultyResourceServiceServer interface {
 type UnimplementedMultyResourceServiceServer struct {
 }
 
-func (UnimplementedMultyResourceServiceServer) CreateSubnet(context.Context, *resources.CreateSubnetRequest) (*resources.SubnetResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateSubnet(context.Context, *resourcespb.CreateSubnetRequest) (*resourcespb.SubnetResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSubnet not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadSubnet(context.Context, *resources.ReadSubnetRequest) (*resources.SubnetResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadSubnet(context.Context, *resourcespb.ReadSubnetRequest) (*resourcespb.SubnetResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadSubnet not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateSubnet(context.Context, *resources.UpdateSubnetRequest) (*resources.SubnetResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateSubnet(context.Context, *resourcespb.UpdateSubnetRequest) (*resourcespb.SubnetResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateSubnet not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteSubnet(context.Context, *resources.DeleteSubnetRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteSubnet(context.Context, *resourcespb.DeleteSubnetRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSubnet not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateVirtualNetwork(context.Context, *resources.CreateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateVirtualNetwork(context.Context, *resourcespb.CreateVirtualNetworkRequest) (*resourcespb.VirtualNetworkResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateVirtualNetwork not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadVirtualNetwork(context.Context, *resources.ReadVirtualNetworkRequest) (*resources.VirtualNetworkResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadVirtualNetwork(context.Context, *resourcespb.ReadVirtualNetworkRequest) (*resourcespb.VirtualNetworkResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadVirtualNetwork not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateVirtualNetwork(context.Context, *resources.UpdateVirtualNetworkRequest) (*resources.VirtualNetworkResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateVirtualNetwork(context.Context, *resourcespb.UpdateVirtualNetworkRequest) (*resourcespb.VirtualNetworkResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateVirtualNetwork not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteVirtualNetwork(context.Context, *resources.DeleteVirtualNetworkRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteVirtualNetwork(context.Context, *resourcespb.DeleteVirtualNetworkRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVirtualNetwork not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateNetworkInterface(context.Context, *resources.CreateNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateNetworkInterface(context.Context, *resourcespb.CreateNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNetworkInterface not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadNetworkInterface(context.Context, *resources.ReadNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadNetworkInterface(context.Context, *resourcespb.ReadNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadNetworkInterface not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateNetworkInterface(context.Context, *resources.UpdateNetworkInterfaceRequest) (*resources.NetworkInterfaceResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateNetworkInterface(context.Context, *resourcespb.UpdateNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNetworkInterface not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteNetworkInterface(context.Context, *resources.DeleteNetworkInterfaceRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteNetworkInterface(context.Context, *resourcespb.DeleteNetworkInterfaceRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNetworkInterface not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateRouteTable(context.Context, *resources.CreateRouteTableRequest) (*resources.RouteTableResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateRouteTable(context.Context, *resourcespb.CreateRouteTableRequest) (*resourcespb.RouteTableResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateRouteTable not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadRouteTable(context.Context, *resources.ReadRouteTableRequest) (*resources.RouteTableResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadRouteTable(context.Context, *resourcespb.ReadRouteTableRequest) (*resourcespb.RouteTableResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadRouteTable not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateRouteTable(context.Context, *resources.UpdateRouteTableRequest) (*resources.RouteTableResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateRouteTable(context.Context, *resourcespb.UpdateRouteTableRequest) (*resourcespb.RouteTableResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateRouteTable not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteRouteTable(context.Context, *resources.DeleteRouteTableRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteRouteTable(context.Context, *resourcespb.DeleteRouteTableRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRouteTable not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateRouteTableAssociation(context.Context, *resources.CreateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateRouteTableAssociation(context.Context, *resourcespb.CreateRouteTableAssociationRequest) (*resourcespb.RouteTableAssociationResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateRouteTableAssociation not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadRouteTableAssociation(context.Context, *resources.ReadRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadRouteTableAssociation(context.Context, *resourcespb.ReadRouteTableAssociationRequest) (*resourcespb.RouteTableAssociationResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadRouteTableAssociation not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateRouteTableAssociation(context.Context, *resources.UpdateRouteTableAssociationRequest) (*resources.RouteTableAssociationResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateRouteTableAssociation(context.Context, *resourcespb.UpdateRouteTableAssociationRequest) (*resourcespb.RouteTableAssociationResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateRouteTableAssociation not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteRouteTableAssociation(context.Context, *resources.DeleteRouteTableAssociationRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteRouteTableAssociation(context.Context, *resourcespb.DeleteRouteTableAssociationRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRouteTableAssociation not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateNetworkSecurityGroup(context.Context, *resources.CreateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateNetworkSecurityGroup(context.Context, *resourcespb.CreateNetworkSecurityGroupRequest) (*resourcespb.NetworkSecurityGroupResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNetworkSecurityGroup not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadNetworkSecurityGroup(context.Context, *resources.ReadNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadNetworkSecurityGroup(context.Context, *resourcespb.ReadNetworkSecurityGroupRequest) (*resourcespb.NetworkSecurityGroupResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadNetworkSecurityGroup not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateNetworkSecurityGroup(context.Context, *resources.UpdateNetworkSecurityGroupRequest) (*resources.NetworkSecurityGroupResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateNetworkSecurityGroup(context.Context, *resourcespb.UpdateNetworkSecurityGroupRequest) (*resourcespb.NetworkSecurityGroupResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNetworkSecurityGroup not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteNetworkSecurityGroup(context.Context, *resources.DeleteNetworkSecurityGroupRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteNetworkSecurityGroup(context.Context, *resourcespb.DeleteNetworkSecurityGroupRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNetworkSecurityGroup not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateDatabase(context.Context, *resources.CreateDatabaseRequest) (*resources.DatabaseResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateDatabase(context.Context, *resourcespb.CreateDatabaseRequest) (*resourcespb.DatabaseResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateDatabase not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadDatabase(context.Context, *resources.ReadDatabaseRequest) (*resources.DatabaseResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadDatabase(context.Context, *resourcespb.ReadDatabaseRequest) (*resourcespb.DatabaseResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadDatabase not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateDatabase(context.Context, *resources.UpdateDatabaseRequest) (*resources.DatabaseResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateDatabase(context.Context, *resourcespb.UpdateDatabaseRequest) (*resourcespb.DatabaseResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDatabase not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteDatabase(context.Context, *resources.DeleteDatabaseRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteDatabase(context.Context, *resourcespb.DeleteDatabaseRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDatabase not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateObjectStorage(context.Context, *resources.CreateObjectStorageRequest) (*resources.ObjectStorageResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateObjectStorage(context.Context, *resourcespb.CreateObjectStorageRequest) (*resourcespb.ObjectStorageResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateObjectStorage not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadObjectStorage(context.Context, *resources.ReadObjectStorageRequest) (*resources.ObjectStorageResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadObjectStorage(context.Context, *resourcespb.ReadObjectStorageRequest) (*resourcespb.ObjectStorageResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadObjectStorage not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateObjectStorage(context.Context, *resources.UpdateObjectStorageRequest) (*resources.ObjectStorageResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateObjectStorage(context.Context, *resourcespb.UpdateObjectStorageRequest) (*resourcespb.ObjectStorageResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateObjectStorage not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteObjectStorage(context.Context, *resources.DeleteObjectStorageRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteObjectStorage(context.Context, *resourcespb.DeleteObjectStorageRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteObjectStorage not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateObjectStorageObject(context.Context, *resources.CreateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateObjectStorageObject(context.Context, *resourcespb.CreateObjectStorageObjectRequest) (*resourcespb.ObjectStorageObjectResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateObjectStorageObject not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadObjectStorageObject(context.Context, *resources.ReadObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadObjectStorageObject(context.Context, *resourcespb.ReadObjectStorageObjectRequest) (*resourcespb.ObjectStorageObjectResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadObjectStorageObject not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateObjectStorageObject(context.Context, *resources.UpdateObjectStorageObjectRequest) (*resources.ObjectStorageObjectResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateObjectStorageObject(context.Context, *resourcespb.UpdateObjectStorageObjectRequest) (*resourcespb.ObjectStorageObjectResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateObjectStorageObject not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteObjectStorageObject(context.Context, *resources.DeleteObjectStorageObjectRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteObjectStorageObject(context.Context, *resourcespb.DeleteObjectStorageObjectRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteObjectStorageObject not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreatePublicIp(context.Context, *resources.CreatePublicIpRequest) (*resources.PublicIpResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreatePublicIp(context.Context, *resourcespb.CreatePublicIpRequest) (*resourcespb.PublicIpResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePublicIp not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadPublicIp(context.Context, *resources.ReadPublicIpRequest) (*resources.PublicIpResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadPublicIp(context.Context, *resourcespb.ReadPublicIpRequest) (*resourcespb.PublicIpResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadPublicIp not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdatePublicIp(context.Context, *resources.UpdatePublicIpRequest) (*resources.PublicIpResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdatePublicIp(context.Context, *resourcespb.UpdatePublicIpRequest) (*resourcespb.PublicIpResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePublicIp not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeletePublicIp(context.Context, *resources.DeletePublicIpRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeletePublicIp(context.Context, *resourcespb.DeletePublicIpRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePublicIp not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateKubernetesCluster(context.Context, *resources.CreateKubernetesClusterRequest) (*resources.KubernetesClusterResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateKubernetesCluster(context.Context, *resourcespb.CreateKubernetesClusterRequest) (*resourcespb.KubernetesClusterResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateKubernetesCluster not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadKubernetesCluster(context.Context, *resources.ReadKubernetesClusterRequest) (*resources.KubernetesClusterResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadKubernetesCluster(context.Context, *resourcespb.ReadKubernetesClusterRequest) (*resourcespb.KubernetesClusterResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadKubernetesCluster not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateKubernetesCluster(context.Context, *resources.UpdateKubernetesClusterRequest) (*resources.KubernetesClusterResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateKubernetesCluster(context.Context, *resourcespb.UpdateKubernetesClusterRequest) (*resourcespb.KubernetesClusterResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateKubernetesCluster not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteKubernetesCluster(context.Context, *resources.DeleteKubernetesClusterRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteKubernetesCluster(context.Context, *resourcespb.DeleteKubernetesClusterRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteKubernetesCluster not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateKubernetesNodePool(context.Context, *resources.CreateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateKubernetesNodePool(context.Context, *resourcespb.CreateKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateKubernetesNodePool not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadKubernetesNodePool(context.Context, *resources.ReadKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadKubernetesNodePool(context.Context, *resourcespb.ReadKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadKubernetesNodePool not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateKubernetesNodePool(context.Context, *resources.UpdateKubernetesNodePoolRequest) (*resources.KubernetesNodePoolResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateKubernetesNodePool(context.Context, *resourcespb.UpdateKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateKubernetesNodePool not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteKubernetesNodePool(context.Context, *resources.DeleteKubernetesNodePoolRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteKubernetesNodePool(context.Context, *resourcespb.DeleteKubernetesNodePoolRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteKubernetesNodePool not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateLambda(context.Context, *resources.CreateLambdaRequest) (*resources.LambdaResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateLambda(context.Context, *resourcespb.CreateLambdaRequest) (*resourcespb.LambdaResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateLambda not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadLambda(context.Context, *resources.ReadLambdaRequest) (*resources.LambdaResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadLambda(context.Context, *resourcespb.ReadLambdaRequest) (*resourcespb.LambdaResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadLambda not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateLambda(context.Context, *resources.UpdateLambdaRequest) (*resources.LambdaResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateLambda(context.Context, *resourcespb.UpdateLambdaRequest) (*resourcespb.LambdaResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateLambda not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteLambda(context.Context, *resources.DeleteLambdaRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteLambda(context.Context, *resourcespb.DeleteLambdaRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteLambda not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateVault(context.Context, *resources.CreateVaultRequest) (*resources.VaultResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateVault(context.Context, *resourcespb.CreateVaultRequest) (*resourcespb.VaultResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateVault not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadVault(context.Context, *resources.ReadVaultRequest) (*resources.VaultResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadVault(context.Context, *resourcespb.ReadVaultRequest) (*resourcespb.VaultResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadVault not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateVault(context.Context, *resources.UpdateVaultRequest) (*resources.VaultResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateVault(context.Context, *resourcespb.UpdateVaultRequest) (*resourcespb.VaultResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateVault not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteVault(context.Context, *resources.DeleteVaultRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteVault(context.Context, *resourcespb.DeleteVaultRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVault not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateVaultAccessPolicy(context.Context, *resources.CreateVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateVaultAccessPolicy(context.Context, *resourcespb.CreateVaultAccessPolicyRequest) (*resourcespb.VaultAccessPolicyResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateVaultAccessPolicy not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadVaultAccessPolicy(context.Context, *resources.ReadVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadVaultAccessPolicy(context.Context, *resourcespb.ReadVaultAccessPolicyRequest) (*resourcespb.VaultAccessPolicyResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadVaultAccessPolicy not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateVaultAccessPolicy(context.Context, *resources.UpdateVaultAccessPolicyRequest) (*resources.VaultAccessPolicyResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateVaultAccessPolicy(context.Context, *resourcespb.UpdateVaultAccessPolicyRequest) (*resourcespb.VaultAccessPolicyResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateVaultAccessPolicy not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteVaultAccessPolicy(context.Context, *resources.DeleteVaultAccessPolicyRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteVaultAccessPolicy(context.Context, *resourcespb.DeleteVaultAccessPolicyRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVaultAccessPolicy not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateVaultSecret(context.Context, *resources.CreateVaultSecretRequest) (*resources.VaultSecretResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateVaultSecret(context.Context, *resourcespb.CreateVaultSecretRequest) (*resourcespb.VaultSecretResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateVaultSecret not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadVaultSecret(context.Context, *resources.ReadVaultSecretRequest) (*resources.VaultSecretResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadVaultSecret(context.Context, *resourcespb.ReadVaultSecretRequest) (*resourcespb.VaultSecretResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadVaultSecret not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateVaultSecret(context.Context, *resources.UpdateVaultSecretRequest) (*resources.VaultSecretResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateVaultSecret(context.Context, *resourcespb.UpdateVaultSecretRequest) (*resourcespb.VaultSecretResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateVaultSecret not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteVaultSecret(context.Context, *resources.DeleteVaultSecretRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteVaultSecret(context.Context, *resourcespb.DeleteVaultSecretRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVaultSecret not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) CreateVirtualMachine(context.Context, *resources.CreateVirtualMachineRequest) (*resources.VirtualMachineResource, error) {
+func (UnimplementedMultyResourceServiceServer) CreateVirtualMachine(context.Context, *resourcespb.CreateVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateVirtualMachine not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) ReadVirtualMachine(context.Context, *resources.ReadVirtualMachineRequest) (*resources.VirtualMachineResource, error) {
+func (UnimplementedMultyResourceServiceServer) ReadVirtualMachine(context.Context, *resourcespb.ReadVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadVirtualMachine not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) UpdateVirtualMachine(context.Context, *resources.UpdateVirtualMachineRequest) (*resources.VirtualMachineResource, error) {
+func (UnimplementedMultyResourceServiceServer) UpdateVirtualMachine(context.Context, *resourcespb.UpdateVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateVirtualMachine not implemented")
 }
-func (UnimplementedMultyResourceServiceServer) DeleteVirtualMachine(context.Context, *resources.DeleteVirtualMachineRequest) (*common.Empty, error) {
+func (UnimplementedMultyResourceServiceServer) DeleteVirtualMachine(context.Context, *resourcespb.DeleteVirtualMachineRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVirtualMachine not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
@@ -1007,7 +1007,7 @@ func RegisterMultyResourceServiceServer(s grpc.ServiceRegistrar, srv MultyResour
 }
 
 func _MultyResourceService_CreateSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateSubnetRequest)
+	in := new(resourcespb.CreateSubnetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1019,13 +1019,13 @@ func _MultyResourceService_CreateSubnet_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/dev.multy.MultyResourceService/CreateSubnet",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateSubnet(ctx, req.(*resources.CreateSubnetRequest))
+		return srv.(MultyResourceServiceServer).CreateSubnet(ctx, req.(*resourcespb.CreateSubnetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadSubnetRequest)
+	in := new(resourcespb.ReadSubnetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1037,13 +1037,13 @@ func _MultyResourceService_ReadSubnet_Handler(srv interface{}, ctx context.Conte
 		FullMethod: "/dev.multy.MultyResourceService/ReadSubnet",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadSubnet(ctx, req.(*resources.ReadSubnetRequest))
+		return srv.(MultyResourceServiceServer).ReadSubnet(ctx, req.(*resourcespb.ReadSubnetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateSubnetRequest)
+	in := new(resourcespb.UpdateSubnetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1055,13 +1055,13 @@ func _MultyResourceService_UpdateSubnet_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/dev.multy.MultyResourceService/UpdateSubnet",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateSubnet(ctx, req.(*resources.UpdateSubnetRequest))
+		return srv.(MultyResourceServiceServer).UpdateSubnet(ctx, req.(*resourcespb.UpdateSubnetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteSubnetRequest)
+	in := new(resourcespb.DeleteSubnetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1073,13 +1073,13 @@ func _MultyResourceService_DeleteSubnet_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/dev.multy.MultyResourceService/DeleteSubnet",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteSubnet(ctx, req.(*resources.DeleteSubnetRequest))
+		return srv.(MultyResourceServiceServer).DeleteSubnet(ctx, req.(*resourcespb.DeleteSubnetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateVirtualNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateVirtualNetworkRequest)
+	in := new(resourcespb.CreateVirtualNetworkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1091,13 +1091,13 @@ func _MultyResourceService_CreateVirtualNetwork_Handler(srv interface{}, ctx con
 		FullMethod: "/dev.multy.MultyResourceService/CreateVirtualNetwork",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateVirtualNetwork(ctx, req.(*resources.CreateVirtualNetworkRequest))
+		return srv.(MultyResourceServiceServer).CreateVirtualNetwork(ctx, req.(*resourcespb.CreateVirtualNetworkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadVirtualNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadVirtualNetworkRequest)
+	in := new(resourcespb.ReadVirtualNetworkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1109,13 +1109,13 @@ func _MultyResourceService_ReadVirtualNetwork_Handler(srv interface{}, ctx conte
 		FullMethod: "/dev.multy.MultyResourceService/ReadVirtualNetwork",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadVirtualNetwork(ctx, req.(*resources.ReadVirtualNetworkRequest))
+		return srv.(MultyResourceServiceServer).ReadVirtualNetwork(ctx, req.(*resourcespb.ReadVirtualNetworkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateVirtualNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateVirtualNetworkRequest)
+	in := new(resourcespb.UpdateVirtualNetworkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1127,13 +1127,13 @@ func _MultyResourceService_UpdateVirtualNetwork_Handler(srv interface{}, ctx con
 		FullMethod: "/dev.multy.MultyResourceService/UpdateVirtualNetwork",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateVirtualNetwork(ctx, req.(*resources.UpdateVirtualNetworkRequest))
+		return srv.(MultyResourceServiceServer).UpdateVirtualNetwork(ctx, req.(*resourcespb.UpdateVirtualNetworkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteVirtualNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteVirtualNetworkRequest)
+	in := new(resourcespb.DeleteVirtualNetworkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1145,13 +1145,13 @@ func _MultyResourceService_DeleteVirtualNetwork_Handler(srv interface{}, ctx con
 		FullMethod: "/dev.multy.MultyResourceService/DeleteVirtualNetwork",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteVirtualNetwork(ctx, req.(*resources.DeleteVirtualNetworkRequest))
+		return srv.(MultyResourceServiceServer).DeleteVirtualNetwork(ctx, req.(*resourcespb.DeleteVirtualNetworkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateNetworkInterface_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateNetworkInterfaceRequest)
+	in := new(resourcespb.CreateNetworkInterfaceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1163,13 +1163,13 @@ func _MultyResourceService_CreateNetworkInterface_Handler(srv interface{}, ctx c
 		FullMethod: "/dev.multy.MultyResourceService/CreateNetworkInterface",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateNetworkInterface(ctx, req.(*resources.CreateNetworkInterfaceRequest))
+		return srv.(MultyResourceServiceServer).CreateNetworkInterface(ctx, req.(*resourcespb.CreateNetworkInterfaceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadNetworkInterface_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadNetworkInterfaceRequest)
+	in := new(resourcespb.ReadNetworkInterfaceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1181,13 +1181,13 @@ func _MultyResourceService_ReadNetworkInterface_Handler(srv interface{}, ctx con
 		FullMethod: "/dev.multy.MultyResourceService/ReadNetworkInterface",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadNetworkInterface(ctx, req.(*resources.ReadNetworkInterfaceRequest))
+		return srv.(MultyResourceServiceServer).ReadNetworkInterface(ctx, req.(*resourcespb.ReadNetworkInterfaceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateNetworkInterface_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateNetworkInterfaceRequest)
+	in := new(resourcespb.UpdateNetworkInterfaceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1199,13 +1199,13 @@ func _MultyResourceService_UpdateNetworkInterface_Handler(srv interface{}, ctx c
 		FullMethod: "/dev.multy.MultyResourceService/UpdateNetworkInterface",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateNetworkInterface(ctx, req.(*resources.UpdateNetworkInterfaceRequest))
+		return srv.(MultyResourceServiceServer).UpdateNetworkInterface(ctx, req.(*resourcespb.UpdateNetworkInterfaceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteNetworkInterface_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteNetworkInterfaceRequest)
+	in := new(resourcespb.DeleteNetworkInterfaceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1217,13 +1217,13 @@ func _MultyResourceService_DeleteNetworkInterface_Handler(srv interface{}, ctx c
 		FullMethod: "/dev.multy.MultyResourceService/DeleteNetworkInterface",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteNetworkInterface(ctx, req.(*resources.DeleteNetworkInterfaceRequest))
+		return srv.(MultyResourceServiceServer).DeleteNetworkInterface(ctx, req.(*resourcespb.DeleteNetworkInterfaceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateRouteTable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateRouteTableRequest)
+	in := new(resourcespb.CreateRouteTableRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1235,13 +1235,13 @@ func _MultyResourceService_CreateRouteTable_Handler(srv interface{}, ctx context
 		FullMethod: "/dev.multy.MultyResourceService/CreateRouteTable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateRouteTable(ctx, req.(*resources.CreateRouteTableRequest))
+		return srv.(MultyResourceServiceServer).CreateRouteTable(ctx, req.(*resourcespb.CreateRouteTableRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadRouteTable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadRouteTableRequest)
+	in := new(resourcespb.ReadRouteTableRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1253,13 +1253,13 @@ func _MultyResourceService_ReadRouteTable_Handler(srv interface{}, ctx context.C
 		FullMethod: "/dev.multy.MultyResourceService/ReadRouteTable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadRouteTable(ctx, req.(*resources.ReadRouteTableRequest))
+		return srv.(MultyResourceServiceServer).ReadRouteTable(ctx, req.(*resourcespb.ReadRouteTableRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateRouteTable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateRouteTableRequest)
+	in := new(resourcespb.UpdateRouteTableRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1271,13 +1271,13 @@ func _MultyResourceService_UpdateRouteTable_Handler(srv interface{}, ctx context
 		FullMethod: "/dev.multy.MultyResourceService/UpdateRouteTable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateRouteTable(ctx, req.(*resources.UpdateRouteTableRequest))
+		return srv.(MultyResourceServiceServer).UpdateRouteTable(ctx, req.(*resourcespb.UpdateRouteTableRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteRouteTable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteRouteTableRequest)
+	in := new(resourcespb.DeleteRouteTableRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1289,13 +1289,13 @@ func _MultyResourceService_DeleteRouteTable_Handler(srv interface{}, ctx context
 		FullMethod: "/dev.multy.MultyResourceService/DeleteRouteTable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteRouteTable(ctx, req.(*resources.DeleteRouteTableRequest))
+		return srv.(MultyResourceServiceServer).DeleteRouteTable(ctx, req.(*resourcespb.DeleteRouteTableRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateRouteTableAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateRouteTableAssociationRequest)
+	in := new(resourcespb.CreateRouteTableAssociationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1307,13 +1307,13 @@ func _MultyResourceService_CreateRouteTableAssociation_Handler(srv interface{}, 
 		FullMethod: "/dev.multy.MultyResourceService/CreateRouteTableAssociation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateRouteTableAssociation(ctx, req.(*resources.CreateRouteTableAssociationRequest))
+		return srv.(MultyResourceServiceServer).CreateRouteTableAssociation(ctx, req.(*resourcespb.CreateRouteTableAssociationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadRouteTableAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadRouteTableAssociationRequest)
+	in := new(resourcespb.ReadRouteTableAssociationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1325,13 +1325,13 @@ func _MultyResourceService_ReadRouteTableAssociation_Handler(srv interface{}, ct
 		FullMethod: "/dev.multy.MultyResourceService/ReadRouteTableAssociation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadRouteTableAssociation(ctx, req.(*resources.ReadRouteTableAssociationRequest))
+		return srv.(MultyResourceServiceServer).ReadRouteTableAssociation(ctx, req.(*resourcespb.ReadRouteTableAssociationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateRouteTableAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateRouteTableAssociationRequest)
+	in := new(resourcespb.UpdateRouteTableAssociationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1343,13 +1343,13 @@ func _MultyResourceService_UpdateRouteTableAssociation_Handler(srv interface{}, 
 		FullMethod: "/dev.multy.MultyResourceService/UpdateRouteTableAssociation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateRouteTableAssociation(ctx, req.(*resources.UpdateRouteTableAssociationRequest))
+		return srv.(MultyResourceServiceServer).UpdateRouteTableAssociation(ctx, req.(*resourcespb.UpdateRouteTableAssociationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteRouteTableAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteRouteTableAssociationRequest)
+	in := new(resourcespb.DeleteRouteTableAssociationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1361,13 +1361,13 @@ func _MultyResourceService_DeleteRouteTableAssociation_Handler(srv interface{}, 
 		FullMethod: "/dev.multy.MultyResourceService/DeleteRouteTableAssociation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteRouteTableAssociation(ctx, req.(*resources.DeleteRouteTableAssociationRequest))
+		return srv.(MultyResourceServiceServer).DeleteRouteTableAssociation(ctx, req.(*resourcespb.DeleteRouteTableAssociationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateNetworkSecurityGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateNetworkSecurityGroupRequest)
+	in := new(resourcespb.CreateNetworkSecurityGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1379,13 +1379,13 @@ func _MultyResourceService_CreateNetworkSecurityGroup_Handler(srv interface{}, c
 		FullMethod: "/dev.multy.MultyResourceService/CreateNetworkSecurityGroup",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateNetworkSecurityGroup(ctx, req.(*resources.CreateNetworkSecurityGroupRequest))
+		return srv.(MultyResourceServiceServer).CreateNetworkSecurityGroup(ctx, req.(*resourcespb.CreateNetworkSecurityGroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadNetworkSecurityGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadNetworkSecurityGroupRequest)
+	in := new(resourcespb.ReadNetworkSecurityGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1397,13 +1397,13 @@ func _MultyResourceService_ReadNetworkSecurityGroup_Handler(srv interface{}, ctx
 		FullMethod: "/dev.multy.MultyResourceService/ReadNetworkSecurityGroup",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadNetworkSecurityGroup(ctx, req.(*resources.ReadNetworkSecurityGroupRequest))
+		return srv.(MultyResourceServiceServer).ReadNetworkSecurityGroup(ctx, req.(*resourcespb.ReadNetworkSecurityGroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateNetworkSecurityGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateNetworkSecurityGroupRequest)
+	in := new(resourcespb.UpdateNetworkSecurityGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1415,13 +1415,13 @@ func _MultyResourceService_UpdateNetworkSecurityGroup_Handler(srv interface{}, c
 		FullMethod: "/dev.multy.MultyResourceService/UpdateNetworkSecurityGroup",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateNetworkSecurityGroup(ctx, req.(*resources.UpdateNetworkSecurityGroupRequest))
+		return srv.(MultyResourceServiceServer).UpdateNetworkSecurityGroup(ctx, req.(*resourcespb.UpdateNetworkSecurityGroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteNetworkSecurityGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteNetworkSecurityGroupRequest)
+	in := new(resourcespb.DeleteNetworkSecurityGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1433,13 +1433,13 @@ func _MultyResourceService_DeleteNetworkSecurityGroup_Handler(srv interface{}, c
 		FullMethod: "/dev.multy.MultyResourceService/DeleteNetworkSecurityGroup",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteNetworkSecurityGroup(ctx, req.(*resources.DeleteNetworkSecurityGroupRequest))
+		return srv.(MultyResourceServiceServer).DeleteNetworkSecurityGroup(ctx, req.(*resourcespb.DeleteNetworkSecurityGroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateDatabaseRequest)
+	in := new(resourcespb.CreateDatabaseRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1451,13 +1451,13 @@ func _MultyResourceService_CreateDatabase_Handler(srv interface{}, ctx context.C
 		FullMethod: "/dev.multy.MultyResourceService/CreateDatabase",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateDatabase(ctx, req.(*resources.CreateDatabaseRequest))
+		return srv.(MultyResourceServiceServer).CreateDatabase(ctx, req.(*resourcespb.CreateDatabaseRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadDatabaseRequest)
+	in := new(resourcespb.ReadDatabaseRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1469,13 +1469,13 @@ func _MultyResourceService_ReadDatabase_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/dev.multy.MultyResourceService/ReadDatabase",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadDatabase(ctx, req.(*resources.ReadDatabaseRequest))
+		return srv.(MultyResourceServiceServer).ReadDatabase(ctx, req.(*resourcespb.ReadDatabaseRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateDatabaseRequest)
+	in := new(resourcespb.UpdateDatabaseRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1487,13 +1487,13 @@ func _MultyResourceService_UpdateDatabase_Handler(srv interface{}, ctx context.C
 		FullMethod: "/dev.multy.MultyResourceService/UpdateDatabase",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateDatabase(ctx, req.(*resources.UpdateDatabaseRequest))
+		return srv.(MultyResourceServiceServer).UpdateDatabase(ctx, req.(*resourcespb.UpdateDatabaseRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteDatabaseRequest)
+	in := new(resourcespb.DeleteDatabaseRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1505,13 +1505,13 @@ func _MultyResourceService_DeleteDatabase_Handler(srv interface{}, ctx context.C
 		FullMethod: "/dev.multy.MultyResourceService/DeleteDatabase",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteDatabase(ctx, req.(*resources.DeleteDatabaseRequest))
+		return srv.(MultyResourceServiceServer).DeleteDatabase(ctx, req.(*resourcespb.DeleteDatabaseRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateObjectStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateObjectStorageRequest)
+	in := new(resourcespb.CreateObjectStorageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1523,13 +1523,13 @@ func _MultyResourceService_CreateObjectStorage_Handler(srv interface{}, ctx cont
 		FullMethod: "/dev.multy.MultyResourceService/CreateObjectStorage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateObjectStorage(ctx, req.(*resources.CreateObjectStorageRequest))
+		return srv.(MultyResourceServiceServer).CreateObjectStorage(ctx, req.(*resourcespb.CreateObjectStorageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadObjectStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadObjectStorageRequest)
+	in := new(resourcespb.ReadObjectStorageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1541,13 +1541,13 @@ func _MultyResourceService_ReadObjectStorage_Handler(srv interface{}, ctx contex
 		FullMethod: "/dev.multy.MultyResourceService/ReadObjectStorage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadObjectStorage(ctx, req.(*resources.ReadObjectStorageRequest))
+		return srv.(MultyResourceServiceServer).ReadObjectStorage(ctx, req.(*resourcespb.ReadObjectStorageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateObjectStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateObjectStorageRequest)
+	in := new(resourcespb.UpdateObjectStorageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1559,13 +1559,13 @@ func _MultyResourceService_UpdateObjectStorage_Handler(srv interface{}, ctx cont
 		FullMethod: "/dev.multy.MultyResourceService/UpdateObjectStorage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateObjectStorage(ctx, req.(*resources.UpdateObjectStorageRequest))
+		return srv.(MultyResourceServiceServer).UpdateObjectStorage(ctx, req.(*resourcespb.UpdateObjectStorageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteObjectStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteObjectStorageRequest)
+	in := new(resourcespb.DeleteObjectStorageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1577,13 +1577,13 @@ func _MultyResourceService_DeleteObjectStorage_Handler(srv interface{}, ctx cont
 		FullMethod: "/dev.multy.MultyResourceService/DeleteObjectStorage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteObjectStorage(ctx, req.(*resources.DeleteObjectStorageRequest))
+		return srv.(MultyResourceServiceServer).DeleteObjectStorage(ctx, req.(*resourcespb.DeleteObjectStorageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateObjectStorageObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateObjectStorageObjectRequest)
+	in := new(resourcespb.CreateObjectStorageObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1595,13 +1595,13 @@ func _MultyResourceService_CreateObjectStorageObject_Handler(srv interface{}, ct
 		FullMethod: "/dev.multy.MultyResourceService/CreateObjectStorageObject",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateObjectStorageObject(ctx, req.(*resources.CreateObjectStorageObjectRequest))
+		return srv.(MultyResourceServiceServer).CreateObjectStorageObject(ctx, req.(*resourcespb.CreateObjectStorageObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadObjectStorageObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadObjectStorageObjectRequest)
+	in := new(resourcespb.ReadObjectStorageObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1613,13 +1613,13 @@ func _MultyResourceService_ReadObjectStorageObject_Handler(srv interface{}, ctx 
 		FullMethod: "/dev.multy.MultyResourceService/ReadObjectStorageObject",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadObjectStorageObject(ctx, req.(*resources.ReadObjectStorageObjectRequest))
+		return srv.(MultyResourceServiceServer).ReadObjectStorageObject(ctx, req.(*resourcespb.ReadObjectStorageObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateObjectStorageObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateObjectStorageObjectRequest)
+	in := new(resourcespb.UpdateObjectStorageObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1631,13 +1631,13 @@ func _MultyResourceService_UpdateObjectStorageObject_Handler(srv interface{}, ct
 		FullMethod: "/dev.multy.MultyResourceService/UpdateObjectStorageObject",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateObjectStorageObject(ctx, req.(*resources.UpdateObjectStorageObjectRequest))
+		return srv.(MultyResourceServiceServer).UpdateObjectStorageObject(ctx, req.(*resourcespb.UpdateObjectStorageObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteObjectStorageObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteObjectStorageObjectRequest)
+	in := new(resourcespb.DeleteObjectStorageObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1649,13 +1649,13 @@ func _MultyResourceService_DeleteObjectStorageObject_Handler(srv interface{}, ct
 		FullMethod: "/dev.multy.MultyResourceService/DeleteObjectStorageObject",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteObjectStorageObject(ctx, req.(*resources.DeleteObjectStorageObjectRequest))
+		return srv.(MultyResourceServiceServer).DeleteObjectStorageObject(ctx, req.(*resourcespb.DeleteObjectStorageObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreatePublicIp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreatePublicIpRequest)
+	in := new(resourcespb.CreatePublicIpRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1667,13 +1667,13 @@ func _MultyResourceService_CreatePublicIp_Handler(srv interface{}, ctx context.C
 		FullMethod: "/dev.multy.MultyResourceService/CreatePublicIp",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreatePublicIp(ctx, req.(*resources.CreatePublicIpRequest))
+		return srv.(MultyResourceServiceServer).CreatePublicIp(ctx, req.(*resourcespb.CreatePublicIpRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadPublicIp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadPublicIpRequest)
+	in := new(resourcespb.ReadPublicIpRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1685,13 +1685,13 @@ func _MultyResourceService_ReadPublicIp_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/dev.multy.MultyResourceService/ReadPublicIp",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadPublicIp(ctx, req.(*resources.ReadPublicIpRequest))
+		return srv.(MultyResourceServiceServer).ReadPublicIp(ctx, req.(*resourcespb.ReadPublicIpRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdatePublicIp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdatePublicIpRequest)
+	in := new(resourcespb.UpdatePublicIpRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1703,13 +1703,13 @@ func _MultyResourceService_UpdatePublicIp_Handler(srv interface{}, ctx context.C
 		FullMethod: "/dev.multy.MultyResourceService/UpdatePublicIp",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdatePublicIp(ctx, req.(*resources.UpdatePublicIpRequest))
+		return srv.(MultyResourceServiceServer).UpdatePublicIp(ctx, req.(*resourcespb.UpdatePublicIpRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeletePublicIp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeletePublicIpRequest)
+	in := new(resourcespb.DeletePublicIpRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1721,13 +1721,13 @@ func _MultyResourceService_DeletePublicIp_Handler(srv interface{}, ctx context.C
 		FullMethod: "/dev.multy.MultyResourceService/DeletePublicIp",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeletePublicIp(ctx, req.(*resources.DeletePublicIpRequest))
+		return srv.(MultyResourceServiceServer).DeletePublicIp(ctx, req.(*resourcespb.DeletePublicIpRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateKubernetesCluster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateKubernetesClusterRequest)
+	in := new(resourcespb.CreateKubernetesClusterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1739,13 +1739,13 @@ func _MultyResourceService_CreateKubernetesCluster_Handler(srv interface{}, ctx 
 		FullMethod: "/dev.multy.MultyResourceService/CreateKubernetesCluster",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateKubernetesCluster(ctx, req.(*resources.CreateKubernetesClusterRequest))
+		return srv.(MultyResourceServiceServer).CreateKubernetesCluster(ctx, req.(*resourcespb.CreateKubernetesClusterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadKubernetesCluster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadKubernetesClusterRequest)
+	in := new(resourcespb.ReadKubernetesClusterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1757,13 +1757,13 @@ func _MultyResourceService_ReadKubernetesCluster_Handler(srv interface{}, ctx co
 		FullMethod: "/dev.multy.MultyResourceService/ReadKubernetesCluster",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadKubernetesCluster(ctx, req.(*resources.ReadKubernetesClusterRequest))
+		return srv.(MultyResourceServiceServer).ReadKubernetesCluster(ctx, req.(*resourcespb.ReadKubernetesClusterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateKubernetesCluster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateKubernetesClusterRequest)
+	in := new(resourcespb.UpdateKubernetesClusterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1775,13 +1775,13 @@ func _MultyResourceService_UpdateKubernetesCluster_Handler(srv interface{}, ctx 
 		FullMethod: "/dev.multy.MultyResourceService/UpdateKubernetesCluster",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateKubernetesCluster(ctx, req.(*resources.UpdateKubernetesClusterRequest))
+		return srv.(MultyResourceServiceServer).UpdateKubernetesCluster(ctx, req.(*resourcespb.UpdateKubernetesClusterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteKubernetesCluster_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteKubernetesClusterRequest)
+	in := new(resourcespb.DeleteKubernetesClusterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1793,13 +1793,13 @@ func _MultyResourceService_DeleteKubernetesCluster_Handler(srv interface{}, ctx 
 		FullMethod: "/dev.multy.MultyResourceService/DeleteKubernetesCluster",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteKubernetesCluster(ctx, req.(*resources.DeleteKubernetesClusterRequest))
+		return srv.(MultyResourceServiceServer).DeleteKubernetesCluster(ctx, req.(*resourcespb.DeleteKubernetesClusterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateKubernetesNodePool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateKubernetesNodePoolRequest)
+	in := new(resourcespb.CreateKubernetesNodePoolRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1811,13 +1811,13 @@ func _MultyResourceService_CreateKubernetesNodePool_Handler(srv interface{}, ctx
 		FullMethod: "/dev.multy.MultyResourceService/CreateKubernetesNodePool",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateKubernetesNodePool(ctx, req.(*resources.CreateKubernetesNodePoolRequest))
+		return srv.(MultyResourceServiceServer).CreateKubernetesNodePool(ctx, req.(*resourcespb.CreateKubernetesNodePoolRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadKubernetesNodePool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadKubernetesNodePoolRequest)
+	in := new(resourcespb.ReadKubernetesNodePoolRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1829,13 +1829,13 @@ func _MultyResourceService_ReadKubernetesNodePool_Handler(srv interface{}, ctx c
 		FullMethod: "/dev.multy.MultyResourceService/ReadKubernetesNodePool",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadKubernetesNodePool(ctx, req.(*resources.ReadKubernetesNodePoolRequest))
+		return srv.(MultyResourceServiceServer).ReadKubernetesNodePool(ctx, req.(*resourcespb.ReadKubernetesNodePoolRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateKubernetesNodePool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateKubernetesNodePoolRequest)
+	in := new(resourcespb.UpdateKubernetesNodePoolRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1847,13 +1847,13 @@ func _MultyResourceService_UpdateKubernetesNodePool_Handler(srv interface{}, ctx
 		FullMethod: "/dev.multy.MultyResourceService/UpdateKubernetesNodePool",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateKubernetesNodePool(ctx, req.(*resources.UpdateKubernetesNodePoolRequest))
+		return srv.(MultyResourceServiceServer).UpdateKubernetesNodePool(ctx, req.(*resourcespb.UpdateKubernetesNodePoolRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteKubernetesNodePool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteKubernetesNodePoolRequest)
+	in := new(resourcespb.DeleteKubernetesNodePoolRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1865,13 +1865,13 @@ func _MultyResourceService_DeleteKubernetesNodePool_Handler(srv interface{}, ctx
 		FullMethod: "/dev.multy.MultyResourceService/DeleteKubernetesNodePool",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteKubernetesNodePool(ctx, req.(*resources.DeleteKubernetesNodePoolRequest))
+		return srv.(MultyResourceServiceServer).DeleteKubernetesNodePool(ctx, req.(*resourcespb.DeleteKubernetesNodePoolRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateLambdaRequest)
+	in := new(resourcespb.CreateLambdaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1883,13 +1883,13 @@ func _MultyResourceService_CreateLambda_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/dev.multy.MultyResourceService/CreateLambda",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateLambda(ctx, req.(*resources.CreateLambdaRequest))
+		return srv.(MultyResourceServiceServer).CreateLambda(ctx, req.(*resourcespb.CreateLambdaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadLambdaRequest)
+	in := new(resourcespb.ReadLambdaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1901,13 +1901,13 @@ func _MultyResourceService_ReadLambda_Handler(srv interface{}, ctx context.Conte
 		FullMethod: "/dev.multy.MultyResourceService/ReadLambda",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadLambda(ctx, req.(*resources.ReadLambdaRequest))
+		return srv.(MultyResourceServiceServer).ReadLambda(ctx, req.(*resourcespb.ReadLambdaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateLambdaRequest)
+	in := new(resourcespb.UpdateLambdaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1919,13 +1919,13 @@ func _MultyResourceService_UpdateLambda_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/dev.multy.MultyResourceService/UpdateLambda",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateLambda(ctx, req.(*resources.UpdateLambdaRequest))
+		return srv.(MultyResourceServiceServer).UpdateLambda(ctx, req.(*resourcespb.UpdateLambdaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteLambdaRequest)
+	in := new(resourcespb.DeleteLambdaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1937,13 +1937,13 @@ func _MultyResourceService_DeleteLambda_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/dev.multy.MultyResourceService/DeleteLambda",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteLambda(ctx, req.(*resources.DeleteLambdaRequest))
+		return srv.(MultyResourceServiceServer).DeleteLambda(ctx, req.(*resourcespb.DeleteLambdaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateVault_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateVaultRequest)
+	in := new(resourcespb.CreateVaultRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1955,13 +1955,13 @@ func _MultyResourceService_CreateVault_Handler(srv interface{}, ctx context.Cont
 		FullMethod: "/dev.multy.MultyResourceService/CreateVault",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateVault(ctx, req.(*resources.CreateVaultRequest))
+		return srv.(MultyResourceServiceServer).CreateVault(ctx, req.(*resourcespb.CreateVaultRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadVault_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadVaultRequest)
+	in := new(resourcespb.ReadVaultRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1973,13 +1973,13 @@ func _MultyResourceService_ReadVault_Handler(srv interface{}, ctx context.Contex
 		FullMethod: "/dev.multy.MultyResourceService/ReadVault",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadVault(ctx, req.(*resources.ReadVaultRequest))
+		return srv.(MultyResourceServiceServer).ReadVault(ctx, req.(*resourcespb.ReadVaultRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateVault_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateVaultRequest)
+	in := new(resourcespb.UpdateVaultRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1991,13 +1991,13 @@ func _MultyResourceService_UpdateVault_Handler(srv interface{}, ctx context.Cont
 		FullMethod: "/dev.multy.MultyResourceService/UpdateVault",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateVault(ctx, req.(*resources.UpdateVaultRequest))
+		return srv.(MultyResourceServiceServer).UpdateVault(ctx, req.(*resourcespb.UpdateVaultRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteVault_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteVaultRequest)
+	in := new(resourcespb.DeleteVaultRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2009,13 +2009,13 @@ func _MultyResourceService_DeleteVault_Handler(srv interface{}, ctx context.Cont
 		FullMethod: "/dev.multy.MultyResourceService/DeleteVault",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteVault(ctx, req.(*resources.DeleteVaultRequest))
+		return srv.(MultyResourceServiceServer).DeleteVault(ctx, req.(*resourcespb.DeleteVaultRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateVaultAccessPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateVaultAccessPolicyRequest)
+	in := new(resourcespb.CreateVaultAccessPolicyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2027,13 +2027,13 @@ func _MultyResourceService_CreateVaultAccessPolicy_Handler(srv interface{}, ctx 
 		FullMethod: "/dev.multy.MultyResourceService/CreateVaultAccessPolicy",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateVaultAccessPolicy(ctx, req.(*resources.CreateVaultAccessPolicyRequest))
+		return srv.(MultyResourceServiceServer).CreateVaultAccessPolicy(ctx, req.(*resourcespb.CreateVaultAccessPolicyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadVaultAccessPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadVaultAccessPolicyRequest)
+	in := new(resourcespb.ReadVaultAccessPolicyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2045,13 +2045,13 @@ func _MultyResourceService_ReadVaultAccessPolicy_Handler(srv interface{}, ctx co
 		FullMethod: "/dev.multy.MultyResourceService/ReadVaultAccessPolicy",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadVaultAccessPolicy(ctx, req.(*resources.ReadVaultAccessPolicyRequest))
+		return srv.(MultyResourceServiceServer).ReadVaultAccessPolicy(ctx, req.(*resourcespb.ReadVaultAccessPolicyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateVaultAccessPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateVaultAccessPolicyRequest)
+	in := new(resourcespb.UpdateVaultAccessPolicyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2063,13 +2063,13 @@ func _MultyResourceService_UpdateVaultAccessPolicy_Handler(srv interface{}, ctx 
 		FullMethod: "/dev.multy.MultyResourceService/UpdateVaultAccessPolicy",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateVaultAccessPolicy(ctx, req.(*resources.UpdateVaultAccessPolicyRequest))
+		return srv.(MultyResourceServiceServer).UpdateVaultAccessPolicy(ctx, req.(*resourcespb.UpdateVaultAccessPolicyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteVaultAccessPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteVaultAccessPolicyRequest)
+	in := new(resourcespb.DeleteVaultAccessPolicyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2081,13 +2081,13 @@ func _MultyResourceService_DeleteVaultAccessPolicy_Handler(srv interface{}, ctx 
 		FullMethod: "/dev.multy.MultyResourceService/DeleteVaultAccessPolicy",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteVaultAccessPolicy(ctx, req.(*resources.DeleteVaultAccessPolicyRequest))
+		return srv.(MultyResourceServiceServer).DeleteVaultAccessPolicy(ctx, req.(*resourcespb.DeleteVaultAccessPolicyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateVaultSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateVaultSecretRequest)
+	in := new(resourcespb.CreateVaultSecretRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2099,13 +2099,13 @@ func _MultyResourceService_CreateVaultSecret_Handler(srv interface{}, ctx contex
 		FullMethod: "/dev.multy.MultyResourceService/CreateVaultSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateVaultSecret(ctx, req.(*resources.CreateVaultSecretRequest))
+		return srv.(MultyResourceServiceServer).CreateVaultSecret(ctx, req.(*resourcespb.CreateVaultSecretRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadVaultSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadVaultSecretRequest)
+	in := new(resourcespb.ReadVaultSecretRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2117,13 +2117,13 @@ func _MultyResourceService_ReadVaultSecret_Handler(srv interface{}, ctx context.
 		FullMethod: "/dev.multy.MultyResourceService/ReadVaultSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadVaultSecret(ctx, req.(*resources.ReadVaultSecretRequest))
+		return srv.(MultyResourceServiceServer).ReadVaultSecret(ctx, req.(*resourcespb.ReadVaultSecretRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateVaultSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateVaultSecretRequest)
+	in := new(resourcespb.UpdateVaultSecretRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2135,13 +2135,13 @@ func _MultyResourceService_UpdateVaultSecret_Handler(srv interface{}, ctx contex
 		FullMethod: "/dev.multy.MultyResourceService/UpdateVaultSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateVaultSecret(ctx, req.(*resources.UpdateVaultSecretRequest))
+		return srv.(MultyResourceServiceServer).UpdateVaultSecret(ctx, req.(*resourcespb.UpdateVaultSecretRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteVaultSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteVaultSecretRequest)
+	in := new(resourcespb.DeleteVaultSecretRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2153,13 +2153,13 @@ func _MultyResourceService_DeleteVaultSecret_Handler(srv interface{}, ctx contex
 		FullMethod: "/dev.multy.MultyResourceService/DeleteVaultSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteVaultSecret(ctx, req.(*resources.DeleteVaultSecretRequest))
+		return srv.(MultyResourceServiceServer).DeleteVaultSecret(ctx, req.(*resourcespb.DeleteVaultSecretRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_CreateVirtualMachine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.CreateVirtualMachineRequest)
+	in := new(resourcespb.CreateVirtualMachineRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2171,13 +2171,13 @@ func _MultyResourceService_CreateVirtualMachine_Handler(srv interface{}, ctx con
 		FullMethod: "/dev.multy.MultyResourceService/CreateVirtualMachine",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateVirtualMachine(ctx, req.(*resources.CreateVirtualMachineRequest))
+		return srv.(MultyResourceServiceServer).CreateVirtualMachine(ctx, req.(*resourcespb.CreateVirtualMachineRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_ReadVirtualMachine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.ReadVirtualMachineRequest)
+	in := new(resourcespb.ReadVirtualMachineRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2189,13 +2189,13 @@ func _MultyResourceService_ReadVirtualMachine_Handler(srv interface{}, ctx conte
 		FullMethod: "/dev.multy.MultyResourceService/ReadVirtualMachine",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadVirtualMachine(ctx, req.(*resources.ReadVirtualMachineRequest))
+		return srv.(MultyResourceServiceServer).ReadVirtualMachine(ctx, req.(*resourcespb.ReadVirtualMachineRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_UpdateVirtualMachine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.UpdateVirtualMachineRequest)
+	in := new(resourcespb.UpdateVirtualMachineRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2207,13 +2207,13 @@ func _MultyResourceService_UpdateVirtualMachine_Handler(srv interface{}, ctx con
 		FullMethod: "/dev.multy.MultyResourceService/UpdateVirtualMachine",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateVirtualMachine(ctx, req.(*resources.UpdateVirtualMachineRequest))
+		return srv.(MultyResourceServiceServer).UpdateVirtualMachine(ctx, req.(*resourcespb.UpdateVirtualMachineRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MultyResourceService_DeleteVirtualMachine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resources.DeleteVirtualMachineRequest)
+	in := new(resourcespb.DeleteVirtualMachineRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2225,7 +2225,7 @@ func _MultyResourceService_DeleteVirtualMachine_Handler(srv interface{}, ctx con
 		FullMethod: "/dev.multy.MultyResourceService/DeleteVirtualMachine",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteVirtualMachine(ctx, req.(*resources.DeleteVirtualMachineRequest))
+		return srv.(MultyResourceServiceServer).DeleteVirtualMachine(ctx, req.(*resourcespb.DeleteVirtualMachineRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -2,6 +2,7 @@ package network_interface
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/validate"
 )
@@ -13,11 +14,7 @@ type AzureNetworkInterface struct {
 	IpConfigurations   []AzureIpConfiguration `hcl:"ip_configuration,blocks"`
 }
 
-func (nic AzureNetworkInterface) GetResourceId(cloud common.CloudProvider) string {
-	return fmt.Sprintf("%s_%s", nic.ResourceId, cloud)
-}
-
-func (nic AzureNetworkInterface) GetId(cloud common.CloudProvider) string {
+func (nic AzureNetworkInterface) GetId(cloud commonpb.CloudProvider) string {
 	if cloud == common.AZURE {
 		return fmt.Sprintf("${%s.%s.id}", AzureResourceName, nic.ResourceId)
 	}

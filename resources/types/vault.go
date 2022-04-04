@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -11,35 +13,40 @@ import (
 )
 
 type Vault struct {
-	*resources.CommonResourceParams
-	Name string `hcl:"name"`
+	resources.ResourceWithId[*resourcespb.VaultArgs]
+}
+
+func NewVault(resourceId string, args *resourcespb.VaultArgs, _ resources.Resources) (*Vault, error) {
+	return &Vault{
+		ResourceWithId: resources.ResourceWithId[*resourcespb.VaultArgs]{resourceId, args},
+	}, nil
 }
 
 type AzureClientConfig struct {
 	*output.TerraformDataSource `hcl:",squash" default:"name=azurerm_client_config"`
 }
 
-func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext) ([]output.TfBlock, error) {
-	if cloud == common.AWS {
+func (r *Vault) Translate(resources.MultyContext) ([]output.TfBlock, error) {
+	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		return []output.TfBlock{}, nil
-	} else if cloud == common.AZURE {
+	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		return []output.TfBlock{
-			AzureClientConfig{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.GetTfResourceId(cloud)}},
+			AzureClientConfig{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.ResourceId}},
 			vault.AzureKeyVault{
 				AzResource: &common.AzResource{
-					TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
-					Name:              r.Name,
-					ResourceGroupName: rg.GetResourceGroupName(r.ResourceGroupId, cloud),
-					Location:          ctx.GetLocationFromCommonParams(r.CommonResourceParams, cloud),
+					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
+					Name:              r.Args.Name,
+					ResourceGroupName: rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId),
+					Location:          r.GetCloudSpecificLocation(),
 				},
 				Sku:      "standard",
-				TenantId: fmt.Sprintf("data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud)),
+				TenantId: fmt.Sprintf("data.azurerm_client_config.%s.tenant_id", r.ResourceId),
 				AccessPolicy: []vault.AzureKeyVaultAccessPolicyInline{{
 					TenantId: fmt.Sprintf(
-						"data.azurerm_client_config.%s.tenant_id", r.GetTfResourceId(cloud),
+						"data.azurerm_client_config.%s.tenant_id", r.ResourceId,
 					),
 					ObjectId: fmt.Sprintf(
-						"data.azurerm_client_config.%s.object_id", r.GetTfResourceId(cloud),
+						"data.azurerm_client_config.%s.object_id", r.ResourceId,
 					),
 					AzureKeyVaultPermissions: &vault.AzureKeyVaultPermissions{
 						CertificatePermissions: []string{},
@@ -49,31 +56,30 @@ func (r *Vault) Translate(cloud common.CloudProvider, ctx resources.MultyContext
 				}},
 			}}, nil
 	}
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", cloud)
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-func (r *Vault) GetVaultId(cloud common.CloudProvider) (string, error) {
-	switch cloud {
+func (r *Vault) GetVaultId() (string, error) {
+	switch r.GetCloud() {
 	case common.AZURE:
-		return fmt.Sprintf("%s.%s.id", vault.AzureResourceName, r.GetTfResourceId(cloud)), nil
+		return fmt.Sprintf("%s.%s.id", vault.AzureResourceName, r.ResourceId), nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
 }
 
-func (r *Vault) Validate(ctx resources.MultyContext, cloud common.CloudProvider) (errs []validate.ValidationError) {
-	errs = append(errs, r.CommonResourceParams.Validate(ctx, cloud)...)
+func (r *Vault) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	errs = append(errs, r.ResourceWithId.Validate()...)
 	return errs
 }
 
-func (r *Vault) GetMainResourceName(cloud common.CloudProvider) (string, error) {
-	switch cloud {
+func (r *Vault) GetMainResourceName() (string, error) {
+	switch r.GetCloud() {
 	case common.AWS:
 		return "", nil
 	case common.AZURE:
 		return vault.AzureResourceName, nil
 	default:
-		return "", fmt.Errorf("unknown cloud %s", cloud)
+		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
 	}
-	return "", nil
 }

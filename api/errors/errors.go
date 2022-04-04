@@ -2,7 +2,7 @@ package errors
 
 import (
 	"fmt"
-	pberr "github.com/multycloud/multy/api/proto/errors"
+	pberr "github.com/multycloud/multy/api/proto/errorspb"
 	"github.com/multycloud/multy/validate"
 	"google.golang.org/genproto/googleapis/rpc/code"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
