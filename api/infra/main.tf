@@ -7,11 +7,11 @@ resource "aws_vpc" "main_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 }
-resource "aws_internet_gateway" "example_vn_aws" {
+resource "aws_internet_gateway" "vn_igw" {
   tags   = { "Name" = "backend" }
   vpc_id = aws_vpc.main_vpc.id
 }
-resource "aws_default_security_group" "example_vn_aws" {
+resource "aws_default_security_group" "vn_nsg" {
   tags   = { "Name" = "backend" }
   vpc_id = aws_vpc.main_vpc.id
   ingress {
@@ -29,7 +29,7 @@ resource "aws_default_security_group" "example_vn_aws" {
     self        = true
   }
 }
-resource "aws_security_group" "nsg2_aws" {
+resource "aws_security_group" "nsg" {
   tags        = { "Name" = "backend" }
   vpc_id      = aws_vpc.main_vpc.id
   name        = "backend"
@@ -64,6 +64,18 @@ resource "aws_security_group" "nsg2_aws" {
     to_port     = 0
     cidr_blocks = ["10.0.0.0/16"]
   }
+  ingress {
+    protocol    = "tcp"
+    from_port   = 3306
+    to_port     = 3306
+    cidr_blocks = [aws_subnet.public_subnet.cidr_block]
+  }
+  egress {
+    protocol    = "tcp"
+    from_port   = 3306
+    to_port     = 3306
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   egress {
     protocol    = "tcp"
     from_port   = 80
@@ -95,29 +107,40 @@ resource "aws_security_group" "nsg2_aws" {
     cidr_blocks = ["10.0.0.0/16"]
   }
 }
-resource "aws_route_table" "rt_aws" {
+resource "aws_route_table" "public_rt" {
   tags   = { "Name" = "backend" }
   vpc_id = aws_vpc.main_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.example_vn_aws.id
+    gateway_id = aws_internet_gateway.vn_igw.id
   }
 }
 resource "aws_route_table_association" "rta" {
-  subnet_id      = aws_subnet.subnet.id
-  route_table_id = aws_route_table.rt_aws.id
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_rt.id
 }
-resource "aws_subnet" "subnet" {
-  tags       = { "Name" = "backend" }
-  cidr_block = "10.0.1.0/24"
-  vpc_id     = aws_vpc.main_vpc.id
+resource "aws_subnet" "public_subnet" {
+  tags              = { "Name" = "backend" }
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "eu-west-2a"
+  vpc_id            = aws_vpc.main_vpc.id
+}
+resource "aws_subnet" "private_subnet" {
+  tags              = { "Name" = "backend" }
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "eu-west-2a"
+  vpc_id            = aws_vpc.main_vpc.id
+}
+resource "aws_subnet" "private_subnet2" {
+  tags              = { "Name" = "backend" }
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "eu-west-2b"
+  vpc_id            = aws_vpc.main_vpc.id
 }
 resource "aws_iam_instance_profile" "iam_instance_profile" {
   name = "backend_iam_profile"
   role = aws_iam_role.vm_iam.name
 }
-data "aws_caller_identity" "vm_aws" {}
-data "aws_region" "vm_aws" {}
 resource "aws_iam_role" "vm_iam" {
   tags               = { "Name" = "backend" }
   name               = "backend_iam"
@@ -150,31 +173,16 @@ resource "aws_iam_role" "vm_iam" {
             "s3:GetAccessPoint",
             "s3:PutAccountPublicAccessBlock",
             "s3:ListAccessPoints",
-            "dynamodb:ListTables",
             "s3:ListJobs",
-            "dynamodb:ListBackups",
             "s3:PutStorageLensConfiguration",
-            "dynamodb:PurchaseReservedCapacityOfferings",
             "s3:ListMultiRegionAccessPoints",
-            "dynamodb:ListStreams",
             "s3:ListStorageLensConfigurations",
-            "dynamodb:ListContributorInsights",
             "s3:GetAccountPublicAccessBlock",
-            "dynamodb:DescribeReservedCapacityOfferings",
             "s3:ListAllMyBuckets",
-            "dynamodb:ListGlobalTables",
             "s3:PutAccessPointPublicAccessBlock",
-            "dynamodb:DescribeReservedCapacity",
             "s3:CreateJob",
-            "dynamodb:DescribeLimits",
-            "dynamodb:ListExports"
           ],
           "Resource" : "*"
-        },
-        {
-          "Effect" : "Allow",
-          "Action" : "dynamodb:*",
-          "Resource" : aws_dynamodb_table.user_ddb.arn
         },
       ],
     })
@@ -184,35 +192,63 @@ resource "aws_s3_bucket" "tfstate_bucket" {
   tags   = { "Name" = "backend" }
   bucket = var.bucket_name
 }
-resource "aws_dynamodb_table" "user_ddb" {
-  tags         = { "Name" = "backend" }
-  name         = "user_table"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "user_id"
-
-  attribute {
-    name = "user_id"
-    type = "S"
-  }
-}
-
 resource "aws_key_pair" "vm" {
   tags       = { "Name" = "backend" }
-  key_name   = "vm_aws_multy"
+  key_name   = "vm_multy"
   public_key = file("./ssh_key.pub")
+}
+resource "random_password" "password" {
+  length = 16
+}
+resource "aws_ssm_parameter" "db_password" {
+  name  = "/dev-multy/db-password"
+  type  = "SecureString"
+  value = random_password.password.result
 }
 resource "aws_instance" "vm" {
   tags             = { "Name" = "backend" }
   ami              = "ami-0015a39e4b7c0966f" # Ubuntu Server 20.04 LTS (HVM), SSD Volume Type
   instance_type    = "t2.nano"
-  subnet_id        = aws_subnet.subnet.id
+  subnet_id        = aws_subnet.public_subnet.id
   user_data_base64 = base64encode(templatefile("init.sh", {
     "s3_bucket_name" = var.bucket_name
+    "db_connection"  = "${aws_db_instance.db.username}:@tcp(${aws_db_instance.db.address}:${aws_db_instance.db.port}/${aws_db_instance.db.name}"
   }))
   key_name             = aws_key_pair.vm.key_name
   iam_instance_profile = aws_iam_instance_profile.iam_instance_profile.id
 }
-resource "aws_eip" "ip_aws" {
+resource "aws_db_subnet_group" "db_subnet_group" {
+  tags = {
+    "Name" = "example-db"
+  }
+
+  name = "example-db"
+
+  subnet_ids = [
+    aws_subnet.private_subnet.id,
+    aws_subnet.private_subnet2.id,
+  ]
+}
+resource "aws_db_instance" "db" {
+  tags = {
+    "Name" = "exampledb"
+  }
+
+  allocated_storage    = 10
+  db_name              = "multy-db"
+  engine               = "mysql"
+  engine_version       = "5.7"
+  username             = "multyadmin"
+  password             = random_password.password.result
+  instance_class       = "db.t2.micro"
+  identifier           = "multy-db"
+  skip_final_snapshot  = true
+  db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
+  publicly_accessible  = true
+  deletion_protection  = true
+}
+
+resource "aws_eip" "vm_ip" {
   tags     = { "Name" = "backend" }
   instance = aws_instance.vm.id
 }
@@ -224,7 +260,7 @@ resource "aws_route53_record" "server1-record" {
   name    = "api.multy.dev"
   type    = "A"
   ttl     = "300"
-  records = [aws_eip.ip_aws.public_ip]
+  records = [aws_eip.vm_ip.public_ip]
 }
 terraform {
   backend "s3" {
@@ -242,6 +278,6 @@ terraform {
 provider "aws" {
   region = "eu-west-2"
 }
-#output "aws_endpoint" {
-#  value = aws_eip.ip_aws.public_ip
-#}
+output "aws_endpoint" {
+  value = "${aws_db_instance.db.username}:@tcp(${aws_db_instance.db.address}:${aws_db_instance.db.port}/${aws_db_instance.db.name}"
+}

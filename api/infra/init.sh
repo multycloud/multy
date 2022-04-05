@@ -2,16 +2,15 @@
 
 {
 export USERS_S3_BUCKET_NAME='${s3_bucket_name}'
+export DB_CONN='${s3_bucket_name}'
 
 mkdir -p "$HOME/.terraform.d/plugin-cache"
 echo plugin_cache_dir = \"$HOME/.terraform.d/plugin-cache\" > "$HOME/.terraformrc"
 sudo apt-get update -y && sudo apt-get install -y gnupg software-properties-common curl
 curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
 sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-sudo apt-get update -y && sudo apt-get -y install terraform
-
 sudo apt-get update -y
-sudo apt-get -y install git make protobuf-compiler
+sudo apt-get -y install terraform git make protobuf-compiler mysql-client
 
 wget https://golang.org/dl/go1.18.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf go1.18.linux-amd64.tar.gz
