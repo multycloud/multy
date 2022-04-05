@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.40.56
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
-	github.com/gruntwork-io/terratest v0.40.5
+	github.com/gruntwork-io/terratest v0.40.6
 	github.com/hashicorp/hc-install v0.3.1
 	github.com/hashicorp/hcl/v2 v2.11.1
 	github.com/hashicorp/terraform-exec v0.15.0
