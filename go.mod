@@ -13,7 +13,7 @@ require (
 	github.com/jhump/protoreflect v1.12.0
 	github.com/multy-dev/hclencoder v0.1.1
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/zclconf/go-cty v1.9.1
 	golang.org/x/exp v0.0.0-20220218215828-6cf2b201936e
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
