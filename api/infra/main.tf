@@ -212,7 +212,7 @@ resource "aws_instance" "vm" {
   subnet_id        = aws_subnet.public_subnet.id
   user_data_base64 = base64encode(templatefile("init.sh", {
     "s3_bucket_name" = var.bucket_name
-    "db_connection"  = "${aws_db_instance.db.username}:@tcp(${aws_db_instance.db.address}:${aws_db_instance.db.port}/${aws_db_instance.db.name}"
+    "db_connection"  = "${aws_db_instance.db.username}:${random_password.password.result}@tcp(${aws_db_instance.db.address}:${aws_db_instance.db.port}/${aws_db_instance.db.name}"
   }))
   key_name             = aws_key_pair.vm.key_name
   iam_instance_profile = aws_iam_instance_profile.iam_instance_profile.id
@@ -235,13 +235,13 @@ resource "aws_db_instance" "db" {
   }
 
   allocated_storage    = 10
-  db_name              = "multy-db"
+  db_name              = "multydb"
   engine               = "mysql"
   engine_version       = "5.7"
   username             = "multyadmin"
   password             = random_password.password.result
   instance_class       = "db.t2.micro"
-  identifier           = "multy-db"
+  identifier           = "multydb"
   skip_final_snapshot  = true
   db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
   publicly_accessible  = true
@@ -277,7 +277,4 @@ terraform {
 }
 provider "aws" {
   region = "eu-west-2"
-}
-output "aws_endpoint" {
-  value = "${aws_db_instance.db.username}:@tcp(${aws_db_instance.db.address}:${aws_db_instance.db.port}/${aws_db_instance.db.name}"
 }
