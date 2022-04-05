@@ -33,7 +33,7 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: wangyoucao577/go-release-action@v1.22
         with:
           goversion: "https://go.dev/dl/go1.18.linux-amd64.tar.gz"
