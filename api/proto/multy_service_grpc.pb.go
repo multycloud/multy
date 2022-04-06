@@ -88,6 +88,7 @@ type MultyResourceServiceClient interface {
 	ReadVirtualMachine(ctx context.Context, in *resourcespb.ReadVirtualMachineRequest, opts ...grpc.CallOption) (*resourcespb.VirtualMachineResource, error)
 	UpdateVirtualMachine(ctx context.Context, in *resourcespb.UpdateVirtualMachineRequest, opts ...grpc.CallOption) (*resourcespb.VirtualMachineResource, error)
 	DeleteVirtualMachine(ctx context.Context, in *resourcespb.DeleteVirtualMachineRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	RefreshState(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -710,6 +711,15 @@ func (c *multyResourceServiceClient) DeleteVirtualMachine(ctx context.Context, i
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) RefreshState(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/RefreshState", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -782,6 +792,7 @@ type MultyResourceServiceServer interface {
 	ReadVirtualMachine(context.Context, *resourcespb.ReadVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error)
 	UpdateVirtualMachine(context.Context, *resourcespb.UpdateVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error)
 	DeleteVirtualMachine(context.Context, *resourcespb.DeleteVirtualMachineRequest) (*commonpb.Empty, error)
+	RefreshState(context.Context, *commonpb.Empty) (*commonpb.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -992,6 +1003,9 @@ func (UnimplementedMultyResourceServiceServer) UpdateVirtualMachine(context.Cont
 }
 func (UnimplementedMultyResourceServiceServer) DeleteVirtualMachine(context.Context, *resourcespb.DeleteVirtualMachineRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVirtualMachine not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) RefreshState(context.Context, *commonpb.Empty) (*commonpb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RefreshState not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -2230,6 +2244,24 @@ func _MultyResourceService_DeleteVirtualMachine_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_RefreshState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(commonpb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).RefreshState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/RefreshState",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).RefreshState(ctx, req.(*commonpb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2508,6 +2540,10 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteVirtualMachine",
 			Handler:    _MultyResourceService_DeleteVirtualMachine_Handler,
+		},
+		{
+			MethodName: "RefreshState",
+			Handler:    _MultyResourceService_RefreshState_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

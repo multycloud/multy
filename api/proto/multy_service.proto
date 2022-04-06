@@ -111,4 +111,6 @@ service MultyResourceService {
   rpc ReadVirtualMachine (resources.ReadVirtualMachineRequest) returns (resources.VirtualMachineResource) {}
   rpc UpdateVirtualMachine (resources.UpdateVirtualMachineRequest) returns (resources.VirtualMachineResource) {}
   rpc DeleteVirtualMachine (resources.DeleteVirtualMachineRequest) returns (common.Empty) {}
+
+  rpc RefreshState(common.Empty) returns (common.Empty) {}
 }
