@@ -18,7 +18,7 @@ require (
 	github.com/zclconf/go-cty v1.9.1
 	golang.org/x/exp v0.0.0-20220218215828-6cf2b201936e
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
-	google.golang.org/grpc v1.38.0
+	google.golang.org/grpc v1.45.0
 	google.golang.org/protobuf v1.28.0
 )
 
