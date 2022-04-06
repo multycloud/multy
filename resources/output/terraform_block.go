@@ -74,15 +74,14 @@ func (t *TerraformDataSource) SetName(name string) {
 	t.ResourceName = name
 }
 
-func WrapWithBlockType(block TfBlock) any {
+func WrapWithBlockType(block TfBlock) (any, error) {
 	if block.GetBlockType() == "resource" {
-		return ResourceWrapper{R: block}
+		return ResourceWrapper{R: block}, nil
 	}
 	if block.GetBlockType() == "data" {
-		return DataSourceWrapper{R: block}
+		return DataSourceWrapper{R: block}, nil
 	}
-	validate.LogInternalError("unknown block type %T", block)
-	return nil
+	return nil, fmt.Errorf("unknown block type %T", block)
 }
 
 func GetResourceName(r any) string {

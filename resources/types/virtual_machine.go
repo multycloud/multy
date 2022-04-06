@@ -152,7 +152,7 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 			})
 
 			if err != nil {
-				validate.LogInternalError("unable to encode aws policy: %s", err.Error())
+				return nil, fmt.Errorf("unable to encode aws policy: %s", err.Error())
 			}
 
 			iamRole.InlinePolicy = iam.AwsIamRoleInlinePolicy{

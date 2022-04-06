@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/errors"
@@ -12,6 +11,7 @@ import (
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
 	"google.golang.org/protobuf/proto"
+	"log"
 )
 
 type CreateRequest[Arg proto.Message] interface {
@@ -49,12 +49,24 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
-	fmt.Println("Service create")
-	userId, err := util.ExtractUserId(ctx)
+	log.Println("Service create")
+	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return *new(OutT), err
 	}
-	c, err := s.Db.LoadUserConfig(userId)
+
+	userId, err := s.Db.GetUserId(ctx, key)
+	if err != nil {
+		return *new(OutT), err
+	}
+
+	lock, err := s.Db.LockConfig(ctx, userId)
+	if err != nil {
+		return *new(OutT), err
+	}
+	defer s.Db.UnlockConfig(ctx, lock)
+
+	c, err := s.Db.LoadUserConfig(userId, lock)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -63,17 +75,17 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 		return *new(OutT), err
 	}
 
-	fmt.Printf("Deploying %s\n", resource.ResourceId)
+	log.Printf("Deploying %s\n", resource.ResourceId)
 	_, err = deploy.Deploy(ctx, c, nil, resource)
 	if err != nil {
 		return *new(OutT), err
 	}
 
-	err = s.Db.StoreUserConfig(c)
+	err = s.Db.StoreUserConfig(c, lock)
 	if err != nil {
 		return *new(OutT), err
 	}
-	return s.Read(ctx, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.ResourceId})
+	return s.readFromConfig(c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.ResourceId})
 }
 
 func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, error) {
@@ -81,16 +93,32 @@ func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, 
 }
 
 func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, error) {
-	fmt.Printf("Service read: %s\n", in.GetResourceId())
-	userId, err := util.ExtractUserId(ctx)
+	log.Printf("Service read: %s\n", in.GetResourceId())
+	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return *new(OutT), err
 	}
 
-	c, err := s.Db.LoadUserConfig(userId)
+	userId, err := s.Db.GetUserId(ctx, key)
 	if err != nil {
 		return *new(OutT), err
 	}
+
+	lock, err := s.Db.LockConfig(ctx, userId)
+	if err != nil {
+		return *new(OutT), err
+	}
+	defer s.Db.UnlockConfig(ctx, lock)
+
+	c, err := s.Db.LoadUserConfig(userId, lock)
+	if err != nil {
+		return *new(OutT), err
+	}
+
+	return s.readFromConfig(c, in)
+}
+
+func (s Service[Arg, OutT]) readFromConfig(c *configpb.Config, in WithResourceId) (OutT, error) {
 	for _, r := range c.Resources {
 		if r.ResourceId == in.GetResourceId() {
 			converted, err := r.ResourceArgs.ResourceArgs.UnmarshalNew()
@@ -117,12 +145,22 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
-	fmt.Printf("Service update: %s\n", in.GetResourceId())
-	userId, err := util.ExtractUserId(ctx)
+	log.Printf("Service update: %s\n", in.GetResourceId())
+	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return *new(OutT), err
 	}
-	c, err := s.Db.LoadUserConfig(userId)
+	userId, err := s.Db.GetUserId(ctx, key)
+	if err != nil {
+		return *new(OutT), err
+	}
+	lock, err := s.Db.LockConfig(ctx, userId)
+	if err != nil {
+		return *new(OutT), err
+	}
+	defer s.Db.UnlockConfig(ctx, lock)
+
+	c, err := s.Db.LoadUserConfig(userId, lock)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -137,11 +175,11 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 		return *new(OutT), err
 	}
 
-	err = s.Db.StoreUserConfig(c)
+	err = s.Db.StoreUserConfig(c, lock)
 	if err != nil {
 		return *new(OutT), err
 	}
-	return s.Read(ctx, in)
+	return s.readFromConfig(c, in)
 }
 
 func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
@@ -149,12 +187,21 @@ func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*com
 }
 
 func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
-	fmt.Printf("Service delete: %s\n", in.GetResourceId())
-	userId, err := util.ExtractUserId(ctx)
+	log.Printf("Service delete: %s\n", in.GetResourceId())
+	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return nil, err
 	}
-	c, err := s.Db.LoadUserConfig(userId)
+	userId, err := s.Db.GetUserId(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	lock, err := s.Db.LockConfig(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer s.Db.UnlockConfig(ctx, lock)
+	c, err := s.Db.LoadUserConfig(userId, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +216,7 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*com
 		return nil, err
 	}
 
-	err = s.Db.StoreUserConfig(c)
+	err = s.Db.StoreUserConfig(c, lock)
 	if err != nil {
 		return nil, err
 	}

@@ -19,6 +19,7 @@ import (
 	"github.com/multycloud/multy/resources/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -94,6 +95,15 @@ func Translate(credentials *credspb.CloudCredentials, c *configpb.Config, prev *
 	return hclOutput, nil
 }
 
+type tfOutput struct {
+	Level      string `json:"@level"`
+	Message    string `json:"@message"`
+	Diagnostic struct {
+		Summary string `json:"summary"`
+		Detail  string `json:"detail"`
+	} `json:"diagnostic"`
+}
+
 func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (*output.TfState, error) {
 	credentials, err := util.ExtractCloudCredentials(ctx)
 	if err != nil {
@@ -124,12 +134,22 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 	startApply := time.Now()
 
 	// TODO: only deploy targets given in the args
-	// TODO: parse errors and send them to user
-	cmd := exec.Command("terraform", "-chdir="+tmpDir, "apply", "-auto-approve")
-	cmd.Stdout = os.Stdout
+	outputJson := new(bytes.Buffer)
+	cmd := exec.Command("terraform", "-chdir="+tmpDir, "apply", "-auto-approve", "--json")
+	cmd.Stdout = outputJson
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
+		outputs, parseErr := parseTfOutputs(outputJson)
+		if parseErr != nil {
+			return nil, errors.InternalServerErrorWithMessage("error deploying resources", parseErr)
+		}
+		if parseErr := getFirstError(outputs); parseErr != nil {
+			return nil, errors.InternalServerErrorWithMessage("error deploying resources", parseErr)
+		}
+
+		fmt.Println(outputs)
+
 		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
 	}
 	log.Printf("tf apply ended in %s", time.Since(startApply))
@@ -140,6 +160,34 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 	}
 
 	return state, nil
+}
+
+func getFirstError(outputs []tfOutput) error {
+	for _, o := range outputs {
+		if o.Level == "error" {
+			return fmt.Errorf(o.Diagnostic.Summary)
+		}
+	}
+	return nil
+}
+
+func parseTfOutputs(outputJson *bytes.Buffer) ([]tfOutput, error) {
+	var out []tfOutput
+	line, err := outputJson.ReadString('\n')
+	for ; err == nil; line, err = outputJson.ReadString('\n') {
+		elem := tfOutput{}
+		err = json.Unmarshal([]byte(line), &elem)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, elem)
+	}
+
+	if err == io.EOF {
+		return out, nil
+	}
+
+	return nil, err
 }
 
 func MaybeInit(userId string) error {

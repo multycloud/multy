@@ -33,14 +33,14 @@ func ConvertCommonChildParams(resourceId string, parameters *commonpb.ChildResou
 	}
 }
 
-func ExtractUserId(ctx context.Context) (string, error) {
+func ExtractApiKey(ctx context.Context) (string, error) {
 	md, _ := metadata.FromIncomingContext(ctx)
-	userIds := md.Get("user_id")
+	userIds := md.Get("api_key")
 	if len(userIds) == 0 {
-		return "", errors.PermissionDenied(fmt.Sprintf("user id must be set"))
+		return "", errors.PermissionDenied(fmt.Sprintf("api key must be set"))
 	}
 	if len(userIds) > 1 {
-		return "", errors.PermissionDenied(fmt.Sprintf("only expected 1 user id, found %d: %s", len(userIds), strings.Join(userIds, ", ")))
+		return "", errors.PermissionDenied(fmt.Sprintf("only expected 1 api key, found %d: %s", len(userIds), strings.Join(userIds, ", ")))
 	}
 	return userIds[0], nil
 }

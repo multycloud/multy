@@ -26,6 +26,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"log"
 	"net"
+	"os"
 )
 
 type Server struct {
@@ -56,6 +57,11 @@ func RunServer(ctx context.Context, port int) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	connectionStr, exists := os.LookupEnv("MULTY_DB_CONN_STRING")
+	if !exists {
+		log.Fatalf("db_connection_string env var is not set")
+	}
+
 	endpoint := "api.multy.dev"
 	certFile := fmt.Sprintf("/etc/letsencrypt/live/%s/fullchain.pem", endpoint)
 	keyFile := fmt.Sprintf("/etc/letsencrypt/live/%s/privkey.pem", endpoint)
@@ -73,10 +79,11 @@ func RunServer(ctx context.Context, port int) {
 		s.GracefulStop()
 		_ = lis.Close()
 	}()
-	d, err := db.NewDatabase()
+	d, err := db.NewDatabase(connectionStr)
 	if err != nil {
 		log.Fatalf("failed to load db: %v", err)
 	}
+	defer d.Close()
 	server := Server{
 		proto.UnimplementedMultyResourceServiceServer{},
 		virtual_network.NewVnService(d),

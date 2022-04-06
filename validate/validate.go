@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"io/ioutil"
 	"os"
-	"runtime/debug"
 )
 
 type ResourceValidationInfo struct {
@@ -20,36 +19,6 @@ type ValidationError struct {
 	ErrorMessage string
 	ResourceId   string
 	FieldName    string
-}
-
-func NewResourceValidationInfoWithId(resourceId string) *ResourceValidationInfo {
-	return &ResourceValidationInfo{ResourceId: resourceId, SourceRanges: map[string]hcl.Range{}}
-}
-
-func NewResourceValidationInfoFromContent(content *hcl.BodyContent, definitionRange hcl.Range, id string) *ResourceValidationInfo {
-	result := map[string]hcl.Range{}
-	for _, attr := range content.Attributes {
-		result[attr.Name] = attr.Range
-	}
-	// TODO: also map blocks
-
-	return &ResourceValidationInfo{SourceRanges: result, BlockDefRange: definitionRange, ResourceId: id}
-}
-
-func (info *ResourceValidationInfo) LogFatal(resourceId string, fieldName string, errorMessage string) {
-	if _, ok := info.SourceRanges[fieldName]; ok {
-		sourceRange := info.SourceRanges[fieldName]
-		printToStdErrLn(
-			"Validation error when parsing resource %s: %s\n  on %s\n", resourceId, errorMessage, sourceRange,
-		)
-		printLinesInRange(sourceRange)
-	} else {
-		printToStdErrLn(
-			"Validation error when parsing resource %s (%s): %s\n", resourceId, info.BlockDefRange, errorMessage,
-		)
-	}
-
-	exitAndPrintStackTrace()
 }
 
 func (e ValidationError) Print() {
@@ -78,37 +47,8 @@ func (info *ResourceValidationInfo) NewError(errorMessage string, fieldName stri
 	}
 }
 
-func LogFatalWithDiags(diags hcl.Diagnostics, format string, a ...any) {
-	printToStdErrLn(format, a...)
-
-	for _, diag := range diags {
-		if diag.Detail == "Unsuitable value: value must be known" {
-			// useless diagnostic that always shows up
-			continue
-		}
-		printToStdErrLn(diag.Error())
-		if diag.Subject != nil {
-			printLinesInRange(*diag.Subject)
-		}
-	}
-	os.Exit(1)
-}
-
-func LogFatalWithSourceRange(sourceRange hcl.Range, format string, a ...any) {
-	printToStdErr("%s: ", sourceRange)
-	printToStdErrLn(format, a...)
-	printLinesInRange(sourceRange)
-	os.Exit(1)
-}
-
 func LogInternalError(format string, a ...any) {
-	printToStdErrLn(format, a...)
-	exitAndPrintStackTrace()
-}
-
-func exitAndPrintStackTrace() {
-	debug.PrintStack()
-	os.Exit(1)
+	panic(fmt.Sprintf(format, a...))
 }
 
 func printLinesInRange(sourceRange hcl.Range) {
@@ -123,13 +63,6 @@ func printLinesInRange(sourceRange hcl.Range) {
 
 func printToStdErrLn(format string, a ...any) {
 	_, err := fmt.Fprintf(os.Stderr, format+"\n", a...)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func printToStdErr(format string, a ...any) {
-	_, err := fmt.Fprintf(os.Stderr, format, a...)
 	if err != nil {
 		panic(err)
 	}
@@ -169,12 +102,4 @@ func ReadLines(sourceRange hcl.Range, bytes []byte) ([]Line, error) {
 		return nil, scanner.Err()
 	}
 	return matchingLines, nil
-}
-
-func PrintAllAndExit(errs []ValidationError) {
-	printToStdErrLn("%d validation errors were found", len(errs))
-	for _, err := range errs {
-		err.Print()
-	}
-	os.Exit(1)
 }

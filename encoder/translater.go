@@ -20,16 +20,19 @@ func TranslateResources(decodedResources *DecodedResources, ctx resources.MultyC
 	errors := map[validate.ValidationError]bool{}
 	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
 		var err error
-		translationCache[r], err = r.Translate(ctx)
-		if err != nil {
-			return translationCache, nil, err
-		}
-		for _, translated := range translationCache[r] {
-			defaultTagProcessor.Process(translated)
-		}
 		// we need to use a set here because errors are duplicated for multiple clouds
-		for _, err := range r.Validate(ctx) {
+		validationErrors := r.Validate(ctx)
+		for _, err := range validationErrors {
 			errors[err] = true
+		}
+		if len(validationErrors) == 0 {
+			translationCache[r], err = r.Translate(ctx)
+			if err != nil {
+				return translationCache, nil, err
+			}
+			for _, translated := range translationCache[r] {
+				defaultTagProcessor.Process(translated)
+			}
 		}
 	}
 

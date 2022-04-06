@@ -50,8 +50,7 @@ func (rg *Type) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 		return nil, nil
 	}
 
-	validate.LogInternalError("cloud %s is not supported for this resource type ", rg.GetCloud())
-	return nil, nil
+	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", rg.GetCloud())
 }
 
 func (rg *Type) GetOutputValues(cloud commonpb.CloudProvider) map[string]cty.Value {
@@ -83,6 +82,15 @@ func (rg *Type) GetCloudSpecificLocation() string {
 }
 
 func (rg *Type) Validate(ctx resources.MultyContext) []validate.ValidationError {
+	if _, err := common.GetCloudLocationPb(rg.Location, rg.GetCloud()); err != nil {
+		return []validate.ValidationError{
+			{
+				ErrorMessage: err.Error(),
+				ResourceId:   rg.ResourceId,
+				FieldName:    "location",
+			},
+		}
+	}
 	return nil
 }
 
@@ -93,9 +101,8 @@ func (rg *Type) GetMainResourceName() (string, error) {
 	case common.AZURE:
 		return "AzureResourceName", nil
 	default:
-		validate.LogInternalError("unknown cloud %s", rg.GetCloud())
+		return "", fmt.Errorf("unknown cloud %s", rg.GetCloud())
 	}
-	return "", nil
 }
 
 func (rg *Type) GetDependencies(ctx resources.MultyContext) []resources.CloudSpecificResource {
