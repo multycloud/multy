@@ -5,10 +5,11 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy
+      - uses: actions/checkout@v2
+      - name: Run tf appply
         run: |
           cd api/infra
           terraform init
