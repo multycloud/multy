@@ -2,7 +2,7 @@
 
 {
 export USERS_S3_BUCKET_NAME='${s3_bucket_name}'
-export DB_CONN='${s3_bucket_name}'
+export MULTY_DB_CONN_STRING='${db_connection}'
 
 mkdir -p "$HOME/.terraform.d/plugin-cache"
 echo plugin_cache_dir = \"$HOME/.terraform.d/plugin-cache\" > "$HOME/.terraformrc"

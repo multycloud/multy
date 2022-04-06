@@ -119,6 +119,15 @@ resource "aws_route_table_association" "rta" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public_rt.id
 }
+// todo: remove to put db private
+resource "aws_route_table_association" "rta2" {
+  subnet_id      = aws_subnet.private_subnet.id
+  route_table_id = aws_route_table.public_rt.id
+}
+resource "aws_route_table_association" "rta3" {
+  subnet_id      = aws_subnet.private_subnet2.id
+  route_table_id = aws_route_table.public_rt.id
+}
 resource "aws_subnet" "public_subnet" {
   tags              = { "Name" = "backend" }
   cidr_block        = "10.0.1.0/24"
@@ -261,6 +270,14 @@ resource "aws_route53_record" "server1-record" {
   type    = "A"
   ttl     = "300"
   records = [aws_eip.vm_ip.public_ip]
+}
+resource "null_resource" "db_init" {
+  triggers = {
+    change = filemd5("../../db/init.sql")
+  }
+  provisioner "local-exec" {
+    command = "mysql -h ${aws_db_instance.db.address} -P ${aws_db_instance.db.port} -u ${aws_db_instance.db.username} --password='${random_password.password.result}' -e 'source ../../db/init.sql'"
+  }
 }
 terraform {
   backend "s3" {
