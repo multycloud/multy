@@ -64,18 +64,21 @@ func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCreden
 			}
 
 			// If not already wrapped in a tf block, assume it's a resource.
-			hcl, err := hclencoder.Encode(output.WrapWithBlockType(result))
+			block, err := output.WrapWithBlockType(result)
+			if err != nil {
+				return "", nil, err
+			}
+			hclStr, err := hclencoder.Encode(block)
 			if err != nil {
 				return "", nil, errors.InternalServerErrorWithMessage("unexpected error encoding resource", err)
 			}
-			b.Write(hcl)
+			b.Write(hclStr)
 		}
-
 	}
 
 	for _, p := range flatten(providers) {
 		for _, translatedProvider := range p.Translate() {
-			hcl, err := hclencoder.Encode(
+			hclStr, err := hclencoder.Encode(
 				providerWrapper{
 					P: translatedProvider,
 				},
@@ -83,7 +86,7 @@ func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCreden
 			if err != nil {
 				return "", nil, errors.InternalServerErrorWithMessage("unexpected error encoding providers", err)
 			}
-			b.Write(hcl)
+			b.Write(hclStr)
 		}
 	}
 

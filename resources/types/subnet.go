@@ -68,11 +68,15 @@ func NewSubnet(resourceId string, subnet *resourcespb.SubnetArgs, others resourc
 func (r *Subnet) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		location := r.VirtualNetwork.GetLocation()
+		az, err := common.GetAvailabilityZone(location, int(r.Args.AvailabilityZone), r.GetCloud())
+		if err != nil {
+			return nil, err
+		}
 		awsSubnet := subnet.AwsSubnet{
 			AwsResource:      common.NewAwsResource(r.ResourceId, r.Args.Name),
 			CidrBlock:        r.Args.CidrBlock,
 			VpcId:            r.VirtualNetwork.GetVirtualNetworkId(),
-			AvailabilityZone: common.GetAvailabilityZone(location, int(r.Args.AvailabilityZone), r.GetCloud()),
+			AvailabilityZone: az,
 		}
 		// This flag needs to be set so that eks nodes can connect to the kubernetes cluster
 		// https://aws.amazon.com/blogs/containers/upcoming-changes-to-ip-assignment-for-eks-managed-node-groups/

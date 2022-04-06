@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/resources/output"
-	"github.com/multycloud/multy/validate"
 )
 
 const (
@@ -55,19 +54,18 @@ var AMIMAP = map[string]string{
 	"us-east-1": "ami-04ad2567c9e3d7893",
 }
 
-func GetAvailabilityZone(location string, az int, cloud commonpb.CloudProvider) string {
+func GetAvailabilityZone(location string, az int, cloud commonpb.CloudProvider) (string, error) {
 	if AVAILABILITY_ZONES[location] == nil {
-		validate.LogInternalError("invalid location: %s", location)
+		return "", fmt.Errorf("invalid location: %s", location)
 	}
 	azArray := AVAILABILITY_ZONES[location][cloud]
 	if az == 0 {
-		return ""
+		return "", nil
 	}
 	if az <= len(azArray) {
-		return azArray[az-1]
+		return azArray[az-1], nil
 	}
-	validate.LogInternalError("invalid az value: %d", az)
-	return ""
+	return "", fmt.Errorf("invalid az value: %d", az)
 }
 
 func GetCloudLocation(location string, provider commonpb.CloudProvider) (string, error) {
@@ -88,17 +86,6 @@ func GetCloudLocationPb(location string, provider commonpb.CloudProvider) (strin
 		return "", fmt.Errorf("location %s is not defined for cloud %s", location, provider)
 	}
 	return LOCATION[location][provider], nil
-}
-
-// GetLocationFromCloudLocation get multy location from cloud specific location (eu-west-1 -> ireland)
-func GetLocationFromCloudLocation(location string, cloud commonpb.CloudProvider) string {
-	for s, m := range LOCATION {
-		if m[cloud] == location {
-			return s
-		}
-	}
-	validate.LogInternalError("location %s is not defined for cloud %s", location, cloud)
-	return ""
 }
 
 type AzResource struct {
