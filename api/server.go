@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/proto"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
@@ -21,6 +22,7 @@ import (
 	"github.com/multycloud/multy/api/services/vault"
 	"github.com/multycloud/multy/api/services/virtual_machine"
 	"github.com/multycloud/multy/api/services/virtual_network"
+	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -31,6 +33,7 @@ import (
 
 type Server struct {
 	proto.UnimplementedMultyResourceServiceServer
+	*db.Database
 	virtual_network.VnService
 	subnet.SubnetService
 	network_interface.NetworkInterfaceService
@@ -86,6 +89,7 @@ func RunServer(ctx context.Context, port int) {
 	defer d.Close()
 	server := Server{
 		proto.UnimplementedMultyResourceServiceServer{},
+		d,
 		virtual_network.NewVnService(d),
 		subnet.NewSubnetService(d),
 		network_interface.NewNetworkInterfaceService(d),
@@ -331,4 +335,39 @@ func (s *Server) UpdateVirtualMachine(ctx context.Context, in *resourcespb.Updat
 }
 func (s *Server) DeleteVirtualMachine(ctx context.Context, in *resourcespb.DeleteVirtualMachineRequest) (*commonpb.Empty, error) {
 	return s.VirtualMachineService.Service.Delete(ctx, in)
+}
+
+func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empty, error) {
+	key, err := util.ExtractApiKey(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	userId, err := s.Database.GetUserId(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	lock, err := s.Database.LockConfig(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer s.Database.UnlockConfig(ctx, lock)
+
+	_, err = s.Database.LoadUserConfig(userId, lock)
+	if err != nil {
+		return nil, err
+	}
+
+	err = deploy.MaybeInit(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = deploy.RefreshState(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }

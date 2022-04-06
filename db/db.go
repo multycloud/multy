@@ -244,7 +244,7 @@ func (d *Database) Close() error {
 
 func (d *Database) GetUserId(ctx context.Context, apiKey string) (string, error) {
 	var userId string
-	err := d.sqlConnection.QueryRowContext(ctx, "SELECT UserId FROM ApiKeys where ApiKey = ?", apiKey).Scan(&userId)
+	err := d.sqlConnection.QueryRowContext(ctx, "SELECT UserId FROM ApiKeys WHERE ApiKey = ?;", apiKey).Scan(&userId)
 	if err == sql.ErrNoRows {
 		return "", errors.PermissionDenied("wrong api key")
 	} else if err != nil {

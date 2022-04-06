@@ -37,6 +37,13 @@ func NewVirtualNetwork(resourceId string, vn *resourcespb.VirtualNetworkArgs, _ 
 
 func (r *VirtualNetwork) FromState(state *output.TfState) (*resourcespb.VirtualNetworkResource, error) {
 	out := new(resourcespb.VirtualNetworkResource)
+	out.CommonParameters = &commonpb.CommonResourceParameters{
+		ResourceId:      r.ResourceId,
+		ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
+		Location:        r.Args.CommonParameters.Location,
+		CloudProvider:   r.GetCloud(),
+		NeedsUpdate:     false,
+	}
 
 	id, err := resources.GetMainOutputRef(r)
 	if err != nil {
@@ -51,12 +58,6 @@ func (r *VirtualNetwork) FromState(state *output.TfState) (*resourcespb.VirtualN
 		}
 		out.Name = stateResource.AwsResource.Tags["Name"]
 		out.CidrBlock = stateResource.CidrBlock
-		out.CommonParameters = &commonpb.CommonResourceParameters{
-			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
-			Location:        r.Args.CommonParameters.Location,
-			CloudProvider:   r.GetCloud(),
-			NeedsUpdate:     false,
-		}
 	case common.AZURE:
 		stateResource, err := output.GetParsed[virtual_network.AzureVnet](state, id)
 		if err != nil {
@@ -64,12 +65,6 @@ func (r *VirtualNetwork) FromState(state *output.TfState) (*resourcespb.VirtualN
 		}
 		out.Name = stateResource.Name
 		out.CidrBlock = stateResource.AddressSpace[0]
-		out.CommonParameters = &commonpb.CommonResourceParameters{
-			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
-			Location:        r.Args.CommonParameters.Location,
-			CloudProvider:   r.GetCloud(),
-			NeedsUpdate:     false,
-		}
 	}
 
 	return out, nil

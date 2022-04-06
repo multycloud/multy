@@ -154,9 +154,6 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 		if parseErr := getFirstError(outputs); parseErr != nil {
 			return nil, errors.InternalServerErrorWithMessage("error deploying resources", parseErr)
 		}
-
-		fmt.Println(outputs)
-
 		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
 	}
 	log.Printf("tf apply ended in %s", time.Since(startApply))
@@ -235,6 +232,26 @@ func GetState(userId string) (*output.TfState, error) {
 		return nil, err
 	}
 	return &state, err
+}
+
+func RefreshState(userId string) error {
+	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
+	outputJson := new(bytes.Buffer)
+	cmd := exec.Command("terraform", "-chdir="+tmpDir, "refresh", "-json")
+	cmd.Stdout = outputJson
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		outputs, parseErr := parseTfOutputs(outputJson)
+		if parseErr != nil {
+			return errors.InternalServerErrorWithMessage("error querying resources", parseErr)
+		}
+		if parseErr := getFirstError(outputs); parseErr != nil {
+			return errors.InternalServerErrorWithMessage("error querying resources", parseErr)
+		}
+		return errors.InternalServerErrorWithMessage("error querying resources", err)
+	}
+	return err
 }
 
 type hasCommonArgs interface {
