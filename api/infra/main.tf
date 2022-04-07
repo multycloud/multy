@@ -235,7 +235,7 @@ resource "aws_ssm_parameter" "db_password" {
 resource "aws_instance" "vm" {
   tags             = { "Name" = "backend" }
   ami              = "ami-0015a39e4b7c0966f" # Ubuntu Server 20.04 LTS (HVM), SSD Volume Type
-  instance_type    = "t2.nano"
+  instance_type    = "t2.small"
   subnet_id        = aws_subnet.public_subnet.id
   user_data_base64 = base64encode(templatefile("init.sh", {
     "s3_bucket_name" = var.bucket_name
