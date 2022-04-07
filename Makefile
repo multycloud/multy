@@ -6,7 +6,7 @@ build:
 	go build -v
 
 run: build
-	sudo ./multy serve --port=$(PORT)
+	sudo -E ./multy serve --port=$(PORT)
 
 clean:
 	find api/proto -name '*.pb.go' -delete
