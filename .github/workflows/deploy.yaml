@@ -12,5 +12,5 @@ jobs:
         run: |
           curl -XPOST -u "JCoelhoo:${{ secrets.GH_PAT_TOKEN }}" \
             -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" \
-            https://api.github.com/repos/multycloud/multy-internal/actions/workflows/deploy.yml/dispatches \
+            https://api.github.com/repos/multycloud/multy-infra/actions/workflows/deploy.yml/dispatches \
             --data '{"ref": "main"}'
