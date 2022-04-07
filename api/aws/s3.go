@@ -61,7 +61,10 @@ func (c Client) ReadFile(userId string, fileName string) (string, error) {
 					return "", err
 				}
 				return "", nil
+			default:
+				fmt.Printf("error %s when reading file %s", aerr.Code(), keyName)
 			}
+
 		} else {
 			return "", err
 		}
