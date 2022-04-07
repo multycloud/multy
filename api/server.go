@@ -61,12 +61,15 @@ func RunServer(ctx context.Context, port int) {
 	}
 
 	connectionStr, exists := os.LookupEnv("MULTY_DB_CONN_STRING")
-	fmt.Println(os.Getenv("MULTY_DB_CONN_STRING"))
 	if !exists {
 		log.Fatalf("db_connection_string env var is not set")
 	}
 
-	endpoint := "api2.multy.dev"
+	endpoint, exists := os.LookupEnv("MULTY_API_ENDPOINT")
+	if !exists {
+		log.Fatalf("api_endpoint env var is not set")
+	}
+
 	certFile := fmt.Sprintf("/etc/letsencrypt/live/%s/fullchain.pem", endpoint)
 	keyFile := fmt.Sprintf("/etc/letsencrypt/live/%s/privkey.pem", endpoint)
 	creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)

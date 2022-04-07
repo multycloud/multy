@@ -2,6 +2,10 @@ variable bucket_name {
   type    = string
   default = "multy-users-tfstate"
 }
+variable api_endpoint {
+  type    = string
+  default = "api2.multy.dev"
+}
 resource "aws_vpc" "main_vpc" {
   tags                 = { "Name" = "backend" }
   cidr_block           = "10.0.0.0/16"
@@ -236,6 +240,7 @@ resource "aws_instance" "vm" {
   user_data_base64 = base64encode(templatefile("init.sh", {
     "s3_bucket_name" = var.bucket_name
     "db_connection"  = "${aws_db_instance.db.username}:${random_password.password.result}@tcp(${aws_db_instance.db.address}:${aws_db_instance.db.port}/${aws_db_instance.db.name}"
+    "api_endpoint"   = var.api_endpoint
   }))
   key_name             = aws_key_pair.vm.key_name
   iam_instance_profile = aws_iam_instance_profile.iam_instance_profile.id
@@ -280,7 +285,7 @@ data "aws_route53_zone" "primary" {
 }
 resource "aws_route53_record" "server1-record" {
   zone_id = data.aws_route53_zone.primary.zone_id
-  name    = "api2.multy.dev"
+  name    = var.api_endpoint
   type    = "A"
   ttl     = "300"
   records = [aws_eip.vm_ip.public_ip]
