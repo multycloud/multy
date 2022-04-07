@@ -178,6 +178,20 @@ resource "aws_iam_role" "vm_iam" {
         {
           "Effect" : "Allow",
           "Action" : [
+            "s3:ListBucket"
+          ],
+          "Resource" : [
+            "arn:aws:s3:::multy-internal"
+          ]
+        },
+        {
+          "Effect" : "Allow",
+          "Action" : ["s3:Get*", "s3:List*",],
+          "Resource" : "arn:aws:s3:::multy-internal/certs/*"
+        },
+        {
+          "Effect" : "Allow",
+          "Action" : [
             "s3:ListAccessPointsForObjectLambda",
             "s3:GetAccessPoint",
             "s3:PutAccountPublicAccessBlock",
@@ -203,8 +217,8 @@ resource "aws_s3_bucket" "tfstate_bucket" {
 }
 resource "aws_key_pair" "vm" {
   tags       = { "Name" = "backend" }
-  key_name   = "vm_multy"
-  public_key = file("./ssh_key.pub")
+  key_name   = "infra_key"
+  public_key = file("./infra_key.pub")
 }
 resource "random_password" "password" {
   length = 16
@@ -266,7 +280,7 @@ data "aws_route53_zone" "primary" {
 }
 resource "aws_route53_record" "server1-record" {
   zone_id = data.aws_route53_zone.primary.zone_id
-  name    = "api.multy.dev"
+  name    = "api2.multy.dev"
   type    = "A"
   ttl     = "300"
   records = [aws_eip.vm_ip.public_ip]
@@ -281,9 +295,10 @@ resource "null_resource" "db_init" {
 }
 terraform {
   backend "s3" {
-    bucket = "multy-tfstate"
-    key    = "terraform.tfstate"
-    region = "eu-west-2"
+    bucket         = "multy-tfstate"
+    key            = "terraform.tfstate"
+    region         = "eu-west-2"
+    dynamodb_table = "terraform-lock"
   }
   required_providers {
     aws = {

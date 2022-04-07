@@ -10,7 +10,7 @@ sudo apt-get update -y && sudo apt-get install -y gnupg software-properties-comm
 curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
 sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
 sudo apt-get update -y
-sudo apt-get -y install terraform git make protobuf-compiler mysql-client
+sudo apt-get -y install terraform git make protobuf-compiler mysql-client awscli
 
 wget https://golang.org/dl/go1.18.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf go1.18.linux-amd64.tar.gz
@@ -24,11 +24,7 @@ go version
 go env -w GO111MODULE=on
 sudo chmod -R 777 /root/
 
-sudo snap install core
-sudo snap refresh core
-sudo snap install --classic certbot
-sudo ln -s /snap/bin/certbot /usr/bin/certbot
-sudo certbot certonly --standalone --non-interactive --agree-tos -m systemalerts@multy.dev --domains api.multy.dev
+sudo aws s3 cp s3://multy-internal/certs . --recursive --exclude="*" --include "fullchain.pem" --include "privkey.pem"
 
 git clone https://github.com/multycloud/multy.git
 cd multy
