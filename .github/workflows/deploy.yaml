@@ -1,6 +1,9 @@
 name: deploy
 
 on:
+  repository_dispatch:
+    types:
+      - deploy
   push:
     branches: [ main ]
 
@@ -8,13 +11,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GH_PAT_TOKEN }}
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: 'multycloud',
-              repo: 'multy-infra',
-              workflow_id: 'deploy.yml',
-              ref: 'master'
-            })
+      - name: Create repository dispatch event
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
+        run: |
+          gh api repos/:owner/multy-infra/dispatches \
+              --raw-field event_type=deploy
