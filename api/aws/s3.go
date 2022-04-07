@@ -62,7 +62,7 @@ func (c Client) ReadFile(userId string, fileName string) (string, error) {
 				}
 				return "", nil
 			default:
-				fmt.Printf("error %s when reading file %s", aerr.Code(), keyName)
+				return "", aerr
 			}
 
 		} else {
