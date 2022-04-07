@@ -239,7 +239,7 @@ resource "aws_instance" "vm" {
   subnet_id        = aws_subnet.public_subnet.id
   user_data_base64 = base64encode(templatefile("init.sh", {
     "s3_bucket_name" = var.bucket_name
-    "db_connection"  = "${aws_db_instance.db.username}:${random_password.password.result}@tcp(${aws_db_instance.db.address}:${aws_db_instance.db.port}/${aws_db_instance.db.name}"
+    "db_connection"  = "${aws_db_instance.db.username}:${random_password.password.result}@tcp(${aws_db_instance.db.address}:${aws_db_instance.db.port})/${aws_db_instance.db.name}"
     "api_endpoint"   = var.api_endpoint
   }))
   key_name             = aws_key_pair.vm.key_name
