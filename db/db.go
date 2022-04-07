@@ -208,14 +208,14 @@ func (d *Database) LoadUserConfig(userId string, lock *ConfigLock) (*configpb.Co
 
 	tfFileStr := ""
 	if userId != multyLocalUser {
-		var errPtr *error
-		tfFileStr, errPtr = d.client.ReadFile(userId, configFile)
-		if errPtr != nil {
-			return nil, errors.InternalServerErrorWithMessage("error read configuration", *errPtr)
+		var err error
+		tfFileStr, err = d.client.ReadFile(userId, configFile)
+		if err != nil {
+			return nil, errors.InternalServerErrorWithMessage("error read configuration", err)
 		}
-		tfStateStr, errPtr := d.client.ReadFile(userId, tfState)
-		if errPtr != nil {
-			return nil, errors.InternalServerErrorWithMessage("error reading current infra state", *errPtr)
+		tfStateStr, err := d.client.ReadFile(userId, tfState)
+		if err != nil {
+			return nil, errors.InternalServerErrorWithMessage("error reading current infra state", err)
 		}
 		err = os.WriteFile(filepath.Join(tmpDir, tfState), []byte(tfStateStr), os.ModePerm&0664)
 		if err != nil {
