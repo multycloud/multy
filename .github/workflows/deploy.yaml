@@ -9,8 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create repository dispatch event
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
         run: |
-          gh api repos/:owner/multy-infra/dispatches \
-              --raw-field event_type=deploy
+          curl -XPOST -u "JCoelhoo:${{ secrets.GH_PAT_TOKEN }}" \
+            -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" \
+            https://api.github.com/repos/multycloud/multy-internal/actions/workflows/deploy.yml/dispatches \
+            --data '{"ref": "master"}'
