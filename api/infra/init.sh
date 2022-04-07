@@ -25,7 +25,7 @@ go version
 go env -w GO111MODULE=on
 sudo chmod -R 777 /root/
 
-sudo aws s3 cp s3://multy-internal/certs "/etc/letsencrypt/live/$MULTY_API_ENDPOINT/" --recursive --exclude="*" --include "fullchain.pem" --include "privkey.pem"
+sudo -E aws s3 cp s3://multy-internal/certs "/etc/letsencrypt/live/${MULTY_API_ENDPOINT}/" --recursive --exclude="*" --include "fullchain.pem" --include "privkey.pem"
 
 git clone https://github.com/multycloud/multy.git
 cd multy
