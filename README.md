@@ -1,5 +1,5 @@
 <a href="https://multy.dev?utm_source=github.com">
-    <img src="https://multy.dev/assets/multy.svg" width="250">
+    <img src="https://multy.dev/assets/multy_logo_horizontal.jpg" width="250">
 </a>
 
 <br/>
@@ -9,31 +9,49 @@
 
 Write cloud-agnostic config deployed across multiple clouds.
 
-Let's try to deploy a simple virtual machine into AWS and Azure.
+Let's try to deploy a simple virtual machine into AWS and Azure using
+the [Multy Terraform Provider](https://github.com/multycloud/terraform-provider-multy)
 
 ```hcl
-config {
-  location = "ireland"
-  clouds   = ["aws", "azure"]
+variable "cloud" {
+  type    = list(string)
+  default = ["aws", "azure"]
 }
-multy "virtual_network" "example_vn" {
-  name       = "example_vn"
+
+resource multy_virtual_network vn {
+  for_each = toset(var.clouds)
+
+  name       = "test_vm"
   cidr_block = "10.0.0.0/16"
+  cloud      = each.key
+  location   = "ireland"
 }
-multy "subnet" "subnet" {
-  name               = "subnet"
-  cidr_block         = "10.0.2.0/24"
-  virtual_network    = example_vn
+
+resource multy_subnet subnet {
+  for_each = toset(var.clouds)
+
+  name               = "test_vm"
+  cidr_block         = "10.0.10.0/24"
+  virtual_network_id = multy_virtual_network.vn.id
 }
-multy "virtual_machine" "vm" {
-  name      = "test-vm"
-  os        = "linux"
-  size      = "micro"
-  subnet_id = subnet.id
+
+resource multy_virtual_machine vm {
+  for_each = toset(var.clouds)
+
+  name             = "test_vm"
+  size             = "micro"
+  operating_system = "linux"
+  subnet_id        = multy_subnet.subnet.id
+  user_data        = "echo 'Hello World'"
+  cloud            = each.key
 }
 ```
 
-If we were to deploy this using Terraform, we would first need to understand how services such as `aws_vpc`
+By using Multy's cloud-agnostic API, we can simply change the `cloud` parameter to move a resource from one cloud to
+another.
+
+If we were to deploy this using the respective cloud terraform providers, we would first need to understand how
+resources such as `aws_vpc`
 and `azurerm_virtual_network` behave and how they differ. Then we would need to define the same infrastructure
 configuration twice, one for AWS and another for Azure.
 
@@ -42,10 +60,9 @@ configuration twice, one for AWS and another for Azure.
 <p>
 
 ```hcl
-// multy:     19 lines
 // terraform: 132 lines
 resource "aws_vpc" "example_vn_aws" {
-  tags =  {
+  tags = {
     Name = "example_vn"
   }
 
@@ -53,14 +70,14 @@ resource "aws_vpc" "example_vn_aws" {
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags =  {
+  tags = {
     Name = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags =  {
+  tags = {
     Name = "example_vn"
   }
 
@@ -83,7 +100,7 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_subnet" "subnet_aws" {
-  tags =  {
+  tags = {
     Name = "subnet"
   }
 
@@ -91,7 +108,7 @@ resource "aws_subnet" "subnet_aws" {
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 resource "aws_instance" "vm_aws" {
-  tags =  {
+  tags = {
     Name = "test-vm"
   }
 
@@ -139,11 +156,11 @@ resource "azurerm_network_interface" "vm_azure" {
   }
 }
 resource "random_password" "vm_azure" {
-    length  = 16
-    special = true
-    upper   = true
-    lower   = true
-    number  = true
+  length  = 16
+  special = true
+  upper   = true
+  lower   = true
+  number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
@@ -194,31 +211,10 @@ With Multy, **you write once, and deploy anywhere**.
 
 ---
 
-#### Install
-To install the latest release, you can run the install.sh script.
-```shell
-curl https://raw.githubusercontent.com/multycloud/multy/main/install.sh | sh
-```
+To get started, have a look at the multy terraform provider repo and the documentation.
 
-You can also download any release at https://github.com/multycloud/multy/releases or build the Go binary yourself.
+Terraform
+Provider: [https://registry.terraform.io/providers/multycloud/multy/latest/docs](https://registry.terraform.io/providers/multycloud/multy/latest/docs)
 
-#### Create a deployment configuration
-
-See some examples in our documentation at https://multy.dev/docs/examples/,
-
-#### Translate your multy configuration to terraform
-
-Generate your terraform configuration by running the multy binary with the following command:
-
-```shell
-multy --output=main.tf
-```
-
-You can now use familiar terraform commands to deploy your configuration to multiple clouds!
-
-#### More resources
-
-* **[Docs](https://multy.dev/docs/introduction/)**: check our documentation page to get started
-* **[Examples](https://multy.dev/docs/examples/)**: look over some common examples
-* **[Resources](https://multy.dev/docs/resources/virtual_network/)**: currently supported resources
-
+Multy TF Provider
+Repo: [https://github.com/multycloud/terraform-provider-multy](https://github.com/multycloud/terraform-provider-multy?ref=multy-gh-repo)
