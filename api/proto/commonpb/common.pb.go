@@ -29,7 +29,7 @@ const (
 	Location_UK               Location = 3
 )
 
-// Enum value maps for Location.
+// enumValues value maps for Location.
 var (
 	Location_name = map[int32]string{
 		0: "UNKNOWN_LOCATION",
@@ -80,7 +80,7 @@ const (
 	CloudProvider_AZURE            CloudProvider = 2
 )
 
-// Enum value maps for CloudProvider.
+// enumValues value maps for CloudProvider.
 var (
 	CloudProvider_name = map[int32]string{
 		0: "UNKNOWN_PROVIDER",
@@ -128,7 +128,7 @@ const (
 	OperatingSystem_LINUX      OperatingSystem_Enum = 1
 )
 
-// Enum value maps for OperatingSystem_Enum.
+// enumValues value maps for OperatingSystem_Enum.
 var (
 	OperatingSystem_Enum_name = map[int32]string{
 		0: "UNKNOWN_OS",
@@ -176,7 +176,7 @@ const (
 	DatabaseSize_MEDIUM          DatabaseSize_Enum = 3
 )
 
-// Enum value maps for DatabaseSize_Enum.
+// enumValues value maps for DatabaseSize_Enum.
 var (
 	DatabaseSize_Enum_name = map[int32]string{
 		0: "UNKNOWN_VM_SIZE",
@@ -227,7 +227,7 @@ const (
 	VmSize_MEDIUM          VmSize_Enum = 2
 )
 
-// Enum value maps for VmSize_Enum.
+// enumValues value maps for VmSize_Enum.
 var (
 	VmSize_Enum_name = map[int32]string{
 		0: "UNKNOWN_VM_SIZE",
@@ -747,9 +747,9 @@ var file_api_proto_commonpb_common_proto_msgTypes = make([]protoimpl.MessageInfo
 var file_api_proto_commonpb_common_proto_goTypes = []interface{}{
 	(Location)(0),                         // 0: dev.multy.common.Location
 	(CloudProvider)(0),                    // 1: dev.multy.common.CloudProvider
-	(OperatingSystem_Enum)(0),             // 2: dev.multy.common.OperatingSystem.Enum
-	(DatabaseSize_Enum)(0),                // 3: dev.multy.common.DatabaseSize.Enum
-	(VmSize_Enum)(0),                      // 4: dev.multy.common.VmSize.Enum
+	(OperatingSystem_Enum)(0),             // 2: dev.multy.common.OperatingSystem.enumValues
+	(DatabaseSize_Enum)(0),                // 3: dev.multy.common.DatabaseSize.enumValues
+	(VmSize_Enum)(0),                      // 4: dev.multy.common.VmSize.enumValues
 	(*OperatingSystem)(nil),               // 5: dev.multy.common.OperatingSystem
 	(*DatabaseSize)(nil),                  // 6: dev.multy.common.DatabaseSize
 	(*VmSize)(nil),                        // 7: dev.multy.common.VmSize

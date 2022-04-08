@@ -28,7 +28,7 @@ const (
 	ObjectStorageObjectAcl_PUBLIC_READ ObjectStorageObjectAcl = 1
 )
 
-// Enum value maps for ObjectStorageObjectAcl.
+// enumValues value maps for ObjectStorageObjectAcl.
 var (
 	ObjectStorageObjectAcl_name = map[int32]string{
 		0: "PRIVATE",

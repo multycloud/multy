@@ -112,24 +112,10 @@ type tfOutput struct {
 }
 
 func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (*output.TfState, error) {
-	credentials, err := util.ExtractCloudCredentials(ctx)
-	if err != nil {
-		return nil, err
-	}
-	hclOutput, err := Encode(credentials, c, prev, curr)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: move this to a proper place
-	hclOutput = RequiredProviders + hclOutput
-
-	fmt.Println(hclOutput)
-
 	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
-	err = os.WriteFile(filepath.Join(tmpDir, tfFile), []byte(hclOutput), os.ModePerm&0664)
+	err := EncodeAndStoreTfFile(ctx, c, prev, curr)
 	if err != nil {
-		return nil, errors.InternalServerErrorWithMessage("error storing configuration", err)
+		return nil, err
 	}
 
 	err = MaybeInit(c.UserId)
@@ -142,7 +128,7 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 
 	// TODO: only deploy targets given in the args
 	outputJson := new(bytes.Buffer)
-	cmd := exec.Command("terraform", "-chdir="+tmpDir, "apply", "-auto-approve", "--json")
+	cmd := exec.Command("terraform", "-chdir="+tmpDir, "apply", "-auto-approve", "-refresh=false", "--json")
 	cmd.Stdout = outputJson
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -164,6 +150,29 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 	}
 
 	return state, nil
+}
+
+func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) error {
+	credentials, err := util.ExtractCloudCredentials(ctx)
+	if err != nil {
+		return err
+	}
+	hclOutput, err := Encode(credentials, c, prev, curr)
+	if err != nil {
+		return err
+	}
+
+	// TODO: move this to a proper place
+	hclOutput = RequiredProviders + hclOutput
+
+	fmt.Println(hclOutput)
+
+	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
+	err = os.WriteFile(filepath.Join(tmpDir, tfFile), []byte(hclOutput), os.ModePerm&0664)
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 func getFirstError(outputs []tfOutput) error {
@@ -238,7 +247,7 @@ func RefreshState(userId string) error {
 	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
 	outputJson := new(bytes.Buffer)
 	cmd := exec.Command("terraform", "-chdir="+tmpDir, "refresh", "-json")
-	cmd.Stdout = outputJson
+	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {

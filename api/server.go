@@ -342,6 +342,7 @@ func (s *Server) DeleteVirtualMachine(ctx context.Context, in *resourcespb.Delet
 }
 
 func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empty, error) {
+	fmt.Println("refreshing state")
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return nil, err
@@ -358,7 +359,12 @@ func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (*commonpb
 	}
 	defer s.Database.UnlockConfig(ctx, lock)
 
-	_, err = s.Database.LoadUserConfig(userId, lock)
+	c, err := s.Database.LoadUserConfig(userId, lock)
+	if err != nil {
+		return nil, err
+	}
+
+	err = deploy.EncodeAndStoreTfFile(ctx, c, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -373,5 +379,10 @@ func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (*commonpb
 		return nil, err
 	}
 
-	return nil, nil
+	err = s.Database.StoreUserConfig(c, lock)
+	if err != nil {
+		return nil, err
+	}
+
+	return &commonpb.Empty{}, nil
 }

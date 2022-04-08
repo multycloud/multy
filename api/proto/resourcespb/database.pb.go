@@ -28,7 +28,7 @@ const (
 	DatabaseEngine_MYSQL          DatabaseEngine = 1
 )
 
-// Enum value maps for DatabaseEngine.
+// enumValues value maps for DatabaseEngine.
 var (
 	DatabaseEngine_name = map[int32]string{
 		0: "UNKNOWN_ENGINE",
@@ -609,7 +609,7 @@ var file_api_proto_resourcespb_database_proto_goTypes = []interface{}{
 	(*DatabaseArgs)(nil),                      // 5: dev.multy.resources.DatabaseArgs
 	(*DatabaseResource)(nil),                  // 6: dev.multy.resources.DatabaseResource
 	(*commonpb.ResourceCommonArgs)(nil),       // 7: dev.multy.common.ResourceCommonArgs
-	(commonpb.DatabaseSize_Enum)(0),           // 8: dev.multy.common.DatabaseSize.Enum
+	(commonpb.DatabaseSize_Enum)(0),           // 8: dev.multy.common.DatabaseSize.enumValues
 	(*commonpb.CommonResourceParameters)(nil), // 9: dev.multy.common.CommonResourceParameters
 }
 var file_api_proto_resourcespb_database_proto_depIdxs = []int32{
@@ -617,10 +617,10 @@ var file_api_proto_resourcespb_database_proto_depIdxs = []int32{
 	5, // 1: dev.multy.resources.UpdateDatabaseRequest.resource:type_name -> dev.multy.resources.DatabaseArgs
 	7, // 2: dev.multy.resources.DatabaseArgs.common_parameters:type_name -> dev.multy.common.ResourceCommonArgs
 	0, // 3: dev.multy.resources.DatabaseArgs.engine:type_name -> dev.multy.resources.DatabaseEngine
-	8, // 4: dev.multy.resources.DatabaseArgs.size:type_name -> dev.multy.common.DatabaseSize.Enum
+	8, // 4: dev.multy.resources.DatabaseArgs.size:type_name -> dev.multy.common.DatabaseSize.enumValues
 	9, // 5: dev.multy.resources.DatabaseResource.common_parameters:type_name -> dev.multy.common.CommonResourceParameters
 	0, // 6: dev.multy.resources.DatabaseResource.engine:type_name -> dev.multy.resources.DatabaseEngine
-	8, // 7: dev.multy.resources.DatabaseResource.size:type_name -> dev.multy.common.DatabaseSize.Enum
+	8, // 7: dev.multy.resources.DatabaseResource.size:type_name -> dev.multy.common.DatabaseSize.enumValues
 	8, // [8:8] is the sub-list for method output_type
 	8, // [8:8] is the sub-list for method input_type
 	8, // [8:8] is the sub-list for extension type_name
