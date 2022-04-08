@@ -1,10 +1,8 @@
 package util
 
 import (
-	"fmt"
 	"golang.org/x/exp/constraints"
 	"sort"
-	"strings"
 )
 
 func SortResourcesById[T any](r []T, idGetter func(T) string) []T {
@@ -95,20 +93,4 @@ func FlatMapSliceValues[V any, V2 any](values []V, mapper func(V) []V2) []V2 {
 		}
 	}
 	return result
-}
-
-func GetOrDefault[V any](v *V, defaultValue V) V {
-	if v == nil {
-		return defaultValue
-	}
-
-	return *v
-}
-
-func GetTfResourceId(resourceId string, cloud string) string {
-	// just a hack so we can keep both config and translate tests for now
-	if strings.HasSuffix(resourceId, "_"+cloud) {
-		return resourceId
-	}
-	return fmt.Sprintf("%s_%s", resourceId, strings.ToLower(cloud))
 }

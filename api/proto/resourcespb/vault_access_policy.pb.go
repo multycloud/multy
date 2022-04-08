@@ -30,7 +30,7 @@ const (
 	VaultAccess_OWNER   VaultAccess_Enum = 3
 )
 
-// Enum value maps for VaultAccess_Enum.
+// enumValues value maps for VaultAccess_Enum.
 var (
 	VaultAccess_Enum_name = map[int32]string{
 		0: "UNKNOWN",
@@ -540,7 +540,7 @@ func file_api_proto_resourcespb_vault_access_policy_proto_rawDescGZIP() []byte {
 var file_api_proto_resourcespb_vault_access_policy_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_api_proto_resourcespb_vault_access_policy_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_api_proto_resourcespb_vault_access_policy_proto_goTypes = []interface{}{
-	(VaultAccess_Enum)(0),                          // 0: dev.multy.resources.VaultAccess.Enum
+	(VaultAccess_Enum)(0),                          // 0: dev.multy.resources.VaultAccess.enumValues
 	(*CreateVaultAccessPolicyRequest)(nil),         // 1: dev.multy.resources.CreateVaultAccessPolicyRequest
 	(*ReadVaultAccessPolicyRequest)(nil),           // 2: dev.multy.resources.ReadVaultAccessPolicyRequest
 	(*UpdateVaultAccessPolicyRequest)(nil),         // 3: dev.multy.resources.UpdateVaultAccessPolicyRequest
@@ -555,9 +555,9 @@ var file_api_proto_resourcespb_vault_access_policy_proto_depIdxs = []int32{
 	6, // 0: dev.multy.resources.CreateVaultAccessPolicyRequest.resource:type_name -> dev.multy.resources.VaultAccessPolicyArgs
 	6, // 1: dev.multy.resources.UpdateVaultAccessPolicyRequest.resource:type_name -> dev.multy.resources.VaultAccessPolicyArgs
 	8, // 2: dev.multy.resources.VaultAccessPolicyArgs.common_parameters:type_name -> dev.multy.common.ChildResourceCommonArgs
-	0, // 3: dev.multy.resources.VaultAccessPolicyArgs.access:type_name -> dev.multy.resources.VaultAccess.Enum
+	0, // 3: dev.multy.resources.VaultAccessPolicyArgs.access:type_name -> dev.multy.resources.VaultAccess.enumValues
 	9, // 4: dev.multy.resources.VaultAccessPolicyResource.common_parameters:type_name -> dev.multy.common.CommonChildResourceParameters
-	0, // 5: dev.multy.resources.VaultAccessPolicyResource.access:type_name -> dev.multy.resources.VaultAccess.Enum
+	0, // 5: dev.multy.resources.VaultAccessPolicyResource.access:type_name -> dev.multy.resources.VaultAccess.enumValues
 	6, // [6:6] is the sub-list for method output_type
 	6, // [6:6] is the sub-list for method input_type
 	6, // [6:6] is the sub-list for extension type_name

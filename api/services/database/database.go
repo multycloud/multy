@@ -9,7 +9,6 @@ import (
 	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/resources/output"
 	output_database "github.com/multycloud/multy/resources/output/database"
-	common_util "github.com/multycloud/multy/util"
 )
 
 type DatabaseService struct {
@@ -36,16 +35,15 @@ func (s DatabaseService) Convert(resourceId string, args *resourcespb.DatabaseAr
 }
 
 func getHost(resourceId string, state *output.TfState, cloud commonpb.CloudProvider) (string, error) {
-	rId := common_util.GetTfResourceId(resourceId, cloud.String())
 	switch cloud {
 	case commonpb.CloudProvider_AWS:
-		values, err := state.GetValues(output_database.AwsDbInstance{}, rId)
+		values, err := state.GetValues(output_database.AwsDbInstance{}, resourceId)
 		if err != nil {
 			return "", err
 		}
 		return values["address"].(string), nil
 	case commonpb.CloudProvider_AZURE:
-		values, err := state.GetValues(output_database.AzureMySqlServer{}, rId)
+		values, err := state.GetValues(output_database.AzureMySqlServer{}, resourceId)
 		if err != nil {
 			return "", err
 		}

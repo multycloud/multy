@@ -28,7 +28,7 @@ const (
 	RouteDestination_INTERNET            RouteDestination = 1
 )
 
-// Enum value maps for RouteDestination.
+// enumValues value maps for RouteDestination.
 var (
 	RouteDestination_name = map[int32]string{
 		0: "UNKNOWN_DESTINATION",

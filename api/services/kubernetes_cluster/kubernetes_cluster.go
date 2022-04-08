@@ -9,7 +9,6 @@ import (
 	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/kubernetes_service"
-	common_util "github.com/multycloud/multy/util"
 )
 
 type KubernetesClusterService struct {
@@ -31,16 +30,15 @@ func (s KubernetesClusterService) Convert(resourceId string, args *resourcespb.K
 }
 
 func getEndpoint(resourceId string, state *output.TfState, cloud commonpb.CloudProvider) (string, error) {
-	rId := common_util.GetTfResourceId(resourceId, cloud.String())
 	switch cloud {
 	case commonpb.CloudProvider_AWS:
-		values, err := state.GetValues(kubernetes_service.AwsEksCluster{}, rId)
+		values, err := state.GetValues(kubernetes_service.AwsEksCluster{}, resourceId)
 		if err != nil {
 			return "", err
 		}
 		return values["endpoint"].(string), nil
 	case commonpb.CloudProvider_AZURE:
-		values, err := state.GetValues(kubernetes_service.AzureEksCluster{}, rId)
+		values, err := state.GetValues(kubernetes_service.AzureEksCluster{}, resourceId)
 		if err != nil {
 			return "", err
 		}
