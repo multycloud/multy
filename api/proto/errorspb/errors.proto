@@ -18,6 +18,10 @@ message InternalErrorDetails {
   string error_message = 1;
 }
 
+message DeploymentErrorDetails {
+  string error_message = 1;
+}
+
 
 message ResourceNotFoundDetails {
   string resource_id = 1;

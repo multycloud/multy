@@ -369,12 +369,12 @@ func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (*commonpb
 		return nil, err
 	}
 
-	err = deploy.MaybeInit(userId)
+	err = deploy.MaybeInit(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
 
-	err = deploy.RefreshState(userId)
+	err = deploy.RefreshState(ctx, userId)
 	if err != nil {
 		return nil, err
 	}

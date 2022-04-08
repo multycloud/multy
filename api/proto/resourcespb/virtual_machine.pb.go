@@ -623,19 +623,19 @@ var file_api_proto_resourcespb_virtual_machine_proto_goTypes = []interface{}{
 	(*VirtualMachineArgs)(nil),                // 4: dev.multy.resources.VirtualMachineArgs
 	(*VirtualMachineResource)(nil),            // 5: dev.multy.resources.VirtualMachineResource
 	(*commonpb.ResourceCommonArgs)(nil),       // 6: dev.multy.common.ResourceCommonArgs
-	(commonpb.OperatingSystem_Enum)(0),        // 7: dev.multy.common.OperatingSystem.enumValues
-	(commonpb.VmSize_Enum)(0),                 // 8: dev.multy.common.VmSize.enumValues
+	(commonpb.OperatingSystem_Enum)(0),        // 7: dev.multy.common.OperatingSystem.Enum
+	(commonpb.VmSize_Enum)(0),                 // 8: dev.multy.common.VmSize.Enum
 	(*commonpb.CommonResourceParameters)(nil), // 9: dev.multy.common.CommonResourceParameters
 }
 var file_api_proto_resourcespb_virtual_machine_proto_depIdxs = []int32{
 	4, // 0: dev.multy.resources.CreateVirtualMachineRequest.resource:type_name -> dev.multy.resources.VirtualMachineArgs
 	4, // 1: dev.multy.resources.UpdateVirtualMachineRequest.resource:type_name -> dev.multy.resources.VirtualMachineArgs
 	6, // 2: dev.multy.resources.VirtualMachineArgs.common_parameters:type_name -> dev.multy.common.ResourceCommonArgs
-	7, // 3: dev.multy.resources.VirtualMachineArgs.operating_system:type_name -> dev.multy.common.OperatingSystem.enumValues
-	8, // 4: dev.multy.resources.VirtualMachineArgs.vm_size:type_name -> dev.multy.common.VmSize.enumValues
+	7, // 3: dev.multy.resources.VirtualMachineArgs.operating_system:type_name -> dev.multy.common.OperatingSystem.Enum
+	8, // 4: dev.multy.resources.VirtualMachineArgs.vm_size:type_name -> dev.multy.common.VmSize.Enum
 	9, // 5: dev.multy.resources.VirtualMachineResource.common_parameters:type_name -> dev.multy.common.CommonResourceParameters
-	7, // 6: dev.multy.resources.VirtualMachineResource.operating_system:type_name -> dev.multy.common.OperatingSystem.enumValues
-	8, // 7: dev.multy.resources.VirtualMachineResource.vm_size:type_name -> dev.multy.common.VmSize.enumValues
+	7, // 6: dev.multy.resources.VirtualMachineResource.operating_system:type_name -> dev.multy.common.OperatingSystem.Enum
+	8, // 7: dev.multy.resources.VirtualMachineResource.vm_size:type_name -> dev.multy.common.VmSize.Enum
 	8, // [8:8] is the sub-list for method output_type
 	8, // [8:8] is the sub-list for method input_type
 	8, // [8:8] is the sub-list for extension type_name

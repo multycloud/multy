@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/errors"
@@ -13,6 +14,7 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"google.golang.org/protobuf/proto"
 	"log"
+	"runtime/debug"
 )
 
 type CreateRequest[Arg proto.Message] interface {
@@ -36,12 +38,19 @@ type Service[Arg proto.Message, OutT proto.Message] struct {
 }
 
 func WrappingErrors[InT any, OutT any](f func(context.Context, InT) (OutT, error)) func(context.Context, InT) (OutT, error) {
-	return func(ctx context.Context, in InT) (OutT, error) {
-		out, err := f(ctx, in)
+	return func(ctx context.Context, in InT) (out OutT, err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("[ERROR] server panic: %v\n", r)
+				debug.PrintStack()
+				err = errors.InternalServerError(fmt.Errorf("server panic"))
+			}
+		}()
+		out, err = f(ctx, in)
 		if err != nil {
 			return out, errors.InternalServerError(err)
 		}
-		return out, nil
+		return out, err
 	}
 }
 
@@ -86,7 +95,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	if err != nil {
 		return *new(OutT), err
 	}
-	return s.readFromConfig(c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.ResourceId})
+	return s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.ResourceId})
 }
 
 func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, error) {
@@ -116,14 +125,14 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		return *new(OutT), err
 	}
 
-	return s.readFromConfig(c, in)
+	return s.readFromConfig(ctx, c, in)
 }
 
 type stateParser[OutT any] interface {
 	FromState(state *output.TfState) (OutT, error)
 }
 
-func (s Service[Arg, OutT]) readFromConfig(c *configpb.Config, in WithResourceId) (OutT, error) {
+func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Config, in WithResourceId) (OutT, error) {
 	allResources, err := deploy.GetResources(c, nil)
 	if err != nil {
 		return *new(OutT), err
@@ -134,11 +143,11 @@ func (s Service[Arg, OutT]) readFromConfig(c *configpb.Config, in WithResourceId
 			if err != nil {
 				return *new(OutT), err
 			}
-			err = deploy.MaybeInit(c.UserId)
+			err = deploy.MaybeInit(ctx, c.UserId)
 			if err != nil {
 				return *new(OutT), err
 			}
-			state, err := deploy.GetState(c.UserId)
+			state, err := deploy.GetState(ctx, c.UserId)
 			if err != nil {
 				return *new(OutT), err
 			}
@@ -191,7 +200,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 	if err != nil {
 		return *new(OutT), err
 	}
-	return s.readFromConfig(c, in)
+	return s.readFromConfig(ctx, c, in)
 }
 
 func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
