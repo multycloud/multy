@@ -29,7 +29,7 @@ const (
 	Direction_EGRESS          Direction = 2
 )
 
-// enumValues value maps for Direction.
+// Enum value maps for Direction.
 var (
 	Direction_name = map[int32]string{
 		0: "BOTH_DIRECTIONS",

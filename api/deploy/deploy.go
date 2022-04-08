@@ -118,7 +118,7 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 		return nil, err
 	}
 
-	err = MaybeInit(c.UserId)
+	err = MaybeInit(ctx, c.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 
 	// TODO: only deploy targets given in the args
 	outputJson := new(bytes.Buffer)
-	cmd := exec.Command("terraform", "-chdir="+tmpDir, "apply", "-auto-approve", "-refresh=false", "--json")
+	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "apply", "-auto-approve", "-refresh=false", "--json")
 	cmd.Stdout = outputJson
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -138,13 +138,13 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 			return nil, errors.InternalServerErrorWithMessage("error deploying resources", parseErr)
 		}
 		if parseErr := getFirstError(outputs); parseErr != nil {
-			return nil, errors.InternalServerErrorWithMessage("error deploying resources", parseErr)
+			return nil, errors.DeployError(parseErr)
 		}
 		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
 	}
 	log.Printf("tf apply ended in %s", time.Since(startApply))
 
-	state, err := GetState(c.UserId)
+	state, err := GetState(ctx, c.UserId)
 	if err != nil {
 		return state, errors.InternalServerErrorWithMessage("error parsing state", err)
 	}
@@ -203,14 +203,14 @@ func parseTfOutputs(outputJson *bytes.Buffer) ([]tfOutput, error) {
 	return nil, err
 }
 
-func MaybeInit(userId string) error {
+func MaybeInit(ctx context.Context, userId string) error {
 	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
 	_, err := os.Stat(filepath.Join(tmpDir, tfDir))
 	if os.IsNotExist(err) {
 		fmt.Println("running tf init")
 		startInit := time.Now()
 
-		cmd := exec.Command("terraform", "-chdir="+tmpDir, "init")
+		cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "init")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
@@ -224,11 +224,11 @@ func MaybeInit(userId string) error {
 	return nil
 }
 
-func GetState(userId string) (*output.TfState, error) {
+func GetState(ctx context.Context, userId string) (*output.TfState, error) {
 	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
 	state := output.TfState{}
 	stateJson := new(bytes.Buffer)
-	cmd := exec.Command("terraform", "-chdir="+tmpDir, "show", "-json")
+	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "show", "-json")
 	cmd.Stdout = stateJson
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
@@ -243,11 +243,11 @@ func GetState(userId string) (*output.TfState, error) {
 	return &state, err
 }
 
-func RefreshState(userId string) error {
+func RefreshState(ctx context.Context, userId string) error {
 	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
 	outputJson := new(bytes.Buffer)
-	cmd := exec.Command("terraform", "-chdir="+tmpDir, "refresh", "-json")
-	cmd.Stdout = os.Stdout
+	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "refresh", "-json")
+	cmd.Stdout = outputJson
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {

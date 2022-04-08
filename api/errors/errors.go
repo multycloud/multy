@@ -26,6 +26,12 @@ func InternalServerError(err error) error {
 	return status.New(codes.Internal, err.Error()).Err()
 }
 
+func DeployError(err error) error {
+	st := status.New(codes.FailedPrecondition, "error while deploying resources")
+	st, _ = st.WithDetails(&pberr.DeploymentErrorDetails{ErrorMessage: err.Error()})
+	return st.Err()
+}
+
 func InternalServerErrorWithMessage(msg string, err error) error {
 	st := status.New(codes.Internal, msg)
 	st, _ = st.WithDetails(&pberr.InternalErrorDetails{ErrorMessage: err.Error()})

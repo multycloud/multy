@@ -611,17 +611,17 @@ var file_api_proto_resourcespb_kubernetes_node_pool_proto_goTypes = []interface{
 	nil,                                            // 6: dev.multy.resources.KubernetesNodePoolArgs.LabelsEntry
 	nil,                                            // 7: dev.multy.resources.KubernetesNodePoolResource.LabelsEntry
 	(*commonpb.ChildResourceCommonArgs)(nil),       // 8: dev.multy.common.ChildResourceCommonArgs
-	(commonpb.VmSize_Enum)(0),                      // 9: dev.multy.common.VmSize.enumValues
+	(commonpb.VmSize_Enum)(0),                      // 9: dev.multy.common.VmSize.Enum
 	(*commonpb.CommonChildResourceParameters)(nil), // 10: dev.multy.common.CommonChildResourceParameters
 }
 var file_api_proto_resourcespb_kubernetes_node_pool_proto_depIdxs = []int32{
 	4,  // 0: dev.multy.resources.CreateKubernetesNodePoolRequest.resource:type_name -> dev.multy.resources.KubernetesNodePoolArgs
 	4,  // 1: dev.multy.resources.UpdateKubernetesNodePoolRequest.resource:type_name -> dev.multy.resources.KubernetesNodePoolArgs
 	8,  // 2: dev.multy.resources.KubernetesNodePoolArgs.common_parameters:type_name -> dev.multy.common.ChildResourceCommonArgs
-	9,  // 3: dev.multy.resources.KubernetesNodePoolArgs.vm_size:type_name -> dev.multy.common.VmSize.enumValues
+	9,  // 3: dev.multy.resources.KubernetesNodePoolArgs.vm_size:type_name -> dev.multy.common.VmSize.Enum
 	6,  // 4: dev.multy.resources.KubernetesNodePoolArgs.labels:type_name -> dev.multy.resources.KubernetesNodePoolArgs.LabelsEntry
 	10, // 5: dev.multy.resources.KubernetesNodePoolResource.common_parameters:type_name -> dev.multy.common.CommonChildResourceParameters
-	9,  // 6: dev.multy.resources.KubernetesNodePoolResource.vm_size:type_name -> dev.multy.common.VmSize.enumValues
+	9,  // 6: dev.multy.resources.KubernetesNodePoolResource.vm_size:type_name -> dev.multy.common.VmSize.Enum
 	7,  // 7: dev.multy.resources.KubernetesNodePoolResource.labels:type_name -> dev.multy.resources.KubernetesNodePoolResource.LabelsEntry
 	8,  // [8:8] is the sub-list for method output_type
 	8,  // [8:8] is the sub-list for method input_type

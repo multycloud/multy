@@ -145,12 +145,12 @@ func (d *Database) lockConfig(ctx context.Context, userId string) (*ConfigLock, 
 	}
 }
 
-func (d *Database) UnlockConfig(ctx context.Context, lock *ConfigLock) error {
+func (d *Database) UnlockConfig(_ context.Context, lock *ConfigLock) error {
 	log.Println("unlocking")
 	if !lock.IsActive() {
 		return nil
 	}
-	_, err := d.sqlConnection.ExecContext(ctx, "DELETE FROM Locks WHERE UserId = ? AND LockId = ?;", lock.userId, lock.lockId)
+	_, err := d.sqlConnection.Exec("DELETE FROM Locks WHERE UserId = ? AND LockId = ?;", lock.userId, lock.lockId)
 	if err != nil {
 		log.Printf("[ERROR] error unlocking, %s\n", err.Error())
 		return err
