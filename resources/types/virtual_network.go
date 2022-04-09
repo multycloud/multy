@@ -135,7 +135,7 @@ func (r *VirtualNetwork) GetVirtualNetworkName() string {
 
 func (r *VirtualNetwork) GetAssociatedRouteTableId() (string, error) {
 	if r.GetCloud() == commonpb.CloudProvider_AZURE {
-		return fmt.Sprintf("${%s.%s.id}", route_table.AzureResourceName, r.ResourceId), nil
+		return fmt.Sprintf("%s.%s.id", route_table.AzureResourceName, r.ResourceId), nil
 	}
 	return "", fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }

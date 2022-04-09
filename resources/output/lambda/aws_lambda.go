@@ -67,7 +67,7 @@ type AwsApiGatewayDeployment struct {
 
 type AwsLambdaPermission struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_lambda_permission"`
-	StatementId         string `hcl:"statement_id"`
+	StatementId         string `hcl:"statement_id,expr"`
 	Action              string `hcl:"action"`
 	FunctionName        string `hcl:"function_name"`
 	Principal           string `hcl:"principal"`

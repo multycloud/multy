@@ -27,7 +27,7 @@ type AwsDbInstance struct {
 type AwsDbSubnetGroup struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_db_subnet_group"`
 	Name                string   `hcl:"name"`
-	SubnetIds           []string `hcl:"subnet_ids"`
+	SubnetIds           []string `hcl:"subnet_ids,expr"`
 }
 
 func (dbSubGroup AwsDbSubnetGroup) GetResourceName() string {

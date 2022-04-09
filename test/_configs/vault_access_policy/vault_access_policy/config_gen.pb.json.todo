@@ -129,7 +129,7 @@
               "cloud_provider": "AWS",
               "location": "UK"
             },
-            "identity": "${aws_iam_role.vm_aws.id}",
+            "identity": aws_iam_role.vm_aws.id,
             "vault_id": "example"
           }
         ]
@@ -146,7 +146,7 @@
               "cloud_provider": "AZURE",
               "location": "UK"
             },
-            "identity": "${azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id}",
+            "identity": azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id,
             "vault_id": "example"
           }
         ]

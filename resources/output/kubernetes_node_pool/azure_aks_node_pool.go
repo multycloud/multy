@@ -4,7 +4,7 @@ import "github.com/multycloud/multy/resources/common"
 
 type AzureKubernetesNodePool struct {
 	*common.AzResource `hcl:",squash" default:"name=azurerm_kubernetes_cluster_node_pool"`
-	ClusterId          string            `hcl:"kubernetes_cluster_id"  hcle:"omitempty"`
+	ClusterId          string            `hcl:"kubernetes_cluster_id,expr"  hcle:"omitempty"`
 	Name               string            `hcl:"name,optional"  hcle:"omitempty"`
 	NodeCount          int               `hcl:"node_count"`
 	MaxSize            int               `hcl:"max_count"`

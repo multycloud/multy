@@ -14,7 +14,7 @@ type AzureNetworkInterface struct {
 type AzureIpConfiguration struct {
 	Name                       string `hcl:"name"`
 	PrivateIpAddressAllocation string `hcl:"private_ip_address_allocation"`
-	SubnetId                   string `hcl:"subnet_id" hcle:"omitempty"`
+	SubnetId                   string `hcl:"subnet_id,expr" hcle:"omitempty"`
 	PublicIpAddressId          string `hcl:"public_ip_address_id,expr" hcle:"omitempty"`
 	Primary                    bool   `hcl:"primary" hcle:"omitempty"`
 }

@@ -20,7 +20,7 @@ type AzureMySqlServer struct {
 type AzureMySqlVirtualNetworkRule struct {
 	*common.AzResource `hcl:",squash" default:"name=azurerm_mysql_virtual_network_rule"`
 	ServerName         string `hcl:"server_name,expr"`
-	SubnetId           string `hcl:"subnet_id"`
+	SubnetId           string `hcl:"subnet_id,expr"`
 }
 
 type AzureDbFirewallRule struct {

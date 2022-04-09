@@ -2,9 +2,8 @@ package util
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"github.com/google/uuid"
+	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/configpb"
@@ -64,8 +63,15 @@ func InsertIntoConfig[Arg proto.Message](in Arg, c *configpb.Config) (*configpb.
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error marhsalling resource", err)
 	}
+
+	conv, err := converter.GetConverter(proto.MessageName(in))
+	if err != nil {
+		return nil, err
+	}
+
+	c.ResourceCounter = c.ResourceCounter + 1
 	resource := configpb.Resource{
-		ResourceId:   base64.StdEncoding.EncodeToString([]byte(uuid.New().String())),
+		ResourceId:   fmt.Sprintf("%s-%d-u%s", conv.AbbreviatedName, c.ResourceCounter, c.UserId),
 		ResourceArgs: args,
 	}
 	c.Resources = append(c.Resources, &resource)

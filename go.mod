@@ -6,13 +6,12 @@ require (
 	github.com/aws/aws-sdk-go v1.43.33
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/protobuf v1.5.2
-	github.com/google/uuid v1.3.0
 	github.com/gruntwork-io/terratest v0.40.5
 	github.com/hashicorp/hc-install v0.3.1
 	github.com/hashicorp/hcl/v2 v2.11.1
 	github.com/hashicorp/terraform-exec v0.15.0
 	github.com/jhump/protoreflect v1.12.0
-	github.com/multy-dev/hclencoder v0.1.1
+	github.com/multy-dev/hclencoder v0.1.2
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.1
 	github.com/zclconf/go-cty v1.9.1

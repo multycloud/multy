@@ -194,7 +194,7 @@
               "cloud_provider": "AWS",
               "location": "US_EAST"
             },
-            "identity": "${aws_iam_role.vm_aws.id}",
+            "identity": aws_iam_role.vm_aws.id,
             "vault_id": "web_app_vault"
           }
         ]
@@ -228,7 +228,7 @@
               "cloud_provider": "AZURE",
               "location": "US_EAST"
             },
-            "identity": "${azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id}",
+            "identity": azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id,
             "vault_id": "web_app_vault"
           }
         ]

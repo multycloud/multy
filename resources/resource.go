@@ -58,7 +58,7 @@ func GetMainOutputId(r Resource) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("${%s.%s.id}", name, r.GetResourceId()), nil
+	return fmt.Sprintf("%s.%s.id", name, r.GetResourceId()), nil
 }
 
 func GetMainOutputRef(r Resource) (string, error) {
