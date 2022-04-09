@@ -57,7 +57,7 @@ resource "aws_instance" "vm_aws" {
   ami                         = ""
   instance_type               = "t2.nano"
   associate_public_ip_address = true
-  subnet_id                   = "${aws_subnet.subnet_aws.id}"
+  subnet_id                   = aws_subnet.subnet_aws.id
   iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
 }
 resource "azurerm_key_vault_secret" "api_key_azure" {
@@ -106,7 +106,7 @@ data "azurerm_client_config" "kv_ap_azure" {
 resource "azurerm_key_vault_access_policy" "kv_ap_azure" {
   key_vault_id            = azurerm_key_vault.example_azure.id
   tenant_id               = data.azurerm_client_config.kv_ap_azure.tenant_id
-  object_id               = "${azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id}"
+  object_id               = azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id
   certificate_permissions = []
   key_permissions         = []
   secret_permissions      = ["List", "Get", "Set", "Delete", "Recover", "Backup", "Restore", "Purge"]
@@ -118,8 +118,8 @@ resource "azurerm_subnet" "subnet_azure" {
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_subnet_route_table_association" "subnet_azure" {
-  subnet_id      = "${azurerm_subnet.subnet_azure.id}"
-  route_table_id = "${azurerm_route_table.example_vn_azure.id}"
+  subnet_id      = azurerm_subnet.subnet_azure.id
+  route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_public_ip" "vm_azure" {
   resource_group_name = azurerm_resource_group.vm-rg.name
@@ -134,7 +134,7 @@ resource "azurerm_network_interface" "vm_azure" {
   ip_configuration {
     name                          = "external"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = "${azurerm_subnet.subnet_azure.id}"
+    subnet_id                     = azurerm_subnet.subnet_azure.id
     public_ip_address_id          = azurerm_public_ip.vm_azure.id
     primary                       = true
   }
@@ -151,7 +151,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   name                  = "test-vm"
   location              = "ukwest"
   size                  = "Standard_B1ls"
-  network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
+  network_interface_ids = [azurerm_network_interface.vm_azure.id]
   os_disk {
     caching              = "None"
     storage_account_type = "Standard_LRS"

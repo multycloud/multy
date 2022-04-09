@@ -31,7 +31,7 @@ type AzureRule struct {
 type AzureSubnetNsgAssociation struct {
 	ResourceName string `hcl:",key"`
 	ResourceId   string `hcl:",key"`
-	SubnetId     string `hcl:"subnet_id"`
+	SubnetId     string `hcl:"subnet_id,expr"`
 	NsgId        string `hcl:"network_security_group_id,expr"`
 }
 
@@ -39,6 +39,6 @@ const AzureNicNsgAssociation = "azurerm_network_interface_security_group_associa
 
 type AzureNetworkInterfaceSecurityGroupAssociation struct {
 	*common.AzResource     `hcl:",squash" default:"name=azurerm_network_interface_security_group_association"`
-	NetworkInterfaceId     string `hcl:"network_interface_id"`
-	NetworkSecurityGroupId string `hcl:"network_security_group_id"`
+	NetworkInterfaceId     string `hcl:"network_interface_id,expr"`
+	NetworkSecurityGroupId string `hcl:"network_security_group_id,expr"`
 }

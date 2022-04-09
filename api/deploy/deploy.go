@@ -72,20 +72,13 @@ func GetResources(c *configpb.Config, prev *configpb.Resource) (*encoder.Decoded
 	translated := map[string]resources.Resource{}
 
 	for _, r := range c.Resources {
-		resourceMessage := r.ResourceArgs.ResourceArgs
-		added := false
-		for messageType, conv := range converter.Converters {
-			if resourceMessage.MessageIs(messageType) {
-				err := addMultyResourceNew(r, translated, conv)
-				if err != nil {
-					return nil, err
-				}
-				added = true
-				break
-			}
+		conv, err := converter.GetConverter(r.ResourceArgs.ResourceArgs.MessageName())
+		if err != nil {
+			return nil, err
 		}
-		if !added {
-			return nil, fmt.Errorf("unknown resource type %s", resourceMessage.MessageName())
+		err = addMultyResourceNew(r, translated, conv)
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -138,6 +131,7 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 			return nil, errors.InternalServerErrorWithMessage("error deploying resources", parseErr)
 		}
 		if parseErr := getFirstError(outputs); parseErr != nil {
+			fmt.Println(parseErr.Error())
 			return nil, errors.DeployError(parseErr)
 		}
 		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
@@ -267,7 +261,7 @@ type hasCommonArgs interface {
 	GetCommonParameters() *commonpb.ResourceCommonArgs
 }
 
-func addMultyResourceNew(r *configpb.Resource, translated map[string]resources.Resource, metadata converter.ResourceMetadata) error {
+func addMultyResourceNew(r *configpb.Resource, translated map[string]resources.Resource, metadata *converter.ResourceMetadata) error {
 	m, err := r.ResourceArgs.ResourceArgs.UnmarshalNew()
 	if err != nil {
 		return err

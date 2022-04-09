@@ -6,8 +6,8 @@ resource "aws_db_subnet_group" "example_db_aws" {
   name = "example-db"
 
   subnet_ids = [
-    "${aws_subnet.subnet1_aws.id}",
-    "${aws_subnet.subnet2_aws.id}",
+    aws_subnet.subnet1_aws.id,
+    aws_subnet.subnet2_aws.id,
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
@@ -50,7 +50,7 @@ resource "aws_route_table" "rt_aws" {
     "Name" = "db-rt"
   }
 
-  vpc_id = "${aws_vpc.vn_aws.id}"
+  vpc_id = aws_vpc.vn_aws.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -58,12 +58,12 @@ resource "aws_route_table" "rt_aws" {
   }
 }
 resource "aws_route_table_association" "rta_aws" {
-  subnet_id      = "${aws_subnet.subnet1_aws.id}"
-  route_table_id = "${aws_route_table.rt_aws.id}"
+  subnet_id      = aws_subnet.subnet1_aws.id
+  route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_route_table_association" "rta2_aws" {
-  subnet_id      = "${aws_subnet.subnet2_aws.id}"
-  route_table_id = "${aws_route_table.rt_aws.id}"
+  subnet_id      = aws_subnet.subnet2_aws.id
+  route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_vpc" "vn_aws" {
   tags = {
@@ -122,13 +122,13 @@ resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
   resource_group_name = azurerm_resource_group.db-rg.name
   name                = "example-db0"
   server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = "${azurerm_subnet.subnet1_azure.id}"
+  subnet_id           = azurerm_subnet.subnet1_azure.id
 }
 resource "azurerm_mysql_virtual_network_rule" "example_db_azure1" {
   resource_group_name = azurerm_resource_group.db-rg.name
   name                = "example-db1"
   server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = "${azurerm_subnet.subnet2_azure.id}"
+  subnet_id           = azurerm_subnet.subnet2_azure.id
 }
 resource "azurerm_mysql_firewall_rule" "example_db_azure" {
   resource_group_name = azurerm_resource_group.db-rg.name
@@ -169,12 +169,12 @@ resource "azurerm_route_table" "rt_azure" {
   }
 }
 resource "azurerm_subnet_route_table_association" "rta_azure" {
-  subnet_id      = "${azurerm_subnet.subnet1_azure.id}"
-  route_table_id = "${azurerm_route_table.rt_azure.id}"
+  subnet_id      = azurerm_subnet.subnet1_azure.id
+  route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet_route_table_association" "rta2_azure" {
-  subnet_id      = "${azurerm_subnet.subnet2_azure.id}"
-  route_table_id = "${azurerm_route_table.rt_azure.id}"
+  subnet_id      = azurerm_subnet.subnet2_azure.id
+  route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_route_table" "vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name

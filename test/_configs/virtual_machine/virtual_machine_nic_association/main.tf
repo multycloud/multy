@@ -41,7 +41,7 @@ resource "aws_network_interface" "nic_aws" {
     "Name" = "test-nic"
   }
 
-  subnet_id = "${aws_subnet.subnet_aws.id}"
+  subnet_id = aws_subnet.subnet_aws.id
 }
 resource "aws_subnet" "subnet_aws" {
   tags = {
@@ -71,7 +71,7 @@ resource "aws_instance" "vm_aws" {
   user_data_base64 = base64encode("echo 'Hello World'")
 
   network_interface {
-    network_interface_id = "${aws_network_interface.nic_aws.id}"
+    network_interface_id = aws_network_interface.nic_aws.id
     device_index         = 0
   }
   iam_instance_profile = aws_iam_instance_profile.vm_aws.id
@@ -101,7 +101,7 @@ resource "azurerm_network_interface" "nic_azure" {
   ip_configuration {
     name                          = "internal"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = "${azurerm_subnet.subnet_azure.id}"
+    subnet_id                     = azurerm_subnet.subnet_azure.id
     primary                       = true
   }
 }
@@ -116,8 +116,8 @@ resource "azurerm_subnet" "subnet_azure" {
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_subnet_route_table_association" "subnet_azure" {
-  subnet_id      = "${azurerm_subnet.subnet_azure.id}"
-  route_table_id = "${azurerm_route_table.example_vn_azure.id}"
+  subnet_id      = azurerm_subnet.subnet_azure.id
+  route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "random_password" "vm_azure" {
   length  = 16
@@ -131,7 +131,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   name                  = "test-vm"
   location              = "northeurope"
   size                  = "Standard_B1ls"
-  network_interface_ids = ["${azurerm_network_interface.nic_azure.id}"]
+  network_interface_ids = [azurerm_network_interface.nic_azure.id]
   custom_data           = base64encode("echo 'Hello World'")
 
   os_disk {

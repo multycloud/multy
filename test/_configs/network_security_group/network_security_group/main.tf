@@ -43,7 +43,7 @@ resource "aws_security_group" "nsg2_aws" {
 
   name        = "test-nsg2"
   description = "Managed by Multy"
-  vpc_id      = "${aws_vpc.example_vn_aws.id}"
+  vpc_id      = aws_vpc.example_vn_aws.id
 
   ingress {
     protocol    = "tcp"
@@ -92,7 +92,7 @@ resource "aws_route_table" "rt_aws" {
     "Name" = "test-rt"
   }
 
-  vpc_id = "${aws_vpc.example_vn_aws.id}"
+  vpc_id = aws_vpc.example_vn_aws.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -100,8 +100,8 @@ resource "aws_route_table" "rt_aws" {
   }
 }
 resource "aws_route_table_association" "rta_aws" {
-  subnet_id      = "${aws_subnet.subnet1_aws.id}"
-  route_table_id = "${aws_route_table.rt_aws.id}"
+  subnet_id      = aws_subnet.subnet1_aws.id
+  route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_subnet" "subnet1_aws" {
   tags = {
@@ -128,7 +128,7 @@ resource "aws_instance" "vm_aws" {
   ami                         = "ami-09d4a659cdd8677be"
   instance_type               = "t2.nano"
   associate_public_ip_address = true
-  subnet_id                   = "${aws_subnet.subnet1_aws.id}"
+  subnet_id                   = aws_subnet.subnet1_aws.id
   user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html")
   iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
 }
@@ -149,9 +149,9 @@ resource "aws_instance" "vm2_aws" {
   ami                         = "ami-09d4a659cdd8677be"
   instance_type               = "t2.nano"
   associate_public_ip_address = true
-  subnet_id                   = "${aws_subnet.subnet1_aws.id}"
+  subnet_id                   = aws_subnet.subnet1_aws.id
   user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html")
-  vpc_security_group_ids      = ["${aws_security_group.nsg2_aws.id}"]
+  vpc_security_group_ids      = [aws_security_group.nsg2_aws.id]
   iam_instance_profile        = aws_iam_instance_profile.vm2_aws.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
@@ -240,8 +240,8 @@ resource "azurerm_route_table" "rt_azure" {
   }
 }
 resource "azurerm_subnet_route_table_association" "rta_azure" {
-  subnet_id      = "${azurerm_subnet.subnet1_azure.id}"
-  route_table_id = "${azurerm_route_table.rt_azure.id}"
+  subnet_id      = azurerm_subnet.subnet1_azure.id
+  route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet" "subnet1_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
@@ -257,7 +257,7 @@ resource "azurerm_network_interface" "vm_azure" {
   ip_configuration {
     name                          = "external"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = "${azurerm_subnet.subnet1_azure.id}"
+    subnet_id                     = azurerm_subnet.subnet1_azure.id
     public_ip_address_id          = azurerm_public_ip.vm_azure.id
     primary                       = true
   }
@@ -280,7 +280,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   name                  = "test-vm"
   location              = "northeurope"
   size                  = "Standard_B1ls"
-  network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
+  network_interface_ids = [azurerm_network_interface.vm_azure.id]
   custom_data           = base64encode("#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on Azure</h1>\" > /var/www/html/index.html")
 
   os_disk {
@@ -314,7 +314,7 @@ resource "azurerm_network_interface" "vm2_azure" {
   ip_configuration {
     name                          = "external"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = "${azurerm_subnet.subnet1_azure.id}"
+    subnet_id                     = azurerm_subnet.subnet1_azure.id
     public_ip_address_id          = azurerm_public_ip.vm2_azure.id
     primary                       = true
   }
@@ -326,8 +326,8 @@ resource "azurerm_public_ip" "vm2_azure" {
   allocation_method   = "Static"
 }
 resource "azurerm_network_interface_security_group_association" "vm2_azure" {
-  network_interface_id      = "${azurerm_network_interface.vm2_azure.id}"
-  network_security_group_id = "${azurerm_network_security_group.nsg2_azure.id}"
+  network_interface_id      = azurerm_network_interface.vm2_azure.id
+  network_security_group_id = azurerm_network_security_group.nsg2_azure.id
 }
 resource "random_password" "vm2_azure" {
   length  = 16
@@ -341,7 +341,7 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   name                  = "test-vm2"
   location              = "northeurope"
   size                  = "Standard_B1ls"
-  network_interface_ids = ["${azurerm_network_interface.vm2_azure.id}"]
+  network_interface_ids = [azurerm_network_interface.vm2_azure.id]
   custom_data           = base64encode("#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on Azure</h1>\" > /var/www/html/index.html")
 
   os_disk {

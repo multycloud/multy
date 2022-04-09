@@ -156,8 +156,9 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 			}
 
 			iamRole.InlinePolicy = iam.AwsIamRoleInlinePolicy{
-				Name:   "vault_policy",
-				Policy: string(policy),
+				Name: "vault_policy",
+				// we need to have an expression here because we use template strings within the policy json
+				Policy: fmt.Sprintf("\"%s\"", string(policy)),
 			}
 		}
 
@@ -238,7 +239,7 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 				azResources = append(azResources, &pIp)
 			}
 			azResources = append(azResources, nic)
-			nicIds = append(nicIds, fmt.Sprintf("${%s.%s.id}", output.GetResourceName(nic), nic.ResourceId))
+			nicIds = append(nicIds, fmt.Sprintf("%s.%s.id", output.GetResourceName(nic), nic.ResourceId))
 		}
 
 		// TODO change this to multy nsg_nic_attachment resource and use aws_network_interface_sg_attachment

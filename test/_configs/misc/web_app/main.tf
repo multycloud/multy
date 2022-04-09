@@ -42,7 +42,7 @@ resource "aws_default_security_group" "example_vn_aws" {
 }
 resource "aws_security_group" "nsg2_aws" {
   tags        = { "Name" = "test-nsg2" }
-  vpc_id      = "${aws_vpc.example_vn_aws.id}"
+  vpc_id      = aws_vpc.example_vn_aws.id
   name        = "test-nsg2"
   description = "Managed by Multy"
   ingress {
@@ -96,23 +96,23 @@ resource "aws_security_group" "nsg2_aws" {
 }
 resource "aws_route_table" "rt_aws" {
   tags   = { "Name" = "test-rt" }
-  vpc_id = "${aws_vpc.example_vn_aws.id}"
+  vpc_id = aws_vpc.example_vn_aws.id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.example_vn_aws.id
   }
 }
 resource "aws_route_table_association" "rta_aws" {
-  subnet_id      = "${aws_subnet.subnet3_aws.id}"
-  route_table_id = "${aws_route_table.rt_aws.id}"
+  subnet_id      = aws_subnet.subnet3_aws.id
+  route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_route_table_association" "rta2_aws" {
-  subnet_id      = "${aws_subnet.subnet2_aws.id}"
-  route_table_id = "${aws_route_table.rt_aws.id}"
+  subnet_id      = aws_subnet.subnet2_aws.id
+  route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_route_table_association" "rta3_aws" {
-  subnet_id      = "${aws_subnet.subnet1_aws.id}"
-  route_table_id = "${aws_route_table.rt_aws.id}"
+  subnet_id      = aws_subnet.subnet1_aws.id
+  route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_subnet" "subnet1_aws" {
   tags              = { "Name" = "subnet1" }
@@ -182,7 +182,7 @@ resource "aws_instance" "vm_aws" {
   ami                         = "ami-04ad2567c9e3d7893"
   instance_type               = "t2.nano"
   associate_public_ip_address = true
-  subnet_id                   = "${aws_subnet.subnet3_aws.id}"
+  subnet_id                   = aws_subnet.subnet3_aws.id
   user_data_base64            = base64encode("${templatefile("init.sh", { "db_host" = "${azurerm_mysql_server.example_db_azure.fqdn}", "db_password" = "multy-Admin123!", "db_username" = "multyadmin@example-db" })}")
   key_name                    = aws_key_pair.vm_aws.key_name
   iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
@@ -221,13 +221,13 @@ resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
   resource_group_name = azurerm_resource_group.db-rg.name
   name                = "example-db0"
   server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = "${azurerm_subnet.subnet1_azure.id}"
+  subnet_id           = azurerm_subnet.subnet1_azure.id
 }
 resource "azurerm_mysql_virtual_network_rule" "example_db_azure1" {
   resource_group_name = azurerm_resource_group.db-rg.name
   name                = "example-db1"
   server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = "${azurerm_subnet.subnet2_azure.id}"
+  subnet_id           = azurerm_subnet.subnet2_azure.id
 }
 resource "azurerm_mysql_firewall_rule" "example_db_azure" {
   resource_group_name = azurerm_resource_group.db-rg.name
@@ -261,7 +261,7 @@ data "azurerm_client_config" "kv_ap_azure" {
 resource "azurerm_key_vault_access_policy" "kv_ap_azure" {
   key_vault_id            = azurerm_key_vault.web_app_vault_azure.id
   tenant_id               = data.azurerm_client_config.kv_ap_azure.tenant_id
-  object_id               = "${azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id}"
+  object_id               = azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id
   certificate_permissions = []
   key_permissions         = []
   secret_permissions      = ["List", "Get", "Set", "Delete", "Recover", "Backup", "Restore", "Purge"]
@@ -352,16 +352,16 @@ resource "azurerm_route_table" "rt_azure" {
   }
 }
 resource "azurerm_subnet_route_table_association" "rta_azure" {
-  subnet_id      = "${azurerm_subnet.subnet3_azure.id}"
-  route_table_id = "${azurerm_route_table.rt_azure.id}"
+  subnet_id      = azurerm_subnet.subnet3_azure.id
+  route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet_route_table_association" "rta2_azure" {
-  subnet_id      = "${azurerm_subnet.subnet2_azure.id}"
-  route_table_id = "${azurerm_route_table.rt_azure.id}"
+  subnet_id      = azurerm_subnet.subnet2_azure.id
+  route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet_route_table_association" "rta3_azure" {
-  subnet_id      = "${azurerm_subnet.subnet1_azure.id}"
-  route_table_id = "${azurerm_route_table.rt_azure.id}"
+  subnet_id      = azurerm_subnet.subnet1_azure.id
+  route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet" "subnet1_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
@@ -404,7 +404,7 @@ resource "azurerm_network_interface" "vm_azure" {
   ip_configuration {
     name                          = "external"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = "${azurerm_subnet.subnet3_azure.id}"
+    subnet_id                     = azurerm_subnet.subnet3_azure.id
     public_ip_address_id          = azurerm_public_ip.vm_azure.id
     primary                       = true
   }
@@ -418,7 +418,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   name                  = "test-vm"
   location              = "eastus"
   size                  = "Standard_B1ls"
-  network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
+  network_interface_ids = [azurerm_network_interface.vm_azure.id]
   custom_data           = base64encode("${templatefile("azure_init.sh", { "db_host_secret_name" = "db-host", "db_password_secret_name" = "db-password", "db_username_secret_name" = "db-username", "vault_name" = "web-app-vault-test" })}")
   os_disk {
     caching              = "None"

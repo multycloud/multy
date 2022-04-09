@@ -7,7 +7,7 @@ import (
 type AwsAcl struct {
 	*common.AwsResource `hcl:",squash"`
 	VpcId               string       `hcl:"vpc_id,expr"`
-	SubnetIds           []string     `hcl:"subnet_ids"`
+	SubnetIds           []string     `hcl:"subnet_ids,expr"`
 	Ingress             []AwsAclRule `hcl:"ingress"`
 	Egress              []AwsAclRule `hcl:"egress"`
 }
@@ -25,7 +25,7 @@ const AwsSecurityGroupResourceName = "aws_security_group"
 
 type AwsSecurityGroup struct {
 	*common.AwsResource `hcl:",squash"  default:"name=aws_security_group"`
-	VpcId               string                 `hcl:"vpc_id"`
+	VpcId               string                 `hcl:"vpc_id,expr"`
 	Name                string                 `hcl:"name"`
 	Description         string                 `hcl:"description"`
 	Ingress             []AwsSecurityGroupRule `hcl:"ingress,blocks"`

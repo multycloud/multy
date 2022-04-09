@@ -6,8 +6,8 @@ resource "aws_db_subnet_group" "example_db_aws" {
   name = "example-db"
 
   subnet_ids = [
-    "${aws_subnet.subnet1_aws.id}",
-    "${aws_subnet.subnet2_aws.id}",
+    aws_subnet.subnet1_aws.id,
+    aws_subnet.subnet2_aws.id,
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
@@ -72,7 +72,7 @@ resource "aws_security_group" "nsg2_aws" {
 
   name        = "test-nsg2"
   description = "Managed by Multy"
-  vpc_id      = "${aws_vpc.example_vn_aws.id}"
+  vpc_id      = aws_vpc.example_vn_aws.id
 
   ingress {
     protocol    = "tcp"
@@ -135,7 +135,7 @@ resource "aws_route_table" "rt_aws" {
     "Name" = "test-rt"
   }
 
-  vpc_id = "${aws_vpc.example_vn_aws.id}"
+  vpc_id = aws_vpc.example_vn_aws.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -143,8 +143,8 @@ resource "aws_route_table" "rt_aws" {
   }
 }
 resource "aws_route_table_association" "rta_aws" {
-  subnet_id      = "${aws_subnet.subnet3_aws.id}"
-  route_table_id = "${aws_route_table.rt_aws.id}"
+  subnet_id      = aws_subnet.subnet3_aws.id
+  route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_subnet" "subnet1_aws" {
   tags = {
@@ -189,7 +189,7 @@ resource "aws_instance" "vm_aws" {
   ami                         = "ami-09d4a659cdd8677be"
   instance_type               = "t2.nano"
   associate_public_ip_address = true
-  subnet_id                   = "${aws_subnet.subnet3_aws.id}"
+  subnet_id                   = aws_subnet.subnet3_aws.id
   user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html")
   iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
 }
@@ -219,13 +219,13 @@ resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
   resource_group_name = azurerm_resource_group.db-rg.name
   name                = "example-db0"
   server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = "${azurerm_subnet.subnet1_azure.id}"
+  subnet_id           = azurerm_subnet.subnet1_azure.id
 }
 resource "azurerm_mysql_virtual_network_rule" "example_db_azure1" {
   resource_group_name = azurerm_resource_group.db-rg.name
   name                = "example-db1"
   server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = "${azurerm_subnet.subnet2_azure.id}"
+  subnet_id           = azurerm_subnet.subnet2_azure.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
@@ -337,8 +337,8 @@ resource "azurerm_route_table" "rt_azure" {
   }
 }
 resource "azurerm_subnet_route_table_association" "rta_azure" {
-  subnet_id      = "${azurerm_subnet.subnet3_azure.id}"
-  route_table_id = "${azurerm_route_table.rt_azure.id}"
+  subnet_id      = azurerm_subnet.subnet3_azure.id
+  route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet" "subnet1_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
@@ -348,8 +348,8 @@ resource "azurerm_subnet" "subnet1_azure" {
   service_endpoints    = ["Microsoft.Sql"]
 }
 resource "azurerm_subnet_route_table_association" "subnet1_azure" {
-  subnet_id      = "${azurerm_subnet.subnet1_azure.id}"
-  route_table_id = "${azurerm_route_table.example_vn_azure.id}"
+  subnet_id      = azurerm_subnet.subnet1_azure.id
+  route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_subnet" "subnet2_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
@@ -359,8 +359,8 @@ resource "azurerm_subnet" "subnet2_azure" {
   service_endpoints    = ["Microsoft.Sql"]
 }
 resource "azurerm_subnet_route_table_association" "subnet2_azure" {
-  subnet_id      = "${azurerm_subnet.subnet2_azure.id}"
-  route_table_id = "${azurerm_route_table.example_vn_azure.id}"
+  subnet_id      = azurerm_subnet.subnet2_azure.id
+  route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_subnet" "subnet3_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
@@ -376,7 +376,7 @@ resource "azurerm_network_interface" "vm_azure" {
   ip_configuration {
     name                          = "external"
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = "${azurerm_subnet.subnet3_azure.id}"
+    subnet_id                     = azurerm_subnet.subnet3_azure.id
     public_ip_address_id          = azurerm_public_ip.vm_azure.id
     primary                       = true
   }
@@ -399,7 +399,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   name                  = "test-vm"
   location              = "northeurope"
   size                  = "Standard_B1ls"
-  network_interface_ids = ["${azurerm_network_interface.vm_azure.id}"]
+  network_interface_ids = [azurerm_network_interface.vm_azure.id]
   custom_data           = base64encode("#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on Azure</h1>\" > /var/www/html/index.html")
 
   os_disk {

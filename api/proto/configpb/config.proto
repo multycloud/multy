@@ -13,6 +13,9 @@ import "google/protobuf/any.proto";
 message Config {
   string user_id = 1;
   repeated Resource resources = 2;
+
+  // used for id generation
+  int64 resource_counter = 3;
 }
 
 message Resource {

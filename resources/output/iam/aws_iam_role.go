@@ -18,7 +18,7 @@ type AwsIamRole struct {
 
 type AwsIamRoleInlinePolicy struct {
 	Name   string `hcl:"name"`
-	Policy string `hcl:"policy"`
+	Policy string `hcl:"policy,expr"`
 }
 
 type AwsIamRolePolicyAttachment struct {
@@ -88,7 +88,7 @@ func NewRoleResourcePolicy(resource ...string) string {
 }
 
 func (r *AwsIamRole) GetId() string {
-	return fmt.Sprintf("${%s.%s.id}", output.GetResourceName(AwsIamRole{}), r.ResourceId)
+	return fmt.Sprintf("%s.%s.id", output.GetResourceName(AwsIamRole{}), r.ResourceId)
 }
 
 func (r *AwsIamInstanceProfile) GetId() string {

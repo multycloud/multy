@@ -1,12 +1,14 @@
 package converter
 
 import (
+	"fmt"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	common_resources "github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/types"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 type ResourceConverters[Arg proto.Message, OutT proto.Message] interface {
@@ -43,6 +45,15 @@ var Converters = map[proto.Message]ResourceMetadata{
 	&resourcespb.VaultAccessPolicyArgs{}:     {cast(types.NewVaultAccessPolicy), "kv"},
 	&resourcespb.VaultSecretArgs{}:           {cast(types.NewVaultSecret), "kv"},
 	&resourcespb.VirtualMachineArgs{}:        {cast(types.NewVirtualMachine), "vm"},
+}
+
+func GetConverter(name protoreflect.FullName) (*ResourceMetadata, error) {
+	for messageType, conv := range Converters {
+		if name == proto.MessageName(messageType) {
+			return &conv, nil
+		}
+	}
+	return nil, fmt.Errorf("unknown resource type %s", name)
 }
 
 func cast[T proto.Message, O resources.Resource](f func(string, T, resources.Resources) (O, error)) ResourceInitFunc[proto.Message, resources.Resource] {

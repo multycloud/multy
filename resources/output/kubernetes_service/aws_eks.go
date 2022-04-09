@@ -12,5 +12,5 @@ type AwsEksCluster struct {
 }
 
 type VpcConfig struct {
-	SubnetIds []string `hcl:"subnet_ids"`
+	SubnetIds []string `hcl:"subnet_ids,expr"`
 }

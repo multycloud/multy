@@ -15,7 +15,7 @@ resource "aws_eks_cluster" "example_aws" {
   tags     = { "Name" = "example" }
   role_arn = aws_iam_role.example_aws.arn
   vpc_config {
-    subnet_ids = ["${aws_subnet.subnet1_aws.id}", "${aws_subnet.subnet2_aws.id}"]
+    subnet_ids = [aws_subnet.subnet1_aws.id, aws_subnet.subnet2_aws.id]
   }
   name = "example"
 }
@@ -37,10 +37,13 @@ resource "aws_iam_role_policy_attachment" "example_pool_aws_AmazonEC2ContainerRe
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 resource "aws_eks_node_group" "example_pool_aws" {
-  cluster_name    = "${aws_eks_cluster.example_aws.id}"
+  cluster_name    = aws_eks_cluster.example_aws.id
   node_group_name = "example"
   node_role_arn   = aws_iam_role.example_pool_aws.arn
-  subnet_ids      = ["${aws_subnet.subnet1_aws.id}", "${aws_subnet.subnet2_aws.id}"]
+  subnet_ids      = [
+    aws_subnet.subnet1_aws.id,
+    aws_subnet.subnet2_aws.id
+  ]
   scaling_config {
     desired_size = 1
     max_size     = 1
@@ -77,15 +80,15 @@ resource "aws_default_security_group" "example_vn_aws" {
 }
 resource "aws_route_table" "rt_aws" {
   tags   = { "Name" = "test-rt" }
-  vpc_id = "${aws_vpc.example_vn_aws.id}"
+  vpc_id = aws_vpc.example_vn_aws.id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.example_vn_aws.id
   }
 }
 resource "aws_route_table_association" "rta_aws" {
-  subnet_id      = "${aws_subnet.subnet2_aws.id}"
-  route_table_id = "${aws_route_table.rt_aws.id}"
+  subnet_id      = aws_subnet.subnet2_aws.id
+  route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_subnet" "subnet1_aws" {
   tags                    = { "Name" = "private-subnet" }
@@ -149,8 +152,8 @@ resource "azurerm_route_table" "rt_azure" {
   }
 }
 resource "azurerm_subnet_route_table_association" "rta_azure" {
-  subnet_id      = "${azurerm_subnet.subnet2_azure.id}"
-  route_table_id = "${azurerm_route_table.rt_azure.id}"
+  subnet_id      = azurerm_subnet.subnet2_azure.id
+  route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet" "subnet1_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
@@ -159,8 +162,8 @@ resource "azurerm_subnet" "subnet1_azure" {
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_subnet_route_table_association" "subnet1_azure" {
-  subnet_id      = "${azurerm_subnet.subnet1_azure.id}"
-  route_table_id = "${azurerm_route_table.example_vn_azure.id}"
+  subnet_id      = azurerm_subnet.subnet1_azure.id
+  route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_subnet" "subnet2_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
