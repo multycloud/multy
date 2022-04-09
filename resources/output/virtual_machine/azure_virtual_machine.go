@@ -11,7 +11,7 @@ type AzureVirtualMachine struct {
 	Location                      string                    `hcl:"location"`
 	Size                          string                    `hcl:"size"`
 	NetworkInterfaceIds           []string                  `hcl:"network_interface_ids"`
-	CustomData                    string                    `hcl:"custom_data,expr" hcle:"omitempty"`
+	CustomData                    string                    `hcl:"custom_data" hcle:"omitempty"`
 	OsDisk                        AzureOsDisk               `hcl:"os_disk"`
 	AdminUsername                 string                    `hcl:"admin_username"`
 	AdminPassword                 string                    `hcl:"admin_password,expr" hcle:"omitempty"`
