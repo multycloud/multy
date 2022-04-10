@@ -114,13 +114,7 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		return *new(OutT), err
 	}
 
-	lock, err := s.Db.LockConfig(ctx, userId)
-	if err != nil {
-		return *new(OutT), err
-	}
-	defer s.Db.UnlockConfig(ctx, lock)
-
-	c, err := s.Db.LoadUserConfig(userId, lock)
+	c, err := s.Db.LoadUserConfig(userId, nil)
 	if err != nil {
 		return *new(OutT), err
 	}

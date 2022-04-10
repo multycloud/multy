@@ -58,7 +58,7 @@ func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *con
 	if len(encoded.ValidationErrs) > 0 {
 		return result, errors.ValidationErrors(encoded.ValidationErrs)
 	}
-	
+
 	result.HclString = encoded.HclString
 	for _, r := range decodedResources.Resources.ResourceMap {
 		if r.GetCloud() == commonpb.CloudProvider_AWS && (credentials.GetAwsCreds().GetAccessKey() == "" || credentials.GetAwsCreds().GetSecretKey() == "") {
@@ -161,16 +161,21 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 	}
 
 	var targetArgs []string
+
+	log.Println("[INFO] Running apply for targets:")
 	for _, id := range encoded.affectedResources {
+		log.Printf("[INFO] %s", id)
 		targetArgs = append(targetArgs, "-target="+id)
 	}
 
-	fmt.Println("Running tf apply")
-	startApply := time.Now()
+	start := time.Now()
+	defer func() {
+		log.Printf("[DEBUG] apply finished in %s", time.Since(start))
+	}()
 
 	// TODO: only deploy targets given in the args
 	outputJson := new(bytes.Buffer)
-	cmd := exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + tmpDir, "apply", "-auto-approve", "--json"}, targetArgs...)...)
+	cmd := exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + tmpDir, "apply", "-refresh=false", "-auto-approve", "--json"}, targetArgs...)...)
 	cmd.Stdout = outputJson
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -180,12 +185,10 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 			return nil, errors.InternalServerErrorWithMessage("error deploying resources", parseErr)
 		}
 		if parseErr := getFirstError(outputs); parseErr != nil {
-			fmt.Println(parseErr.Error())
 			return nil, errors.DeployError(parseErr)
 		}
 		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
 	}
-	log.Printf("tf apply ended in %s", time.Since(startApply))
 
 	state, err := GetState(ctx, c.UserId)
 	if err != nil {
@@ -207,8 +210,6 @@ func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configp
 
 	// TODO: move this to a proper place
 	hclOutput := RequiredProviders + encoded.HclString
-
-	fmt.Println(hclOutput)
 
 	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
 	err = os.WriteFile(filepath.Join(tmpDir, tfFile), []byte(hclOutput), os.ModePerm&0664)
@@ -247,8 +248,10 @@ func MaybeInit(ctx context.Context, userId string) error {
 	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
 	_, err := os.Stat(filepath.Join(tmpDir, tfDir))
 	if os.IsNotExist(err) {
-		fmt.Println("running tf init")
-		startInit := time.Now()
+		start := time.Now()
+		defer func() {
+			log.Printf("[DEBUG] init finished in %s", time.Since(start))
+		}()
 
 		cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "init")
 		cmd.Stdout = os.Stdout
@@ -257,7 +260,6 @@ func MaybeInit(ctx context.Context, userId string) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("tf init ended in %s", time.Since(startInit))
 	} else if err != nil {
 		return err
 	}
@@ -284,6 +286,10 @@ func GetState(ctx context.Context, userId string) (*output.TfState, error) {
 }
 
 func RefreshState(ctx context.Context, userId string) error {
+	start := time.Now()
+	defer func() {
+		log.Printf("[DEBUG] refresh finished in %s", time.Since(start))
+	}()
 	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
 	outputJson := new(bytes.Buffer)
 	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "refresh", "-json")

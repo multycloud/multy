@@ -34,7 +34,7 @@ type LockType string
 const (
 	MainConfigLock       = "main"
 	lockRetryPeriod      = 1 * time.Second
-	lockRetryBackoffMult = 1.5
+	lockRetryBackoffMult = 1.3
 	lockExpirationPeriod = 2 * time.Hour
 )
 
@@ -190,7 +190,7 @@ func (d *Database) StoreUserConfig(config *configpb.Config, lock *ConfigLock) er
 }
 
 func (d *Database) LoadUserConfig(userId string, lock *ConfigLock) (*configpb.Config, error) {
-	if !lock.IsActive() {
+	if lock != nil && !lock.IsActive() {
 		return nil, fmt.Errorf("unable to load user config because lock is invalid")
 	}
 	log.Printf("Loading config from api_key %s\n", userId)
@@ -199,6 +199,9 @@ func (d *Database) LoadUserConfig(userId string, lock *ConfigLock) (*configpb.Co
 	}
 
 	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
+	if lock == nil {
+		tmpDir = filepath.Join(os.TempDir(), "multy/readonly", userId)
+	}
 	err := os.MkdirAll(tmpDir, os.ModeDir|(os.ModePerm&0775))
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error creating output file", err)
