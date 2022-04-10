@@ -82,7 +82,7 @@ func mergeGroups(all map[Resource]*MultyResourceGroup, res1 Resource, res2 Resou
 	if group2, ok := all[res2]; !ok {
 		group.Resources = append(group.Resources, res2)
 		all[res2] = group
-	} else {
+	} else if group != group2 {
 		for _, group2Resource := range group2.Resources {
 			group.Resources = append(group.Resources, group2Resource)
 			all[group2Resource] = group
