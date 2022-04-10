@@ -17,6 +17,7 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/resources/types"
+	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io"
@@ -78,9 +79,11 @@ func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *con
 }
 
 func updateMultyResourceGroups(decodedResources *encoder.DecodedResources, encoded encoder.EncodedResources, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) []string {
-	var result []string
+	var result map[string]struct{}
 	if prev != nil {
-		result = append(result, prev.DeployedResourceGroup.DeployedResource...)
+		for _, dr := range prev.DeployedResourceGroup.DeployedResource {
+			result[dr] = struct{}{}
+		}
 	}
 
 	resourcespbById := map[string]*configpb.Resource{}
@@ -105,10 +108,12 @@ func updateMultyResourceGroups(decodedResources *encoder.DecodedResources, encod
 	}
 
 	if curr != nil {
-		result = append(result, resourcespbById[curr.ResourceId].DeployedResourceGroup.DeployedResource...)
+		for _, dr := range curr.DeployedResourceGroup.DeployedResource {
+			result[dr] = struct{}{}
+		}
 	}
 
-	return result
+	return maps.Keys(result)
 }
 
 func GetResources(c *configpb.Config, prev *configpb.Resource) (*encoder.DecodedResources, error) {
