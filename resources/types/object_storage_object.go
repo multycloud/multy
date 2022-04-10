@@ -31,7 +31,7 @@ func NewObjectStorageObject(resourceId string, args *resourcespb.ObjectStorageOb
 			Args:       args,
 		},
 	}
-	obj, err := Get[*ObjectStorage](others, args.ObjectStorageId)
+	obj, err := resources.Get[*ObjectStorage](resourceId, others, args.ObjectStorageId)
 	if err != nil {
 		return nil, errors.ValidationErrors([]validate.ValidationError{o.NewValidationError(err.Error(), "object_storage_id")})
 	}

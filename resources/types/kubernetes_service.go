@@ -24,7 +24,7 @@ type KubernetesCluster struct {
 
 func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesClusterArgs, others resources.Resources) (*KubernetesCluster, error) {
 	subnets, err := util.MapSliceValuesErr(args.SubnetIds, func(subnetId string) (*Subnet, error) {
-		return Get[*Subnet](others, subnetId)
+		return resources.Get[*Subnet](resourceId, others, subnetId)
 	})
 	if err != nil {
 		return nil, err
@@ -99,16 +99,14 @@ func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBl
 		}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		var defaultPool *kubernetes_node_pool.AzureKubernetesNodePool
-		for _, node := range resources.GetAllResources[*KubernetesNodePool](ctx) {
-			if node.KubernetesCluster.ResourceId == r.ResourceId && node.Args.IsDefaultPool {
-				defaultPool, err = node.translateAzNodePool()
-				if err != nil {
-					return nil, err
-				}
-				defaultPool.Name = defaultPool.AzResource.Name
-				defaultPool.AzResource = nil
-				defaultPool.ClusterId = ""
+		for _, node := range resources.GetAllResourcesWithRef(ctx, func(k *KubernetesNodePool) *KubernetesCluster { return k.KubernetesCluster }, r) {
+			defaultPool, err = node.translateAzNodePool()
+			if err != nil {
+				return nil, err
 			}
+			defaultPool.Name = defaultPool.AzResource.Name
+			defaultPool.AzResource = nil
+			defaultPool.ClusterId = ""
 		}
 		return []output.TfBlock{
 			&kubernetes_service.AzureEksCluster{

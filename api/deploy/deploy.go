@@ -39,44 +39,87 @@ var (
 	AzureCredsNotSetErr = status.Error(codes.InvalidArgument, "azure credentials are required but not set")
 )
 
-func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (string, error) {
+type EncodedResources struct {
+	HclString         string
+	affectedResources []string
+}
+
+func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (EncodedResources, error) {
+	result := EncodedResources{}
 	decodedResources, err := GetResources(c, prev)
 	if err != nil {
-		return "", err
+		return result, err
 	}
 
-	hclOutput, errs, err := encoder.Encode(decodedResources, credentials)
-	if len(errs) > 0 {
-		return hclOutput, errors.ValidationErrors(errs)
-	}
+	encoded, err := encoder.Encode(decodedResources, credentials)
 	if err != nil {
-		return hclOutput, err
+		return result, err
+	}
+	if len(encoded.ValidationErrs) > 0 {
+		return result, errors.ValidationErrors(encoded.ValidationErrs)
 	}
 
-	for _, r := range decodedResources.Resources {
+	for _, r := range decodedResources.Resources.ResourceMap {
 		if r.GetCloud() == commonpb.CloudProvider_AWS && (credentials.GetAwsCreds().GetAccessKey() == "" || credentials.GetAwsCreds().GetSecretKey() == "") {
-			return hclOutput, AwsCredsNotSetErr
+			return result, AwsCredsNotSetErr
 		}
 		if r.GetCloud() == commonpb.CloudProvider_AZURE && (credentials.GetAzureCreds().GetSubscriptionId() == "" ||
 			credentials.GetAzureCreds().GetClientId() == "" ||
 			credentials.GetAzureCreds().GetTenantId() == "" ||
 			credentials.GetAzureCreds().GetClientSecret() == "") {
-			return hclOutput, AzureCredsNotSetErr
+			return result, AzureCredsNotSetErr
 		}
 	}
 
-	return hclOutput, nil
+	result.affectedResources = updateMultyResourceGroups(decodedResources, encoded, c, prev, curr)
+	result.HclString = encoded.HclString
+
+	return result, nil
+}
+
+func updateMultyResourceGroups(decodedResources *encoder.DecodedResources, encoded encoder.EncodedResources, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) []string {
+	var result []string
+	if prev != nil {
+		result = append(result, prev.DeployedResourceGroup.DeployedResource...)
+	}
+
+	resourcespbById := map[string]*configpb.Resource{}
+	for _, resource := range c.Resources {
+		resourcespbById[resource.ResourceId] = resource
+	}
+	deployedResourcesByGroupId := map[string]*configpb.DeployedResourceGroup{}
+	for groupId, group := range decodedResources.Resources.GetMultyResourceGroups() {
+		for _, resource := range group.Resources {
+			for _, deployedResource := range encoded.DeployedResources[resource] {
+				if _, ok := deployedResourcesByGroupId[groupId]; !ok {
+					deployedResourcesByGroupId[groupId] = &configpb.DeployedResourceGroup{GroupId: groupId}
+				}
+				deployedResourcesByGroupId[groupId].DeployedResource = append(deployedResourcesByGroupId[groupId].DeployedResource, deployedResource)
+			}
+			if _, ok := resourcespbById[resource.GetResourceId()]; ok {
+				resourcespbById[resource.GetResourceId()].DeployedResourceGroup = deployedResourcesByGroupId[groupId]
+			} else {
+				log.Printf("[DEBUG] not adding %s to a group, it doesn't exist in the state\n", resource.GetResourceId())
+			}
+		}
+	}
+
+	if curr != nil {
+		result = append(result, resourcespbById[curr.ResourceId].DeployedResourceGroup.DeployedResource...)
+	}
+
+	return result
 }
 
 func GetResources(c *configpb.Config, prev *configpb.Resource) (*encoder.DecodedResources, error) {
-	translated := map[string]resources.Resource{}
+	res := resources.NewResources()
 
 	for _, r := range c.Resources {
 		conv, err := converter.GetConverter(r.ResourceArgs.ResourceArgs.MessageName())
 		if err != nil {
 			return nil, err
 		}
-		err = addMultyResourceNew(r, translated, conv)
+		err = addMultyResourceNew(r, res, conv)
 		if err != nil {
 			return nil, err
 		}
@@ -89,9 +132,10 @@ func GetResources(c *configpb.Config, prev *configpb.Resource) (*encoder.Decoded
 
 	// TODO add s3 state file backend
 	decodedResources := encoder.DecodedResources{
-		Resources: translated,
+		Resources: res,
 		Providers: provider,
 	}
+
 	return &decodedResources, nil
 }
 
@@ -106,7 +150,7 @@ type tfOutput struct {
 
 func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (*output.TfState, error) {
 	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
-	err := EncodeAndStoreTfFile(ctx, c, prev, curr)
+	encoded, err := EncodeAndStoreTfFile(ctx, c, prev, curr)
 	if err != nil {
 		return nil, err
 	}
@@ -116,12 +160,17 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 		return nil, err
 	}
 
+	var targetArgs []string
+	for _, id := range encoded.affectedResources {
+		targetArgs = append(targetArgs, "-target="+id)
+	}
+
 	fmt.Println("Running tf apply")
 	startApply := time.Now()
 
 	// TODO: only deploy targets given in the args
 	outputJson := new(bytes.Buffer)
-	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "apply", "-auto-approve", "-refresh=false", "--json")
+	cmd := exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + tmpDir, "apply", "-auto-approve", "--json"}, targetArgs...)...)
 	cmd.Stdout = outputJson
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -146,27 +195,24 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 	return state, nil
 }
 
-func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) error {
+func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (EncodedResources, error) {
 	credentials, err := util.ExtractCloudCredentials(ctx)
 	if err != nil {
-		return err
+		return EncodedResources{}, err
 	}
-	hclOutput, err := Encode(credentials, c, prev, curr)
+	encoded, err := Encode(credentials, c, prev, curr)
 	if err != nil {
-		return err
+		return encoded, err
 	}
 
 	// TODO: move this to a proper place
-	hclOutput = RequiredProviders + hclOutput
+	hclOutput := RequiredProviders + encoded.HclString
 
 	fmt.Println(hclOutput)
 
 	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
 	err = os.WriteFile(filepath.Join(tmpDir, tfFile), []byte(hclOutput), os.ModePerm&0664)
-	if err != nil {
-		return err
-	}
-	return err
+	return encoded, err
 }
 
 func getFirstError(outputs []tfOutput) error {
@@ -261,19 +307,20 @@ type hasCommonArgs interface {
 	GetCommonParameters() *commonpb.ResourceCommonArgs
 }
 
-func addMultyResourceNew(r *configpb.Resource, translated map[string]resources.Resource, metadata *converter.ResourceMetadata) error {
+func addMultyResourceNew(r *configpb.Resource, res resources.Resources, metadata *converter.ResourceMetadata) error {
 	m, err := r.ResourceArgs.ResourceArgs.UnmarshalNew()
 	if err != nil {
 		return err
 	}
 	// TODO: refactor this
+	var resourceGroup *rg.Type
 	if commonArgs, ok := m.(hasCommonArgs); ok {
 		if commonArgs.GetCommonParameters().ResourceGroupId == "" {
 			rgId := rg.GetDefaultResourceGroupIdString(metadata.AbbreviatedName)
 			if rgId != "" {
 				commonArgs.GetCommonParameters().ResourceGroupId = rgId
 				if commonArgs.GetCommonParameters().CloudProvider == commonpb.CloudProvider_AZURE {
-					resourceGroup :=
+					resourceGroup =
 						&rg.Type{
 							ResourceId: rgId,
 							Name:       rgId,
@@ -281,18 +328,20 @@ func addMultyResourceNew(r *configpb.Resource, translated map[string]resources.R
 							Cloud:      commonArgs.GetCommonParameters().CloudProvider,
 						}
 
-					translated[resourceGroup.GetResourceId()] = resourceGroup
+					res.ResourceMap[resourceGroup.GetResourceId()] = resourceGroup
 				}
 			}
 		}
 	}
 
-	translatedResource, err := metadata.InitFunc(r.ResourceId, m, translated)
+	translatedResource, err := metadata.InitFunc(r.ResourceId, m, res)
 	if err != nil {
 		return err
 	}
-	translated[translatedResource.GetResourceId()] = translatedResource
-
+	res.ResourceMap[translatedResource.GetResourceId()] = translatedResource
+	if resourceGroup != nil {
+		res.AddDependency(translatedResource.GetResourceId(), resourceGroup.GetResourceId())
+	}
 	return nil
 }
 

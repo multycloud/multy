@@ -27,14 +27,14 @@ func NewRouteTableAssociation(resourceId string, args *resourcespb.RouteTableAss
 			Args:       args,
 		},
 	}
-	rt, err := Get[*RouteTable](others, args.RouteTableId)
+	rt, err := resources.Get[*RouteTable](resourceId, others, args.RouteTableId)
 	if err != nil {
 		return nil, errors.ValidationErrors([]validate.ValidationError{rta.NewValidationError(err.Error(), "virtual_network_id")})
 	}
 	rta.Parent = rt
 	rta.RouteTable = rt
 
-	subnet, err := Get[*Subnet](others, args.SubnetId)
+	subnet, err := resources.Get[*Subnet](resourceId, others, args.SubnetId)
 	if err != nil {
 		return nil, errors.ValidationErrors([]validate.ValidationError{rta.NewValidationError(err.Error(), "subnet_id")})
 	}

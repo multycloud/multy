@@ -45,7 +45,7 @@ const (
 )
 
 func NewNetworkSecurityGroup(resourceId string, args *resourcespb.NetworkSecurityGroupArgs, others resources.Resources) (*NetworkSecurityGroup, error) {
-	vn, err := Get[*VirtualNetwork](others, args.VirtualNetworkId)
+	vn, err := resources.Get[*VirtualNetwork](resourceId, others, args.VirtualNetworkId)
 	if err != nil {
 		return nil, err
 	}

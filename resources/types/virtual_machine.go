@@ -39,22 +39,22 @@ type VirtualMachine struct {
 
 func NewVirtualMachine(resourceId string, args *resourcespb.VirtualMachineArgs, others resources.Resources) (*VirtualMachine, error) {
 	networkInterfaces, err := util.MapSliceValuesErr(args.NetworkInterfaceIds, func(id string) (*NetworkInterface, error) {
-		return Get[*NetworkInterface](others, id)
+		return resources.Get[*NetworkInterface](resourceId, others, id)
 	})
 	if err != nil {
 		return nil, err
 	}
 	networkSecurityGroups, err := util.MapSliceValuesErr(args.NetworkSecurityGroupIds, func(id string) (*NetworkSecurityGroup, error) {
-		return Get[*NetworkSecurityGroup](others, id)
+		return resources.Get[*NetworkSecurityGroup](resourceId, others, id)
 	})
 	if err != nil {
 		return nil, err
 	}
-	subnet, err := Get[*Subnet](others, args.SubnetId)
+	subnet, err := resources.Get[*Subnet](resourceId, others, args.SubnetId)
 	if err != nil {
 		return nil, err
 	}
-	publicIp, _, err := GetOptional[*PublicIp](others, args.PublicIpId)
+	publicIp, _, err := resources.GetOptional[*PublicIp](resourceId, others, args.PublicIpId)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 
 		iamRole := iam.AwsIamRole{
 			AwsResource:      common.NewAwsResource(r.ResourceId, r.Args.Name),
-			Name:             r.getAwsIamRoleName(),
+			Name:             r.GetAwsIdentity(),
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("ec2.amazonaws.com"),
 		}
 
@@ -164,7 +164,7 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 
 		iamInstanceProfile := iam.AwsIamInstanceProfile{
 			AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: r.ResourceId}},
-			Name:        r.getAwsIamRoleName(),
+			Name:        r.GetAwsIdentity(),
 			Role: fmt.Sprintf(
 				"%s.%s.name", output.GetResourceName(iam.AwsIamRole{}), iamRole.ResourceId,
 			),
@@ -371,6 +371,6 @@ func (r *VirtualMachine) GetMainResourceName() (string, error) {
 	}
 }
 
-func (r *VirtualMachine) getAwsIamRoleName() string {
+func (r *VirtualMachine) GetAwsIdentity() string {
 	return fmt.Sprintf("iam_for_vm_%s", r.ResourceId)
 }

@@ -25,7 +25,7 @@ func NewVaultSecret(resourceId string, args *resourcespb.VaultSecretArgs, others
 			Args:       args,
 		},
 	}
-	v, err := Get[*Vault](others, args.VaultId)
+	v, err := resources.Get[*Vault](resourceId, others, args.VaultId)
 	if err != nil {
 		return nil, errors.ValidationErrors([]validate.ValidationError{vap.NewValidationError(err.Error(), "vault_id")})
 	}

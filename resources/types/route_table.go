@@ -42,7 +42,7 @@ func NewRouteTable(resourceId string, args *resourcespb.RouteTableArgs, others r
 			Args:       args,
 		},
 	}
-	vn, err := Get[*VirtualNetwork](others, args.VirtualNetworkId)
+	vn, err := resources.Get[*VirtualNetwork](resourceId, others, args.VirtualNetworkId)
 	if err != nil {
 		return nil, errors.ValidationErrors([]validate.ValidationError{rt.NewValidationError(err.Error(), "virtual_network_id")})
 	}

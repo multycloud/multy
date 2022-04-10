@@ -22,7 +22,7 @@ type Database struct {
 
 func NewDatabase(resourceId string, db *resourcespb.DatabaseArgs, others resources.Resources) (*Database, error) {
 	subnets, err := util.MapSliceValuesErr(db.SubnetIds, func(subnetId string) (*Subnet, error) {
-		return Get[*Subnet](others, subnetId)
+		return resources.Get[*Subnet](resourceId, others, subnetId)
 	})
 	if err != nil {
 		return nil, err

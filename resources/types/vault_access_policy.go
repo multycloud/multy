@@ -26,12 +26,20 @@ func NewVaultAccessPolicy(resourceId string, args *resourcespb.VaultAccessPolicy
 			Args:       args,
 		},
 	}
-	v, err := Get[*Vault](others, args.VaultId)
+	v, err := resources.Get[*Vault](resourceId, others, args.VaultId)
 	if err != nil {
 		return nil, errors.ValidationErrors([]validate.ValidationError{vap.NewValidationError(err.Error(), "vault_id")})
 	}
 	vap.Parent = v
 	vap.Vault = v
+
+	// This dependency is not modelled directly by the id, so we have to do it this way
+	for _, res := range others.ResourceMap {
+		if vm, ok := res.(*VirtualMachine); ok && vm.GetAwsIdentity() == args.Identity {
+			others.AddDependency(resourceId, vm.GetResourceId())
+		}
+	}
+
 	return vap, nil
 }
 

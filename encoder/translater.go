@@ -18,7 +18,7 @@ func TranslateResources(decodedResources *DecodedResources, ctx resources.MultyC
 	translationCache := map[resources.Resource][]output.TfBlock{}
 
 	errors := map[validate.ValidationError]bool{}
-	for _, r := range util.GetSortedMapValues(decodedResources.Resources) {
+	for _, r := range util.GetSortedMapValues(decodedResources.Resources.ResourceMap) {
 		var err error
 		// we need to use a set here because errors are duplicated for multiple clouds
 		validationErrors := r.Validate(ctx)
@@ -46,7 +46,7 @@ func getProvider(providers map[commonpb.CloudProvider]map[string]*types.Provider
 func buildProviders(r *DecodedResources, credentials *credspb.CloudCredentials) map[commonpb.CloudProvider]map[string]*types.Provider {
 	providers := r.Providers
 
-	for _, resource := range r.Resources {
+	for _, resource := range r.Resources.ResourceMap {
 		if _, ok := providers[resource.GetCloud()]; !ok {
 			providers[resource.GetCloud()] = map[string]*types.Provider{}
 		}

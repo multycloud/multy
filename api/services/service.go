@@ -151,7 +151,7 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Conf
 			if err != nil {
 				return *new(OutT), err
 			}
-			if parser, ok := allResources.Resources[r.ResourceId].(stateParser[OutT]); ok {
+			if parser, ok := allResources.Resources.ResourceMap[r.ResourceId].(stateParser[OutT]); ok {
 				return parser.FromState(state)
 			}
 			return s.Converters.Convert(in.GetResourceId(), converted.(Arg), state)
