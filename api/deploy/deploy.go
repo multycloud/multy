@@ -58,7 +58,8 @@ func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *con
 	if len(encoded.ValidationErrs) > 0 {
 		return result, errors.ValidationErrors(encoded.ValidationErrs)
 	}
-
+	
+	result.HclString = encoded.HclString
 	for _, r := range decodedResources.Resources.ResourceMap {
 		if r.GetCloud() == commonpb.CloudProvider_AWS && (credentials.GetAwsCreds().GetAccessKey() == "" || credentials.GetAwsCreds().GetSecretKey() == "") {
 			return result, AwsCredsNotSetErr
@@ -72,7 +73,6 @@ func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *con
 	}
 
 	result.affectedResources = updateMultyResourceGroups(decodedResources, encoded, c, prev, curr)
-	result.HclString = encoded.HclString
 
 	return result, nil
 }
