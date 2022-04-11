@@ -43,7 +43,7 @@ func WrappingErrors[InT any, OutT any](f func(context.Context, InT) (OutT, error
 			if r := recover(); r != nil {
 				log.Printf("[ERROR] server panic: %v\n", r)
 				debug.PrintStack()
-				err = errors.InternalServerErrorWithMessage("server panic", fmt.Errorf("%v"))
+				err = errors.InternalServerErrorWithMessage("server panic", fmt.Errorf("%+v", r))
 			}
 		}()
 		out, err = f(ctx, in)

@@ -3,9 +3,9 @@ resource "aws_db_subnet_group" "example_db_aws" {
     "Name" = "example-db"
   }
 
-  name = "example-db"
-
-  subnet_ids = [
+  name        = "example-db"
+  description = "Managed by Multy"
+  subnet_ids  = [
     aws_subnet.subnet1_aws.id,
     aws_subnet.subnet2_aws.id,
   ]

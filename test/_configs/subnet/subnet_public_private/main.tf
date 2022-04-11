@@ -3,9 +3,9 @@ resource "aws_db_subnet_group" "example_db_aws" {
     "Name" = "example-db"
   }
 
-  name = "example-db"
-
-  subnet_ids = [
+  name        = "example-db"
+  description = "Managed by Multy"
+  subnet_ids  = [
     aws_subnet.subnet1_aws.id,
     aws_subnet.subnet2_aws.id,
   ]
@@ -190,7 +190,8 @@ resource "aws_instance" "vm_aws" {
   instance_type               = "t2.nano"
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.subnet3_aws.id
-  user_data_base64            = base64encode("#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on AWS</h1>\" > /var/www/html/index.html")
+  #  user_data_base64            = "#!/bin/bash -xe\\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \\\"<h1>Hello from Multy on AWS</h1>\\\" > /var/www/html/index.html"
+  user_data_base64            = "ZWNobyAnSGVsbG8gV29ybGQn"
   iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
 }
 resource "azurerm_resource_group" "db-rg" {
@@ -400,7 +401,8 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   location              = "northeurope"
   size                  = "Standard_B1ls"
   network_interface_ids = [azurerm_network_interface.vm_azure.id]
-  custom_data           = base64encode("#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"<h1>Hello from Multy on Azure</h1>\" > /var/www/html/index.html")
+  custom_data           = "ZWNobyAnSGVsbG8gV29ybGQn"
+  #  custom_data           = "#!/bin/bash -xe\\nsudo su\\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \\\"<h1>Hello from Multy on Azure</h1>\\\" > /var/www/html/index.html"
 
   os_disk {
     caching              = "None"

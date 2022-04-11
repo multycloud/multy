@@ -115,9 +115,10 @@ resource "azurerm_network_interface" "public-nic_azure" {
   location            = "northeurope"
 
   ip_configuration {
-    name                          = "internal"
+    name                          = "external-test-ip"
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.subnet_azure.id
+    public_ip_address_id          = azurerm_public_ip.ip_azure.id
     primary                       = true
   }
 }

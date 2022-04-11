@@ -33,7 +33,7 @@ var Converters = map[proto.Message]ResourceMetadata{
 	&resourcespb.DatabaseArgs{}:              {cast(types.NewDatabase), "db"},
 	&resourcespb.PublicIpArgs{}:              {cast(types.NewPublicIp), "pip"},
 	&resourcespb.RouteTableArgs{}:            {cast(types.NewRouteTable), "vn"},
-	&resourcespb.RouteTableAssociationArgs{}: {InitFunc: cast(types.NewRouteTableAssociation)},
+	&resourcespb.RouteTableAssociationArgs{}: {cast(types.NewRouteTableAssociation), "rt"},
 	&resourcespb.KubernetesNodePoolArgs{}:    {cast(types.NewKubernetesNodePool), "ks"},
 	&resourcespb.KubernetesClusterArgs{}:     {cast(types.NewKubernetesCluster), "ks"},
 	&resourcespb.LambdaArgs{}:                {cast(types.NewLambda), "fun"},
