@@ -62,7 +62,7 @@ resource "aws_instance" "vm_aws" {
   ami                  = "ami-09d4a659cdd8677be"
   instance_type        = "t2.nano"
   subnet_id            = aws_subnet.subnet_aws.id
-  user_data_base64     = base64encode("echo 'Hello World'")
+  user_data_base64     = "ZWNobyAnSGVsbG8gV29ybGQn"
   iam_instance_profile = aws_iam_instance_profile.vm_aws.id
 }
 resource "aws_iam_role" "vm2_aws" {
@@ -136,7 +136,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   location              = "northeurope"
   size                  = "Standard_B1ls"
   network_interface_ids = [azurerm_network_interface.vm_azure.id]
-  custom_data           = base64encode("echo 'Hello World'")
+  custom_data           = "ZWNobyAnSGVsbG8gV29ybGQn"
 
   os_disk {
     caching              = "None"

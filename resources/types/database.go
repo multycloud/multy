@@ -49,6 +49,7 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 		dbSubnetGroup := database.AwsDbSubnetGroup{
 			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
 			Name:        r.Args.Name,
+			Description: "Managed by Multy",
 			SubnetIds:   subnetIds,
 		}
 		return []output.TfBlock{

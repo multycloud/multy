@@ -183,9 +183,12 @@ resource "aws_instance" "vm_aws" {
   instance_type               = "t2.nano"
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.subnet3_aws.id
-  user_data_base64            = base64encode("${templatefile("init.sh", { "db_host" = "${azurerm_mysql_server.example_db_azure.fqdn}", "db_password" = "multy-Admin123!", "db_username" = "multyadmin@example-db" })}")
-  key_name                    = aws_key_pair.vm_aws.key_name
-  iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
+  user_data_base64            = base64encode(templatefile("init.sh", {
+    "db_host"     = azurerm_mysql_server.example_db_azure.fqdn, "db_password" = "multy-Admin123!",
+    "db_username" = "multyadmin@example-db"
+  }))
+  key_name             = aws_key_pair.vm_aws.key_name
+  iam_instance_profile = aws_iam_instance_profile.vm_aws.id
 }
 resource "azurerm_resource_group" "db-rg" {
   name     = "db-rg"
@@ -355,8 +358,8 @@ resource "azurerm_subnet_route_table_association" "subnet3_azure" {
   subnet_id      = azurerm_subnet.subnet3_azure.id
   route_table_id = azurerm_route_table.rt_azure.id
 }
-resource "azurerm_subnet_route_table_association" "subnet3_azure" {
-  subnet_id      = azurerm_subnet.subnet3_azure.id
+resource "azurerm_subnet_route_table_association" "subnet2_azure" {
+  subnet_id      = azurerm_subnet.subnet2_azure.id
   route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet_route_table_association" "subnet1_azure" {
@@ -419,7 +422,10 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   location              = "eastus"
   size                  = "Standard_B1ls"
   network_interface_ids = [azurerm_network_interface.vm_azure.id]
-  custom_data           = base64encode("${templatefile("azure_init.sh", { "db_host_secret_name" = "db-host", "db_password_secret_name" = "db-password", "db_username_secret_name" = "db-username", "vault_name" = "web-app-vault-test" })}")
+  custom_data           = base64encode(templatefile("azure_init.sh", {
+    "db_host_secret_name"     = "db-host", "db_password_secret_name" = "db-password",
+    "db_username_secret_name" = "db-username", "vault_name" = "web-app-vault-test"
+  }))
   os_disk {
     caching              = "None"
     storage_account_type = "Standard_LRS"

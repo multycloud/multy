@@ -71,7 +71,7 @@ func InsertIntoConfig[Arg proto.Message](in Arg, c *configpb.Config) (*configpb.
 
 	c.ResourceCounter = c.ResourceCounter + 1
 	resource := configpb.Resource{
-		ResourceId:   fmt.Sprintf("%s-%d-u%s", conv.AbbreviatedName, c.ResourceCounter, c.UserId),
+		ResourceId:   fmt.Sprintf("multy_%s_u%s_r%d", conv.AbbreviatedName, c.UserId, c.ResourceCounter),
 		ResourceArgs: args,
 	}
 	c.Resources = append(c.Resources, &resource)

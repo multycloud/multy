@@ -193,7 +193,7 @@
           "vm_size": "MICRO",
           "public_ssh_key": "",
           "subnet_id": "subnet1_aws",
-          "user_data": "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on AWS\u003c/h1\u003e\" \u003e /var/www/html/index.html"
+          "user_data": "ZWNobyAnSGVsbG8gV29ybGQn"
         }
       },
       "resource_id": "vm2_aws"
@@ -212,7 +212,7 @@
           "vm_size": "MICRO",
           "public_ssh_key": "",
           "subnet_id": "subnet1_aws",
-          "user_data": "#!/bin/bash -xe\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on AWS\u003c/h1\u003e\" \u003e /var/www/html/index.html"
+          "user_data": "ZWNobyAnSGVsbG8gV29ybGQn"
         }
       },
       "resource_id": "vm_aws"
@@ -231,7 +231,7 @@
           "vm_size": "MICRO",
           "public_ssh_key": "",
           "subnet_id": "subnet1_azure",
-          "user_data": "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on Azure\u003c/h1\u003e\" \u003e /var/www/html/index.html"
+          "user_data": "ZWNobyAnSGVsbG8gV29ybGQn"
         }
       },
       "resource_id": "vm_azure"
@@ -253,7 +253,7 @@
           "vm_size": "MICRO",
           "public_ssh_key": "",
           "subnet_id": "subnet1_azure",
-          "user_data": "#!/bin/bash -xe\nsudo su\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \"\u003ch1\u003eHello from Multy on Azure\u003c/h1\u003e\" \u003e /var/www/html/index.html"
+          "user_data": "ZWNobyAnSGVsbG8gV29ybGQn"
         }
       },
       "resource_id": "vm2_azure"
