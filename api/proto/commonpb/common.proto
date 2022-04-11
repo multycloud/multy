@@ -40,6 +40,7 @@ message VmSize {
     UNKNOWN_VM_SIZE = 0;
     MICRO = 1;
     MEDIUM = 2;
+    LARGE = 3;
   }
 }
 
