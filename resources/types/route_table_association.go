@@ -55,7 +55,7 @@ func (r *RouteTableAssociation) Translate(resources.MultyContext) ([]output.TfBl
 		return []output.TfBlock{
 			route_table_association.AwsRouteTableAssociation{
 				AwsResource: &common.AwsResource{
-					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
+					TerraformResource: output.TerraformResource{ResourceId: r.Subnet.ResourceId},
 				},
 				RouteTableId: rtId,
 				SubnetId:     subnetId,
@@ -64,8 +64,11 @@ func (r *RouteTableAssociation) Translate(resources.MultyContext) ([]output.TfBl
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		return []output.TfBlock{
 			route_table_association.AzureRouteTableAssociation{
+				// Here we use the subnet id so that it is the same as the one that is created by default in the subnet.
+				// This ensures that if a RTA is created after the default RTA is created, they will have the same ID and
+				// terraform will either update it in place or destroy it before creating it.
 				AzResource: &common.AzResource{
-					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
+					TerraformResource: output.TerraformResource{ResourceId: r.Subnet.ResourceId},
 				},
 				RouteTableId: rtId,
 				SubnetId:     subnetId,

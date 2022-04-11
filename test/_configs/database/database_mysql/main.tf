@@ -57,11 +57,11 @@ resource "aws_route_table" "rt_aws" {
     gateway_id = aws_internet_gateway.vn_aws.id
   }
 }
-resource "aws_route_table_association" "rta_aws" {
+resource "aws_route_table_association" "subnet1_aws" {
   subnet_id      = aws_subnet.subnet1_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
-resource "aws_route_table_association" "rta2_aws" {
+resource "aws_route_table_association" "subnet2_aws" {
   subnet_id      = aws_subnet.subnet2_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
@@ -168,11 +168,11 @@ resource "azurerm_route_table" "rt_azure" {
     next_hop_type  = "Internet"
   }
 }
-resource "azurerm_subnet_route_table_association" "rta_azure" {
+resource "azurerm_subnet_route_table_association" "subnet1_azure" {
   subnet_id      = azurerm_subnet.subnet1_azure.id
   route_table_id = azurerm_route_table.rt_azure.id
 }
-resource "azurerm_subnet_route_table_association" "rta2_azure" {
+resource "azurerm_subnet_route_table_association" "subnet2_azure" {
   subnet_id      = azurerm_subnet.subnet2_azure.id
   route_table_id = azurerm_route_table.rt_azure.id
 }

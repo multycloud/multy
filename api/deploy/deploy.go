@@ -79,7 +79,7 @@ func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *con
 }
 
 func updateMultyResourceGroups(decodedResources *encoder.DecodedResources, encoded encoder.EncodedResources, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) []string {
-	var result map[string]struct{}
+	result := map[string]struct{}{}
 	if prev != nil {
 		for _, dr := range prev.DeployedResourceGroup.DeployedResource {
 			result[dr] = struct{}{}

@@ -86,7 +86,7 @@ resource "aws_route_table" "rt_aws" {
     gateway_id = aws_internet_gateway.example_vn_aws.id
   }
 }
-resource "aws_route_table_association" "rta_aws" {
+resource "aws_route_table_association" "subnet2_aws" {
   subnet_id      = aws_subnet.subnet2_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
@@ -151,7 +151,7 @@ resource "azurerm_route_table" "rt_azure" {
     next_hop_type  = "Internet"
   }
 }
-resource "azurerm_subnet_route_table_association" "rta_azure" {
+resource "azurerm_subnet_route_table_association" "subnet2_azure" {
   subnet_id      = azurerm_subnet.subnet2_azure.id
   route_table_id = azurerm_route_table.rt_azure.id
 }
