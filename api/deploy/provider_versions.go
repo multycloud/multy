@@ -2,12 +2,24 @@ package deploy
 
 import "fmt"
 
-const AwsProviderVersion = "4.8.0"
-const AzureProviderVersion = "3.0.2"
+const (
+	AwsProviderVersion   = "4.8.0"
+	AzureProviderVersion = "3.0.2"
+	StateRegion          = "eu-west-2"
+	Bucket               = "multy-users-tfstate"
+	tfState              = "terraform.tfstate"
+)
 
-var RequiredProviders = fmt.Sprintf(`
+func GetTerraformBlock(userId string) string {
+	return fmt.Sprintf(`
 terraform {
+  backend "s3" {
+    bucket         = "%s"
+    key            = "%s/%s"
+    region         = "%s"
+  }
   required_providers {
+
     aws = {
       source  = "hashicorp/aws"
       version = "%s"
@@ -18,4 +30,5 @@ terraform {
 	}
   }
 }
-`, AwsProviderVersion, AzureProviderVersion)
+`, Bucket, userId, tfState, StateRegion, AwsProviderVersion, AzureProviderVersion)
+}

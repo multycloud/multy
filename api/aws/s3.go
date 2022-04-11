@@ -12,7 +12,6 @@ import (
 const (
 	region     = "eu-west-2"
 	bucketName = "multy-users-tfstate"
-	tfFile     = "main.tf"
 )
 
 type Client struct {

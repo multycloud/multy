@@ -26,7 +26,6 @@ type Database struct {
 
 const (
 	configFile = "config.pb.json"
-	tfState    = "terraform.tfstate"
 )
 
 type LockType string
@@ -175,17 +174,6 @@ func (d *Database) StoreUserConfig(config *configpb.Config, lock *ConfigLock) er
 	if err != nil {
 		return errors.InternalServerErrorWithMessage("error storing configuration", err)
 	}
-	tmpDir := filepath.Join(os.TempDir(), "multy", config.UserId)
-	data, err := os.ReadFile(filepath.Join(tmpDir, tfState))
-	if err != nil {
-		return errors.InternalServerErrorWithMessage("error reading current infra state cache", err)
-	}
-
-	err = d.client.SaveFile(config.UserId, tfState, string(data))
-	if err != nil {
-		return errors.InternalServerErrorWithMessage("error storing current infra state", err)
-	}
-
 	return nil
 }
 
@@ -211,14 +199,6 @@ func (d *Database) LoadUserConfig(userId string, lock *ConfigLock) (*configpb.Co
 	tfFileStr, err = d.client.ReadFile(userId, configFile)
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error read configuration", err)
-	}
-	tfStateStr, err := d.client.ReadFile(userId, tfState)
-	if err != nil {
-		return nil, errors.InternalServerErrorWithMessage("error reading current infra state", err)
-	}
-	err = os.WriteFile(filepath.Join(tmpDir, tfState), []byte(tfStateStr), os.ModePerm&0664)
-	if err != nil {
-		return nil, errors.InternalServerErrorWithMessage("error caching current infra state", err)
 	}
 
 	if tfFileStr != "" {

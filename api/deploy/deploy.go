@@ -30,9 +30,8 @@ import (
 )
 
 const (
-	tfFile  = "main.tf"
-	tfDir   = ".terraform"
-	tfState = "terraform.tfstate"
+	tfFile = "main.tf"
+	tfDir  = ".terraform"
 )
 
 var (
@@ -214,7 +213,7 @@ func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configp
 	}
 
 	// TODO: move this to a proper place
-	hclOutput := RequiredProviders + encoded.HclString
+	hclOutput := GetTerraformBlock(c.UserId) + encoded.HclString
 
 	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
 	err = os.WriteFile(filepath.Join(tmpDir, tfFile), []byte(hclOutput), os.ModePerm&0664)
