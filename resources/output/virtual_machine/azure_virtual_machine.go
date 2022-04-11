@@ -19,6 +19,7 @@ type AzureVirtualMachine struct {
 	SourceImageReference          AzureSourceImageReference `hcl:"source_image_reference"`
 	DisablePasswordAuthentication bool                      `hcl:"disable_password_authentication"`
 	Identity                      AzureIdentity             `hcl:"identity"`
+	ComputerName                  string                    `hcl:"computer_name"`
 }
 
 type AzureIdentity struct {

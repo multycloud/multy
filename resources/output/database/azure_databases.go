@@ -28,12 +28,13 @@ func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 				Name:              server.Name,
 				Location:          server.Location,
 			},
-			AdministratorLogin:         server.AdministratorLogin,
-			AdministratorLoginPassword: server.AdministratorLoginPassword,
-			SkuName:                    server.SkuName,
-			StorageMb:                  server.StorageMb,
-			Version:                    server.Version,
-			//SslEnforcementEnabled:      true,
+			AdministratorLogin:           server.AdministratorLogin,
+			AdministratorLoginPassword:   server.AdministratorLoginPassword,
+			SkuName:                      server.SkuName,
+			StorageMb:                    server.StorageMb,
+			Version:                      server.Version,
+			SslEnforcementEnabled:        false,
+			SslMinimalTlsVersionEnforced: "TLSEnforcementDisabled",
 		}
 
 		resources := []output.TfBlock{mysqlServer}

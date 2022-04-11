@@ -280,6 +280,7 @@ resource "random_password" "vm_azure" {
 resource "azurerm_linux_virtual_machine" "vm_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
   name                  = "test-vm"
+  computer_name         = "testvm"
   location              = "northeurope"
   size                  = "Standard_B1ls"
   network_interface_ids = [azurerm_network_interface.vm_azure.id]
@@ -342,6 +343,7 @@ resource "random_password" "vm2_azure" {
 resource "azurerm_linux_virtual_machine" "vm2_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
   name                  = "test-vm2"
+  computer_name         = "testvm2"
   location              = "northeurope"
   size                  = "Standard_B1ls"
   network_interface_ids = [azurerm_network_interface.vm2_azure.id]

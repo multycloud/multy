@@ -18,6 +18,8 @@ import (
 	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
+	"log"
+	"regexp"
 )
 
 /*
@@ -293,6 +295,12 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 			azResources = append(azResources, randomPassword)
 		}
 
+		reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+		if err != nil {
+			log.Fatal(err)
+		}
+		computerName := reg.ReplaceAllString(r.Args.Name, "")
+
 		azResources = append(
 			azResources, virtual_machine.AzureVirtualMachine{
 				AzResource: &common.AzResource{
@@ -319,6 +327,7 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 				},
 				DisablePasswordAuthentication: disablePassAuth,
 				Identity:                      virtual_machine.AzureIdentity{Type: "SystemAssigned"},
+				ComputerName:                  computerName,
 			},
 		)
 

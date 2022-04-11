@@ -1,4 +1,4 @@
-SHELL=/bin/bash -O globstar
+#SHELL=/bin/bash -O globstar
 PORT=8000
 
 build:

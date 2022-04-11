@@ -108,15 +108,16 @@ resource "azurerm_resource_group" "db-rg" {
   location = "eastus"
 }
 resource "azurerm_mysql_server" "example_db_azure" {
-  resource_group_name          = azurerm_resource_group.db-rg.name
-  name                         = "example-db"
-  location                     = "eastus"
-  administrator_login          = "multyadmin"
-  administrator_login_password = "multy$Admin123!"
-  sku_name                     = "GP_Gen5_2"
-  storage_mb                   = 10240
-  version                      = "5.7"
-  ssl_enforcement_enabled      = false
+  resource_group_name              = azurerm_resource_group.db-rg.name
+  name                             = "example-db"
+  location                         = "eastus"
+  administrator_login              = "multyadmin"
+  administrator_login_password     = "multy$Admin123!"
+  sku_name                         = "GP_Gen5_2"
+  storage_mb                       = 10240
+  version                          = "5.7"
+  ssl_enforcement_enabled          = false
+  ssl_minimal_tls_version_enforced = "TLSEnforcementDisabled"
 }
 resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
   resource_group_name = azurerm_resource_group.db-rg.name
