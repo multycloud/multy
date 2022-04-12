@@ -17,19 +17,6 @@ jobs:
           - goarch: arm64
             goos: windows
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.18
-
-      - name: Setup protoc plugins
-        run: |
-          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
-          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
-
-      - name: Set up protoc
-        uses: arduino/setup-protoc@v1
-
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
@@ -43,5 +30,4 @@ jobs:
           asset_name: multy-${{ matrix.goos }}-${{ matrix.goarch }}
           extra_files: LICENSE README.md
           overwrite: TRUE
-          pre_command: "make build"
           ldflags: "-X 'multy/cli.Version=${{ steps.get_version.outputs.VERSION }}'"
