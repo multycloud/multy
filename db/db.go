@@ -13,6 +13,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -22,6 +23,7 @@ type Database struct {
 	marshaler     *jsonpb.Marshaler
 	client        aws_client.Client
 	sqlConnection *sql.DB
+	lockCache     sync.Map
 }
 
 const (
@@ -55,6 +57,8 @@ type lockErr struct {
 }
 
 func (d *Database) LockConfig(ctx context.Context, userId string) (*ConfigLock, error) {
+	l, _ := d.lockCache.LoadOrStore(userId, &sync.Mutex{})
+	l.(*sync.Mutex).Lock()
 	retryPeriod := lockRetryPeriod
 	for {
 		configLock, err := d.lockConfig(ctx, userId)
@@ -63,7 +67,7 @@ func (d *Database) LockConfig(ctx context.Context, userId string) (*ConfigLock, 
 				return nil, err.error
 			} else {
 				log.Println(err.Error())
-				if configLock != nil && retryPeriod > 5*time.Minute {
+				if configLock != nil {
 					log.Printf("[INFO] configLock is locked (until %s), waiting for %s and then trying again\n", configLock.expirationTimestamp, retryPeriod)
 				}
 				select {
@@ -148,6 +152,8 @@ func (d *Database) lockConfig(ctx context.Context, userId string) (*ConfigLock, 
 
 func (d *Database) UnlockConfig(_ context.Context, lock *ConfigLock) error {
 	log.Println("[DEBUG] unlocking")
+	l, _ := d.lockCache.Load(lock.userId)
+	l.(*sync.Mutex).Unlock()
 	if !lock.IsActive() {
 		return nil
 	}
@@ -247,5 +253,6 @@ func NewDatabase(connectionString string) (*Database, error) {
 		marshaler:     marshaler,
 		client:        aws_client.Configure(),
 		sqlConnection: db,
+		lockCache:     sync.Map{},
 	}, nil
 }
