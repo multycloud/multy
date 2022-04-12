@@ -127,7 +127,7 @@ type stateParser[OutT any] interface {
 }
 
 func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Config, in WithResourceId) (OutT, error) {
-	allResources, err := deploy.GetResources(c, nil)
+	allResources, err := deploy.GetResources(c)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -145,7 +145,7 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Conf
 			if err != nil {
 				return *new(OutT), err
 			}
-			if parser, ok := allResources.Resources.ResourceMap[r.ResourceId].(stateParser[OutT]); ok {
+			if parser, ok := allResources.ResourceMap[r.ResourceId].(stateParser[OutT]); ok {
 				return parser.FromState(state)
 			}
 			return s.Converters.Convert(in.GetResourceId(), converted.(Arg), state)
