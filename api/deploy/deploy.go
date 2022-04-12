@@ -46,9 +46,19 @@ type EncodedResources struct {
 
 func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (EncodedResources, error) {
 	result := EncodedResources{}
-	decodedResources, err := GetResources(c, prev)
+	res, err := GetResources(c)
 	if err != nil {
 		return result, err
+	}
+
+	provider, err := getExistingProvider(prev, credentials)
+	if err != nil {
+		return result, err
+	}
+	
+	decodedResources := &encoder.DecodedResources{
+		Resources: res,
+		Providers: provider,
 	}
 
 	encoded, err := encoder.Encode(decodedResources, credentials)
@@ -61,13 +71,10 @@ func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *con
 
 	result.HclString = encoded.HclString
 	for _, r := range decodedResources.Resources.ResourceMap {
-		if r.GetCloud() == commonpb.CloudProvider_AWS && (credentials.GetAwsCreds().GetAccessKey() == "" || credentials.GetAwsCreds().GetSecretKey() == "") {
+		if r.GetCloud() == commonpb.CloudProvider_AWS && !hasValidAwsCreds(credentials) {
 			return result, AwsCredsNotSetErr
 		}
-		if r.GetCloud() == commonpb.CloudProvider_AZURE && (credentials.GetAzureCreds().GetSubscriptionId() == "" ||
-			credentials.GetAzureCreds().GetClientId() == "" ||
-			credentials.GetAzureCreds().GetTenantId() == "" ||
-			credentials.GetAzureCreds().GetClientSecret() == "") {
+		if r.GetCloud() == commonpb.CloudProvider_AZURE && !hasValidAzureCreds(credentials) {
 			return result, AzureCredsNotSetErr
 		}
 	}
@@ -75,6 +82,17 @@ func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *con
 	result.affectedResources = updateMultyResourceGroups(decodedResources, encoded, c, prev, curr)
 
 	return result, nil
+}
+
+func hasValidAzureCreds(credentials *credspb.CloudCredentials) bool {
+	return credentials.GetAzureCreds().GetSubscriptionId() != "" &&
+		credentials.GetAzureCreds().GetClientId() != "" &&
+		credentials.GetAzureCreds().GetTenantId() != "" &&
+		credentials.GetAzureCreds().GetClientSecret() != ""
+}
+
+func hasValidAwsCreds(credentials *credspb.CloudCredentials) bool {
+	return credentials.GetAwsCreds().GetAccessKey() != "" && credentials.GetAwsCreds().GetSecretKey() != ""
 }
 
 func updateMultyResourceGroups(decodedResources *encoder.DecodedResources, encoded encoder.EncodedResources, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) []string {
@@ -115,32 +133,21 @@ func updateMultyResourceGroups(decodedResources *encoder.DecodedResources, encod
 	return maps.Keys(result)
 }
 
-func GetResources(c *configpb.Config, prev *configpb.Resource) (*encoder.DecodedResources, error) {
+func GetResources(c *configpb.Config) (resources.Resources, error) {
 	res := resources.NewResources()
 
 	for _, r := range c.Resources {
 		conv, err := converter.GetConverter(r.ResourceArgs.ResourceArgs.MessageName())
 		if err != nil {
-			return nil, err
+			return res, err
 		}
 		err = addMultyResourceNew(r, res, conv)
 		if err != nil {
-			return nil, err
+			return res, err
 		}
 	}
 
-	provider, err := getExistingProvider(prev)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO add s3 state file backend
-	decodedResources := encoder.DecodedResources{
-		Resources: res,
-		Providers: provider,
-	}
-
-	return &decodedResources, nil
+	return res, nil
 }
 
 type tfOutput struct {
@@ -177,7 +184,6 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 		log.Printf("[DEBUG] apply finished in %s", time.Since(start))
 	}()
 
-	// TODO: only deploy targets given in the args
 	outputJson := new(bytes.Buffer)
 	cmd := exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + tmpDir, "apply", "-refresh=false", "-auto-approve", "--json"}, targetArgs...)...)
 	cmd.Stdout = outputJson
@@ -359,7 +365,8 @@ type WithCommonParams interface {
 	GetCommonParameters() *commonpb.ResourceCommonArgs
 }
 
-func getExistingProvider(r *configpb.Resource) (map[commonpb.CloudProvider]map[string]*types.Provider, error) {
+func getExistingProvider(r *configpb.Resource, creds *credspb.CloudCredentials) (map[commonpb.CloudProvider]map[string]*types.Provider, error) {
+	providers := map[commonpb.CloudProvider]map[string]*types.Provider{}
 	if r != nil {
 		args := r.GetResourceArgs().GetResourceArgs()
 		m, err := args.UnmarshalNew()
@@ -371,20 +378,41 @@ func getExistingProvider(r *configpb.Resource) (map[commonpb.CloudProvider]map[s
 			if err != nil {
 				return nil, err
 			}
-			return map[commonpb.CloudProvider]map[string]*types.Provider{
-				wcp.GetCommonParameters().CloudProvider: {
-					location: &types.Provider{
-						Cloud:             wcp.GetCommonParameters().CloudProvider,
-						Location:          location,
-						IsDefaultProvider: false,
-						NumResources:      1,
-					},
+			providers[wcp.GetCommonParameters().CloudProvider] = map[string]*types.Provider{
+				location: {
+					Cloud:        wcp.GetCommonParameters().CloudProvider,
+					Location:     location,
+					NumResources: 1,
 				},
-			}, nil
+			}
 
 		}
-
 	}
 
-	return map[commonpb.CloudProvider]map[string]*types.Provider{}, nil
+	// Here we use a default location so that if there are lingering resources in the state we don't throw an error.
+	// It doesn't work perfectly tho -- AWS resources will be removed by terraform from the state if they don't exist
+	// in our config and will no longer be tracked.
+	defaultAzureLocation := common.LOCATION[common.IRELAND][commonpb.CloudProvider_AZURE]
+	defaultAwsLocation := common.LOCATION[common.IRELAND][commonpb.CloudProvider_AWS]
+
+	if hasValidAwsCreds(creds) && providers[commonpb.CloudProvider_AZURE] == nil {
+		providers[commonpb.CloudProvider_AZURE] = map[string]*types.Provider{
+			defaultAzureLocation: {
+				Cloud:        commonpb.CloudProvider_AZURE,
+				Location:     defaultAzureLocation,
+				NumResources: 1,
+			},
+		}
+	}
+	if hasValidAzureCreds(creds) && providers[commonpb.CloudProvider_AWS] == nil {
+		providers[commonpb.CloudProvider_AWS] = map[string]*types.Provider{
+			defaultAwsLocation: {
+				Cloud:        commonpb.CloudProvider_AWS,
+				Location:     defaultAwsLocation,
+				NumResources: 1,
+			},
+		}
+	}
+
+	return providers, nil
 }
