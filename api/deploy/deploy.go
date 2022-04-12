@@ -12,6 +12,7 @@ import (
 	"github.com/multycloud/multy/api/proto/credspb"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/encoder"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -55,7 +56,7 @@ func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *con
 	if err != nil {
 		return result, err
 	}
-	
+
 	decodedResources := &encoder.DecodedResources{
 		Resources: res,
 		Providers: provider,
@@ -184,8 +185,11 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 		log.Printf("[DEBUG] apply finished in %s", time.Since(start))
 	}()
 
-	outputJson := new(bytes.Buffer)
 	cmd := exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + tmpDir, "apply", "-refresh=false", "-auto-approve", "--json"}, targetArgs...)...)
+	if flags.DryRun {
+		cmd = exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + tmpDir, "plan", "-refresh=false", "--json"}, targetArgs...)...)
+	}
+	outputJson := new(bytes.Buffer)
 	cmd.Stdout = outputJson
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()

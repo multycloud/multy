@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"github.com/multycloud/multy/api"
+	"github.com/multycloud/multy/flags"
 	flag "github.com/spf13/pflag"
 )
 
@@ -13,6 +14,7 @@ type ServeCommand struct {
 
 func (c *ServeCommand) ParseFlags(f *flag.FlagSet, args []string) {
 	f.IntVar(&c.Port, "port", 8000, "Port to run server on")
+	f.BoolVar(&flags.DryRun, "dry_run", false, "If true, nothing will be deployed")
 	_ = f.Parse(args)
 }
 
