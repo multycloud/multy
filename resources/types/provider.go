@@ -5,6 +5,7 @@ import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/credspb"
 	"github.com/multycloud/multy/resources/output/provider"
+	"strings"
 )
 
 type Provider struct {
@@ -56,5 +57,5 @@ func (p *Provider) GetResourceId() string {
 	if p.getAlias() == "" {
 		return ""
 	}
-	return fmt.Sprintf("%s.%s", p.Cloud, p.getAlias())
+	return fmt.Sprintf("%s.%s", strings.ToLower(p.Cloud.String()), p.getAlias())
 }
