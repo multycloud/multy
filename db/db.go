@@ -63,8 +63,8 @@ func (d *Database) LockConfig(ctx context.Context, userId string) (*ConfigLock, 
 				return nil, err.error
 			} else {
 				log.Println(err.Error())
-				if configLock != nil {
-					log.Printf("configLock is locked (until %s), waiting for %s and then trying again\n", configLock.expirationTimestamp, retryPeriod)
+				if configLock != nil && retryPeriod > 5*time.Minute {
+					log.Printf("[INFO] configLock is locked (until %s), waiting for %s and then trying again\n", configLock.expirationTimestamp, retryPeriod)
 				}
 				select {
 				case <-time.After(retryPeriod):
@@ -85,7 +85,7 @@ func isRetryableSqlErr(err error) bool {
 }
 
 func (d *Database) lockConfig(ctx context.Context, userId string) (*ConfigLock, *lockErr) {
-	log.Println("locking")
+	log.Println("[DEBUG] locking")
 	tx, err := d.sqlConnection.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, &lockErr{false, err}
@@ -147,7 +147,7 @@ func (d *Database) lockConfig(ctx context.Context, userId string) (*ConfigLock, 
 }
 
 func (d *Database) UnlockConfig(_ context.Context, lock *ConfigLock) error {
-	log.Println("unlocking")
+	log.Println("[DEBUG] unlocking")
 	if !lock.IsActive() {
 		return nil
 	}
@@ -164,7 +164,7 @@ func (d *Database) StoreUserConfig(config *configpb.Config, lock *ConfigLock) er
 	if !lock.IsActive() {
 		return fmt.Errorf("unable to store user config because lock is invalid")
 	}
-	log.Printf("Storing user config from api_key %s\n", config.UserId)
+	log.Printf("[INFO] Storing user config from api_key %s\n", config.UserId)
 	str, err := d.marshaler.MarshalToString(config)
 	if err != nil {
 		return errors.InternalServerErrorWithMessage("unable to marshal configuration", err)
@@ -181,7 +181,7 @@ func (d *Database) LoadUserConfig(userId string, lock *ConfigLock) (*configpb.Co
 	if lock != nil && !lock.IsActive() {
 		return nil, fmt.Errorf("unable to load user config because lock is invalid")
 	}
-	log.Printf("Loading config from api_key %s\n", userId)
+	log.Printf("[INFO] Loading config from api_key %s\n", userId)
 	result := configpb.Config{
 		UserId: userId,
 	}

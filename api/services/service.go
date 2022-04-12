@@ -11,6 +11,7 @@ import (
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources/output"
 	"google.golang.org/protobuf/proto"
 	"log"
@@ -145,7 +146,7 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Conf
 			if err != nil {
 				return *new(OutT), err
 			}
-			if parser, ok := allResources.ResourceMap[r.ResourceId].(stateParser[OutT]); ok {
+			if parser, ok := allResources.ResourceMap[r.ResourceId].(stateParser[OutT]); ok && !flags.DryRun {
 				return parser.FromState(state)
 			}
 			return s.Converters.Convert(in.GetResourceId(), converted.(Arg), state)

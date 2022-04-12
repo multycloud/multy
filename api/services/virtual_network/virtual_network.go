@@ -23,8 +23,7 @@ func (s VnService) Convert(resourceId string, args *resourcespb.VirtualNetworkAr
 func NewVnService(database *db.Database) VnService {
 	vn := VnService{
 		Service: services.Service[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]{
-			Db:         database,
-			Converters: nil,
+			Db: database,
 		},
 	}
 	vn.Service.Converters = &vn
