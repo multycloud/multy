@@ -91,11 +91,11 @@ func updateMultyResourceGroups(decodedResources *encoder.DecodedResources, encod
 	}
 	deployedResourcesByGroupId := map[string]*configpb.DeployedResourceGroup{}
 	for groupId, group := range decodedResources.Resources.GetMultyResourceGroups() {
+		if _, ok := deployedResourcesByGroupId[groupId]; !ok {
+			deployedResourcesByGroupId[groupId] = &configpb.DeployedResourceGroup{GroupId: groupId}
+		}
 		for _, resource := range group.Resources {
 			for _, deployedResource := range encoded.DeployedResources[resource] {
-				if _, ok := deployedResourcesByGroupId[groupId]; !ok {
-					deployedResourcesByGroupId[groupId] = &configpb.DeployedResourceGroup{GroupId: groupId}
-				}
 				deployedResourcesByGroupId[groupId].DeployedResource = append(deployedResourcesByGroupId[groupId].DeployedResource, deployedResource)
 			}
 			if _, ok := resourcespbById[resource.GetResourceId()]; ok {
