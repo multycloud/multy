@@ -425,8 +425,10 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   size                  = "Standard_B1ls"
   network_interface_ids = [azurerm_network_interface.vm_azure.id]
   custom_data           = base64encode(templatefile("azure_init.sh", {
-    "db_host_secret_name"     = "db-host", "db_password_secret_name" = "db-password",
-    "db_username_secret_name" = "db-username", "vault_name" = "web-app-vault-test"
+    "db_host_secret_name"     = "db-host",
+    "db_password_secret_name" = "db-password",
+    "db_username_secret_name" = "db-username",
+    "vault_name"              = "web-app-vault-test"
   }))
   os_disk {
     caching              = "None"

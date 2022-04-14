@@ -185,23 +185,25 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 		log.Printf("[DEBUG] apply finished in %s", time.Since(start))
 	}()
 
-	cmd := exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + tmpDir, "apply", "-refresh=false", "-auto-approve", "--json"}, targetArgs...)...)
-	if flags.DryRun {
-		cmd = exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + tmpDir, "plan", "-refresh=false", "--json"}, targetArgs...)...)
-	}
-	outputJson := new(bytes.Buffer)
-	cmd.Stdout = outputJson
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		outputs, parseErr := parseTfOutputs(outputJson)
-		if parseErr != nil {
-			return nil, errors.InternalServerErrorWithMessage("error deploying resources", parseErr)
+	if len(encoded.affectedResources) != 0 {
+		cmd := exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + tmpDir, "apply", "-refresh=false", "-auto-approve", "--json"}, targetArgs...)...)
+		if flags.DryRun {
+			cmd = exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + tmpDir, "plan", "-refresh=false", "--json"}, targetArgs...)...)
 		}
-		if parseErr := getFirstError(outputs); parseErr != nil {
-			return nil, errors.DeployError(parseErr)
+		outputJson := new(bytes.Buffer)
+		cmd.Stdout = outputJson
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
+			outputs, parseErr := parseTfOutputs(outputJson)
+			if parseErr != nil {
+				return nil, errors.InternalServerErrorWithMessage("error deploying resources", parseErr)
+			}
+			if parseErr := getFirstError(outputs); parseErr != nil {
+				return nil, errors.DeployError(parseErr)
+			}
+			return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
 		}
-		return nil, errors.InternalServerErrorWithMessage("error deploying resources", err)
 	}
 
 	state, err := GetState(ctx, c.UserId)

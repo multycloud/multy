@@ -135,7 +135,7 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("ec2.amazonaws.com"),
 		}
 
-		if vault := getVaultAssociatedIdentity(ctx, iamRole.GetId()); vault != nil {
+		if vault := getVaultAssociatedIdentity(ctx, r.GetAwsIdentity()); vault != nil {
 			awsResources = append(awsResources,
 				AwsCallerIdentityData{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.ResourceId}},
 				AwsRegionData{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.ResourceId}})
@@ -160,7 +160,7 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 			iamRole.InlinePolicy = iam.AwsIamRoleInlinePolicy{
 				Name: "vault_policy",
 				// we need to have an expression here because we use template strings within the policy json
-				Policy: fmt.Sprintf("\"%s\"", string(policy)),
+				Policy: fmt.Sprintf("\"%s\"", hclencoder.EscapeString(string(policy))),
 			}
 		}
 
