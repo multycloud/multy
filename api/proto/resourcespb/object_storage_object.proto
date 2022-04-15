@@ -49,4 +49,6 @@ message ObjectStorageObjectResource {
   string content = 5;
   string content_type = 6;
   string source = 7;
+  //outputs
+  string url = 8;
 }

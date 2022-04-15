@@ -4,9 +4,8 @@ import (
 	"github.com/multycloud/multy/resources/common"
 )
 
-// aws_s3_bucket_object
 type AwsS3BucketObject struct {
-	*common.AwsResource `hcl:",squash" default:"name=aws_s3_bucket_object"`
+	*common.AwsResource `hcl:",squash" default:"name=aws_s3_object"`
 	Bucket              string `hcl:"bucket,expr"`
 	Key                 string `hcl:"key"`
 	Acl                 string `hcl:"acl" hcle:"omitempty"`

@@ -8,6 +8,7 @@ import (
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/object_storage"
 	"github.com/multycloud/multy/resources/output/object_storage_object"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
@@ -38,6 +39,43 @@ func NewObjectStorageObject(resourceId string, args *resourcespb.ObjectStorageOb
 	o.Parent = obj
 	o.ObjectStorage = obj
 	return o, nil
+}
+
+func (r *ObjectStorageObject) FromState(state *output.TfState) (*resourcespb.ObjectStorageObjectResource, error) {
+	out := new(resourcespb.ObjectStorageObjectResource)
+	out.CommonParameters = &commonpb.CommonChildResourceParameters{
+		ResourceId:  r.ResourceId,
+		NeedsUpdate: false,
+	}
+
+	id, err := resources.GetMainOutputRef(r.Parent)
+	if err != nil {
+		return nil, err
+	}
+
+	out.Name = r.Args.Name
+	out.Content = r.Args.Content
+	out.ContentType = r.Args.ContentType
+	out.ObjectStorageId = r.Args.ObjectStorageId
+	out.Acl = r.Args.Acl
+	out.Source = r.Args.Source
+
+	switch r.GetCloud() {
+	case common.AWS:
+		stateResource, err := output.GetParsed[object_storage.AwsS3Bucket](state, id)
+		if err != nil {
+			return nil, err
+		}
+		out.Url = fmt.Sprintf("https://%s.s3.amazonaws.com/%s", stateResource.Bucket, r.Args.Name)
+	case common.AZURE:
+		stateResource, err := output.GetParsed[object_storage.AzureStorageAccount](state, id)
+		if err != nil {
+			return nil, err
+		}
+		out.Url = fmt.Sprintf("https://%s.blob.core.windows.net/public/%s", stateResource.AzResource.Name, r.Args.Name)
+	}
+
+	return out, nil
 }
 
 func (r *ObjectStorageObject) Translate(resources.MultyContext) ([]output.TfBlock, error) {
