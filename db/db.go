@@ -56,9 +56,15 @@ type lockErr struct {
 	error
 }
 
-func (d *Database) LockConfig(ctx context.Context, userId string) (*ConfigLock, error) {
+func (d *Database) LockConfig(ctx context.Context, userId string) (lock *ConfigLock, err error) {
 	l, _ := d.lockCache.LoadOrStore(userId, &sync.Mutex{})
 	l.(*sync.Mutex).Lock()
+	defer func() {
+		if err != nil {
+			// something went wrong, which means unlocking is not the caller's responsability
+			l.(*sync.Mutex).Unlock()
+		}
+	}()
 	retryPeriod := lockRetryPeriod
 	for {
 		configLock, err := d.lockConfig(ctx, userId)
