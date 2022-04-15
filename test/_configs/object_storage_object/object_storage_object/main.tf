@@ -1,11 +1,11 @@
-resource "aws_s3_bucket_object" "file1_public_aws" {
+resource "aws_s3_object" "file1_public_aws" {
   bucket       = aws_s3_bucket.obj_storage_aws.id
   key          = "index.html"
   acl          = "public-read"
   content      = "<h1>Hi from AWS</h1>"
   content_type = "text/html"
 }
-resource "aws_s3_bucket_object" "file2_private_aws" {
+resource "aws_s3_object" "file2_private_aws" {
   bucket       = aws_s3_bucket.obj_storage_aws.id
   key          = "index_private.html"
   acl          = "private"

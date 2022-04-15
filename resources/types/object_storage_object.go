@@ -14,7 +14,7 @@ import (
 	"github.com/multycloud/multy/validate"
 )
 
-// AWS: aws_s3_bucket_object
+// AWS: aws_s3_object
 // Azure: azurerm_storage_blob
 
 var SUPPORTED_CONTENT_TYPES = []string{"text/html", "application/zip"}
@@ -123,7 +123,7 @@ func (r *ObjectStorageObject) Translate(resources.MultyContext) ([]output.TfBloc
 }
 
 func (r *ObjectStorageObject) GetS3Key() string {
-	return fmt.Sprintf("%s.%s.key", "aws_s3_bucket_object", r.ResourceId)
+	return fmt.Sprintf("%s.%s.key", "aws_s3_object", r.ResourceId)
 }
 
 func (r *ObjectStorageObject) GetAzureBlobName() string {
@@ -151,7 +151,7 @@ func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) (errs []valid
 func (r *ObjectStorageObject) GetMainResourceName() (string, error) {
 	switch r.GetCloud() {
 	case commonpb.CloudProvider_AWS:
-		return "aws_s3_bucket_object", nil
+		return "aws_s3_object", nil
 	case commonpb.CloudProvider_AZURE:
 		return "azurerm_storage_blob", nil
 	default:
