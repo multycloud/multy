@@ -8,7 +8,7 @@ resource "aws_lambda_function" "function2_aws" {
   runtime       = "python3.9"
   handler       = "lambda_function.lambda_handler"
   s3_bucket     = aws_s3_bucket.obj_storage_aws.id
-  s3_key        = aws_s3_bucket_object.public_source_code_aws.key
+  s3_key        = aws_s3_object.public_source_code_aws.key
 }
 resource "aws_iam_role" "iam_for_lambda_function2_aws" {
   tags = {
@@ -82,7 +82,7 @@ resource "aws_lambda_permission" "function2_aws" {
 resource "aws_s3_bucket" "obj_storage_aws" {
   bucket = "function-storage-1722"
 }
-resource "aws_s3_bucket_object" "public_source_code_aws" {
+resource "aws_s3_object" "public_source_code_aws" {
   bucket = aws_s3_bucket.obj_storage_aws.id
   key    = "source_code.zip"
   acl    = "public-read"

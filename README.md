@@ -14,12 +14,12 @@ the [Multy Terraform Provider](https://github.com/multycloud/terraform-provider-
 
 ```hcl
 variable "cloud" {
-  type    = list(string)
+  type    = set(string)
   default = ["aws", "azure"]
 }
 
 resource multy_virtual_network vn {
-  for_each = toset(var.clouds)
+  for_each = var.clouds
 
   name       = "test_vm"
   cidr_block = "10.0.0.0/16"
@@ -28,7 +28,7 @@ resource multy_virtual_network vn {
 }
 
 resource multy_subnet subnet {
-  for_each = toset(var.clouds)
+  for_each = var.clouds
 
   name               = "test_vm"
   cidr_block         = "10.0.10.0/24"
@@ -36,7 +36,7 @@ resource multy_subnet subnet {
 }
 
 resource multy_virtual_machine vm {
-  for_each = toset(var.clouds)
+  for_each = var.clouds
 
   name             = "test_vm"
   size             = "micro"

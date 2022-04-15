@@ -147,7 +147,7 @@ func (r *VirtualNetwork) GetAssociatedInternetGateway() (string, error) {
 	return "", fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
 }
 
-//// TODO validate commonparams
+// TODO validate commonparams
 func (r *VirtualNetwork) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
 	//if r.Name contains not letters,numbers,_,- { return false }
