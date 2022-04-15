@@ -7,6 +7,7 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources/output"
 	output_database "github.com/multycloud/multy/resources/output/database"
 )
@@ -16,10 +17,15 @@ type DatabaseService struct {
 }
 
 func (s DatabaseService) Convert(resourceId string, args *resourcespb.DatabaseArgs, state *output.TfState) (*resourcespb.DatabaseResource, error) {
-	host, err := getHost(resourceId, state, args.CommonParameters.CloudProvider)
-	if err != nil {
-		return nil, err
+	var err error
+	host := "dyrun"
+	if !flags.DryRun {
+		host, err = getHost(resourceId, state, args.CommonParameters.CloudProvider)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	return &resourcespb.DatabaseResource{
 		CommonParameters: util.ConvertCommonParams(resourceId, args.CommonParameters),
 		Name:             args.Name,

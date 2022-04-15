@@ -7,6 +7,7 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/iam"
 	"github.com/multycloud/multy/resources/output/public_ip"
@@ -18,14 +19,18 @@ type VirtualMachineService struct {
 }
 
 func (s VirtualMachineService) Convert(resourceId string, args *resourcespb.VirtualMachineArgs, state *output.TfState) (*resourcespb.VirtualMachineResource, error) {
-
-	ip, err := getPublicIp(resourceId, state, args.CommonParameters.CloudProvider)
-	if err != nil {
-		return nil, err
-	}
-	identityId, err := getIdentityId(resourceId, state, args.CommonParameters.CloudProvider)
-	if err != nil {
-		return nil, err
+	var err error
+	ip := "dryrun"
+	identityId := "dryrun"
+	if !flags.DryRun {
+		ip, err = getPublicIp(resourceId, state, args.CommonParameters.CloudProvider)
+		if err != nil {
+			return nil, err
+		}
+		identityId, err = getIdentityId(resourceId, state, args.CommonParameters.CloudProvider)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &resourcespb.VirtualMachineResource{

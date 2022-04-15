@@ -152,8 +152,10 @@ func (d *Database) lockConfig(ctx context.Context, userId string) (*ConfigLock, 
 
 func (d *Database) UnlockConfig(_ context.Context, lock *ConfigLock) error {
 	log.Println("[DEBUG] unlocking")
-	l, _ := d.lockCache.Load(lock.userId)
-	l.(*sync.Mutex).Unlock()
+	defer func() {
+		l, _ := d.lockCache.Load(lock.userId)
+		l.(*sync.Mutex).Unlock()
+	}()
 	if !lock.IsActive() {
 		return nil
 	}
