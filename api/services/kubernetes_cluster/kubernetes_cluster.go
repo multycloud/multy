@@ -7,6 +7,7 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/kubernetes_service"
 )
@@ -16,9 +17,13 @@ type KubernetesClusterService struct {
 }
 
 func (s KubernetesClusterService) Convert(resourceId string, args *resourcespb.KubernetesClusterArgs, state *output.TfState) (*resourcespb.KubernetesClusterResource, error) {
-	endpoint, err := getEndpoint(resourceId, state, args.CommonParameters.CloudProvider)
-	if err != nil {
-		return nil, err
+	var err error
+	endpoint := "dryrun"
+	if !flags.DryRun {
+		endpoint, err = getEndpoint(resourceId, state, args.CommonParameters.CloudProvider)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &resourcespb.KubernetesClusterResource{
