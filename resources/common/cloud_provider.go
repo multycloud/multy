@@ -51,6 +51,7 @@ var AVAILABILITY_ZONES = map[string]map[commonpb.CloudProvider][]string{
 //https://cloud-images.ubuntu.com/locator/ec2/
 var AMIMAP = map[string]string{
 	"eu-west-1": "ami-09d4a659cdd8677be",
+	"eu-west-2": "ami-0fc15d50d39e4503c",
 	"us-east-1": "ami-04ad2567c9e3d7893",
 }
 
