@@ -6,6 +6,7 @@ option java_package = "dev.multy.api.resources";
 option java_outer_classname = "ResourcesProto";
 
 import "api/proto/commonpb/common.proto";
+import "api/proto/resourcespb/kubernetes_node_pool.proto";
 
 package dev.multy.resources;
 
@@ -30,6 +31,8 @@ message KubernetesClusterArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   repeated string subnet_ids = 3;
+
+  KubernetesNodePoolArgs default_node_pool = 4;
 }
 
 message KubernetesClusterResource {

@@ -18,7 +18,6 @@ func (s KubernetesNodePoolService) Convert(resourceId string, args *resourcespb.
 		Name:              args.Name,
 		SubnetIds:         args.SubnetIds,
 		ClusterId:         args.ClusterId,
-		IsDefaultPool:     args.IsDefaultPool,
 		StartingNodeCount: args.StartingNodeCount,
 		MinNodeCount:      args.MinNodeCount,
 		MaxNodeCount:      args.MaxNodeCount,

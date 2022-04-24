@@ -23,6 +23,18 @@ type KubernetesNodePool struct {
 }
 
 func NewKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePoolArgs, others resources.Resources) (*KubernetesNodePool, error) {
+	cluster, err := resources.Get[*KubernetesCluster](resourceId, others, args.ClusterId)
+	if err != nil {
+		return nil, errors.ValidationErrors([]validate.ValidationError{{
+			ErrorMessage: err.Error(),
+			ResourceId:   resourceId,
+			FieldName:    "cluster_id",
+		}})
+	}
+	return newKubernetesNodePool(resourceId, args, others, cluster)
+}
+
+func newKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePoolArgs, others resources.Resources, cluster *KubernetesCluster) (*KubernetesNodePool, error) {
 	knp := &KubernetesNodePool{
 		ChildResourceWithId: resources.ChildResourceWithId[*KubernetesCluster, *resourcespb.KubernetesNodePoolArgs]{
 			ResourceId: resourceId,
@@ -34,12 +46,8 @@ func NewKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePo
 		knp.Args.StartingNodeCount = args.MinNodeCount
 	}
 
-	rt, err := resources.Get[*KubernetesCluster](resourceId, others, args.ClusterId)
-	if err != nil {
-		return nil, errors.ValidationErrors([]validate.ValidationError{knp.NewValidationError(err.Error(), "virtual_network_id")})
-	}
-	knp.Parent = rt
-	knp.KubernetesCluster = rt
+	knp.Parent = cluster
+	knp.KubernetesCluster = cluster
 
 	subnets, err := util.MapSliceValuesErr(args.SubnetIds, func(subnetId string) (*Subnet, error) {
 		return resources.Get[*Subnet](resourceId, others, subnetId)
@@ -132,11 +140,6 @@ func (r *KubernetesNodePool) Translate(resources.MultyContext) ([]output.TfBlock
 			},
 		}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
-		if r.Args.IsDefaultPool {
-			// this will be embedded in the cluster instead
-			return nil, nil
-		}
-
 		pool, err := r.translateAzNodePool()
 		if err != nil {
 			return nil, err
@@ -154,6 +157,10 @@ func (r *KubernetesNodePool) translateAzNodePool() (*kubernetes_node_pool.AzureK
 	if err != nil {
 		return nil, err
 	}
+	subnetId, err := resources.GetMainOutputId(r.Subnets[0])
+	if err != nil {
+		return nil, err
+	}
 	return &kubernetes_node_pool.AzureKubernetesNodePool{
 		AzResource: &common.AzResource{
 			TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
@@ -167,6 +174,7 @@ func (r *KubernetesNodePool) translateAzNodePool() (*kubernetes_node_pool.AzureK
 		Labels:            r.Args.Labels,
 		EnableAutoScaling: true,
 		VmSize:            common.VMSIZE[r.Args.VmSize][r.GetCloud()],
+		PodSubnetId:       subnetId,
 	}, nil
 }
 

@@ -19,27 +19,27 @@ resource "aws_eks_cluster" "cluster_aws" {
   }
   name = "cluster_aws"
 }
-resource "aws_iam_role" "node_pool_aws" {
+resource "aws_iam_role" "cluster_aws_default_pool" {
   tags               = { "Name" = "iam_for_k8nodepool_node_pool_aws" }
   name               = "iam_for_k8nodepool_node_pool_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
-resource "aws_iam_role_policy_attachment" "node_pool_aws_AmazonEKSWorkerNodePolicy" {
-  role       = aws_iam_role.node_pool_aws.name
+resource "aws_iam_role_policy_attachment" "cluster_aws_default_pool_AmazonEKSWorkerNodePolicy" {
+  role       = aws_iam_role.cluster_aws_default_pool.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
-resource "aws_iam_role_policy_attachment" "node_pool_aws_AmazonEKS_CNI_Policy" {
-  role       = aws_iam_role.node_pool_aws.name
+resource "aws_iam_role_policy_attachment" "cluster_aws_default_pool_AmazonEKS_CNI_Policy" {
+  role       = aws_iam_role.cluster_aws_default_pool.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
-resource "aws_iam_role_policy_attachment" "node_pool_aws_AmazonEC2ContainerRegistryReadOnly" {
-  role       = aws_iam_role.node_pool_aws.name
+resource "aws_iam_role_policy_attachment" "cluster_aws_default_pool_AmazonEC2ContainerRegistryReadOnly" {
+  role       = aws_iam_role.cluster_aws_default_pool.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
-resource "aws_eks_node_group" "node_pool_aws" {
+resource "aws_eks_node_group" "cluster_aws_default_pool" {
   cluster_name    = aws_eks_cluster.cluster_aws.id
   node_group_name = "node_pool_aws"
-  node_role_arn   = aws_iam_role.node_pool_aws.arn
+  node_role_arn   = aws_iam_role.cluster_aws_default_pool.arn
   subnet_ids      = [
     aws_subnet.private_subnet_aws.id,
     aws_subnet.public_subnet_aws.id
@@ -115,8 +115,9 @@ resource "azurerm_kubernetes_cluster" "cluster_azure" {
     min_count           = 1
     enable_auto_scaling = true
     vm_size             = "Standard_A2_v2"
+    pod_subnet_id       = azurerm_subnet.private_subnet_azure.id
   }
-  dns_prefix = "cluster_azure"
+  dns_prefix = "clusterazureaks7hut"
   identity {
     type = "SystemAssigned"
   }
