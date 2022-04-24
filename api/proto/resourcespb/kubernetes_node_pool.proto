@@ -31,14 +31,13 @@ message KubernetesNodePoolArgs {
   string name = 2;
   repeated string subnet_ids = 3;
   string cluster_id = 4;
-  bool is_default_pool = 5;
-  int32 starting_node_count = 6;
-  int32 min_node_count = 7;
-  int32 max_node_count = 8;
-  common.VmSize.Enum vm_size = 9;
-  int64 disk_size_gb = 10;
+  int32 starting_node_count = 5;
+  int32 min_node_count = 6;
+  int32 max_node_count = 7;
+  common.VmSize.Enum vm_size = 8;
+  int64 disk_size_gb = 9;
 
-  map<string, string> labels = 11;
+  map<string, string> labels = 10;
 
 }
 
@@ -47,12 +46,11 @@ message KubernetesNodePoolResource {
   string name = 2;
   repeated string subnet_ids = 3;
   string cluster_id = 4;
-  bool is_default_pool = 5;
-  int32 starting_node_count = 6;
-  int32 min_node_count = 7;
-  int32 max_node_count = 8;
-  common.VmSize.Enum vm_size = 9;
-  int64 disk_size_gb = 10;
+  int32 starting_node_count = 5;
+  int32 min_node_count = 6;
+  int32 max_node_count = 7;
+  common.VmSize.Enum vm_size = 8;
+  int64 disk_size_gb = 9;
 
-  map<string, string> labels = 11;
+  map<string, string> labels = 10;
 }

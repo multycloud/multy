@@ -61,6 +61,9 @@ func (r *Subnet) Translate(ctx resources.MultyContext) ([]output.TfBlock, error)
 		if len(resources.GetAllResourcesWithListRef(ctx, func(k *KubernetesNodePool) []*Subnet { return k.Subnets }, r)) > 0 {
 			awsSubnet.MapPublicIpOnLaunch = true
 		}
+		if len(resources.GetAllResourcesWithListRef(ctx, func(k *KubernetesCluster) []*Subnet { return k.DefaultNodePool.Subnets }, r)) > 0 {
+			awsSubnet.MapPublicIpOnLaunch = true
+		}
 		return []output.TfBlock{awsSubnet}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		var azResources []output.TfBlock

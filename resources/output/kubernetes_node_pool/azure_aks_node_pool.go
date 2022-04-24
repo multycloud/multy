@@ -12,4 +12,5 @@ type AzureKubernetesNodePool struct {
 	Labels             map[string]string `hcl:"node_labels" hcle:"omitempty"`
 	EnableAutoScaling  bool              `hcl:"enable_auto_scaling"`
 	VmSize             string            `hcl:"vm_size"`
+	PodSubnetId        string            `hcl:"pod_subnet_id,expr"`
 }
