@@ -18,6 +18,7 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/resources/types"
+	"github.com/multycloud/multy/validate"
 	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -337,6 +338,13 @@ func addMultyResourceNew(r *configpb.Resource, res resources.Resources, metadata
 	// TODO: refactor this
 	var resourceGroup *rg.Type
 	if commonArgs, ok := m.(hasCommonArgs); ok {
+		if commonArgs.GetCommonParameters().GetCloudProvider() == commonpb.CloudProvider_UNKNOWN_PROVIDER {
+			return errors.ValidationErrors([]validate.ValidationError{{
+				ErrorMessage: "Unknown cloud provider",
+				ResourceId:   r.ResourceId,
+				FieldName:    "cloud_provider",
+			}})
+		}
 		if commonArgs.GetCommonParameters().ResourceGroupId == "" {
 			rgId := rg.GetDefaultResourceGroupIdString(metadata.AbbreviatedName)
 			if rgId != "" {
