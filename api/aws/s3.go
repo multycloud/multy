@@ -6,7 +6,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"log"
+	"time"
 )
 
 const (
@@ -15,14 +18,15 @@ const (
 )
 
 type Client struct {
-	s3Client *s3.S3
+	s3Client         *s3.S3
+	cloudWatchClient *cloudwatch.CloudWatch
 }
 
 func Configure() Client {
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(region)},
 	))
-	return Client{s3.New(sess)}
+	return Client{s3.New(sess), cloudwatch.New(sess)}
 }
 
 func (c Client) SaveFile(userId string, fileName string, content string) error {
@@ -76,4 +80,60 @@ func (c Client) ReadFile(userId string, fileName string) (string, error) {
 	}
 	body := buf.String()
 	return body, nil
+}
+
+func (c Client) UpdateQPSMetric(service string, method string) error {
+	metric := &cloudwatch.MetricDatum{
+		Dimensions: []*cloudwatch.Dimension{
+			{
+				Name:  aws.String("service"),
+				Value: aws.String(service),
+			},
+			{
+				Name:  aws.String("method"),
+				Value: aws.String(method),
+			},
+		},
+		MetricName: aws.String("qps"),
+		Timestamp:  aws.Time(time.Now()),
+		Value:      aws.Float64(1),
+	}
+	_, err := c.cloudWatchClient.PutMetricData(&cloudwatch.PutMetricDataInput{
+		MetricData: []*cloudwatch.MetricDatum{metric},
+		Namespace:  aws.String("multy/server/"),
+	})
+	if err != nil {
+		log.Printf("[WARNING] %s\n", err.Error())
+	}
+	return err
+}
+
+func (c Client) UpdateErrorMetric(service string, method string, errorCode string) error {
+	metric := &cloudwatch.MetricDatum{
+		Dimensions: []*cloudwatch.Dimension{
+			{
+				Name:  aws.String("service"),
+				Value: aws.String(service),
+			},
+			{
+				Name:  aws.String("method"),
+				Value: aws.String(method),
+			},
+			{
+				Name:  aws.String("error_code"),
+				Value: aws.String(errorCode),
+			},
+		},
+		MetricName: aws.String("error"),
+		Timestamp:  aws.Time(time.Now()),
+		Value:      aws.Float64(1),
+	}
+	_, err := c.cloudWatchClient.PutMetricData(&cloudwatch.PutMetricDataInput{
+		MetricData: []*cloudwatch.MetricDatum{metric},
+		Namespace:  aws.String("multy/server/"),
+	})
+	if err != nil {
+		log.Printf("[WARNING] %s\n", err.Error())
+	}
+	return err
 }

@@ -92,8 +92,9 @@ func getIdentityId(resourceId string, state *output.TfState, cloud commonpb.Clou
 func NewVirtualMachineService(database *db.Database) VirtualMachineService {
 	VirtualMachine := VirtualMachineService{
 		Service: services.Service[*resourcespb.VirtualMachineArgs, *resourcespb.VirtualMachineResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "virtual_machine",
 		},
 	}
 	VirtualMachine.Service.Converters = &VirtualMachine

@@ -23,8 +23,9 @@ func (s PublicIpService) Convert(resourceId string, args *resourcespb.PublicIpAr
 func NewPublicIpService(database *db.Database) PublicIpService {
 	nsg := PublicIpService{
 		Service: services.Service[*resourcespb.PublicIpArgs, *resourcespb.PublicIpResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "public_ip",
 		},
 	}
 	nsg.Service.Converters = &nsg

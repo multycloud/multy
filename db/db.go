@@ -21,9 +21,9 @@ type Database struct {
 	// TODO: store this in S3
 	keyValueStore map[string]string
 	marshaler     *jsonpb.Marshaler
-	client        aws_client.Client
 	sqlConnection *sql.DB
 	lockCache     sync.Map
+	AwsClient     aws_client.Client
 }
 
 const (
@@ -184,7 +184,7 @@ func (d *Database) StoreUserConfig(config *configpb.Config, lock *ConfigLock) er
 		return errors.InternalServerErrorWithMessage("unable to marshal configuration", err)
 	}
 
-	err = d.client.SaveFile(config.UserId, configFile, str)
+	err = d.AwsClient.SaveFile(config.UserId, configFile, str)
 	if err != nil {
 		return errors.InternalServerErrorWithMessage("error storing configuration", err)
 	}
@@ -210,7 +210,7 @@ func (d *Database) LoadUserConfig(userId string, lock *ConfigLock) (*configpb.Co
 	}
 
 	tfFileStr := ""
-	tfFileStr, err = d.client.ReadFile(userId, configFile)
+	tfFileStr, err = d.AwsClient.ReadFile(userId, configFile)
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error read configuration", err)
 	}
@@ -259,7 +259,7 @@ func NewDatabase(connectionString string) (*Database, error) {
 	return &Database{
 		keyValueStore: map[string]string{},
 		marshaler:     marshaler,
-		client:        aws_client.Configure(),
+		AwsClient:     aws_client.Configure(),
 		sqlConnection: db,
 		lockCache:     sync.Map{},
 	}, nil

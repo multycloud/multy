@@ -24,8 +24,9 @@ func (s LambdaService) Convert(resourceId string, args *resourcespb.LambdaArgs, 
 func NewLambdaService(database *db.Database) LambdaService {
 	ni := LambdaService{
 		Service: services.Service[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "lambda",
 		},
 	}
 	ni.Service.Converters = &ni

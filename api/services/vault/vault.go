@@ -22,8 +22,9 @@ func (s VaultService) Convert(resourceId string, args *resourcespb.VaultArgs, st
 func NewVaultService(database *db.Database) VaultService {
 	ni := VaultService{
 		Service: services.Service[*resourcespb.VaultArgs, *resourcespb.VaultResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "vault",
 		},
 	}
 	ni.Service.Converters = &ni

@@ -62,8 +62,9 @@ func getHost(resourceId string, state *output.TfState, cloud commonpb.CloudProvi
 func NewDatabaseService(database *db.Database) DatabaseService {
 	ni := DatabaseService{
 		Service: services.Service[*resourcespb.DatabaseArgs, *resourcespb.DatabaseResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "database",
 		},
 	}
 	ni.Service.Converters = &ni

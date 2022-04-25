@@ -239,12 +239,16 @@ func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configp
 }
 
 func getFirstError(outputs []tfOutput) error {
+	var err error
 	for _, o := range outputs {
 		if o.Level == "error" {
-			return fmt.Errorf(o.Diagnostic.Summary)
+			log.Printf("[ERROR] %s\n%s\n", o.Diagnostic.Summary, o.Diagnostic.Detail)
+			if err == nil {
+				err = fmt.Errorf(o.Diagnostic.Summary)
+			}
 		}
 	}
-	return nil
+	return err
 }
 
 func parseTfOutputs(outputJson *bytes.Buffer) ([]tfOutput, error) {

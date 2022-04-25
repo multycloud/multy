@@ -13,6 +13,10 @@ type KubernetesNodePoolService struct {
 }
 
 func (s KubernetesNodePoolService) Convert(resourceId string, args *resourcespb.KubernetesNodePoolArgs, state *output.TfState) (*resourcespb.KubernetesNodePoolResource, error) {
+	return ConvertNodePool(resourceId, args)
+}
+
+func ConvertNodePool(resourceId string, args *resourcespb.KubernetesNodePoolArgs) (*resourcespb.KubernetesNodePoolResource, error) {
 	return &resourcespb.KubernetesNodePoolResource{
 		CommonParameters:  util.ConvertCommonChildParams(resourceId, args.CommonParameters),
 		Name:              args.Name,
@@ -30,8 +34,9 @@ func (s KubernetesNodePoolService) Convert(resourceId string, args *resourcespb.
 func NewKubernetesNodePoolService(database *db.Database) KubernetesNodePoolService {
 	ni := KubernetesNodePoolService{
 		Service: services.Service[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "kubernetes_node_pool",
 		},
 	}
 	ni.Service.Converters = &ni

@@ -39,7 +39,8 @@ message KubernetesClusterResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   repeated string subnet_ids = 3;
+  KubernetesNodePoolResource default_node_pool = 4;
 
   // outputs
-  string endpoint = 4;
+  string endpoint = 5;
 }

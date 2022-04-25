@@ -23,8 +23,9 @@ func (s RouteTableAssociationService) Convert(resourceId string, args *resources
 func NewRouteTableAssociationService(database *db.Database) RouteTableAssociationService {
 	rta := RouteTableAssociationService{
 		Service: services.Service[*resourcespb.RouteTableAssociationArgs, *resourcespb.RouteTableAssociationResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "route_table_associatio",
 		},
 	}
 	rta.Service.Converters = &rta
