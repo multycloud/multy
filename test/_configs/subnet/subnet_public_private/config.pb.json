@@ -169,7 +169,7 @@
           "vm_size": "MICRO",
           "public_ssh_key": "",
           "subnet_id": "subnet3_azure",
-          "user_data": "ZWNobyAnSGVsbG8gV29ybGQn"
+          "user_data_base64": "ZWNobyAnSGVsbG8gV29ybGQn"
         }
       },
       "resource_id": "vm_azure"
@@ -234,7 +234,7 @@
           "vm_size": "MICRO",
           "public_ssh_key": "",
           "subnet_id": "subnet3_aws",
-          "user_data": "ZWNobyAnSGVsbG8gV29ybGQn"
+          "user_data_base64": "ZWNobyAnSGVsbG8gV29ybGQn"
         }
       },
       "resource_id": "vm_aws"
