@@ -163,12 +163,12 @@ type tfOutput struct {
 
 func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (*output.TfState, error) {
 	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
-	encoded, err := EncodeAndStoreTfFile(ctx, c, prev, curr)
+	encoded, err := EncodeAndStoreTfFile(ctx, c, prev, curr, false)
 	if err != nil {
 		return nil, err
 	}
 
-	err = MaybeInit(ctx, c.UserId)
+	err = MaybeInit(ctx, c.UserId, false)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +215,7 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 	return state, nil
 }
 
-func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (EncodedResources, error) {
+func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource, readonly bool) (EncodedResources, error) {
 	credentials, err := util.ExtractCloudCredentials(ctx)
 	if err != nil {
 		return EncodedResources{}, err
@@ -228,7 +228,12 @@ func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configp
 	// TODO: move this to a proper place
 	hclOutput := GetTerraformBlock(c.UserId) + encoded.HclString
 
-	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
+	dir := "multy"
+	if readonly {
+		dir = "multy/readonly"
+	}
+
+	tmpDir := filepath.Join(os.TempDir(), dir, c.UserId)
 	err = os.WriteFile(filepath.Join(tmpDir, tfFile), []byte(hclOutput), os.ModePerm&0664)
 	return encoded, err
 }
@@ -261,8 +266,13 @@ func parseTfOutputs(outputJson *bytes.Buffer) ([]tfOutput, error) {
 	return nil, err
 }
 
-func MaybeInit(ctx context.Context, userId string) error {
-	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
+func MaybeInit(ctx context.Context, userId string, readonly bool) error {
+	dir := "multy"
+	if readonly {
+		dir = "multy/readonly"
+	}
+
+	tmpDir := filepath.Join(os.TempDir(), dir, userId)
 	_, err := os.Stat(filepath.Join(tmpDir, tfDir))
 	if os.IsNotExist(err) {
 		start := time.Now()
@@ -270,10 +280,15 @@ func MaybeInit(ctx context.Context, userId string) error {
 			log.Printf("[DEBUG] init finished in %s", time.Since(start))
 		}()
 
+		err := os.MkdirAll(tmpDir, os.ModeDir|(os.ModePerm&0775))
+		if err != nil {
+			return errors.InternalServerErrorWithMessage("error creating output file", err)
+		}
+
 		cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "init")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		err := cmd.Run()
+		err = cmd.Run()
 		if err != nil {
 			return err
 		}
@@ -302,12 +317,17 @@ func GetState(ctx context.Context, userId string) (*output.TfState, error) {
 	return &state, err
 }
 
-func RefreshState(ctx context.Context, userId string) error {
+func RefreshState(ctx context.Context, userId string, readonly bool) error {
 	start := time.Now()
 	defer func() {
 		log.Printf("[DEBUG] refresh finished in %s", time.Since(start))
 	}()
-	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
+	dir := "multy"
+	if readonly {
+		dir = "multy/readonly"
+	}
+
+	tmpDir := filepath.Join(os.TempDir(), dir, userId)
 	outputJson := new(bytes.Buffer)
 	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "refresh", "-json")
 	cmd.Stdout = outputJson
