@@ -40,7 +40,7 @@ func (s VirtualMachineService) Convert(resourceId string, args *resourcespb.Virt
 		NetworkInterfaceIds:     args.NetworkInterfaceIds,
 		NetworkSecurityGroupIds: args.NetworkSecurityGroupIds,
 		VmSize:                  args.VmSize,
-		UserData:                args.UserData,
+		UserDataBase64:          args.UserDataBase64,
 		SubnetId:                args.SubnetId,
 		PublicSshKey:            args.PublicSshKey,
 		PublicIpId:              args.PublicIpId,

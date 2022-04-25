@@ -81,8 +81,8 @@ type AwsRegionData struct {
 }
 
 func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
-	if r.Args.UserData != "" {
-		r.Args.UserData = fmt.Sprintf(hclencoder.EscapeString(r.Args.UserData))
+	if r.Args.UserDataBase64 != "" {
+		r.Args.UserDataBase64 = fmt.Sprintf(hclencoder.EscapeString(r.Args.UserDataBase64))
 	}
 
 	subnetId, err := resources.GetMainOutputId(r.Subnet)
@@ -118,7 +118,7 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 			Ami:                      common.AMIMAP[r.GetCloudSpecificLocation()],
 			InstanceType:             common.VMSIZE[r.Args.VmSize][r.GetCloud()],
 			AssociatePublicIpAddress: r.Args.GeneratePublicIp,
-			UserDataBase64:           r.Args.UserData,
+			UserDataBase64:           r.Args.UserDataBase64,
 			SubnetId:                 subnetId,
 			NetworkInterfaces:        ec2NicIds,
 			SecurityGroupIds:         nsgIds,
@@ -311,7 +311,7 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 				Location:            r.GetCloudSpecificLocation(),
 				Size:                common.VMSIZE[r.Args.VmSize][r.GetCloud()],
 				NetworkInterfaceIds: nicIds,
-				CustomData:          r.Args.UserData,
+				CustomData:          r.Args.UserDataBase64,
 				OsDisk: virtual_machine.AzureOsDisk{
 					Caching:            "None",
 					StorageAccountType: "Standard_LRS",

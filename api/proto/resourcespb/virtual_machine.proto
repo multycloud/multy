@@ -33,7 +33,7 @@ message VirtualMachineArgs {
   repeated string network_interface_ids = 4;
   repeated string network_security_group_ids = 5;
   common.VmSize.Enum vm_size = 6;
-  string user_data = 7;
+  string user_data_base64 = 7;
   string subnet_id = 8;
   string public_ssh_key = 9;
   string public_ip_id = 10;
@@ -47,7 +47,7 @@ message VirtualMachineResource {
   repeated string network_interface_ids = 4;
   repeated string network_security_group_ids = 5;
   common.VmSize.Enum vm_size = 6;
-  string user_data = 7;
+  string user_data_base64 = 7;
   string subnet_id = 8;
   string public_ssh_key = 9;
   string public_ip_id = 10;
