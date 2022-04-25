@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"context"
 	"fmt"
 	pberr "github.com/multycloud/multy/api/proto/errorspb"
 	"github.com/multycloud/multy/validate"
@@ -8,6 +9,8 @@ import (
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"log"
+	"runtime/debug"
 )
 
 func PermissionDenied(msg string) error {
@@ -62,4 +65,21 @@ func ResourceNotFound(resourceId string) error {
 	st := status.New(codes.NotFound, fmt.Sprintf("resource with id %s not found", resourceId))
 	st, _ = st.WithDetails(&pberr.ResourceNotFoundDetails{ResourceId: resourceId})
 	return st.Err()
+}
+
+func WrappingErrors[InT any, OutT any](f func(context.Context, InT) (OutT, error)) func(context.Context, InT) (OutT, error) {
+	return func(ctx context.Context, in InT) (out OutT, err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("[ERROR] server panic: %v\n", r)
+				debug.PrintStack()
+				err = InternalServerErrorWithMessage("server panic", fmt.Errorf("%+v", r))
+			}
+		}()
+		out, err = f(ctx, in)
+		if err != nil {
+			return out, InternalServerError(err)
+		}
+		return out, err
+	}
 }

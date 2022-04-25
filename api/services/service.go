@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/errors"
@@ -15,7 +14,6 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"google.golang.org/protobuf/proto"
 	"log"
-	"runtime/debug"
 )
 
 type CreateRequest[Arg proto.Message] interface {
@@ -39,23 +37,6 @@ type Service[Arg proto.Message, OutT proto.Message] struct {
 	ResourceName string
 }
 
-func WrappingErrors[InT any, OutT any](f func(context.Context, InT) (OutT, error)) func(context.Context, InT) (OutT, error) {
-	return func(ctx context.Context, in InT) (out OutT, err error) {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Printf("[ERROR] server panic: %v\n", r)
-				debug.PrintStack()
-				err = errors.InternalServerErrorWithMessage("server panic", fmt.Errorf("%+v", r))
-			}
-		}()
-		out, err = f(ctx, in)
-		if err != nil {
-			return out, errors.InternalServerError(err)
-		}
-		return out, err
-	}
-}
-
 func (s Service[Arg, OutT]) updateErrorMetric(err error, method string) {
 	if err != nil {
 		go s.Db.AwsClient.UpdateErrorMetric(s.ResourceName, method, errors.ErrorCode(err))
@@ -64,7 +45,7 @@ func (s Service[Arg, OutT]) updateErrorMetric(err error, method string) {
 
 func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (out OutT, err error) {
 	defer func() { s.updateErrorMetric(err, "create") }()
-	return WrappingErrors(s.create)(ctx, in)
+	return errors.WrappingErrors(s.create)(ctx, in)
 }
 
 func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
@@ -111,7 +92,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 
 func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (out OutT, err error) {
 	defer func() { s.updateErrorMetric(err, "read") }()
-	return WrappingErrors(s.read)(ctx, in)
+	return errors.WrappingErrors(s.read)(ctx, in)
 }
 
 func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, error) {
@@ -171,7 +152,7 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Conf
 
 func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (out OutT, err error) {
 	defer func() { s.updateErrorMetric(err, "update") }()
-	return WrappingErrors(s.update)(ctx, in)
+	return errors.WrappingErrors(s.update)(ctx, in)
 }
 
 func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
@@ -216,7 +197,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 
 func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (_ *commonpb.Empty, err error) {
 	defer func() { s.updateErrorMetric(err, "delete") }()
-	return WrappingErrors(s.delete)(ctx, in)
+	return errors.WrappingErrors(s.delete)(ctx, in)
 }
 
 func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {

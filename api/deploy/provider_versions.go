@@ -3,11 +3,12 @@ package deploy
 import "fmt"
 
 const (
-	AwsProviderVersion   = "4.8.0"
-	AzureProviderVersion = "3.0.2"
-	StateRegion          = "eu-west-2"
-	Bucket               = "multy-users-tfstate"
-	tfState              = "terraform.tfstate"
+	AwsProviderVersion    = "4.8.0"
+	AzureProviderVersion  = "3.0.2"
+	RandomProviderVersion = "3.1.3"
+	StateRegion           = "eu-west-2"
+	Bucket                = "multy-users-tfstate"
+	tfState               = "terraform.tfstate"
 )
 
 func GetTerraformBlock(userId string) string {
@@ -28,7 +29,11 @@ terraform {
       source = "hashicorp/azurerm"
       version = "%s"
 	}
+	random = {
+      source  = "hashicorp/random"
+      version = "%s"
+	}
   }
 }
-`, Bucket, userId, tfState, StateRegion, AwsProviderVersion, AzureProviderVersion)
+`, Bucket, userId, tfState, StateRegion, AwsProviderVersion, AzureProviderVersion, RandomProviderVersion)
 }
