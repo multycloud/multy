@@ -138,7 +138,7 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Conf
 			if err != nil {
 				return *new(OutT), err
 			}
-			err = deploy.MaybeInit(ctx, c.UserId)
+			err = deploy.MaybeInit(ctx, c.UserId, false)
 			if err != nil {
 				return *new(OutT), err
 			}

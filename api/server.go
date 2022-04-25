@@ -364,17 +364,17 @@ func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (*commonpb
 		return nil, err
 	}
 
-	_, err = deploy.EncodeAndStoreTfFile(ctx, c, nil, nil)
+	_, err = deploy.EncodeAndStoreTfFile(ctx, c, nil, nil, true)
 	if err != nil {
 		return nil, err
 	}
 
-	err = deploy.MaybeInit(ctx, userId)
+	err = deploy.MaybeInit(ctx, userId, true)
 	if err != nil {
 		return nil, err
 	}
 
-	err = deploy.RefreshState(ctx, userId)
+	err = deploy.RefreshState(ctx, userId, true)
 	if err != nil {
 		return nil, err
 	}
