@@ -25,8 +25,9 @@ func (s VaultAccessPolicyService) Convert(resourceId string, args *resourcespb.V
 func NewVaultAccessPolicyService(database *db.Database) VaultAccessPolicyService {
 	ni := VaultAccessPolicyService{
 		Service: services.Service[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "vault_access_policy",
 		},
 	}
 	ni.Service.Converters = &ni

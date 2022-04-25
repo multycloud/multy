@@ -24,8 +24,9 @@ func (s NetworkSecurityGroupService) Convert(resourceId string, args *resourcesp
 func NewNetworkSecurityGroupService(database *db.Database) NetworkSecurityGroupService {
 	nsg := NetworkSecurityGroupService{
 		Service: services.Service[*resourcespb.NetworkSecurityGroupArgs, *resourcespb.NetworkSecurityGroupResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "network_security_group",
 		},
 	}
 	nsg.Service.Converters = &nsg

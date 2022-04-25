@@ -27,8 +27,9 @@ func (s ObjectStorageObjectService) Convert(resourceId string, args *resourcespb
 func NewObjectStorageObjectService(database *db.Database) ObjectStorageObjectService {
 	nsg := ObjectStorageObjectService{
 		Service: services.Service[*resourcespb.ObjectStorageObjectArgs, *resourcespb.ObjectStorageObjectResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "object_storage_object",
 		},
 	}
 	nsg.Service.Converters = &nsg

@@ -25,8 +25,9 @@ func (s SubnetService) Convert(resourceId string, args *resourcespb.SubnetArgs, 
 func NewSubnetService(database *db.Database) SubnetService {
 	vn := SubnetService{
 		Service: services.Service[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "subnet",
 		},
 	}
 	vn.Service.Converters = &vn

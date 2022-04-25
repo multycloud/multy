@@ -34,8 +34,9 @@ type WithResourceId interface {
 }
 
 type Service[Arg proto.Message, OutT proto.Message] struct {
-	Db         *db.Database
-	Converters converter.ResourceConverters[Arg, OutT]
+	Db           *db.Database
+	Converters   converter.ResourceConverters[Arg, OutT]
+	ResourceName string
 }
 
 func WrappingErrors[InT any, OutT any](f func(context.Context, InT) (OutT, error)) func(context.Context, InT) (OutT, error) {
@@ -55,11 +56,20 @@ func WrappingErrors[InT any, OutT any](f func(context.Context, InT) (OutT, error
 	}
 }
 
-func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
+func (s Service[Arg, OutT]) updateErrorMetric(err error, method string) {
+	if err != nil {
+		go s.Db.AwsClient.UpdateErrorMetric(s.ResourceName, method, errors.ErrorCode(err))
+	}
+}
+
+func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (out OutT, err error) {
+	defer func() { s.updateErrorMetric(err, "create") }()
 	return WrappingErrors(s.create)(ctx, in)
 }
 
 func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
+	go s.Db.AwsClient.UpdateQPSMetric(s.ResourceName, "create")
+
 	log.Println("Service create")
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
@@ -99,11 +109,14 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	return s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.ResourceId})
 }
 
-func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (OutT, error) {
+func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (out OutT, err error) {
+	defer func() { s.updateErrorMetric(err, "read") }()
 	return WrappingErrors(s.read)(ctx, in)
 }
 
 func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, error) {
+	go s.Db.AwsClient.UpdateQPSMetric(s.ResourceName, "read")
+
 	log.Printf("Service read: %s\n", in.GetResourceId())
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
@@ -156,11 +169,14 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Conf
 	return *new(OutT), errors.ResourceNotFound(in.GetResourceId())
 }
 
-func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
+func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (out OutT, err error) {
+	defer func() { s.updateErrorMetric(err, "update") }()
 	return WrappingErrors(s.update)(ctx, in)
 }
 
 func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
+	go s.Db.AwsClient.UpdateQPSMetric(s.ResourceName, "update")
+
 	log.Printf("Service update: %s\n", in.GetResourceId())
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
@@ -198,11 +214,14 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 	return s.readFromConfig(ctx, c, in)
 }
 
-func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
+func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (_ *commonpb.Empty, err error) {
+	defer func() { s.updateErrorMetric(err, "delete") }()
 	return WrappingErrors(s.delete)(ctx, in)
 }
 
 func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
+	go s.Db.AwsClient.UpdateQPSMetric(s.ResourceName, "delete")
+
 	log.Printf("Service delete: %s\n", in.GetResourceId())
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {

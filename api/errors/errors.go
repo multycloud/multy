@@ -18,6 +18,14 @@ func PermissionDenied(msg string) error {
 	})
 }
 
+func ErrorCode(err error) string {
+	if s, ok := status.FromError(err); ok {
+		return s.Code().String()
+	}
+
+	return codes.Internal.String()
+}
+
 func InternalServerError(err error) error {
 	if _, ok := status.FromError(err); ok {
 		return err

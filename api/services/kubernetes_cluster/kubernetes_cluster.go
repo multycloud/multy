@@ -5,6 +5,7 @@ import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
+	"github.com/multycloud/multy/api/services/kubernetes_node_pool"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/flags"
@@ -26,11 +27,17 @@ func (s KubernetesClusterService) Convert(resourceId string, args *resourcespb.K
 		}
 	}
 
+	defaultNodePool, err := kubernetes_node_pool.ConvertNodePool("", args.DefaultNodePool)
+	if err != nil {
+		return nil, err
+	}
+
 	return &resourcespb.KubernetesClusterResource{
 		CommonParameters: util.ConvertCommonParams(resourceId, args.CommonParameters),
 		Name:             args.Name,
 		SubnetIds:        args.SubnetIds,
 		Endpoint:         endpoint,
+		DefaultNodePool:  defaultNodePool,
 	}, nil
 }
 
@@ -56,8 +63,9 @@ func getEndpoint(resourceId string, state *output.TfState, cloud commonpb.CloudP
 func NewKubernetesClusterService(database *db.Database) KubernetesClusterService {
 	ni := KubernetesClusterService{
 		Service: services.Service[*resourcespb.KubernetesClusterArgs, *resourcespb.KubernetesClusterResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "kubernetes_cluster",
 		},
 	}
 	ni.Service.Converters = &ni

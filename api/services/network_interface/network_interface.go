@@ -23,8 +23,9 @@ func (s NetworkInterfaceService) Convert(resourceId string, args *resourcespb.Ne
 func NewNetworkInterfaceService(database *db.Database) NetworkInterfaceService {
 	ni := NetworkInterfaceService{
 		Service: services.Service[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "network_interface",
 		},
 	}
 	ni.Service.Converters = &ni

@@ -24,8 +24,9 @@ func (s RouteTableService) Convert(resourceId string, args *resourcespb.RouteTab
 func NewRouteTableService(database *db.Database) RouteTableService {
 	rt := RouteTableService{
 		Service: services.Service[*resourcespb.RouteTableArgs, *resourcespb.RouteTableResource]{
-			Db:         database,
-			Converters: nil,
+			Db:           database,
+			Converters:   nil,
+			ResourceName: "route_table",
 		},
 	}
 	rt.Service.Converters = &rt
