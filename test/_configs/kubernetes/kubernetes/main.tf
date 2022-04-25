@@ -1,48 +1,48 @@
-resource "aws_iam_role" "example_aws" {
-  tags               = { "Name" = "iam_for_k8cluster_example" }
-  name               = "iam_for_k8cluster_example"
+resource "aws_iam_role" "cluster_aws" {
+  tags               = { "Name" = "iam_for_k8cluster_cluster_aws" }
+  name               = "iam_for_k8cluster_cluster_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"eks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
-resource "aws_iam_role_policy_attachment" "example_aws_AmazonEKSClusterPolicy" {
-  role       = aws_iam_role.example_aws.name
+resource "aws_iam_role_policy_attachment" "cluster_aws_AmazonEKSClusterPolicy" {
+  role       = aws_iam_role.cluster_aws.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
-resource "aws_iam_role_policy_attachment" "example_aws_AmazonEKSVPCResourceController" {
-  role       = aws_iam_role.example_aws.name
+resource "aws_iam_role_policy_attachment" "cluster_aws_AmazonEKSVPCResourceController" {
+  role       = aws_iam_role.cluster_aws.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
 }
-resource "aws_eks_cluster" "example_aws" {
-  tags     = { "Name" = "example" }
-  role_arn = aws_iam_role.example_aws.arn
+resource "aws_eks_cluster" "cluster_aws" {
+  tags     = { "Name" = "cluster_aws" }
+  role_arn = aws_iam_role.cluster_aws.arn
   vpc_config {
-    subnet_ids = [aws_subnet.subnet1_aws.id, aws_subnet.subnet2_aws.id]
+    subnet_ids = [aws_subnet.private_subnet_aws.id, aws_subnet.public_subnet_aws.id]
   }
-  name = "example"
+  name = "cluster_aws"
 }
-resource "aws_iam_role" "example_pool_aws" {
-  tags               = { "Name" = "iam_for_k8nodepool_example" }
-  name               = "iam_for_k8nodepool_example"
+resource "aws_iam_role" "cluster_aws_default_pool" {
+  tags               = { "Name" = "iam_for_k8nodepool_node_pool_aws" }
+  name               = "iam_for_k8nodepool_node_pool_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
-resource "aws_iam_role_policy_attachment" "example_pool_aws_AmazonEKSWorkerNodePolicy" {
-  role       = aws_iam_role.example_pool_aws.name
+resource "aws_iam_role_policy_attachment" "cluster_aws_default_pool_AmazonEKSWorkerNodePolicy" {
+  role       = aws_iam_role.cluster_aws_default_pool.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
-resource "aws_iam_role_policy_attachment" "example_pool_aws_AmazonEKS_CNI_Policy" {
-  role       = aws_iam_role.example_pool_aws.name
+resource "aws_iam_role_policy_attachment" "cluster_aws_default_pool_AmazonEKS_CNI_Policy" {
+  role       = aws_iam_role.cluster_aws_default_pool.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
-resource "aws_iam_role_policy_attachment" "example_pool_aws_AmazonEC2ContainerRegistryReadOnly" {
-  role       = aws_iam_role.example_pool_aws.name
+resource "aws_iam_role_policy_attachment" "cluster_aws_default_pool_AmazonEC2ContainerRegistryReadOnly" {
+  role       = aws_iam_role.cluster_aws_default_pool.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
-resource "aws_eks_node_group" "example_pool_aws" {
-  cluster_name    = aws_eks_cluster.example_aws.id
-  node_group_name = "example"
-  node_role_arn   = aws_iam_role.example_pool_aws.arn
+resource "aws_eks_node_group" "cluster_aws_default_pool" {
+  cluster_name    = aws_eks_cluster.cluster_aws.id
+  node_group_name = "node_pool_aws"
+  node_role_arn   = aws_iam_role.cluster_aws_default_pool.arn
   subnet_ids      = [
-    aws_subnet.subnet1_aws.id,
-    aws_subnet.subnet2_aws.id
+    aws_subnet.private_subnet_aws.id,
+    aws_subnet.public_subnet_aws.id
   ]
   scaling_config {
     desired_size = 1
@@ -86,37 +86,38 @@ resource "aws_route_table" "rt_aws" {
     gateway_id = aws_internet_gateway.example_vn_aws.id
   }
 }
-resource "aws_route_table_association" "subnet2_aws" {
-  subnet_id      = aws_subnet.subnet2_aws.id
+resource "aws_route_table_association" "public_subnet_aws" {
+  subnet_id      = aws_subnet.public_subnet_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
-resource "aws_subnet" "subnet1_aws" {
+resource "aws_subnet" "private_subnet_aws" {
   tags                    = { "Name" = "private-subnet" }
   cidr_block              = "10.0.1.0/24"
   vpc_id                  = aws_vpc.example_vn_aws.id
   availability_zone       = "eu-west-1a"
   map_public_ip_on_launch = true
 }
-resource "aws_subnet" "subnet2_aws" {
+resource "aws_subnet" "public_subnet_aws" {
   tags                    = { "Name" = "public-subnet" }
   cidr_block              = "10.0.2.0/24"
   vpc_id                  = aws_vpc.example_vn_aws.id
   availability_zone       = "eu-west-1b"
   map_public_ip_on_launch = true
 }
-resource "azurerm_kubernetes_cluster" "example_azure" {
+resource "azurerm_kubernetes_cluster" "cluster_azure" {
   resource_group_name = azurerm_resource_group.ks-rg.name
-  name                = "example"
+  name                = "cluster_azure"
   location            = "northeurope"
   default_node_pool {
-    name                = "example"
+    name                = "node_pool_azure"
     node_count          = 1
     max_count           = 1
     min_count           = 1
     enable_auto_scaling = true
     vm_size             = "Standard_A2_v2"
+    pod_subnet_id       = azurerm_subnet.private_subnet_azure.id
   }
-  dns_prefix = "example"
+  dns_prefix = "clusterazureaks7hut"
   identity {
     type = "SystemAssigned"
   }
@@ -151,21 +152,21 @@ resource "azurerm_route_table" "rt_azure" {
     next_hop_type  = "Internet"
   }
 }
-resource "azurerm_subnet_route_table_association" "subnet2_azure" {
-  subnet_id      = azurerm_subnet.subnet2_azure.id
+resource "azurerm_subnet_route_table_association" "public_subnet_azure" {
+  subnet_id      = azurerm_subnet.public_subnet_azure.id
   route_table_id = azurerm_route_table.rt_azure.id
 }
-resource "azurerm_subnet" "subnet1_azure" {
+resource "azurerm_subnet" "private_subnet_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
   name                 = "private-subnet"
   address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
-resource "azurerm_subnet_route_table_association" "subnet1_azure" {
-  subnet_id      = azurerm_subnet.subnet1_azure.id
+resource "azurerm_subnet_route_table_association" "private_subnet_azure" {
+  subnet_id      = azurerm_subnet.private_subnet_azure.id
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
-resource "azurerm_subnet" "subnet2_azure" {
+resource "azurerm_subnet" "public_subnet_azure" {
   resource_group_name  = azurerm_resource_group.vn-rg.name
   name                 = "public-subnet"
   address_prefixes     = ["10.0.2.0/24"]

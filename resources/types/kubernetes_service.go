@@ -19,7 +19,8 @@ import (
 type KubernetesCluster struct {
 	resources.ResourceWithId[*resourcespb.KubernetesClusterArgs]
 
-	Subnets []*Subnet
+	Subnets         []*Subnet
+	DefaultNodePool *KubernetesNodePool
 }
 
 func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesClusterArgs, others resources.Resources) (*KubernetesCluster, error) {
@@ -29,13 +30,16 @@ func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesCluster
 	if err != nil {
 		return nil, err
 	}
-	return &KubernetesCluster{
+	cluster := &KubernetesCluster{
 		ResourceWithId: resources.ResourceWithId[*resourcespb.KubernetesClusterArgs]{
 			ResourceId: resourceId,
 			Args:       args,
 		},
 		Subnets: subnets,
-	}, nil
+	}
+
+	cluster.DefaultNodePool, err = newKubernetesNodePool(fmt.Sprintf("%s_default_pool", resourceId), args.DefaultNodePool, others, cluster)
+	return cluster, err
 }
 
 func (r *KubernetesCluster) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
@@ -43,15 +47,13 @@ func (r *KubernetesCluster) Validate(ctx resources.MultyContext) (errs []validat
 	if len(r.Subnets) < 2 {
 		errs = append(errs, r.NewValidationError("at least 2 subnet ids must be provided", "subnet_ids"))
 	}
-	associatedNodes := 0
-	for _, node := range resources.GetAllResourcesInCloud[*KubernetesNodePool](ctx, r.GetCloud()) {
-		if node.KubernetesCluster.ResourceId == r.ResourceId && node.Args.IsDefaultPool {
-			associatedNodes += 1
-		}
+	if r.Args.GetDefaultNodePool() == nil {
+		errs = append(errs, r.NewValidationError(fmt.Sprintf("cluster must have a default node pool"), "default_node_pool"))
 	}
-	if associatedNodes != 1 {
-		errs = append(errs, r.NewValidationError(fmt.Sprintf("cluster must have exactly 1 default node pool, found %d", associatedNodes), ""))
+	if r.Args.GetDefaultNodePool().GetClusterId() != "" {
+		errs = append(errs, r.NewValidationError(fmt.Sprintf("cluster id for default node pool can't be set"), "default_node_pool"))
 	}
+	errs = append(errs, r.DefaultNodePool.Validate(ctx)...)
 	return errs
 }
 
@@ -65,6 +67,7 @@ func (r *KubernetesCluster) GetMainResourceName() (string, error) {
 }
 
 func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
+
 	subnetIds, err := util.MapSliceValuesErr(r.Subnets, func(v *Subnet) (string, error) {
 		return resources.GetMainOutputId(v)
 	})
@@ -72,14 +75,19 @@ func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBl
 		return nil, err
 	}
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		var outputs []output.TfBlock
+		defaultNodePoolResources, err := r.DefaultNodePool.Translate(ctx)
+		if err != nil {
+			return nil, err
+		}
+		outputs = append(outputs, defaultNodePoolResources...)
 		roleName := fmt.Sprintf("iam_for_k8cluster_%s", r.Args.Name)
 		role := iam.AwsIamRole{
 			AwsResource:      common.NewAwsResource(r.ResourceId, roleName),
 			Name:             fmt.Sprintf("iam_for_k8cluster_%s", r.Args.Name),
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("eks.amazonaws.com"),
 		}
-		return []output.TfBlock{
-			&role,
+		outputs = append(outputs, &role,
 			iam.AwsIamRolePolicyAttachment{
 				AwsResource: common.NewAwsResourceWithIdOnly(fmt.Sprintf("%s_%s", r.ResourceId, "AmazonEKSClusterPolicy")),
 				Role:        fmt.Sprintf("aws_iam_role.%s.name", r.ResourceId),
@@ -95,24 +103,23 @@ func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBl
 				RoleArn:     fmt.Sprintf("aws_iam_role.%s.arn", r.ResourceId),
 				VpcConfig:   kubernetes_service.VpcConfig{SubnetIds: subnetIds},
 				Name:        r.Args.Name,
-			},
-		}, nil
+			})
+		return outputs, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		var defaultPool *kubernetes_node_pool.AzureKubernetesNodePool
-		for _, node := range resources.GetAllResourcesWithRef(ctx, func(k *KubernetesNodePool) *KubernetesCluster { return k.KubernetesCluster }, r) {
-			defaultPool, err = node.translateAzNodePool()
-			if err != nil {
-				return nil, err
-			}
-			defaultPool.Name = defaultPool.AzResource.Name
-			defaultPool.AzResource = nil
-			defaultPool.ClusterId = ""
+		defaultPool, err = r.DefaultNodePool.translateAzNodePool()
+		if err != nil {
+			return nil, err
 		}
+		defaultPool.Name = defaultPool.AzResource.Name
+		defaultPool.AzResource = nil
+		defaultPool.ClusterId = ""
+
 		return []output.TfBlock{
 			&kubernetes_service.AzureEksCluster{
 				AzResource:      common.NewAzResource(r.ResourceId, r.Args.Name, rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId), r.GetCloudSpecificLocation()),
 				DefaultNodePool: defaultPool,
-				DnsPrefix:       r.Args.Name,
+				DnsPrefix:       common.UniqueId(r.Args.Name, "aks", common.LowercaseAlphanumericFormatFunc),
 				Identity:        kubernetes_service.AzureIdentity{Type: "SystemAssigned"},
 			},
 		}, nil
