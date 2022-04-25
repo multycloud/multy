@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/multycloud/multy/api/deploy"
+	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
@@ -341,7 +342,16 @@ func (s *Server) DeleteVirtualMachine(ctx context.Context, in *resourcespb.Delet
 	return s.VirtualMachineService.Service.Delete(ctx, in)
 }
 
-func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empty, error) {
+func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (_ *commonpb.Empty, err error) {
+	defer func() {
+		if err != nil {
+			go s.Database.AwsClient.UpdateErrorMetric("", "refresh", errors.ErrorCode(err))
+		}
+	}()
+	return errors.WrappingErrors(s.refresh)(ctx, &commonpb.Empty{})
+}
+
+func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empty, error) {
 	fmt.Println("refreshing state")
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
