@@ -10,14 +10,12 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/object_storage"
 	"github.com/multycloud/multy/resources/output/object_storage_object"
-	"github.com/multycloud/multy/util"
+	"github.com/multycloud/multy/resources/output/terraform"
 	"github.com/multycloud/multy/validate"
 )
 
 // AWS: aws_s3_object
 // Azure: azurerm_storage_blob
-
-var SUPPORTED_CONTENT_TYPES = []string{"text/html", "application/zip"}
 
 type ObjectStorageObject struct {
 	resources.ChildResourceWithId[*ObjectStorage, *resourcespb.ObjectStorageObjectArgs]
@@ -54,7 +52,7 @@ func (r *ObjectStorageObject) FromState(state *output.TfState) (*resourcespb.Obj
 	}
 
 	out.Name = r.Args.Name
-	out.Content = r.Args.Content
+	out.ContentBase64 = r.Args.ContentBase64
 	out.ContentType = r.Args.ContentType
 	out.ObjectStorageId = r.Args.ObjectStorageId
 	out.Acl = r.Args.Acl
@@ -90,12 +88,12 @@ func (r *ObjectStorageObject) Translate(resources.MultyContext) ([]output.TfBloc
 			AwsResource: &common.AwsResource{
 				TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 			},
-			Bucket:      r.ObjectStorage.GetResourceName(),
-			Key:         r.Args.Name,
-			Acl:         acl,
-			Content:     r.Args.Content,
-			ContentType: r.Args.ContentType,
-			Source:      r.Args.Source,
+			Bucket:        r.ObjectStorage.GetResourceName(),
+			Key:           r.Args.Name,
+			Acl:           acl,
+			ContentBase64: r.Args.ContentBase64,
+			ContentType:   r.Args.ContentType,
+			Source:        r.Args.Source,
 		}}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		var containerName string
@@ -104,7 +102,9 @@ func (r *ObjectStorageObject) Translate(resources.MultyContext) ([]output.TfBloc
 		} else {
 			containerName = r.ObjectStorage.GetAssociatedPrivateContainerResourceName()
 		}
+		contentFile := terraform.NewLocalFile(r.ResourceId, r.Args.ContentBase64)
 		return []output.TfBlock{
+			contentFile,
 			object_storage_object.AzureStorageAccountBlob{
 				AzResource: &common.AzResource{
 					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
@@ -113,9 +113,8 @@ func (r *ObjectStorageObject) Translate(resources.MultyContext) ([]output.TfBloc
 				StorageAccountName:   r.ObjectStorage.GetResourceName(),
 				StorageContainerName: containerName,
 				Type:                 "Block",
-				SourceContent:        r.Args.Content,
+				Source:               contentFile.GetFilename(),
 				ContentType:          r.Args.ContentType,
-				Source:               r.Args.Source,
 			}}, nil
 	}
 
@@ -139,11 +138,8 @@ func (r *ObjectStorageObject) IsPrivate() bool {
 }
 
 func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
-	if len(r.Args.Content) == 0 {
-		errs = append(errs, r.NewValidationError("content must be set", ""))
-	}
-	if !util.Contains(SUPPORTED_CONTENT_TYPES, r.Args.ContentType) {
-		errs = append(errs, r.NewValidationError(fmt.Sprintf("%s not a valid content_type", r.Args.ContentType), "content_type"))
+	if len(r.Args.ContentBase64) == 0 {
+		errs = append(errs, r.NewValidationError("content_base64 must be set", ""))
 	}
 	return errs
 }

@@ -18,7 +18,7 @@ func (s ObjectStorageObjectService) Convert(resourceId string, args *resourcespb
 		Name:             args.Name,
 		Acl:              args.Acl,
 		ObjectStorageId:  args.ObjectStorageId,
-		Content:          args.Content,
+		ContentBase64:    args.ContentBase64,
 		ContentType:      args.ContentType,
 		Source:           args.Source,
 	}, nil

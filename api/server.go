@@ -345,7 +345,7 @@ func (s *Server) DeleteVirtualMachine(ctx context.Context, in *resourcespb.Delet
 func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (_ *commonpb.Empty, err error) {
 	defer func() {
 		if err != nil {
-			go s.Database.AwsClient.UpdateErrorMetric("", "refresh", errors.ErrorCode(err))
+			go s.Database.AwsClient.UpdateErrorMetric("refresh", "refresh", errors.ErrorCode(err))
 		}
 	}()
 	return errors.WrappingErrors(s.refresh)(ctx, &commonpb.Empty{})

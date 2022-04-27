@@ -1,16 +1,26 @@
+resource "local_file" "file2_private_azure" {
+  content_base64 = "PGgxPkhpPC9oMT4="
+  filename       = "./multy/local/file2_private_azure"
+}
+
+resource "local_file" "file1_public_azure" {
+  content_base64 = "PGgxPkhpPC9oMT4="
+  filename       = "./multy/local/file1_public_azure"
+}
+
 resource "aws_s3_object" "file1_public_aws" {
-  bucket       = aws_s3_bucket.obj_storage_aws.id
-  key          = "index.html"
-  acl          = "public-read"
-  content      = "<h1>Hi from AWS</h1>"
-  content_type = "text/html"
+  bucket         = aws_s3_bucket.obj_storage_aws.id
+  key            = "index.html"
+  acl            = "public-read"
+  content_base64 = "PGgxPkhpPC9oMT4="
+  content_type   = "text/html"
 }
 resource "aws_s3_object" "file2_private_aws" {
-  bucket       = aws_s3_bucket.obj_storage_aws.id
-  key          = "index_private.html"
-  acl          = "private"
-  content      = "<h1>Hi</h1>"
-  content_type = "text/html"
+  bucket         = aws_s3_bucket.obj_storage_aws.id
+  key            = "index_private.html"
+  acl            = "private"
+  content_base64 = "PGgxPkhpPC9oMT4="
+  content_type   = "text/html"
 }
 resource "aws_s3_bucket" "obj_storage_aws" {
   bucket = "test-storage-9999919"
@@ -20,7 +30,7 @@ resource "azurerm_storage_blob" "file1_public_azure" {
   storage_account_name   = azurerm_storage_account.obj_storage_azure.name
   storage_container_name = azurerm_storage_container.obj_storage_azure_public.name
   type                   = "Block"
-  source_content         = "<h1>Hi from Azure</h1>"
+  source                 = local_file.file1_public_azure.filename
   content_type           = "text/html"
 }
 resource "azurerm_storage_blob" "file2_private_azure" {
@@ -28,7 +38,7 @@ resource "azurerm_storage_blob" "file2_private_azure" {
   storage_account_name   = azurerm_storage_account.obj_storage_azure.name
   storage_container_name = azurerm_storage_container.obj_storage_azure_private.name
   type                   = "Block"
-  source_content         = "<h1>Hi</h1>"
+  source                 = local_file.file2_private_azure.filename
   content_type           = "text/html"
 }
 resource "azurerm_storage_account" "obj_storage_azure" {

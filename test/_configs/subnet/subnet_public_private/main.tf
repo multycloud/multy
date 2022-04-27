@@ -16,7 +16,6 @@ resource "aws_db_instance" "example_db_aws" {
   }
 
   allocated_storage    = 10
-  db_name              = "exampledb"
   engine               = "mysql"
   engine_version       = "5.7"
   username             = "multyadmin"
