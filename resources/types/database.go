@@ -56,7 +56,6 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 			dbSubnetGroup,
 			database.AwsDbInstance{
 				AwsResource:        common.NewAwsResource(r.ResourceId, name),
-				Name:               name,
 				AllocatedStorage:   int(r.Args.StorageGb),
 				Engine:             strings.ToLower(r.Args.Engine.String()),
 				EngineVersion:      r.Args.EngineVersion,

@@ -36,7 +36,7 @@ message ObjectStorageObjectArgs {
   string name = 2;
   ObjectStorageObjectAcl acl = 3;
   string object_storage_id = 4;
-  string content = 5;
+  string content_base64 = 5;
   string content_type = 6;
   string source = 7;
 }
@@ -46,7 +46,7 @@ message ObjectStorageObjectResource {
   string name = 2;
   ObjectStorageObjectAcl acl = 3;
   string object_storage_id = 4;
-  string content = 5;
+  string content_base64 = 5;
   string content_type = 6;
   string source = 7;
   //outputs

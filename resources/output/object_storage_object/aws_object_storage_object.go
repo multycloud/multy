@@ -9,7 +9,7 @@ type AwsS3BucketObject struct {
 	Bucket              string `hcl:"bucket,expr"`
 	Key                 string `hcl:"key"`
 	Acl                 string `hcl:"acl" hcle:"omitempty"`
-	Content             string `hcl:"content"  hcle:"omitempty"`
+	ContentBase64       string `hcl:"content_base64"  hcle:"omitempty"`
 	ContentType         string `hcl:"content_type" hcle:"omitempty"`
 	Source              string `hcl:"source" hcle:"omitempty"`
 }
