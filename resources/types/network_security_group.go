@@ -230,10 +230,10 @@ func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext) (errs []vali
 	errs = append(errs, r.ResourceWithId.Validate()...)
 	for _, rule := range r.Args.Rules {
 		if !validatePort(rule.PortRange.To) {
-			errs = append(errs, r.NewValidationError(fmt.Sprintf("rule to_port \"%d\" is not valid", rule.PortRange.To), "rules"))
+			errs = append(errs, r.NewValidationError(fmt.Errorf("rule to_port \"%d\" is not valid", rule.PortRange.To), "rules"))
 		}
 		if !validatePort(rule.PortRange.From) {
-			errs = append(errs, r.NewValidationError(fmt.Sprintf("rule from_port \"%d\" is not valid", rule.PortRange.From), "rules"))
+			errs = append(errs, r.NewValidationError(fmt.Errorf("rule from_port \"%d\" is not valid", rule.PortRange.From), "rules"))
 		}
 		// TODO validate CIDR
 		//		validate protocol

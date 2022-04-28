@@ -52,17 +52,32 @@ func InternalServerErrorWithMessage(msg string, err error) error {
 func ValidationErrors(errs []validate.ValidationError) error {
 	st := status.New(codes.InvalidArgument, fmt.Sprintf("%d validation errors found", len(errs)))
 	for _, e := range errs {
-		st, _ = st.WithDetails(&pberr.ResourceValidationError{
+		details := &pberr.ResourceValidationError{
 			ResourceId:   e.ResourceId,
 			ErrorMessage: e.ErrorMessage,
 			FieldName:    e.FieldName,
-		})
+		}
+
+		if e.ResourceNotFound {
+			details.ErrorDetails = &pberr.ResourceValidationError_NotFoundDetails_{
+				NotFoundDetails: &pberr.ResourceValidationError_NotFoundDetails{
+					ResourceId: e.ResourceNotFoundId,
+				},
+			}
+		}
+		st, _ = st.WithDetails(details)
 	}
 	return st.Err()
 }
 
 func ResourceNotFound(resourceId string) error {
 	st := status.New(codes.NotFound, fmt.Sprintf("resource with id %s not found", resourceId))
+	st, _ = st.WithDetails(&pberr.ResourceNotFoundDetails{ResourceId: resourceId})
+	return st.Err()
+}
+
+func ResourceInUseError(resourceId string, usedByResourceId string) error {
+	st := status.New(codes.FailedPrecondition, fmt.Sprintf("resource with id %s cannot be deleted, because it is being used by resource with id %s", resourceId, usedByResourceId))
 	st, _ = st.WithDetails(&pberr.ResourceNotFoundDetails{ResourceId: resourceId})
 	return st.Err()
 }

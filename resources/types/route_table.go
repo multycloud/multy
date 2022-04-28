@@ -44,7 +44,7 @@ func NewRouteTable(resourceId string, args *resourcespb.RouteTableArgs, others r
 	}
 	vn, err := resources.Get[*VirtualNetwork](resourceId, others, args.VirtualNetworkId)
 	if err != nil {
-		return nil, errors.ValidationErrors([]validate.ValidationError{rt.NewValidationError(err.Error(), "virtual_network_id")})
+		return nil, errors.ValidationErrors([]validate.ValidationError{rt.NewValidationError(err, "virtual_network_id")})
 	}
 	rt.Parent = vn
 	rt.VirtualNetwork = vn
@@ -113,11 +113,11 @@ func (r *RouteTable) GetId(cloud commonpb.CloudProvider) string {
 
 func (r *RouteTable) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	if len(r.Args.Routes) > 20 {
-		errs = append(errs, r.NewValidationError(fmt.Sprintf("\"%d\" exceeds routes limit is 20", len(r.Args.Routes)), "routes"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("\"%d\" exceeds routes limit is 20", len(r.Args.Routes)), "routes"))
 	}
 	for _, route := range r.Args.Routes {
 		if route.Destination == resourcespb.RouteDestination_UNKNOWN_DESTINATION {
-			errs = append(errs, r.NewValidationError("unknown route destination", "route"))
+			errs = append(errs, r.NewValidationError(fmt.Errorf("unknown route destination"), "route"))
 		}
 		//	if route.CidrBlock valid CIDR
 	}

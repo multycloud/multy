@@ -35,7 +35,7 @@ func NewSubnet(resourceId string, subnet *resourcespb.SubnetArgs, others resourc
 	}
 	vn, err := resources.Get[*VirtualNetwork](resourceId, others, subnet.VirtualNetworkId)
 	if err != nil {
-		return nil, errors.ValidationErrors([]validate.ValidationError{s.NewValidationError(err.Error(), "virtual_network_id")})
+		return nil, errors.ValidationErrors([]validate.ValidationError{s.NewValidationError(err, "virtual_network_id")})
 	}
 	s.Parent = vn
 	s.VirtualNetwork = vn
@@ -131,7 +131,7 @@ func (r *Subnet) Validate(ctx resources.MultyContext) (errs []validate.Validatio
 	//if vn.CidrBlock valid CIDR { return false }
 	//if vn.AvailbilityZone valid { return false }
 	if len(r.Args.CidrBlock) == 0 { // max len?
-		errs = append(errs, r.NewValidationError(fmt.Sprintf("%r cidr_block length is invalid", r.ResourceId), "cidr_block"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("%r cidr_block length is invalid", r.ResourceId), "cidr_block"))
 	}
 
 	return errs

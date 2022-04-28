@@ -2,6 +2,7 @@ package resources
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/util"
@@ -27,7 +28,7 @@ func Get[T Resource](dependentResourceId string, resources Resources, id string)
 		return item, err
 	}
 	if !exists {
-		return item, fmt.Errorf("resource with id %s not found", id)
+		return item, errors.ResourceNotFound(id)
 	}
 
 	return item, nil

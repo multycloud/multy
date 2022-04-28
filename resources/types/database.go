@@ -93,10 +93,10 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 func (r *Database) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
 	if r.Args.Engine == resourcespb.DatabaseEngine_UNKNOWN_ENGINE {
-		errs = append(errs, r.NewValidationError("unknown database engine provided", "engine"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("unknown database engine provided"), "engine"))
 	}
 	if r.Args.StorageGb < 10 || r.Args.StorageGb > 20 {
-		errs = append(errs, r.NewValidationError("storage must be between 10 and 20", "storage"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("storage must be between 10 and 20"), "storage"))
 	}
 	// TODO regex validate r username && password
 	// TODO validate DB Size

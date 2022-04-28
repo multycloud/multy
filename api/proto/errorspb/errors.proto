@@ -12,6 +12,14 @@ message ResourceValidationError {
   string error_message = 2;
   // this is tentative, it might not be populated or might have a different name from the proto request
   string field_name = 3;
+
+  message NotFoundDetails {
+    string resource_id = 1;
+  }
+
+  oneof ErrorDetails {
+    NotFoundDetails not_found_details = 4;
+  }
 }
 
 message InternalErrorDetails {
