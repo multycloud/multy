@@ -23,7 +23,7 @@ const db_passwd = "passwd1778!"
 const aws_global_config = `
 config {
   clouds   = ["aws"]
-  location = "ireland"
+  location = "EU_WEST_1"
 }
 output "db_host" {
   value = aws.db.host

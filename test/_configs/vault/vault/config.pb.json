@@ -6,7 +6,7 @@
           "@type": "type.googleapis.com/dev.multy.resources.VaultArgs",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "UK"
+            "location": "EU_WEST_2"
           },
           "name": "dev-test-multy"
         }
@@ -19,7 +19,7 @@
           "@type": "type.googleapis.com/dev.multy.resources.VaultArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "UK"
+            "location": "EU_WEST_2"
           },
           "name": "dev-test-multy"
         }

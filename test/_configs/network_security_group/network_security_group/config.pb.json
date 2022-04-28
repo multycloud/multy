@@ -7,7 +7,7 @@
           "cidr_block": "10.0.0.0/16",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "IRELAND"
+            "location": "EU_WEST_1"
           },
           "name": "example_vn"
         }
@@ -21,7 +21,7 @@
           "cidr_block": "10.0.0.0/16",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "IRELAND"
+            "location": "EU_WEST_1"
           },
           "name": "example_vn"
         }
@@ -100,7 +100,7 @@
           "@type": "type.googleapis.com/dev.multy.resources.NetworkSecurityGroupArgs",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "IRELAND"
+            "location": "EU_WEST_1"
           },
           "name": "test-nsg2",
           "rules": [
@@ -136,7 +136,7 @@
           "@type": "type.googleapis.com/dev.multy.resources.NetworkSecurityGroupArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "IRELAND"
+            "location": "EU_WEST_1"
           },
           "name": "test-nsg2",
           "rules": [
@@ -182,7 +182,7 @@
           "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "IRELAND"
+            "location": "EU_WEST_1"
           },
           "name": "test-vm2",
           "network_security_group_ids": [
@@ -204,7 +204,7 @@
           "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "IRELAND"
+            "location": "EU_WEST_1"
           },
           "name": "test-vm",
           "operating_system": "LINUX",
@@ -223,7 +223,7 @@
           "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "IRELAND"
+            "location": "EU_WEST_1"
           },
           "name": "test-vm",
           "operating_system": "LINUX",
@@ -242,7 +242,7 @@
           "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "IRELAND"
+            "location": "EU_WEST_1"
           },
           "name": "test-vm2",
           "network_security_group_ids": [

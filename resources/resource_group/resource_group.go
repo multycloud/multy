@@ -25,8 +25,8 @@ const (
 type Type struct {
 	ResourceId string
 	Name       string `hcl:"name"`
-	Location   string `hcl:"location"`
 	App        string `hcl:"app"`
+	Location   commonpb.Location
 	Cloud      commonpb.CloudProvider
 }
 
@@ -73,7 +73,7 @@ func (rg *Type) GetResourceId() string {
 }
 
 func (rg *Type) GetCloudSpecificLocation() string {
-	if result, err := common.GetCloudLocationPb(rg.Location, rg.GetCloud()); err != nil {
+	if result, err := common.GetCloudLocation(rg.Location, rg.GetCloud()); err != nil {
 		validate.LogInternalError(err.Error())
 		return ""
 	} else {
@@ -82,7 +82,7 @@ func (rg *Type) GetCloudSpecificLocation() string {
 }
 
 func (rg *Type) Validate(ctx resources.MultyContext) []validate.ValidationError {
-	if _, err := common.GetCloudLocationPb(rg.Location, rg.GetCloud()); err != nil {
+	if _, err := common.GetCloudLocation(rg.Location, rg.GetCloud()); err != nil {
 		return []validate.ValidationError{
 			{
 				ErrorMessage: err.Error(),
