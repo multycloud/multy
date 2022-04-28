@@ -9,9 +9,22 @@ package dev.multy.common;
 
 enum Location {
   UNKNOWN_LOCATION = 0;
-  US_EAST = 1;
-  IRELAND = 2;
-  UK = 3;
+  // N. Virginia
+  US_EAST_1 = 1;
+  // Ohio / Virginia
+  US_EAST_2 = 2;
+  // N. California / Washington
+  US_WEST_1 = 3;
+  // Oregon / Phoenix
+  US_WEST_2 = 4;
+  // Ireland
+  EU_WEST_1 = 5;
+  // England
+  EU_WEST_2 = 6;
+  // France
+  EU_WEST_3 = 7;
+  // Sweden
+  EU_NORTH_1 = 8;
 }
 
 enum CloudProvider {

@@ -8,7 +8,6 @@ import (
 	"github.com/multycloud/multy/validate"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strings"
 )
 
 type WithCommonParams interface {
@@ -25,7 +24,7 @@ type ResourceWithId[T WithCommonParams] struct {
 }
 
 func (r *ResourceWithId[T]) GetCloudSpecificLocation() string {
-	if result, err := common.GetCloudLocationPb(r.GetLocation(), r.GetCloud()); err != nil {
+	if result, err := common.GetCloudLocation(r.GetLocation(), r.GetCloud()); err != nil {
 		validate.LogInternalError(err.Error())
 		return ""
 	} else {
@@ -33,8 +32,8 @@ func (r *ResourceWithId[T]) GetCloudSpecificLocation() string {
 	}
 }
 
-func (r *ResourceWithId[T]) GetLocation() string {
-	return strings.ToLower(r.Args.GetCommonParameters().GetLocation().String())
+func (r *ResourceWithId[T]) GetLocation() commonpb.Location {
+	return r.Args.GetCommonParameters().GetLocation()
 }
 
 func (r *ResourceWithId[T]) GetResourceId() string {

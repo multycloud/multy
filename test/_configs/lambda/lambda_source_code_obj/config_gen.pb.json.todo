@@ -7,7 +7,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "function-storage-1722",
             "random_suffix": false,
@@ -24,7 +24,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificLambdaArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "function_name": "publicmultyfun",
             "runtime": "python3.9",
@@ -42,7 +42,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificLambdaArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "function_name": "publicmultyfun",
             "runtime": "python3.9",
@@ -60,7 +60,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "function-storage-1722",
             "random_suffix": false,

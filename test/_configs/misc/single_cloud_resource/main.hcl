@@ -22,5 +22,5 @@ config {
 }
 variable "location" {
   type    = string
-  default = "ireland"
+  default = "EU_WEST_1"
 }

@@ -7,7 +7,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificLambdaArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "function_name": "multy_function",
             "runtime": "python3.9",
@@ -24,7 +24,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificLambdaArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "function_name": "multy_function",
             "runtime": "python3.9",
@@ -44,7 +44,7 @@
             ],
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "test-storage-9999919",
             "random_suffix": false,

@@ -22,7 +22,7 @@ const DestroyAfter = true
 const aws_global_config = `
 config {
   clouds   = ["aws"]
-  location = "ireland"
+  location = "EU_WEST_1"
 }
 `
 

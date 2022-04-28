@@ -7,7 +7,7 @@
           "cidr_block": "10.0.0.0/16",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "US_EAST"
+            "location": "US_EAST_1"
           },
           "name": "db-vn"
         }
@@ -21,7 +21,7 @@
           "cidr_block": "10.0.0.0/16",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "US_EAST"
+            "location": "US_EAST_1"
           },
           "name": "db-vn"
         }
@@ -144,7 +144,7 @@
           "@type": "type.googleapis.com/dev.multy.resources.DatabaseArgs",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "US_EAST"
+            "location": "US_EAST_1"
           },
           "password": "multy$Admin123!",
           "username": "multyadmin",
@@ -177,7 +177,7 @@
           "@type": "type.googleapis.com/dev.multy.resources.DatabaseArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "US_EAST"
+            "location": "US_EAST_1"
           },
           "password": "multy$Admin123!",
           "username": "multyadmin",

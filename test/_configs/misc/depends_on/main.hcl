@@ -9,6 +9,6 @@ multy "object_storage" "obj_storage3" {
   depends_on = [obj_storage1, obj_storage2]
 }
 config {
-  location = "ireland"
+  location = "EU_WEST_1"
   clouds   = ["aws", "azure"]
 }

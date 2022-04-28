@@ -1,5 +1,5 @@
 config {
-  location = "ireland"
+  location = "EU_WEST_1"
   clouds   = ["azure"]
 }
 multy "virtual_network" "example_vn" {

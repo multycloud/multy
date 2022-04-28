@@ -7,7 +7,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "mty-storage-002",
             "random_suffix": false,
@@ -24,7 +24,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "depends_on": [
               "obj_storage1",
@@ -45,7 +45,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "depends_on": [
               "obj_storage1",
@@ -66,7 +66,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "mty-storage-001",
             "random_suffix": false,
@@ -83,7 +83,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "mty-storage-001",
             "random_suffix": false,
@@ -100,7 +100,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "mty-storage-002",
             "random_suffix": false,

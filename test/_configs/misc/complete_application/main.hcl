@@ -30,7 +30,7 @@ config {
 }
 variable "location" {
   type    = string
-  default = "ireland"
+  default = "EU_WEST_1"
 }
 variable "name_suffix" {
   type    = string

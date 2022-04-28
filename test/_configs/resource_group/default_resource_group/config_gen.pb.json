@@ -7,7 +7,7 @@
           "cidr_block": "10.0.0.0/16",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "IRELAND"
+            "location": "EU_WEST_1"
           },
           "name": "example_vn"
         }

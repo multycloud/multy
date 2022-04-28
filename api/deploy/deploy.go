@@ -27,7 +27,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -378,7 +377,7 @@ func addMultyResourceNew(r *configpb.Resource, res resources.Resources, metadata
 						&rg.Type{
 							ResourceId: rgId,
 							Name:       rgId,
-							Location:   strings.ToLower(commonArgs.GetCommonParameters().Location.String()),
+							Location:   commonArgs.GetCommonParameters().Location,
 							Cloud:      commonArgs.GetCommonParameters().CloudProvider,
 						}
 
@@ -412,7 +411,7 @@ func getExistingProvider(r *configpb.Resource, creds *credspb.CloudCredentials) 
 			return nil, err
 		}
 		if wcp, ok := m.(WithCommonParams); ok {
-			location, err := common.GetCloudLocation(strings.ToLower(wcp.GetCommonParameters().Location.String()), wcp.GetCommonParameters().CloudProvider)
+			location, err := common.GetCloudLocation(wcp.GetCommonParameters().Location, wcp.GetCommonParameters().CloudProvider)
 			if err != nil {
 				return nil, err
 			}
@@ -430,8 +429,8 @@ func getExistingProvider(r *configpb.Resource, creds *credspb.CloudCredentials) 
 	// Here we use a default location so that if there are lingering resources in the state we don't throw an error.
 	// It doesn't work perfectly tho -- AWS resources will be removed by terraform from the state if they don't exist
 	// in our config and will no longer be tracked.
-	defaultAzureLocation := common.LOCATION[common.IRELAND][commonpb.CloudProvider_AZURE]
-	defaultAwsLocation := common.LOCATION[common.IRELAND][commonpb.CloudProvider_AWS]
+	defaultAzureLocation := common.LOCATION[commonpb.Location_EU_WEST_1][commonpb.CloudProvider_AZURE]
+	defaultAwsLocation := common.LOCATION[commonpb.Location_EU_WEST_1][commonpb.CloudProvider_AWS]
 
 	if hasValidAwsCreds(creds) && providers[commonpb.CloudProvider_AZURE] == nil {
 		providers[commonpb.CloudProvider_AZURE] = map[string]*types.Provider{

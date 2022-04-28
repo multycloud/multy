@@ -7,7 +7,7 @@
           "cidr_block": "10.0.0.0/16",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "UK"
+            "location": "EU_WEST_2"
           },
           "name": "example_vn"
         }
@@ -21,7 +21,7 @@
           "cidr_block": "10.0.0.0/16",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "UK"
+            "location": "EU_WEST_2"
           },
           "name": "example_vn"
         }

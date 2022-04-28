@@ -8,7 +8,7 @@
             "cidr_block": "10.0.0.0/16",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "example_vn_az",
             "rg_vars": {
@@ -26,7 +26,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificPublicIpArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "example_ip"
           }
@@ -41,7 +41,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "test-storage-999999",
             "random_suffix": false,
@@ -58,7 +58,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificObjectStorageArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "test-storage-999999",
             "random_suffix": false,
@@ -75,7 +75,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificNetworkInterfaceArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "example_nic",
             "subnet_id": "example_subnet"
@@ -91,7 +91,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificPublicIpArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "example_ip"
           }
@@ -107,7 +107,7 @@
             "cidr_block": "10.0.0.0/16",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "example_vn_aws",
             "rg_vars": {
@@ -159,7 +159,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificNetworkInterfaceArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "IRELAND"
+              "location": "EU_WEST_1"
             },
             "name": "example_nic",
             "subnet_id": "example_subnet"
