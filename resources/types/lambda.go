@@ -312,7 +312,7 @@ func (r *Lambda) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 func (r *Lambda) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
 	if r.SourceCodeObject == nil {
-		errs = append(errs, r.NewValidationError("one of source_code_dir or source_code_object must be set", "source_code_object_id"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("one of source_code_dir or source_code_object must be set"), "source_code_object_id"))
 	}
 	return errs
 }

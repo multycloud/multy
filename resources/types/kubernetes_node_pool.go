@@ -61,19 +61,19 @@ func newKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePo
 
 func (r *KubernetesNodePool) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	if r.Args.MinNodeCount < 1 {
-		errs = append(errs, r.NewValidationError("node pool must have a min node count of at least 1", "min_node_count"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("node pool must have a min node count of at least 1"), "min_node_count"))
 	}
 	if r.Args.MaxNodeCount < 1 {
-		errs = append(errs, r.NewValidationError("node pool must have a max node count of at least 1", "max_node_count"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("node pool must have a max node count of at least 1"), "max_node_count"))
 	}
 	if r.Args.MinNodeCount > r.Args.MaxNodeCount {
-		errs = append(errs, r.NewValidationError("min_node_count must be lower or equal to max_node_count", "min_node_count"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("min_node_count must be lower or equal to max_node_count"), "min_node_count"))
 	}
 	if r.Args.StartingNodeCount < r.Args.MinNodeCount || r.Args.StartingNodeCount > r.Args.MaxNodeCount {
-		errs = append(errs, r.NewValidationError("starting_node_count must be between min and max node count", "starting_node_count"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("starting_node_count must be between min and max node count"), "starting_node_count"))
 	}
 	if r.Args.VmSize == commonpb.VmSize_UNKNOWN_VM_SIZE {
-		errs = append(errs, r.NewValidationError("unknown vm size", "vm_size"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("unknown vm size"), "vm_size"))
 	}
 
 	return errs

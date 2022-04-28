@@ -19,6 +19,9 @@ type ValidationError struct {
 	ErrorMessage string
 	ResourceId   string
 	FieldName    string
+
+	ResourceNotFound   bool
+	ResourceNotFoundId string
 }
 
 func (e ValidationError) Print() {
@@ -27,23 +30,6 @@ func (e ValidationError) Print() {
 		printLinesInRange(e.SourceRange)
 	} else {
 		printToStdErrLn("error when parsing resource %s: %s\n", e.ResourceId, e.ErrorMessage)
-	}
-}
-
-func (info *ResourceValidationInfo) NewError(errorMessage string, fieldName string) ValidationError {
-	if _, ok := info.SourceRanges[fieldName]; ok {
-		sourceRange := info.SourceRanges[fieldName]
-		return ValidationError{
-			SourceRange:  sourceRange,
-			ErrorMessage: errorMessage,
-			ResourceId:   info.ResourceId,
-			FieldName:    fieldName,
-		}
-	}
-	return ValidationError{
-		ErrorMessage: errorMessage,
-		ResourceId:   info.ResourceId,
-		FieldName:    fieldName,
 	}
 }
 

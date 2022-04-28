@@ -28,7 +28,7 @@ func NewVaultAccessPolicy(resourceId string, args *resourcespb.VaultAccessPolicy
 	}
 	v, err := resources.Get[*Vault](resourceId, others, args.VaultId)
 	if err != nil {
-		return nil, errors.ValidationErrors([]validate.ValidationError{vap.NewValidationError(err.Error(), "vault_id")})
+		return nil, errors.ValidationErrors([]validate.ValidationError{vap.NewValidationError(err, "vault_id")})
 	}
 	vap.Parent = v
 	vap.Vault = v
@@ -122,7 +122,7 @@ func (r *VaultAccessPolicy) GetAccessPolicyRules() *vault.AzureKeyVaultPermissio
 
 func (r *VaultAccessPolicy) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	if r.Args.Access == resourcespb.VaultAccess_UNKNOWN {
-		errs = append(errs, r.NewValidationError("unknown vault access", "access"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("unknown vault access"), "access"))
 	}
 	return errs
 }

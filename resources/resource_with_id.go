@@ -3,8 +3,11 @@ package resources
 import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
+	pberr "github.com/multycloud/multy/api/proto/errorspb"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/validate"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strings"
 )
 
@@ -61,20 +64,26 @@ type ChildResourceWithId[ParentT Resource, ChildT WithChildCommonParams] struct 
 	Parent     ParentT
 }
 
-func (r ResourceWithId[T]) NewValidationError(err string, field string) validate.ValidationError {
-	return validate.ValidationError{
-		ErrorMessage: err,
-		ResourceId:   r.ResourceId,
-		FieldName:    field,
-	}
+func (r ResourceWithId[T]) NewValidationError(err error, field string) validate.ValidationError {
+	return newError(err, r.ResourceId, field)
 }
 
-func (r ChildResourceWithId[A, B]) NewValidationError(err string, field string) validate.ValidationError {
-	return validate.ValidationError{
-		ErrorMessage: err,
-		ResourceId:   r.ResourceId,
-		FieldName:    field,
+func newError(err error, resourceId string, fieldName string) validate.ValidationError {
+	result := validate.ValidationError{
+		ErrorMessage: err.Error(),
+		ResourceId:   resourceId,
+		FieldName:    fieldName,
 	}
+	if s, ok := status.FromError(err); ok && s.Code() == codes.NotFound {
+		details := s.Details()[0].(*pberr.ResourceNotFoundDetails)
+		result.ResourceNotFound = true
+		result.ResourceNotFoundId = details.ResourceId
+	}
+	return result
+}
+
+func (r ChildResourceWithId[A, B]) NewValidationError(err error, field string) validate.ValidationError {
+	return newError(err, r.ResourceId, field)
 }
 
 func (r ChildResourceWithId[A, B]) GetResourceId() string {

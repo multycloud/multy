@@ -7,11 +7,14 @@ import (
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/configpb"
+	pberr "github.com/multycloud/multy/api/proto/errorspb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources/output"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"log"
 )
@@ -229,6 +232,14 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*com
 
 	_, err = deploy.Deploy(ctx, c, previousResource, nil)
 	if err != nil {
+		if s, ok := status.FromError(err); ok && s.Code() == codes.InvalidArgument {
+			for _, details := range s.Details() {
+				v := details.(*pberr.ResourceValidationError)
+				if v.GetNotFoundDetails() != nil && v.GetNotFoundDetails().ResourceId == in.GetResourceId() {
+					return nil, errors.ResourceInUseError(in.GetResourceId(), v.ResourceId)
+				}
+			}
+		}
 		return nil, err
 	}
 

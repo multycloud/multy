@@ -45,13 +45,13 @@ func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesCluster
 func (r *KubernetesCluster) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
 	if len(r.Subnets) < 2 {
-		errs = append(errs, r.NewValidationError("at least 2 subnet ids must be provided", "subnet_ids"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("at least 2 subnet ids must be provided"), "subnet_ids"))
 	}
 	if r.Args.GetDefaultNodePool() == nil {
-		errs = append(errs, r.NewValidationError(fmt.Sprintf("cluster must have a default node pool"), "default_node_pool"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("cluster must have a default node pool"), "default_node_pool"))
 	}
 	if r.Args.GetDefaultNodePool().GetClusterId() != "" {
-		errs = append(errs, r.NewValidationError(fmt.Sprintf("cluster id for default node pool can't be set"), "default_node_pool"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("cluster id for default node pool can't be set"), "default_node_pool"))
 	}
 	errs = append(errs, r.DefaultNodePool.Validate(ctx)...)
 	return errs

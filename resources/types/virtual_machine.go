@@ -361,10 +361,10 @@ func (r *VirtualMachine) Validate(ctx resources.MultyContext) (errs []validate.V
 	//if vn.Name length? { return false }
 	//if vn.Size valid { return false }
 	if r.Args.GeneratePublicIp && len(r.NetworkInterface) != 0 {
-		errs = append(errs, r.NewValidationError("generate public ip can't be set with network interface ids", "generate_public_ip"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("generate public ip can't be set with network interface ids"), "generate_public_ip"))
 	}
 	if r.Args.GeneratePublicIp && r.PublicIp != nil {
-		errs = append(errs, r.NewValidationError("conflict between generate_public_ip and public_ip_id", "generate_public_ip"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("conflict between generate_public_ip and public_ip_id"), "generate_public_ip"))
 	}
 	return errs
 }

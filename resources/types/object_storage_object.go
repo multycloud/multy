@@ -32,7 +32,7 @@ func NewObjectStorageObject(resourceId string, args *resourcespb.ObjectStorageOb
 	}
 	obj, err := resources.Get[*ObjectStorage](resourceId, others, args.ObjectStorageId)
 	if err != nil {
-		return nil, errors.ValidationErrors([]validate.ValidationError{o.NewValidationError(err.Error(), "object_storage_id")})
+		return nil, errors.ValidationErrors([]validate.ValidationError{o.NewValidationError(err, "object_storage_id")})
 	}
 	o.Parent = obj
 	o.ObjectStorage = obj
@@ -139,7 +139,7 @@ func (r *ObjectStorageObject) IsPrivate() bool {
 
 func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	if len(r.Args.ContentBase64) == 0 {
-		errs = append(errs, r.NewValidationError("content_base64 must be set", ""))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("content_base64 must be set"), ""))
 	}
 	return errs
 }
