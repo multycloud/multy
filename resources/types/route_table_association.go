@@ -79,6 +79,12 @@ func (r *RouteTableAssociation) Translate(resources.MultyContext) ([]output.TfBl
 }
 
 func (r *RouteTableAssociation) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
+	if r.RouteTable.VirtualNetwork.ResourceId != r.Subnet.VirtualNetwork.ResourceId {
+		errs = append(errs, r.NewValidationError(fmt.Errorf(
+			"cannot associate subnet %s to route_table %s because they are in different virtual networks",
+			r.Subnet.ResourceId, r.RouteTable.ResourceId),
+			"subnet_id"))
+	}
 	return errs
 }
 
