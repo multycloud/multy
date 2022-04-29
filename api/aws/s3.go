@@ -9,24 +9,29 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"log"
+	"os"
 	"time"
 )
 
 const (
-	region     = "eu-west-2"
-	bucketName = "multy-users-tfstate"
+	region = "eu-west-2"
 )
 
 type Client struct {
 	s3Client         *s3.S3
 	cloudWatchClient *cloudwatch.CloudWatch
+	userStorageName  string
 }
 
-func Configure() Client {
+func Configure() (*Client, error) {
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(region)},
 	))
-	return Client{s3.New(sess), cloudwatch.New(sess)}
+	userStorageName, exists := os.LookupEnv("USER_STORAGE_NAME")
+	if !exists {
+		return nil, fmt.Errorf("USER_STORAGE_NAME not found")
+	}
+	return &Client{s3.New(sess), cloudwatch.New(sess), userStorageName}, nil
 }
 
 func (c Client) SaveFile(userId string, fileName string, content string) error {
@@ -35,7 +40,7 @@ func (c Client) SaveFile(userId string, fileName string, content string) error {
 	_, err := c.s3Client.PutObject(&s3.PutObjectInput{
 		ACL:    aws.String("private"),
 		Body:   bytes.NewReader([]byte(content)),
-		Bucket: aws.String(bucketName),
+		Bucket: aws.String(c.userStorageName),
 		Key:    aws.String(keyName),
 	})
 
@@ -51,14 +56,14 @@ func (c Client) ReadFile(userId string, fileName string) (string, error) {
 	keyName := fmt.Sprintf("%s/%s", userId, fileName)
 
 	object, err := c.s3Client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(bucketName),
+		Bucket: aws.String(c.userStorageName),
 		Key:    aws.String(keyName),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchKey:
-				fmt.Printf("s3://%s/%s does not exist. Creating empty file\n", bucketName, keyName)
+				fmt.Printf("s3://%s/%s does not exist. Creating empty file\n", c.userStorageName, keyName)
 				err := c.SaveFile(userId, fileName, "")
 				if err != nil {
 					return "", err

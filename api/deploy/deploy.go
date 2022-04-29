@@ -225,8 +225,13 @@ func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configp
 		return encoded, err
 	}
 
+	tfBlock, err := GetTerraformBlock(c.UserId)
+	if err != nil {
+		return encoded, err
+	}
+
 	// TODO: move this to a proper place
-	hclOutput := GetTerraformBlock(c.UserId) + encoded.HclString
+	hclOutput := tfBlock + encoded.HclString
 
 	dir := "multy"
 	if readonly {
