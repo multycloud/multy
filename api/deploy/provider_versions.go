@@ -1,17 +1,24 @@
 package deploy
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 const (
 	AwsProviderVersion    = "4.8.0"
 	AzureProviderVersion  = "3.0.2"
 	RandomProviderVersion = "3.1.3"
 	StateRegion           = "eu-west-2"
-	Bucket                = "multy-users-tfstate"
 	tfState               = "terraform.tfstate"
 )
 
-func GetTerraformBlock(userId string) string {
+func GetTerraformBlock(userId string) (string, error) {
+	userStorageName, exists := os.LookupEnv("USER_STORAGE_NAME")
+	if !exists {
+		return "", fmt.Errorf("USER_STORAGE_NAME not found")
+	}
+
 	return fmt.Sprintf(`
 terraform {
   backend "s3" {
@@ -35,5 +42,5 @@ terraform {
 	}
   }
 }
-`, Bucket, userId, tfState, StateRegion, AwsProviderVersion, AzureProviderVersion, RandomProviderVersion)
+`, userStorageName, userId, tfState, StateRegion, AwsProviderVersion, AzureProviderVersion, RandomProviderVersion), nil
 }

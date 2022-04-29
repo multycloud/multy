@@ -250,7 +250,10 @@ func NewDatabase(connectionString string) (*Database, error) {
 		return nil, err
 	}
 
-	// "goncalo:@tcp(localhost:3306)/multydb?parseTime=true"
+	awsClient, err := aws_client.Configure()
+	if err != nil {
+		return nil, err
+	}
 
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
@@ -259,7 +262,7 @@ func NewDatabase(connectionString string) (*Database, error) {
 	return &Database{
 		keyValueStore: map[string]string{},
 		marshaler:     marshaler,
-		AwsClient:     aws_client.Configure(),
+		AwsClient:     *awsClient,
 		sqlConnection: db,
 		lockCache:     sync.Map{},
 	}, nil
