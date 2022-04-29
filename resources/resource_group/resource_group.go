@@ -60,8 +60,8 @@ func (rg *Type) GetOutputValues(cloud commonpb.CloudProvider) map[string]cty.Val
 func GetResourceGroupName(name string) string {
 	return fmt.Sprintf("azurerm_resource_group.%s.name", name)
 }
-func GetDefaultResourceGroupIdString(resourceType string) string {
-	return fmt.Sprintf("%s-rg", resourceType)
+func GetDefaultResourceGroupIdString(resourceType string, groupId string) string {
+	return fmt.Sprintf("%s-%s-rg", groupId, resourceType)
 }
 
 func (rg *Type) GetResourceId() string {
@@ -111,4 +111,8 @@ func (rg *Type) GetDependencies(ctx resources.MultyContext) []resources.CloudSpe
 
 func (rg *Type) GetCloud() commonpb.CloudProvider {
 	return rg.Cloud
+}
+
+func (rg *Type) GetCommonArgs() any {
+	return nil
 }

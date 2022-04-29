@@ -1,6 +1,6 @@
 data azurerm_client_config example_azure {}
 resource "azurerm_key_vault" "example_azure" {
-  resource_group_name = azurerm_resource_group.kv-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "dev-test-multy"
   location            = "ukwest"
   sku_name            = "standard"
@@ -14,11 +14,11 @@ resource "azurerm_key_vault" "example_azure" {
     secret_permissions      = [
       "List", "Get", "Set", "Delete", "Recover", "Backup", "Restore", "Purge"
     ]
-    key_permissions         = []
+    key_permissions = []
   }
 }
-resource "azurerm_resource_group" "kv-rg" {
-  name     = "kv-rg"
+resource "azurerm_resource_group" "rg1" {
+  name     = "rg1"
   location = "ukwest"
 }
 provider "aws" {

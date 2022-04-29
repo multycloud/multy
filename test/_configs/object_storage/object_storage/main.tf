@@ -8,7 +8,7 @@ resource "aws_s3_bucket_versioning" "obj_storage_aws" {
   }
 }
 resource "azurerm_storage_account" "obj_storage_azure" {
-  resource_group_name             = azurerm_resource_group.st-rg.name
+  resource_group_name             = azurerm_resource_group.rg1.name
   name                            = "teststorage12384761234"
   location                        = "northeurope"
   account_tier                    = "Standard"
@@ -28,8 +28,8 @@ resource "azurerm_storage_container" "obj_storage_azure_private" {
   storage_account_name  = azurerm_storage_account.obj_storage_azure.name
   container_access_type = "private"
 }
-resource "azurerm_resource_group" "st-rg" {
-  name     = "st-rg"
+resource "azurerm_resource_group" "rg1" {
+  name     = "rg1"
   location = "northeurope"
 }
 provider "aws" {

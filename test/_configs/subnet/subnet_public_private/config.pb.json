@@ -7,7 +7,8 @@
           "cidr_block": "10.0.0.0/16",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "name": "example_vn"
         }
@@ -21,7 +22,8 @@
           "cidr_block": "10.0.0.0/16",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "name": "example_vn"
         }
@@ -138,7 +140,8 @@
           "@type": "type.googleapis.com/dev.multy.resources.DatabaseArgs",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "password": "multy$Admin123!",
           "username": "multyadmin",
@@ -161,7 +164,8 @@
           "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "name": "test-vm",
           "operating_system": "LINUX",
@@ -180,7 +184,8 @@
           "@type": "type.googleapis.com/dev.multy.resources.NetworkSecurityGroupArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "name": "test-nsg2",
           "rules": [
@@ -226,7 +231,8 @@
           "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "name": "test-vm",
           "operating_system": "LINUX",
@@ -265,7 +271,8 @@
           "@type": "type.googleapis.com/dev.multy.resources.DatabaseArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "password": "multy$Admin123!",
           "username": "multyadmin",
@@ -288,7 +295,8 @@
           "@type": "type.googleapis.com/dev.multy.resources.NetworkSecurityGroupArgs",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "name": "test-nsg2",
           "rules": [

@@ -102,12 +102,8 @@ resource "aws_default_security_group" "vn_aws" {
     self        = true
   }
 }
-resource "azurerm_resource_group" "db-rg" {
-  name     = "db-rg"
-  location = "eastus"
-}
 resource "azurerm_mysql_server" "example_db_azure" {
-  resource_group_name              = azurerm_resource_group.db-rg.name
+  resource_group_name              = azurerm_resource_group.rg1.name
   name                             = "example-db"
   location                         = "eastus"
   administrator_login              = "multyadmin"
@@ -119,46 +115,46 @@ resource "azurerm_mysql_server" "example_db_azure" {
   ssl_minimal_tls_version_enforced = "TLSEnforcementDisabled"
 }
 resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
-  resource_group_name = azurerm_resource_group.db-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example-db0"
   server_name         = azurerm_mysql_server.example_db_azure.name
   subnet_id           = azurerm_subnet.subnet1_azure.id
 }
 resource "azurerm_mysql_virtual_network_rule" "example_db_azure1" {
-  resource_group_name = azurerm_resource_group.db-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example-db1"
   server_name         = azurerm_mysql_server.example_db_azure.name
   subnet_id           = azurerm_subnet.subnet2_azure.id
 }
 resource "azurerm_mysql_firewall_rule" "example_db_azure" {
-  resource_group_name = azurerm_resource_group.db-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "public"
   server_name         = azurerm_mysql_server.example_db_azure.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "255.255.255.255"
 }
 resource "azurerm_subnet" "subnet1_azure" {
-  resource_group_name  = azurerm_resource_group.vn-rg.name
+  resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "subnet1"
   address_prefixes     = ["10.0.0.0/24"]
   virtual_network_name = azurerm_virtual_network.vn_azure.name
   service_endpoints    = ["Microsoft.Sql"]
 }
 resource "azurerm_subnet" "subnet2_azure" {
-  resource_group_name  = azurerm_resource_group.vn-rg.name
+  resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "subnet2"
   address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.vn_azure.name
   service_endpoints    = ["Microsoft.Sql"]
 }
 resource "azurerm_virtual_network" "vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "db-vn"
   location            = "eastus"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "rt_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "db-rt"
   location            = "eastus"
 
@@ -177,7 +173,7 @@ resource "azurerm_subnet_route_table_association" "subnet2_azure" {
   route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_route_table" "vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "db-vn"
   location            = "eastus"
 
@@ -187,8 +183,8 @@ resource "azurerm_route_table" "vn_azure" {
     next_hop_type  = "VnetLocal"
   }
 }
-resource "azurerm_resource_group" "vn-rg" {
-  name     = "vn-rg"
+resource "azurerm_resource_group" "rg1" {
+  name     = "rg1"
   location = "eastus"
 }
 provider "aws" {

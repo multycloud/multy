@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 type Resources struct {
@@ -55,18 +58,39 @@ type MultyResourceGroup struct {
 	Resources []Resource
 }
 
-func (r Resources) GetMultyResourceGroups() map[string]*MultyResourceGroup {
+func generateUniqueGroupId(existingGroups []string) (groupId string) {
+	for groupId = common.RandomString(4); slices.Contains(existingGroups, groupId); groupId = common.RandomString(4) {
+	}
+
+	return
+}
+
+func (r Resources) GetMultyResourceGroups(existingGroupsByResource map[string]string) map[string]*MultyResourceGroup {
 	groups := map[Resource]*MultyResourceGroup{}
+	// creates 1 group per resource
 	for _, resource := range util.GetSortedMapValues(r.ResourceMap) {
 		if _, ok := groups[resource]; !ok {
+			var groupId string
+			if existingGroupId, ok := existingGroupsByResource[resource.GetResourceId()]; ok {
+				groupId = existingGroupId
+			} else {
+				groupId = generateUniqueGroupId(maps.Values(existingGroupsByResource))
+			}
 			groups[resource] = &MultyResourceGroup{
-				GroupId:   resource.GetResourceId(),
+				GroupId:   groupId,
 				Resources: []Resource{resource},
 			}
 		}
-
+	}
+	// merge all groups
+	for _, resource := range util.GetSortedMapValues(r.ResourceMap) {
 		for _, dep := range r.dependencies[resource.GetResourceId()] {
-			mergeGroups(groups, resource, r.ResourceMap[dep])
+			// prefer to keep existing groups
+			if _, hasGroup := existingGroupsByResource[resource.GetResourceId()]; hasGroup {
+				mergeGroups(groups, resource, r.ResourceMap[dep])
+			} else {
+				mergeGroups(groups, r.ResourceMap[dep], resource)
+			}
 		}
 	}
 
@@ -129,6 +153,8 @@ type Resource interface {
 	GetMainResourceName() (string, error)
 
 	GetCloud() commonpb.CloudProvider
+
+	GetCommonArgs() any
 }
 
 func (c *CloudSpecificResource) GetMainOutputId() (string, error) {

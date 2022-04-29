@@ -193,12 +193,8 @@ resource "aws_instance" "vm_aws" {
   user_data_base64            = "ZWNobyAnSGVsbG8gV29ybGQn"
   iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
 }
-resource "azurerm_resource_group" "db-rg" {
-  name     = "db-rg"
-  location = "northeurope"
-}
 resource "azurerm_mysql_server" "example_db_azure" {
-  resource_group_name              = azurerm_resource_group.db-rg.name
+  resource_group_name              = azurerm_resource_group.rg1.name
   name                             = "example-db"
   location                         = "northeurope"
   administrator_login              = "multyadmin"
@@ -210,32 +206,32 @@ resource "azurerm_mysql_server" "example_db_azure" {
   ssl_minimal_tls_version_enforced = "TLSEnforcementDisabled"
 }
 resource "azurerm_mysql_firewall_rule" "example_db_azure" {
-  resource_group_name = azurerm_resource_group.db-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "public"
   server_name         = azurerm_mysql_server.example_db_azure.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "255.255.255.255"
 }
 resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
-  resource_group_name = azurerm_resource_group.db-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example-db0"
   server_name         = azurerm_mysql_server.example_db_azure.name
   subnet_id           = azurerm_subnet.subnet1_azure.id
 }
 resource "azurerm_mysql_virtual_network_rule" "example_db_azure1" {
-  resource_group_name = azurerm_resource_group.db-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example-db1"
   server_name         = azurerm_mysql_server.example_db_azure.name
   subnet_id           = azurerm_subnet.subnet2_azure.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
   location            = "northeurope"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
   location            = "northeurope"
 
@@ -245,12 +241,8 @@ resource "azurerm_route_table" "example_vn_azure" {
     next_hop_type  = "VnetLocal"
   }
 }
-resource "azurerm_resource_group" "nsg-rg" {
-  name     = "nsg-rg"
-  location = "northeurope"
-}
 resource "azurerm_network_security_group" "nsg2_azure" {
-  resource_group_name = azurerm_resource_group.nsg-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-nsg2"
   location            = "northeurope"
 
@@ -327,7 +319,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   }
 }
 resource "azurerm_route_table" "rt_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-rt"
   location            = "northeurope"
 
@@ -342,7 +334,7 @@ resource "azurerm_subnet_route_table_association" "subnet3_azure" {
   route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet" "subnet1_azure" {
-  resource_group_name  = azurerm_resource_group.vn-rg.name
+  resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "private-subnet1"
   address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
@@ -353,7 +345,7 @@ resource "azurerm_subnet_route_table_association" "subnet1_azure" {
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_subnet" "subnet2_azure" {
-  resource_group_name  = azurerm_resource_group.vn-rg.name
+  resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "private-subnet2"
   address_prefixes     = ["10.0.2.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
@@ -364,13 +356,13 @@ resource "azurerm_subnet_route_table_association" "subnet2_azure" {
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_subnet" "subnet3_azure" {
-  resource_group_name  = azurerm_resource_group.vn-rg.name
+  resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "public-subnet3"
   address_prefixes     = ["10.0.3.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_network_interface" "vm_azure" {
-  resource_group_name = azurerm_resource_group.vm-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-vm"
   location            = "northeurope"
 
@@ -383,7 +375,7 @@ resource "azurerm_network_interface" "vm_azure" {
   }
 }
 resource "azurerm_public_ip" "vm_azure" {
-  resource_group_name = azurerm_resource_group.vm-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-vm"
   location            = "northeurope"
   allocation_method   = "Static"
@@ -396,7 +388,7 @@ resource "random_password" "vm_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
-  resource_group_name   = azurerm_resource_group.vm-rg.name
+  resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   computer_name         = "testvm"
   location              = "northeurope"
@@ -424,12 +416,8 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   }
   disable_password_authentication = false
 }
-resource "azurerm_resource_group" "vm-rg" {
-  name     = "vm-rg"
-  location = "northeurope"
-}
-resource "azurerm_resource_group" "vn-rg" {
-  name     = "vn-rg"
+resource "azurerm_resource_group" "rg1" {
+  name     = "rg1"
   location = "northeurope"
 }
 provider "aws" {

@@ -85,13 +85,13 @@ resource "aws_instance" "vm2_aws" {
   iam_instance_profile = aws_iam_instance_profile.vm2_aws.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
   location            = "northeurope"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
   location            = "northeurope"
 
@@ -102,7 +102,7 @@ resource "azurerm_route_table" "example_vn_azure" {
   }
 }
 resource "azurerm_subnet" "subnet_azure" {
-  resource_group_name  = azurerm_resource_group.vn-rg.name
+  resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "subnet"
   address_prefixes     = ["10.0.2.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
@@ -112,7 +112,7 @@ resource "azurerm_subnet_route_table_association" "subnet_azure" {
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_network_interface" "vm_azure" {
-  resource_group_name = azurerm_resource_group.vm-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-vm"
   location            = "northeurope"
 
@@ -131,7 +131,7 @@ resource "random_password" "vm_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
-  resource_group_name   = azurerm_resource_group.vm-rg.name
+  resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   computer_name         = "testvm"
   location              = "northeurope"
@@ -158,12 +158,8 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   }
   disable_password_authentication = false
 }
-resource "azurerm_resource_group" "vm-rg" {
-  name     = "vm-rg"
-  location = "northeurope"
-}
 resource "azurerm_network_interface" "vm2_azure" {
-  resource_group_name = azurerm_resource_group.vm-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-vm"
   location            = "northeurope"
 
@@ -182,7 +178,7 @@ resource "random_password" "vm2_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm2_azure" {
-  resource_group_name   = azurerm_resource_group.vm-rg.name
+  resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   computer_name         = "testvm"
   location              = "northeurope"
@@ -208,8 +204,8 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   }
   disable_password_authentication = false
 }
-resource "azurerm_resource_group" "vn-rg" {
-  name     = "vn-rg"
+resource "azurerm_resource_group" "rg1" {
+  name     = "rg1"
   location = "northeurope"
 }
 provider "aws" {
