@@ -21,7 +21,7 @@ var LOCATION = map[commonpb.Location]map[commonpb.CloudProvider]string{
 		AZURE: "ukwest",
 	},
 	commonpb.Location_EU_WEST_3: {
-		AWS:   "eu-west-2",
+		AWS:   "eu-west-3",
 		AZURE: "francecentral",
 	},
 
