@@ -29,7 +29,9 @@ hello@multy.dev!
 [Multy](https://github.com/multycloud/multy) - This project is the brains of the tool, where the translation is
 performed and where Multy resource is
 translated it the specific cloud resources.
+
 [Multy Terraform Provider](https://github.com/multycloud/terraform-provider-multy) - Our terraform provider allows you
 to deploy Multy resources through the Terraform tool.
+
 [Multy Docs](https://github.com/multycloud/multy-docs) - This repo is where our docs are located
 for [docs.multy.dev](https://docs.multy.dev)
