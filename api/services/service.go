@@ -117,6 +117,11 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		return *new(OutT), err
 	}
 
+	_, err = deploy.EncodeAndStoreTfFile(ctx, c, nil, nil, true)
+	if err != nil {
+		return *new(OutT), err
+	}
+
 	return s.readFromConfig(ctx, c, in, true)
 }
 
