@@ -90,7 +90,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	if err != nil {
 		return *new(OutT), err
 	}
-	return s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.ResourceId})
+	return s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.ResourceId}, false)
 }
 
 func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (out OutT, err error) {
@@ -117,14 +117,14 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		return *new(OutT), err
 	}
 
-	return s.readFromConfig(ctx, c, in)
+	return s.readFromConfig(ctx, c, in, true)
 }
 
 type stateParser[OutT any] interface {
 	FromState(state *output.TfState) (OutT, error)
 }
 
-func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Config, in WithResourceId) (OutT, error) {
+func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Config, in WithResourceId, readonly bool) (OutT, error) {
 	allResources, err := deploy.GetResources(c)
 	if err != nil {
 		return *new(OutT), err
@@ -135,7 +135,7 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Conf
 			if err != nil {
 				return *new(OutT), err
 			}
-			err = deploy.MaybeInit(ctx, c.UserId, false)
+			err = deploy.MaybeInit(ctx, c.UserId, readonly)
 			if err != nil {
 				return *new(OutT), err
 			}
@@ -195,7 +195,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 	if err != nil {
 		return *new(OutT), err
 	}
-	return s.readFromConfig(ctx, c, in)
+	return s.readFromConfig(ctx, c, in, false)
 }
 
 func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (_ *commonpb.Empty, err error) {
