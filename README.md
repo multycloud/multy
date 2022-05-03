@@ -24,7 +24,7 @@ resource multy_virtual_network vn {
   name       = "test_vm"
   cidr_block = "10.0.0.0/16"
   cloud      = each.key
-  location   = "ireland"
+  location   = "eu_west_1"
 }
 
 resource multy_subnet subnet {
