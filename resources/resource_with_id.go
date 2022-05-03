@@ -44,6 +44,10 @@ func (r *ResourceWithId[T]) GetCloud() commonpb.CloudProvider {
 	return r.Args.GetCommonParameters().CloudProvider
 }
 
+func (r *ResourceWithId[T]) GetCommonArgs() any {
+	return r.Args.GetCommonParameters()
+}
+
 func (r *ResourceWithId[T]) Validate() (errs []validate.ValidationError) {
 	location := r.GetLocation()
 	if _, ok := common.LOCATION[location]; !ok {
@@ -95,4 +99,8 @@ func (r *ChildResourceWithId[A, B]) GetCloud() commonpb.CloudProvider {
 
 func (r *ChildResourceWithId[A, B]) GetCloudSpecificLocation() string {
 	return r.Parent.GetCloudSpecificLocation()
+}
+
+func (r *ChildResourceWithId[A, B]) GetCommonArgs() any {
+	return r.Args.GetCommonParameters()
 }

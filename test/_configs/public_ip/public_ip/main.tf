@@ -67,13 +67,13 @@ resource "aws_subnet" "subnet_aws" {
   availability_zone = "eu-west-1b"
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
   location            = "northeurope"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
   location            = "northeurope"
 
@@ -84,21 +84,13 @@ resource "azurerm_route_table" "example_vn_azure" {
   }
 }
 resource "azurerm_public_ip" "ip_azure" {
-  resource_group_name = azurerm_resource_group.pip-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-ip"
   location            = "northeurope"
   allocation_method   = "Static"
 }
-resource "azurerm_resource_group" "nic-rg" {
-  name     = "nic-rg"
-  location = "northeurope"
-}
-resource "azurerm_resource_group" "pip-rg" {
-  name     = "pip-rg"
-  location = "northeurope"
-}
 resource "azurerm_network_interface" "private-nic_azure" {
-  resource_group_name = azurerm_resource_group.nic-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-private-nic"
   location            = "northeurope"
 
@@ -110,7 +102,7 @@ resource "azurerm_network_interface" "private-nic_azure" {
   }
 }
 resource "azurerm_network_interface" "public-nic_azure" {
-  resource_group_name = azurerm_resource_group.nic-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-public-nic"
   location            = "northeurope"
 
@@ -123,7 +115,7 @@ resource "azurerm_network_interface" "public-nic_azure" {
   }
 }
 resource "azurerm_subnet" "subnet_azure" {
-  resource_group_name  = azurerm_resource_group.vn-rg.name
+  resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "subnet"
   address_prefixes     = ["10.0.2.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
@@ -132,8 +124,8 @@ resource "azurerm_subnet_route_table_association" "subnet_azure" {
   subnet_id      = azurerm_subnet.subnet_azure.id
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
-resource "azurerm_resource_group" "vn-rg" {
-  name     = "vn-rg"
+resource "azurerm_resource_group" "rg1" {
+  name     = "rg1"
   location = "northeurope"
 }
 provider "aws" {

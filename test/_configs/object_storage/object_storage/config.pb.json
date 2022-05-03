@@ -6,7 +6,8 @@
           "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "name": "test-storage-12384761234",
           "versioning": true
@@ -20,7 +21,8 @@
           "@type": "type.googleapis.com/dev.multy.resources.ObjectStorageArgs",
           "common_parameters": {
             "cloud_provider": "AZURE",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "name": "test-storage-12384761234",
           "versioning": true

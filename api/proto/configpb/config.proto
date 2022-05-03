@@ -22,11 +22,15 @@ message Resource {
   string resource_id = 1;
   ResourceArgs resource_args = 2;
   DeployedResourceGroup deployed_resource_group = 3;
+
+  bool implicit_resource_group = 4;
 }
 
 message DeployedResourceGroup {
   string group_id = 1;
   repeated string deployed_resource = 2;
+
+  string implicit_resource_group_id = 3;
 }
 
 message ResourceArgs {

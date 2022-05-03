@@ -157,13 +157,13 @@ resource "aws_instance" "vm2_aws" {
   iam_instance_profile        = aws_iam_instance_profile.vm2_aws.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
   location            = "northeurope"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
   location            = "northeurope"
 
@@ -173,12 +173,8 @@ resource "azurerm_route_table" "example_vn_azure" {
     next_hop_type  = "VnetLocal"
   }
 }
-resource "azurerm_resource_group" "nsg-rg" {
-  name     = "nsg-rg"
-  location = "northeurope"
-}
 resource "azurerm_network_security_group" "nsg2_azure" {
-  resource_group_name = azurerm_resource_group.nsg-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-nsg2"
   location            = "northeurope"
 
@@ -231,7 +227,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   }
 }
 resource "azurerm_route_table" "rt_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-rt"
   location            = "northeurope"
 
@@ -246,13 +242,13 @@ resource "azurerm_subnet_route_table_association" "subnet1_azure" {
   route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_subnet" "subnet1_azure" {
-  resource_group_name  = azurerm_resource_group.vn-rg.name
+  resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "subnet1"
   address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
 resource "azurerm_network_interface" "vm_azure" {
-  resource_group_name = azurerm_resource_group.vm-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-vm"
   location            = "northeurope"
 
@@ -265,7 +261,7 @@ resource "azurerm_network_interface" "vm_azure" {
   }
 }
 resource "azurerm_public_ip" "vm_azure" {
-  resource_group_name = azurerm_resource_group.vm-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-vm"
   location            = "northeurope"
   allocation_method   = "Static"
@@ -278,7 +274,7 @@ resource "random_password" "vm_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
-  resource_group_name   = azurerm_resource_group.vm-rg.name
+  resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   computer_name         = "testvm"
   location              = "northeurope"
@@ -306,12 +302,12 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   }
   disable_password_authentication = false
 }
-resource "azurerm_resource_group" "vm-rg" {
-  name     = "vm-rg"
+resource "azurerm_resource_group" "rg1" {
+  name     = "rg1"
   location = "northeurope"
 }
 resource "azurerm_network_interface" "vm2_azure" {
-  resource_group_name = azurerm_resource_group.vm-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-vm2"
   location            = "northeurope"
 
@@ -324,7 +320,7 @@ resource "azurerm_network_interface" "vm2_azure" {
   }
 }
 resource "azurerm_public_ip" "vm2_azure" {
-  resource_group_name = azurerm_resource_group.vm-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-vm2"
   location            = "northeurope"
   allocation_method   = "Static"
@@ -341,7 +337,7 @@ resource "random_password" "vm2_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm2_azure" {
-  resource_group_name   = azurerm_resource_group.vm-rg.name
+  resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm2"
   computer_name         = "testvm2"
   location              = "northeurope"
@@ -368,10 +364,6 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
     type = "SystemAssigned"
   }
   disable_password_authentication = false
-}
-resource "azurerm_resource_group" "vn-rg" {
-  name     = "vn-rg"
-  location = "northeurope"
 }
 provider "aws" {
   region = "eu-west-1"

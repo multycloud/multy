@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"sort"
@@ -71,6 +72,7 @@ func TestConfigTranslate(t *testing.T) {
 }
 
 func testConfig(testFiles TestConfigFiles, t *testing.T) {
+	rand.Seed(42)
 	if len(testFiles.InputFile) == 0 {
 		// TODO: remove this return after migrating remaining tests
 		return
@@ -140,11 +142,11 @@ var tfConfigFileSchema = &hcl.BodySchema{
 }
 
 func assertEqualHcl(t *testing.T, hclOutput []byte, expectedFilePath string) {
-	//var lines []string
-	//for i, line := range strings.Split(string(hclOutput), "\n") {
-	//	lines = append(lines, fmt.Sprintf("%d:%s", i+1, line))
-	//}
-	//t.Logf("output:\n%s", strings.Join(lines, "\n"))
+	var lines []string
+	for i, line := range strings.Split(string(hclOutput), "\n") {
+		lines = append(lines, fmt.Sprintf("%d:%s", i+1, line))
+	}
+	t.Logf("output:\n%s", strings.Join(lines, "\n"))
 
 	hclP := hclparse.NewParser()
 	f, diags := hclP.ParseHCL(hclOutput, "generated_file")

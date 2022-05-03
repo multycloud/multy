@@ -66,13 +66,13 @@ resource "aws_subnet" "subnet2_aws" {
   availability_zone = "eu-west-1b"
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
   location            = "northeurope"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
   location            = "northeurope"
 
@@ -83,7 +83,7 @@ resource "azurerm_route_table" "example_vn_azure" {
   }
 }
 resource "azurerm_route_table" "rt_azure" {
-  resource_group_name = azurerm_resource_group.vn-rg.name
+  resource_group_name = azurerm_resource_group.rg1.name
   name                = "test-rt"
   location            = "northeurope"
 
@@ -94,7 +94,7 @@ resource "azurerm_route_table" "rt_azure" {
   }
 }
 resource "azurerm_subnet" "subnet1_azure" {
-  resource_group_name  = azurerm_resource_group.vn-rg.name
+  resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "subnet1"
   address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
@@ -104,7 +104,7 @@ resource "azurerm_subnet_route_table_association" "subnet1_azure" {
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_subnet" "subnet2_azure" {
-  resource_group_name  = azurerm_resource_group.vn-rg.name
+  resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "subnet2"
   address_prefixes     = ["10.0.2.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
@@ -113,8 +113,8 @@ resource "azurerm_subnet_route_table_association" "subnet2_azure" {
   subnet_id      = azurerm_subnet.subnet2_azure.id
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
-resource "azurerm_resource_group" "vn-rg" {
-  name     = "vn-rg"
+resource "azurerm_resource_group" "rg1" {
+  name     = "rg1"
   location = "northeurope"
 }
 provider "aws" {
