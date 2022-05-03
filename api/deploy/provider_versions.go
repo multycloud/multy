@@ -9,6 +9,7 @@ const (
 	AwsProviderVersion    = "4.8.0"
 	AzureProviderVersion  = "3.0.2"
 	RandomProviderVersion = "3.1.3"
+	LocalProviderVersion  = "2.2.2"
 	StateRegion           = "eu-west-2"
 	tfState               = "terraform.tfstate"
 )
@@ -27,20 +28,23 @@ terraform {
     region         = "%s"
   }
   required_providers {
-
     aws = {
       source  = "hashicorp/aws"
       version = "%s"
     }
-	azurerm = {
+    azurerm = {
       source = "hashicorp/azurerm"
       version = "%s"
-	}
-	random = {
+    }
+    random = {
       source  = "hashicorp/random"
       version = "%s"
-	}
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "%s"
+    }
   }
 }
-`, userStorageName, userId, tfState, StateRegion, AwsProviderVersion, AzureProviderVersion, RandomProviderVersion), nil
+`, userStorageName, userId, tfState, StateRegion, AwsProviderVersion, AzureProviderVersion, RandomProviderVersion, LocalProviderVersion), nil
 }
