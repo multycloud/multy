@@ -63,7 +63,7 @@ func (c Client) ReadFile(userId string, fileName string) (string, error) {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchKey:
-				fmt.Printf("s3://%s/%s does not exist. Creating empty file\n", c.userStorageName, keyName)
+				log.Printf("s3://%s/%s does not exist. Creating empty file\n", c.userStorageName, keyName)
 				err := c.SaveFile(userId, fileName, "")
 				if err != nil {
 					return "", err
