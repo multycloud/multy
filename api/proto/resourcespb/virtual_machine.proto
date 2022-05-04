@@ -9,6 +9,18 @@ import "api/proto/commonpb/common.proto";
 
 package dev.multy.resources;
 
+message ImageReference {
+  enum OperatingSystemDistribution {
+    UNKNOWN = 0;
+    UBUNTU = 1;
+    DEBIAN = 2;
+    CENT_OS = 3;
+  }
+
+  OperatingSystemDistribution os = 1;
+  string version = 2;
+}
+
 message CreateVirtualMachineRequest {
   VirtualMachineArgs resource = 1;
 }
@@ -29,7 +41,6 @@ message DeleteVirtualMachineRequest {
 message VirtualMachineArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
-  common.OperatingSystem.Enum operating_system = 3;
   repeated string network_interface_ids = 4;
   repeated string network_security_group_ids = 5;
   common.VmSize.Enum vm_size = 6;
@@ -38,12 +49,12 @@ message VirtualMachineArgs {
   string public_ssh_key = 9;
   string public_ip_id = 10;
   bool generate_public_ip = 11;
+  ImageReference image_reference = 12;
 }
 
 message VirtualMachineResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
-  common.OperatingSystem.Enum operating_system = 3;
   repeated string network_interface_ids = 4;
   repeated string network_security_group_ids = 5;
   common.VmSize.Enum vm_size = 6;
@@ -52,6 +63,8 @@ message VirtualMachineResource {
   string public_ssh_key = 9;
   string public_ip_id = 10;
   bool generate_public_ip = 11;
+  ImageReference image_reference = 14;
+
 
   // outputs
   string public_ip = 12;

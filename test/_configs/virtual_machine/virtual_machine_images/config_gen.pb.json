@@ -57,17 +57,25 @@
     {
       "resource_args": {
         "resource_args": {
-          "@type": "type.googleapis.com/dev.multy.resources.NetworkInterfaceArgs",
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
           "common_parameters": {
-            "cloud_provider": "AZURE",
+            "cloud_provider": "AWS",
             "location": "EU_WEST_1",
             "resource_group_id": "rg1"
           },
-          "name": "test-nic",
-          "subnet_id": "subnet_azure"
+          "name": "test-vm",
+          "generate_public_ip": false,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet_aws",
+          "user_data_base64": "ZWNobyAnSGVsbG8gV29ybGQn",
+          "image_reference": {
+            "os": "UBUNTU",
+            "version": "18.04"
+          }
         }
       },
-      "resource_id": "nic_azure"
+      "resource_id": "vm_aws"
     },
     {
       "resource_args": {
@@ -79,14 +87,15 @@
             "resource_group_id": "rg1"
           },
           "name": "test-vm",
-          "network_interface_ids": [
-            "nic_azure"
-          ],
           "generate_public_ip": false,
           "vm_size": "MICRO",
           "public_ssh_key": "",
           "subnet_id": "subnet_azure",
-          "user_data_base64": "ZWNobyAnSGVsbG8gV29ybGQn"
+          "user_data_base64": "ZWNobyAnSGVsbG8gV29ybGQn",
+          "image_reference": {
+            "os": "UBUNTU",
+            "version": "18.04"
+          }
         }
       },
       "resource_id": "vm_azure"
@@ -94,17 +103,48 @@
     {
       "resource_args": {
         "resource_args": {
-          "@type": "type.googleapis.com/dev.multy.resources.NetworkInterfaceArgs",
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
             "location": "EU_WEST_1",
             "resource_group_id": "rg1"
           },
-          "name": "test-nic",
-          "subnet_id": "subnet_aws"
+          "name": "test-vm",
+          "generate_public_ip": false,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet_aws",
+          "user_data_base64": "",
+          "image_reference": {
+            "os": "DEBIAN",
+            "version": "10"
+          }
         }
       },
-      "resource_id": "nic_aws"
+      "resource_id": "vm2_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "test-vm",
+          "generate_public_ip": false,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet_azure",
+          "user_data_base64": "",
+          "image_reference": {
+            "os": "DEBIAN",
+            "version": "10"
+          }
+        }
+      },
+      "resource_id": "vm2_azure"
     },
     {
       "resource_args": {
@@ -116,17 +156,41 @@
             "resource_group_id": "rg1"
           },
           "name": "test-vm",
-          "network_interface_ids": [
-            "nic_aws"
-          ],
           "generate_public_ip": false,
           "vm_size": "MICRO",
           "public_ssh_key": "",
           "subnet_id": "subnet_aws",
-          "user_data_base64": "ZWNobyAnSGVsbG8gV29ybGQn"
+          "user_data_base64": "",
+          "image_reference": {
+            "os": "CENT_OS",
+            "version": "7.5"
+          }
         }
       },
-      "resource_id": "vm_aws"
+      "resource_id": "vm3_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "test-vm",
+          "generate_public_ip": false,
+          "vm_size": "MICRO",
+          "public_ssh_key": "",
+          "subnet_id": "subnet_azure",
+          "user_data_base64": "",
+          "image_reference": {
+            "os": "CENT_OS",
+            "version": "7.5"
+          }
+        }
+      },
+      "resource_id": "vm3_azure"
     }
   ]
 }

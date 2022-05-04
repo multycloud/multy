@@ -59,7 +59,7 @@ resource "aws_instance" "vm_aws" {
     "Name" = "test-vm"
   }
 
-  ami                  = "ami-09d4a659cdd8677be"
+  ami                  = data.aws_ami.vm_aws.id
   instance_type        = "t2.nano"
   subnet_id            = aws_subnet.subnet_aws.id
   user_data_base64     = "ZWNobyAnSGVsbG8gV29ybGQn"
@@ -79,7 +79,7 @@ resource "aws_instance" "vm2_aws" {
     "Name" = "test-vm"
   }
 
-  ami                  = "ami-09d4a659cdd8677be"
+  ami                  = data.aws_ami.vm2_aws.id
   instance_type        = "t2.nano"
   subnet_id            = aws_subnet.subnet_aws.id
   iam_instance_profile = aws_iam_instance_profile.vm2_aws.id
@@ -146,11 +146,10 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
 
   admin_username = "adminuser"
   admin_password = random_password.vm_azure.result
-
   source_image_reference {
-    publisher = "OpenLogic"
-    offer     = "CentOS"
-    sku       = "7_9-gen2"
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "16.04-LTS"
     version   = "latest"
   }
   identity {
@@ -194,15 +193,33 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   admin_password = random_password.vm2_azure.result
 
   source_image_reference {
-    publisher = "OpenLogic"
-    offer     = "CentOS"
-    sku       = "7_9-gen2"
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "16.04-LTS"
     version   = "latest"
   }
   identity {
     type = "SystemAssigned"
   }
   disable_password_authentication = false
+}
+
+data "aws_ami" "vm_aws" {
+  owners      = ["099720109477"]
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["ubuntu*-16.04-amd64-server-*"]
+  }
+}
+
+data "aws_ami" "vm2_aws" {
+  owners      = ["099720109477"]
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["ubuntu*-16.04-amd64-server-*"]
+  }
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"

@@ -36,7 +36,6 @@ func (s VirtualMachineService) Convert(resourceId string, args *resourcespb.Virt
 	return &resourcespb.VirtualMachineResource{
 		CommonParameters:        util.ConvertCommonParams(resourceId, args.CommonParameters),
 		Name:                    args.Name,
-		OperatingSystem:         args.OperatingSystem,
 		NetworkInterfaceIds:     args.NetworkInterfaceIds,
 		NetworkSecurityGroupIds: args.NetworkSecurityGroupIds,
 		VmSize:                  args.VmSize,
@@ -45,6 +44,7 @@ func (s VirtualMachineService) Convert(resourceId string, args *resourcespb.Virt
 		PublicSshKey:            args.PublicSshKey,
 		PublicIpId:              args.PublicIpId,
 		GeneratePublicIp:        args.GeneratePublicIp,
+		ImageReference:          args.ImageReference,
 
 		PublicIp:   ip,
 		IdentityId: identityId,

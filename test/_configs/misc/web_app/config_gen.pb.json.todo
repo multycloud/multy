@@ -447,7 +447,6 @@
               "example_db"
             ],
             "name": "test-vm",
-            "operating_system": "LINUX",
             "generate_public_ip": true,
             "vm_size": "MICRO",
             "public_ssh_key": "",
@@ -532,7 +531,6 @@
               "example_db"
             ],
             "name": "test-vm",
-            "operating_system": "LINUX",
             "generate_public_ip": true,
             "vm_size": "MICRO",
             "public_ssh_key": "",

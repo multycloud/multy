@@ -10,7 +10,6 @@
               "location": "EU_WEST_2"
             },
             "name": "test-vm",
-            "operating_system": "LINUX",
             "generate_public_ip": true,
             "vm_size": "MICRO",
             "public_ssh_key": "",
@@ -74,7 +73,6 @@
               "location": "EU_WEST_2"
             },
             "name": "test-vm",
-            "operating_system": "LINUX",
             "generate_public_ip": true,
             "vm_size": "MICRO",
             "public_ssh_key": "",
