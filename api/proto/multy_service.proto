@@ -114,5 +114,10 @@ service MultyResourceService {
 
   rpc RefreshState(common.Empty) returns (common.Empty) {}
   rpc ListResources(common.Empty) returns (common.ListResourcesResponse) {}
+  rpc DeleteResource(DeleteResourceRequest) returns (common.Empty) {}
+}
+
+message DeleteResourceRequest {
+  string resource_id = 1;
 }
 

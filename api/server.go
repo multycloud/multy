@@ -437,3 +437,47 @@ func (s *Server) list(ctx context.Context, _ *commonpb.Empty) (*commonpb.ListRes
 
 	return resp, nil
 }
+
+func (s *Server) DeleteResource(ctx context.Context, req *proto.DeleteResourceRequest) (_ *commonpb.Empty, err error) {
+	defer func() {
+		if err != nil {
+			go s.Database.AwsClient.UpdateErrorMetric("delete", "delete", errors.ErrorCode(err))
+		}
+	}()
+	return errors.WrappingErrors(s.deleteResource)(ctx, req)
+}
+
+func (s *Server) deleteResource(ctx context.Context, req *proto.DeleteResourceRequest) (*commonpb.Empty, error) {
+	log.Println("[INFO] Deleting resource")
+	key, err := util.ExtractApiKey(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	userId, err := s.Database.GetUserId(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	lock, err := s.Database.LockConfig(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer s.Database.UnlockConfig(ctx, lock)
+	c, err := s.Database.LoadUserConfig(userId, lock)
+	if err != nil {
+		return nil, err
+	}
+
+	err = util.DeleteResourceFromConfig(c, req.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.Database.StoreUserConfig(c, lock)
+	if err != nil {
+		return nil, err
+	}
+
+	return &commonpb.Empty{}, nil
+}
