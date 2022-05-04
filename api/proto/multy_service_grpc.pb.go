@@ -94,6 +94,7 @@ type MultyResourceServiceClient interface {
 	DeleteVirtualMachine(ctx context.Context, in *resourcespb.DeleteVirtualMachineRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
 	RefreshState(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.Empty, error)
 	ListResources(ctx context.Context, in *commonpb.Empty, opts ...grpc.CallOption) (*commonpb.ListResourcesResponse, error)
+	DeleteResource(ctx context.Context, in *DeleteResourceRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
 }
 
 type multyResourceServiceClient struct {
@@ -734,6 +735,15 @@ func (c *multyResourceServiceClient) ListResources(ctx context.Context, in *comm
 	return out, nil
 }
 
+func (c *multyResourceServiceClient) DeleteResource(ctx context.Context, in *DeleteResourceRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteResource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MultyResourceServiceServer is the server API for MultyResourceService service.
 // All implementations must embed UnimplementedMultyResourceServiceServer
 // for forward compatibility
@@ -808,6 +818,7 @@ type MultyResourceServiceServer interface {
 	DeleteVirtualMachine(context.Context, *resourcespb.DeleteVirtualMachineRequest) (*commonpb.Empty, error)
 	RefreshState(context.Context, *commonpb.Empty) (*commonpb.Empty, error)
 	ListResources(context.Context, *commonpb.Empty) (*commonpb.ListResourcesResponse, error)
+	DeleteResource(context.Context, *DeleteResourceRequest) (*commonpb.Empty, error)
 	mustEmbedUnimplementedMultyResourceServiceServer()
 }
 
@@ -1024,6 +1035,9 @@ func (UnimplementedMultyResourceServiceServer) RefreshState(context.Context, *co
 }
 func (UnimplementedMultyResourceServiceServer) ListResources(context.Context, *commonpb.Empty) (*commonpb.ListResourcesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListResources not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteResource(context.Context, *DeleteResourceRequest) (*commonpb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteResource not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) mustEmbedUnimplementedMultyResourceServiceServer() {}
 
@@ -2298,6 +2312,24 @@ func _MultyResourceService_ListResources_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MultyResourceService_DeleteResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteResourceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteResource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteResource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteResource(ctx, req.(*DeleteResourceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MultyResourceService_ServiceDesc is the grpc.ServiceDesc for MultyResourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2584,6 +2616,10 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListResources",
 			Handler:    _MultyResourceService_ListResources_Handler,
+		},
+		{
+			MethodName: "DeleteResource",
+			Handler:    _MultyResourceService_DeleteResource_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

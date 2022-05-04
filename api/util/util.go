@@ -92,6 +92,8 @@ func convert[Arg proto.Message](in Arg) (*configpb.ResourceArgs, error) {
 func DeleteResourceFromConfig(c *configpb.Config, resourceId string) error {
 	if i := slices.IndexFunc(c.Resources, func(r *configpb.Resource) bool { return r.ResourceId == resourceId }); i != -1 {
 		c.Resources = append(c.Resources[:i], c.Resources[i+1:]...)
+	} else {
+		return errors.ResourceNotFound(resourceId)
 	}
 	return nil
 }
