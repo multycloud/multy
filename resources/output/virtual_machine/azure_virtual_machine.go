@@ -1,6 +1,8 @@
 package virtual_machine
 
 import (
+	"fmt"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources/common"
 )
 
@@ -41,4 +43,32 @@ type AzureSourceImageReference struct {
 	Offer     string `hcl:"offer"`
 	Sku       string `hcl:"sku"`
 	Version   string `hcl:"version"`
+}
+
+func GetLatestAzureSourceImageReference(ref *resourcespb.ImageReference) (AzureSourceImageReference, error) {
+	var offer string
+	var publisher string
+	version := ref.Version
+	switch ref.Os {
+	case resourcespb.ImageReference_UBUNTU:
+		offer = "UbuntuServer"
+		publisher = "Canonical"
+		version = fmt.Sprintf("%s-LTS", version)
+	case resourcespb.ImageReference_DEBIAN:
+		offer = fmt.Sprintf("debian-%s", ref.Version)
+		publisher = "Debian"
+	case resourcespb.ImageReference_CENT_OS:
+		offer = "CentOs"
+		publisher = "OpenLogic"
+	default:
+		return AzureSourceImageReference{}, fmt.Errorf("unknown operating system distibution %s", ref.Os)
+	}
+
+	return AzureSourceImageReference{
+		Publisher: publisher,
+		Offer:     offer,
+		Sku:       version,
+		Version:   "latest",
+	}, nil
+
 }

@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources/output"
 )
 
@@ -94,6 +95,12 @@ var AMIMAP = map[string]string{
 	"us-west-1":  "ami-04ad2567c9e3d7893",
 	"us-west-2":  "ami-04ad2567c9e3d7893",
 	"eu-north-1": "ami-04ad2567c9e3d7893",
+}
+
+var AwsAmiOwners = map[resourcespb.ImageReference_OperatingSystemDistribution]string{
+	resourcespb.ImageReference_UBUNTU:  "099720109477",
+	resourcespb.ImageReference_CENT_OS: "125523088429",
+	resourcespb.ImageReference_DEBIAN:  "136693071363",
 }
 
 func GetAvailabilityZone(location commonpb.Location, az int, cloud commonpb.CloudProvider) (string, error) {

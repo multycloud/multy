@@ -60,6 +60,12 @@ func NewVirtualMachine(resourceId string, args *resourcespb.VirtualMachineArgs, 
 	if err != nil {
 		return nil, err
 	}
+	if args.GetImageReference() == nil {
+		args.ImageReference = &resourcespb.ImageReference{
+			Os:      resourcespb.ImageReference_UBUNTU,
+			Version: "16.04",
+		}
+	}
 	return &VirtualMachine{
 		ResourceWithId: resources.ResourceWithId[*resourcespb.VirtualMachineArgs]{
 			ResourceId: resourceId,
@@ -115,7 +121,6 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 
 		ec2 := virtual_machine.AwsEC2{
 			AwsResource:              common.NewAwsResource(r.ResourceId, r.Args.Name),
-			Ami:                      common.AMIMAP[r.GetCloudSpecificLocation()],
 			InstanceType:             common.VMSIZE[r.Args.VmSize][r.GetCloud()],
 			AssociatePublicIpAddress: r.Args.GeneratePublicIp,
 			UserDataBase64:           r.Args.UserDataBase64,
@@ -196,7 +201,14 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 			awsResources = append(awsResources, keyPair)
 		}
 
-		awsResources = append(awsResources, ec2)
+		awsAmi, err := virtual_machine.LatestAwsAmi(r.Args.ImageReference, r.ResourceId)
+		if err != nil {
+			return nil, err
+		}
+
+		ec2.Ami = fmt.Sprintf("%s.id", awsAmi.GetFullResourceRef())
+
+		awsResources = append(awsResources, awsAmi, ec2)
 		return awsResources, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		// TODO validate that NIC is on the same VNET
@@ -301,6 +313,11 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 		}
 		computerName := reg.ReplaceAllString(r.Args.Name, "")
 
+		sourceImg, err := virtual_machine.GetLatestAzureSourceImageReference(r.Args.ImageReference)
+		if err != nil {
+			return nil, err
+		}
+
 		azResources = append(
 			azResources, virtual_machine.AzureVirtualMachine{
 				AzResource: &common.AzResource{
@@ -316,15 +333,10 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 					Caching:            "None",
 					StorageAccountType: "Standard_LRS",
 				},
-				AdminUsername: "adminuser",
-				AdminPassword: vmPassword,
-				AdminSshKey:   azureSshKey,
-				SourceImageReference: virtual_machine.AzureSourceImageReference{
-					Publisher: "OpenLogic",
-					Offer:     "CentOS",
-					Sku:       "7_9-gen2",
-					Version:   "latest",
-				},
+				AdminUsername:                 "adminuser",
+				AdminPassword:                 vmPassword,
+				AdminSshKey:                   azureSshKey,
+				SourceImageReference:          sourceImg,
 				DisablePasswordAuthentication: disablePassAuth,
 				Identity:                      virtual_machine.AzureIdentity{Type: "SystemAssigned"},
 				ComputerName:                  computerName,
