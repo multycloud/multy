@@ -113,4 +113,6 @@ service MultyResourceService {
   rpc DeleteVirtualMachine (resources.DeleteVirtualMachineRequest) returns (common.Empty) {}
 
   rpc RefreshState(common.Empty) returns (common.Empty) {}
+  rpc ListResources(common.Empty) returns (common.ListResourcesResponse) {}
 }
+

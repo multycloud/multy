@@ -87,3 +87,12 @@ message ChildResourceCommonArgs {
 message Empty {
 
 }
+
+
+message ListResourcesResponse {
+  message ResourceMetadata {
+    string resource_id = 1;
+    string resource_type = 2;
+  }
+  repeated ResourceMetadata resources = 1;
+}

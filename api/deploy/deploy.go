@@ -122,14 +122,14 @@ func getImplicitResourceGroupId(res resources.Resources, curr *configpb.Resource
 func addImplicitResourceGroups(c *configpb.Config, res resources.Resources) {
 	for _, r := range c.Resources {
 		if res.ResourceMap[r.ResourceId].GetCloud() == commonpb.CloudProvider_AZURE {
+			// TODO: only create RGs if r.ImplicitResourceGroup
 			if args, ok := res.ResourceMap[r.ResourceId].GetCommonArgs().(*commonpb.ResourceCommonArgs); ok {
-				resourceGroup :=
-					&rg.Type{
-						ResourceId: args.ResourceGroupId,
-						Name:       args.ResourceGroupId,
-						Location:   args.Location,
-						Cloud:      commonpb.CloudProvider_AZURE,
-					}
+				resourceGroup := &rg.Type{
+					ResourceId: args.ResourceGroupId,
+					Name:       args.ResourceGroupId,
+					Location:   args.Location,
+					Cloud:      commonpb.CloudProvider_AZURE,
+				}
 				res.ResourceMap[resourceGroup.GetResourceId()] = resourceGroup
 			}
 		}
@@ -416,10 +416,6 @@ func RefreshState(ctx context.Context, userId string, readonly bool) error {
 		return errors.InternalServerErrorWithMessage("error querying resources", err)
 	}
 	return err
-}
-
-type hasCommonArgs interface {
-	GetCommonParameters() *commonpb.ResourceCommonArgs
 }
 
 func addMultyResource(r *configpb.Resource, res resources.Resources, metadata *converter.ResourceMetadata) error {
