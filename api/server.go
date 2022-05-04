@@ -30,6 +30,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 )
 
 type Server struct {
@@ -352,7 +353,7 @@ func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (_ *common
 }
 
 func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empty, error) {
-	fmt.Println("refreshing state")
+	log.Println("[INFO] Refreshing state")
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return nil, err
@@ -395,4 +396,44 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 	}
 
 	return &commonpb.Empty{}, nil
+}
+
+func (s *Server) ListResources(ctx context.Context, _ *commonpb.Empty) (resp *commonpb.ListResourcesResponse, err error) {
+	defer func() {
+		if err != nil {
+			go s.Database.AwsClient.UpdateErrorMetric("list", "list", errors.ErrorCode(err))
+		}
+	}()
+	return errors.WrappingErrors(s.list)(ctx, &commonpb.Empty{})
+}
+
+func (s *Server) list(ctx context.Context, _ *commonpb.Empty) (*commonpb.ListResourcesResponse, error) {
+	log.Println("[INFO] Listing resources")
+	key, err := util.ExtractApiKey(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	userId, err := s.Database.GetUserId(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := s.Database.LoadUserConfig(userId, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &commonpb.ListResourcesResponse{}
+	for _, r := range c.Resources {
+		name := string(r.ResourceArgs.ResourceArgs.MessageName().Name())
+		name = strings.TrimSuffix(name, "Args")
+
+		resp.Resources = append(resp.Resources, &commonpb.ListResourcesResponse_ResourceMetadata{
+			ResourceId:   r.ResourceId,
+			ResourceType: name,
+		})
+	}
+
+	return resp, nil
 }
