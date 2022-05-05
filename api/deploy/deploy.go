@@ -189,9 +189,10 @@ func updateMultyResourceGroups(decodedResources *encoder.DecodedResources, c *co
 	}
 
 	for _, r := range c.Resources {
-		if commonArgs, ok := decodedResources.Resources.ResourceMap[r.ResourceId].GetCommonArgs().(*commonpb.ResourceCommonArgs); ok && !r.ImplicitResourceGroup {
+		if commonArgs, ok := decodedResources.Resources.ResourceMap[r.ResourceId].GetCommonArgs().(*commonpb.ResourceCommonArgs); ok {
 			if rgId := getImplicitResourceGroupId(decodedResources.Resources, r); rgId != nil {
 				r.ImplicitResourceGroup = true
+				// this won't be persisted
 				commonArgs.ResourceGroupId = *rgId
 			}
 		}
