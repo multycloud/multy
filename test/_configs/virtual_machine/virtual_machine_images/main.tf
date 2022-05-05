@@ -141,7 +141,7 @@ data "aws_ami" "vm3_aws" {
   most_recent = true
   filter {
     name   = "name"
-    values = ["CentOS 7.5* x86_64"]
+    values = ["CentOS 8.2* x86_64"]
   }
 }
 resource "aws_instance" "vm3_aws" {
@@ -184,7 +184,7 @@ resource "azurerm_linux_virtual_machine" "vm3_azure" {
   source_image_reference {
     publisher = "OpenLogic"
     offer     = "CentOs"
-    sku       = "7.5"
+    sku       = "8.2"
     version   = "latest"
   }
   disable_password_authentication = false
