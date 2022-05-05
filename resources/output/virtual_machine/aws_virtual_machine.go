@@ -69,6 +69,14 @@ func LatestAwsAmi(image *resourcespb.ImageReference, resourceId string) (AwsAmi,
 				Name:   "name",
 				Values: []string{name},
 			},
+			{
+				Name:   "root-device-type",
+				Values: []string{"ebs"},
+			},
+			{
+				Name:   "virtualization-type",
+				Values: []string{"hvm"},
+			},
 		},
 	}, nil
 }

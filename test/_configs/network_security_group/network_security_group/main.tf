@@ -372,6 +372,14 @@ data "aws_ami" "vm_aws" {
     name   = "name"
     values = ["ubuntu*-16.04-amd64-server-*"]
   }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
 }
 data "aws_ami" "vm2_aws" {
   owners      = ["099720109477"]
@@ -379,6 +387,14 @@ data "aws_ami" "vm2_aws" {
   filter {
     name   = "name"
     values = ["ubuntu*-16.04-amd64-server-*"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 provider "aws" {
