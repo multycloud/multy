@@ -163,7 +163,7 @@
           "user_data_base64": "",
           "image_reference": {
             "os": "CENT_OS",
-            "version": "7.5"
+            "version": "8.2"
           }
         }
       },
@@ -186,7 +186,7 @@
           "user_data_base64": "",
           "image_reference": {
             "os": "CENT_OS",
-            "version": "7.5"
+            "version": "8.2"
           }
         }
       },
