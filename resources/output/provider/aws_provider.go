@@ -8,4 +8,5 @@ type AwsProvider struct {
 	Alias        string `hcl:"alias" hcle:"omitempty"`
 	AccessKey    string `hcl:"access_key" hcle:"omitempty"`
 	SecretKey    string `hcl:"secret_key" hcle:"omitempty"`
+	SessionToken string `hcl:"token" hcle:"omitempty"`
 }

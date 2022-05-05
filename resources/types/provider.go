@@ -24,6 +24,7 @@ func (p *Provider) Translate() []any {
 			Alias:        p.getAlias(),
 			AccessKey:    p.Credentials.GetAwsCreds().GetAccessKey(),
 			SecretKey:    p.Credentials.GetAwsCreds().GetSecretKey(),
+			SessionToken: p.Credentials.GetAwsCreds().GetSessionToken(),
 		}}
 	} else if p.Cloud == commonpb.CloudProvider_AZURE {
 		if !p.IsDefaultProvider {
@@ -48,9 +49,9 @@ func (p *Provider) GetId() string {
 func (p *Provider) getAlias() string {
 	if p.Cloud == commonpb.CloudProvider_AWS && !p.IsDefaultProvider {
 		return p.Location
-	} else {
-		return ""
 	}
+
+	return ""
 }
 
 func (p *Provider) GetResourceId() string {
