@@ -80,7 +80,7 @@ func GetNamePattern(image *resourcespb.ImageReference) (string, error) {
 	case resourcespb.ImageReference_DEBIAN:
 		return fmt.Sprintf("debian-%s-amd64-*", image.Version), nil
 	case resourcespb.ImageReference_CENT_OS:
-		return fmt.Sprintf("CentOS %s* x86_64 *", image.Version), nil
+		return fmt.Sprintf("CentOS %s* x86_64", image.Version), nil
 	default:
 		return "", fmt.Errorf("unknown operating system distibution %s", image.Os)
 	}
