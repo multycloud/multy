@@ -33,6 +33,14 @@ func (s VirtualMachineService) Convert(resourceId string, args *resourcespb.Virt
 		}
 	}
 
+	// TODO: handle default values on create
+	if args.ImageReference == nil {
+		args.ImageReference = &resourcespb.ImageReference{
+			Os:      resourcespb.ImageReference_UBUNTU,
+			Version: "16.04",
+		}
+	}
+
 	return &resourcespb.VirtualMachineResource{
 		CommonParameters:        util.ConvertCommonParams(resourceId, args.CommonParameters),
 		Name:                    args.Name,
