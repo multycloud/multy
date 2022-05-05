@@ -26,6 +26,7 @@ terraform {
     bucket         = "%s"
     key            = "%s/%s"
     region         = "%s"
+    profile        = "multy"
   }
   required_providers {
     aws = {
