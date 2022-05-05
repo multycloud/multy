@@ -80,7 +80,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 		return *new(OutT), err
 	}
 
-	log.Printf("Deploying %s\n", resource.ResourceId)
+	log.Printf("[INFO] Deploying %s\n", resource.ResourceId)
 	_, err = deploy.Deploy(ctx, c, nil, resource)
 	if err != nil {
 		return *new(OutT), err
