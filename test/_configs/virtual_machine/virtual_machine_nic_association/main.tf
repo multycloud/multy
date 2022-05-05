@@ -158,6 +158,14 @@ data "aws_ami" "vm_aws" {
     name   = "name"
     values = ["ubuntu*-16.04-amd64-server-*"]
   }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"

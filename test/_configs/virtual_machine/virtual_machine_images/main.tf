@@ -77,6 +77,14 @@ data "aws_ami" "vm2_aws" {
     name   = "name"
     values = ["debian-10-amd64-*"]
   }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
 }
 resource "aws_instance" "vm2_aws" {
   tags                 = { "Name" = "test-vm" }
@@ -143,6 +151,14 @@ data "aws_ami" "vm3_aws" {
     name   = "name"
     values = ["CentOS 8.2* x86_64"]
   }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
 }
 resource "aws_instance" "vm3_aws" {
   tags                 = { "Name" = "test-vm" }
@@ -208,6 +224,14 @@ data "aws_ami" "vm_aws" {
   filter {
     name   = "name"
     values = ["ubuntu*-18.04-amd64-server-*"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 resource "aws_instance" "vm_aws" {

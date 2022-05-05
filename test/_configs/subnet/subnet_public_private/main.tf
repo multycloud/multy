@@ -404,7 +404,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
 
   admin_username = "adminuser"
   admin_password = random_password.vm_azure.result
-  
+
   source_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
@@ -422,6 +422,14 @@ data "aws_ami" "vm_aws" {
   filter {
     name   = "name"
     values = ["ubuntu*-16.04-amd64-server-*"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 resource "azurerm_resource_group" "rg1" {
