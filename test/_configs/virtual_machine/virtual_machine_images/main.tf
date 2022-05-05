@@ -141,7 +141,7 @@ data "aws_ami" "vm3_aws" {
   most_recent = true
   filter {
     name   = "name"
-    values = ["CentOS 7.5* x86_64 *"]
+    values = ["CentOS 7.5* x86_64"]
   }
 }
 resource "aws_instance" "vm3_aws" {
