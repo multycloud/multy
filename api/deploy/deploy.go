@@ -271,7 +271,7 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 		}
 	}
 
-	state, err := GetState(ctx, c.UserId)
+	state, err := GetState(ctx, c.UserId, false)
 	if err != nil {
 		return state, errors.InternalServerErrorWithMessage("error parsing state", err)
 	}
@@ -371,8 +371,13 @@ func MaybeInit(ctx context.Context, userId string, readonly bool) error {
 	return nil
 }
 
-func GetState(ctx context.Context, userId string) (*output.TfState, error) {
-	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
+func GetState(ctx context.Context, userId string, readonly bool) (*output.TfState, error) {
+	dir := "multy"
+	if readonly {
+		dir = "multy/readonly"
+	}
+
+	tmpDir := filepath.Join(os.TempDir(), dir, userId)
 	state := output.TfState{}
 	stateJson := new(bytes.Buffer)
 	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "show", "-json")

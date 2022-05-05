@@ -144,7 +144,7 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Conf
 			if err != nil {
 				return *new(OutT), err
 			}
-			state, err := deploy.GetState(ctx, c.UserId)
+			state, err := deploy.GetState(ctx, c.UserId, readonly)
 			if err != nil {
 				return *new(OutT), err
 			}
