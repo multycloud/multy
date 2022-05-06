@@ -38,22 +38,24 @@ resource multy_subnet subnet {
 resource multy_virtual_machine vm {
   for_each = var.clouds
 
-  name             = "test_vm"
-  size             = "micro"
-  operating_system = "linux"
-  subnet_id        = multy_subnet.subnet.id
-  user_data        = "echo 'Hello World'"
-  cloud            = each.key
+  name            = "test_vm"
+  size            = "micro"
+  image_reference = {
+    os      = "ubuntu"
+    version = "20.04"
+  }
+  subnet_id = multy_subnet.subnet.id
+  user_data = "echo 'Hello World from ${each.key}'"
+  cloud     = each.key
 }
 ```
 
-By using Multy's cloud-agnostic API, we can simply change the `cloud` parameter to move a resource from one cloud to
+By using the Multy cloud-agnostic API, we can simply change the `cloud` parameter to move a resource from one cloud to
 another.
 
 If we were to deploy this using the respective cloud terraform providers, we would first need to understand how
-resources such as `aws_vpc`
-and `azurerm_virtual_network` behave and how they differ. Then we would need to define the same infrastructure
-configuration twice, one for AWS and another for Azure.
+resources such as `aws_vpc` and `azurerm_virtual_network` behave and how they differ. Then we would need to define the
+same infrastructure configuration twice, one for AWS and another for Azure.
 
 
 <details><summary>This is the equivalent terraform configuration</summary>
@@ -218,3 +220,5 @@ Provider: [https://registry.terraform.io/providers/multycloud/multy/latest/docs]
 
 Multy TF Provider
 Repo: [https://github.com/multycloud/terraform-provider-multy](https://github.com/multycloud/terraform-provider-multy?ref=multy-gh-repo)
+
+Discord Channel: [https://discord.gg/rgaKXY4tCZ](https://discord.gg/rgaKXY4tCZ)
