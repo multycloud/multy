@@ -47,7 +47,7 @@ func (p *Provider) GetId() string {
 }
 
 func (p *Provider) getAlias() string {
-	if p.Cloud == commonpb.CloudProvider_AWS && !p.IsDefaultProvider {
+	if p.Cloud == commonpb.CloudProvider_AWS {
 		return p.Location
 	}
 

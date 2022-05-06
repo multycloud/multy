@@ -1,5 +1,6 @@
 resource "aws_db_subnet_group" "example_db_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example-db"
   }
 
@@ -11,7 +12,8 @@ resource "aws_db_subnet_group" "example_db_aws" {
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "exampledb"
   }
 
@@ -27,7 +29,8 @@ resource "aws_db_instance" "example_db_aws" {
   publicly_accessible  = true
 }
 resource "aws_vpc" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
@@ -35,14 +38,16 @@ resource "aws_vpc" "example_vn_aws" {
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
@@ -65,7 +70,8 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_security_group" "nsg2_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "test-nsg2"
   }
 
@@ -130,7 +136,8 @@ resource "aws_security_group" "nsg2_aws" {
   }
 }
 resource "aws_route_table" "rt_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "test-rt"
   }
 
@@ -142,11 +149,13 @@ resource "aws_route_table" "rt_aws" {
   }
 }
 resource "aws_route_table_association" "subnet3_aws" {
+  provider       = "aws.eu-west-1"
   subnet_id      = aws_subnet.subnet3_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_subnet" "subnet1_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "private-subnet1"
   }
 
@@ -155,7 +164,8 @@ resource "aws_subnet" "subnet1_aws" {
   availability_zone = "eu-west-1a"
 }
 resource "aws_subnet" "subnet2_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "private-subnet2"
   }
 
@@ -164,7 +174,8 @@ resource "aws_subnet" "subnet2_aws" {
   availability_zone = "eu-west-1b"
 }
 resource "aws_subnet" "subnet3_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "public-subnet3"
   }
 
@@ -172,16 +183,19 @@ resource "aws_subnet" "subnet3_aws" {
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 resource "aws_iam_role" "vm_aws" {
+  provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
   name               = "iam_for_vm_vm_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  name = "iam_for_vm_vm_aws"
-  role = aws_iam_role.vm_aws.name
+  provider = "aws.eu-west-1"
+  name     = "iam_for_vm_vm_aws"
+  role     = aws_iam_role.vm_aws.name
 }
 resource "aws_instance" "vm_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "test-vm"
   }
 
@@ -417,6 +431,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   disable_password_authentication = false
 }
 data "aws_ami" "vm_aws" {
+  provider    = "aws.eu-west-1"
   owners      = ["099720109477"]
   most_recent = true
   filter {
@@ -438,7 +453,10 @@ resource "azurerm_resource_group" "rg1" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias  = "eu-west-1"
 }
+
+
 provider "azurerm" {
   features {}
 }

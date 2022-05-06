@@ -1,5 +1,6 @@
 resource "aws_lambda_function" "function2_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "publicmultyfun"
   }
 
@@ -11,7 +12,8 @@ resource "aws_lambda_function" "function2_aws" {
   s3_key        = aws_s3_object.public_source_code_aws.key
 }
 resource "aws_iam_role" "iam_for_lambda_function2_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "iam_for_lambda_function2_aws"
   }
 
@@ -19,11 +21,13 @@ resource "aws_iam_role" "iam_for_lambda_function2_aws" {
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "function2_aws" {
+  provider   = "aws.eu-west-1"
   role       = aws_iam_role.iam_for_lambda_function2_aws.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 resource "aws_api_gateway_rest_api" "function2_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "publicmultyfun"
   }
 
@@ -31,17 +35,20 @@ resource "aws_api_gateway_rest_api" "function2_aws" {
   description = ""
 }
 resource "aws_api_gateway_resource" "function2_proxy" {
+  provider    = "aws.eu-west-1"
   rest_api_id = aws_api_gateway_rest_api.function2_aws.id
   parent_id   = aws_api_gateway_rest_api.function2_aws.root_resource_id
   path_part   = "{proxy+}"
 }
 resource "aws_api_gateway_method" "function2_proxy" {
+  provider      = "aws.eu-west-1"
   rest_api_id   = aws_api_gateway_rest_api.function2_aws.id
   resource_id   = aws_api_gateway_resource.function2_proxy.id
   http_method   = "ANY"
   authorization = "NONE"
 }
 resource "aws_api_gateway_integration" "function2_proxy" {
+  provider                = "aws.eu-west-1"
   rest_api_id             = aws_api_gateway_rest_api.function2_aws.id
   resource_id             = aws_api_gateway_method.function2_proxy.resource_id
   http_method             = aws_api_gateway_method.function2_proxy.http_method
@@ -50,12 +57,14 @@ resource "aws_api_gateway_integration" "function2_proxy" {
   uri                     = aws_lambda_function.function2_aws.invoke_arn
 }
 resource "aws_api_gateway_method" "function2_proxy_root" {
+  provider      = "aws.eu-west-1"
   rest_api_id   = aws_api_gateway_rest_api.function2_aws.id
   resource_id   = aws_api_gateway_rest_api.function2_aws.root_resource_id
   http_method   = "ANY"
   authorization = "NONE"
 }
 resource "aws_api_gateway_integration" "function2_proxy_root" {
+  provider                = "aws.eu-west-1"
   rest_api_id             = aws_api_gateway_rest_api.function2_aws.id
   resource_id             = aws_api_gateway_method.function2_proxy_root.resource_id
   http_method             = aws_api_gateway_method.function2_proxy_root.http_method
@@ -64,6 +73,7 @@ resource "aws_api_gateway_integration" "function2_proxy_root" {
   uri                     = aws_lambda_function.function2_aws.invoke_arn
 }
 resource "aws_api_gateway_deployment" "function2_aws" {
+  provider    = "aws.eu-west-1"
   rest_api_id = aws_api_gateway_rest_api.function2_aws.id
   stage_name  = "api"
 
@@ -73,6 +83,7 @@ resource "aws_api_gateway_deployment" "function2_aws" {
   ]
 }
 resource "aws_lambda_permission" "function2_aws" {
+  provider      = "aws.eu-west-1"
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = "publicmultyfun"
@@ -80,13 +91,15 @@ resource "aws_lambda_permission" "function2_aws" {
   source_arn    = "${aws_api_gateway_rest_api.function2_aws.execution_arn}/*/*"
 }
 resource "aws_s3_bucket" "obj_storage_aws" {
-  bucket = "function-storage-1722"
+  provider = "aws.eu-west-1"
+  bucket   = "function-storage-1722"
 }
 resource "aws_s3_object" "public_source_code_aws" {
-  bucket = aws_s3_bucket.obj_storage_aws.id
-  key    = "source_code.zip"
-  acl    = "public-read"
-  source = "source_dir/aws_code.zip"
+  provider = "aws.eu-west-1"
+  bucket   = aws_s3_bucket.obj_storage_aws.id
+  key      = "source_code.zip"
+  acl      = "public-read"
+  source   = "source_dir/aws_code.zip"
 }
 resource "azurerm_resource_group" "fun-rg" {
   name     = "fun-rg"
@@ -139,8 +152,8 @@ resource "azurerm_storage_container" "obj_storage_azure_private" {
   container_access_type = "private"
 }
 resource "azurerm_storage_blob" "public_source_code_azure" {
-  name                   = "source_code.zip"
-  storage_account_name   = azurerm_storage_account.obj_storage_azure.name
+  name                 = "source_code.zip"
+  storage_account_name = azurerm_storage_account.obj_storage_azure.name
   storage_container_name = azurerm_storage_container.obj_storage_azure_public.name
   type                   = "Block"
   source                 = "source_dir/azure_code.zip"
@@ -151,7 +164,10 @@ resource "azurerm_resource_group" "st-rg" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias  = "eu-west-1"
 }
+
+
 provider "azurerm" {
   features {}
 }

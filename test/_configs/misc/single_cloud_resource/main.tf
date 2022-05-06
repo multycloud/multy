@@ -1,5 +1,6 @@
 resource "aws_subnet" "example_subnet_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_subnet"
   }
 
@@ -7,7 +8,8 @@ resource "aws_subnet" "example_subnet_aws" {
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 resource "aws_vpc" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
@@ -15,14 +17,16 @@ resource "aws_vpc" "example_vn_aws" {
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
@@ -46,4 +50,7 @@ resource "aws_default_security_group" "example_vn_aws" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias = "eu-west-1"
 }
+
+

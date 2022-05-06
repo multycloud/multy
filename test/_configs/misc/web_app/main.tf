@@ -1,30 +1,36 @@
 resource "aws_ssm_parameter" "db_host_aws" {
-  name  = "/web-app-vault-test/db-host"
-  type  = "SecureString"
-  value = "${azurerm_mysql_server.example_db_azure.fqdn}"
+  provider = "aws.us-east-1"
+  name     = "/web-app-vault-test/db-host"
+  type     = "SecureString"
+  value    = "${azurerm_mysql_server.example_db_azure.fqdn}"
 }
 resource "aws_ssm_parameter" "db_password_aws" {
-  name  = "/web-app-vault-test/db-password"
-  type  = "SecureString"
-  value = "multy-Admin123!"
+  provider = "aws.us-east-1"
+  name     = "/web-app-vault-test/db-password"
+  type     = "SecureString"
+  value    = "multy-Admin123!"
 }
 resource "aws_ssm_parameter" "db_username_aws" {
-  name  = "/web-app-vault-test/db-username"
-  type  = "SecureString"
-  value = "multyadmin@example-db"
+  provider = "aws.us-east-1"
+  name     = "/web-app-vault-test/db-username"
+  type     = "SecureString"
+  value    = "multyadmin@example-db"
 }
 resource "aws_vpc" "example_vn_aws" {
+  provider             = "aws.us-east-1"
   tags                 = { "Name" = "example_vn" }
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags   = { "Name" = "example_vn" }
-  vpc_id = aws_vpc.example_vn_aws.id
+  provider = "aws.us-east-1"
+  tags     = { "Name" = "example_vn" }
+  vpc_id   = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags   = { "Name" = "example_vn" }
-  vpc_id = aws_vpc.example_vn_aws.id
+  provider = "aws.us-east-1"
+  tags     = { "Name" = "example_vn" }
+  vpc_id   = aws_vpc.example_vn_aws.id
   ingress {
     protocol    = "-1"
     from_port   = 0
@@ -41,6 +47,7 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_security_group" "nsg2_aws" {
+  provider    = "aws.us-east-1"
   tags        = { "Name" = "test-nsg2" }
   vpc_id      = aws_vpc.example_vn_aws.id
   name        = "test-nsg2"
@@ -95,55 +102,65 @@ resource "aws_security_group" "nsg2_aws" {
   }
 }
 resource "aws_route_table" "rt_aws" {
-  tags   = { "Name" = "test-rt" }
-  vpc_id = aws_vpc.example_vn_aws.id
+  provider = "aws.us-east-1"
+  tags     = { "Name" = "test-rt" }
+  vpc_id   = aws_vpc.example_vn_aws.id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.example_vn_aws.id
   }
 }
 resource "aws_route_table_association" "subnet3_aws" {
+  provider       = "aws.us-east-1"
   subnet_id      = aws_subnet.subnet3_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_route_table_association" "subnet2_aws" {
+  provider       = "aws.us-east-1"
   subnet_id      = aws_subnet.subnet2_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_route_table_association" "subnet1_aws" {
+  provider       = "aws.us-east-1"
   subnet_id      = aws_subnet.subnet1_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_subnet" "subnet1_aws" {
+  provider          = "aws.us-east-1"
   tags              = { "Name" = "subnet1" }
   cidr_block        = "10.0.1.0/24"
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "us-east-1a"
 }
 resource "aws_subnet" "subnet2_aws" {
+  provider          = "aws.us-east-1"
   tags              = { "Name" = "subnet2" }
   cidr_block        = "10.0.2.0/24"
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "us-east-1b"
 }
 resource "aws_subnet" "subnet3_aws" {
+  provider   = "aws.us-east-1"
   tags       = { "Name" = "subnet3" }
   cidr_block = "10.0.3.0/24"
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 data "aws_caller_identity" "vm_aws" {
+  provider   = "aws.us-east-1"
   depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
 }
 data "aws_region" "vm_aws" {
+  provider   = "aws.us-east-1"
   depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
   ]
 }
 resource "aws_iam_instance_profile" "vm_aws" {
+  provider   = "aws.us-east-1"
   depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
@@ -152,6 +169,7 @@ resource "aws_iam_instance_profile" "vm_aws" {
   role = aws_iam_role.vm_aws.name
 }
 resource "aws_iam_role" "vm_aws" {
+  provider   = "aws.us-east-1"
   depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
@@ -165,6 +183,7 @@ resource "aws_iam_role" "vm_aws" {
   }
 }
 resource "aws_key_pair" "vm_aws" {
+  provider   = "aws.us-east-1"
   depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
@@ -174,6 +193,7 @@ resource "aws_key_pair" "vm_aws" {
   public_key = "${file("./ssh_key.pub")}"
 }
 resource "aws_instance" "vm_aws" {
+  provider   = "aws.us-east-1"
   depends_on = [
     azurerm_mysql_server.example_db_azure, azurerm_mysql_virtual_network_rule.example_db_azure0,
     azurerm_mysql_virtual_network_rule.example_db_azure1, azurerm_mysql_firewall_rule.example_db_azure
@@ -476,7 +496,10 @@ resource "azurerm_key_vault" "web_app_vault_azure" {
 }
 provider "aws" {
   region = "us-east-1"
+  alias  = "us-east-1"
 }
+
+
 provider "azurerm" {
   features {
   }

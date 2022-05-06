@@ -1,15 +1,18 @@
 resource "aws_vpc" "example_vn_aws" {
+  provider             = "aws.eu-west-1"
   tags                 = { "Name" = "example_vn" }
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags   = { "Name" = "example_vn" }
-  vpc_id = aws_vpc.example_vn_aws.id
+  provider = "aws.eu-west-1"
+  tags     = { "Name" = "example_vn" }
+  vpc_id   = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags   = { "Name" = "example_vn" }
-  vpc_id = aws_vpc.example_vn_aws.id
+  provider = "aws.eu-west-1"
+  tags     = { "Name" = "example_vn" }
+  vpc_id   = aws_vpc.example_vn_aws.id
   ingress {
     protocol    = "-1"
     from_port   = 0
@@ -46,6 +49,7 @@ resource "azurerm_resource_group" "rg1" {
   location = "northeurope"
 }
 resource "aws_subnet" "subnet_aws" {
+  provider          = "aws.eu-west-1"
   tags              = { "Name" = "subnet" }
   cidr_block        = "10.0.2.0/24"
   vpc_id            = aws_vpc.example_vn_aws.id
@@ -62,15 +66,18 @@ resource "azurerm_subnet_route_table_association" "subnet_azure" {
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "aws_iam_instance_profile" "vm2_aws" {
-  name = "iam_for_vm_vm2_aws"
-  role = aws_iam_role.vm2_aws.name
+  provider = "aws.eu-west-1"
+  name     = "iam_for_vm_vm2_aws"
+  role     = aws_iam_role.vm2_aws.name
 }
 resource "aws_iam_role" "vm2_aws" {
+  provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
   name               = "iam_for_vm_vm2_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 data "aws_ami" "vm2_aws" {
+  provider    = "aws.eu-west-1"
   owners      = ["136693071363"]
   most_recent = true
   filter {
@@ -87,6 +94,7 @@ data "aws_ami" "vm2_aws" {
   }
 }
 resource "aws_instance" "vm2_aws" {
+  provider             = "aws.eu-west-1"
   tags                 = { "Name" = "test-vm" }
   ami                  = data.aws_ami.vm2_aws.id
   instance_type        = "t2.nano"
@@ -136,15 +144,18 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   computer_name = "testvm"
 }
 resource "aws_iam_instance_profile" "vm3_aws" {
-  name = "iam_for_vm_vm3_aws"
-  role = aws_iam_role.vm3_aws.name
+  provider = "aws.eu-west-1"
+  name     = "iam_for_vm_vm3_aws"
+  role     = aws_iam_role.vm3_aws.name
 }
 resource "aws_iam_role" "vm3_aws" {
+  provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
   name               = "iam_for_vm_vm3_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 data "aws_ami" "vm3_aws" {
+  provider    = "aws.eu-west-1"
   owners      = ["125523088429"]
   most_recent = true
   filter {
@@ -161,6 +172,7 @@ data "aws_ami" "vm3_aws" {
   }
 }
 resource "aws_instance" "vm3_aws" {
+  provider             = "aws.eu-west-1"
   tags                 = { "Name" = "test-vm" }
   ami                  = data.aws_ami.vm3_aws.id
   instance_type        = "t2.nano"
@@ -210,15 +222,18 @@ resource "azurerm_linux_virtual_machine" "vm3_azure" {
   computer_name = "testvm"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  name = "iam_for_vm_vm_aws"
-  role = aws_iam_role.vm_aws.name
+  provider = "aws.eu-west-1"
+  name     = "iam_for_vm_vm_aws"
+  role     = aws_iam_role.vm_aws.name
 }
 resource "aws_iam_role" "vm_aws" {
+  provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
   name               = "iam_for_vm_vm_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 data "aws_ami" "vm_aws" {
+  provider    = "aws.eu-west-1"
   owners      = ["099720109477"]
   most_recent = true
   filter {
@@ -235,6 +250,7 @@ data "aws_ami" "vm_aws" {
   }
 }
 resource "aws_instance" "vm_aws" {
+  provider             = "aws.eu-west-1"
   tags                 = { "Name" = "test-vm" }
   ami                  = data.aws_ami.vm_aws.id
   instance_type        = "t2.nano"
@@ -287,7 +303,10 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias  = "eu-west-1"
 }
+
+
 provider "azurerm" {
   features {
   }
