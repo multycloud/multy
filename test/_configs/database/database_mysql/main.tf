@@ -1,5 +1,6 @@
 resource "aws_db_subnet_group" "example_db_aws" {
-  tags = {
+  provider = "aws.us-east-1"
+  tags     = {
     "Name" = "example-db"
   }
 
@@ -11,7 +12,8 @@ resource "aws_db_subnet_group" "example_db_aws" {
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
-  tags = {
+  provider = "aws.us-east-1"
+  tags     = {
     "Name" = "exampledb"
   }
 
@@ -27,7 +29,8 @@ resource "aws_db_instance" "example_db_aws" {
   publicly_accessible  = true
 }
 resource "aws_subnet" "subnet1_aws" {
-  tags = {
+  provider = "aws.us-east-1"
+  tags     = {
     "Name" = "subnet1"
   }
 
@@ -36,7 +39,8 @@ resource "aws_subnet" "subnet1_aws" {
   availability_zone = "us-east-1a"
 }
 resource "aws_subnet" "subnet2_aws" {
-  tags = {
+  provider = "aws.us-east-1"
+  tags     = {
     "Name" = "subnet2"
   }
 
@@ -45,7 +49,8 @@ resource "aws_subnet" "subnet2_aws" {
   availability_zone = "us-east-1b"
 }
 resource "aws_route_table" "rt_aws" {
-  tags = {
+  provider = "aws.us-east-1"
+  tags     = {
     "Name" = "db-rt"
   }
 
@@ -57,15 +62,18 @@ resource "aws_route_table" "rt_aws" {
   }
 }
 resource "aws_route_table_association" "subnet1_aws" {
+  provider       = "aws.us-east-1"
   subnet_id      = aws_subnet.subnet1_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_route_table_association" "subnet2_aws" {
+  provider       = "aws.us-east-1"
   subnet_id      = aws_subnet.subnet2_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_vpc" "vn_aws" {
-  tags = {
+  provider = "aws.us-east-1"
+  tags     = {
     "Name" = "db-vn"
   }
 
@@ -73,14 +81,16 @@ resource "aws_vpc" "vn_aws" {
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "vn_aws" {
-  tags = {
+  provider = "aws.us-east-1"
+  tags     = {
     "Name" = "db-vn"
   }
 
   vpc_id = aws_vpc.vn_aws.id
 }
 resource "aws_default_security_group" "vn_aws" {
-  tags = {
+  provider = "aws.us-east-1"
+  tags     = {
     "Name" = "db-vn"
   }
 
@@ -189,6 +199,7 @@ resource "azurerm_resource_group" "rg1" {
 }
 provider "aws" {
   region = "us-east-1"
+  alias  = "us-east-1"
 }
 provider "azurerm" {
   features {}

@@ -23,6 +23,7 @@ resource "azurerm_resource_group" "rg1" {
 }
 provider "aws" {
   region = "eu-west-2"
+  alias  = "eu-west-2"
 }
 provider "azurerm" {
   features {}

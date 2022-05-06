@@ -1,17 +1,21 @@
 resource "aws_iam_role" "cluster_aws" {
+  provider           = "aws.eu-west-1"
   tags               = { "Name" = "iam_for_k8cluster_cluster_aws" }
   name               = "iam_for_k8cluster_cluster_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"eks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "cluster_aws_AmazonEKSClusterPolicy" {
+  provider   = "aws.eu-west-1"
   role       = aws_iam_role.cluster_aws.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 resource "aws_iam_role_policy_attachment" "cluster_aws_AmazonEKSVPCResourceController" {
+  provider   = "aws.eu-west-1"
   role       = aws_iam_role.cluster_aws.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
 }
 resource "aws_eks_cluster" "cluster_aws" {
+  provider = "aws.eu-west-1"
   tags     = { "Name" = "cluster_aws" }
   role_arn = aws_iam_role.cluster_aws.arn
   vpc_config {
@@ -20,23 +24,28 @@ resource "aws_eks_cluster" "cluster_aws" {
   name = "cluster_aws"
 }
 resource "aws_iam_role" "cluster_aws_default_pool" {
+  provider           = "aws.eu-west-1"
   tags               = { "Name" = "iam_for_k8nodepool_node_pool_aws" }
   name               = "iam_for_k8nodepool_node_pool_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "cluster_aws_default_pool_AmazonEKSWorkerNodePolicy" {
+  provider   = "aws.eu-west-1"
   role       = aws_iam_role.cluster_aws_default_pool.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 resource "aws_iam_role_policy_attachment" "cluster_aws_default_pool_AmazonEKS_CNI_Policy" {
+  provider   = "aws.eu-west-1"
   role       = aws_iam_role.cluster_aws_default_pool.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 resource "aws_iam_role_policy_attachment" "cluster_aws_default_pool_AmazonEC2ContainerRegistryReadOnly" {
+  provider   = "aws.eu-west-1"
   role       = aws_iam_role.cluster_aws_default_pool.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 resource "aws_eks_node_group" "cluster_aws_default_pool" {
+  provider        = "aws.eu-west-1"
   cluster_name    = aws_eks_cluster.cluster_aws.id
   node_group_name = "node_pool_aws"
   node_role_arn   = aws_iam_role.cluster_aws_default_pool.arn
@@ -52,17 +61,20 @@ resource "aws_eks_node_group" "cluster_aws_default_pool" {
   instance_types = ["t2.medium"]
 }
 resource "aws_vpc" "example_vn_aws" {
+  provider             = "aws.eu-west-1"
   tags                 = { "Name" = "example_vn" }
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags   = { "Name" = "example_vn" }
-  vpc_id = aws_vpc.example_vn_aws.id
+  provider = "aws.eu-west-1"
+  tags     = { "Name" = "example_vn" }
+  vpc_id   = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags   = { "Name" = "example_vn" }
-  vpc_id = aws_vpc.example_vn_aws.id
+  provider = "aws.eu-west-1"
+  tags     = { "Name" = "example_vn" }
+  vpc_id   = aws_vpc.example_vn_aws.id
   ingress {
     protocol    = "-1"
     from_port   = 0
@@ -79,18 +91,21 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_route_table" "rt_aws" {
-  tags   = { "Name" = "test-rt" }
-  vpc_id = aws_vpc.example_vn_aws.id
+  provider = "aws.eu-west-1"
+  tags     = { "Name" = "test-rt" }
+  vpc_id   = aws_vpc.example_vn_aws.id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.example_vn_aws.id
   }
 }
 resource "aws_route_table_association" "public_subnet_aws" {
+  provider       = "aws.eu-west-1"
   subnet_id      = aws_subnet.public_subnet_aws.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_subnet" "private_subnet_aws" {
+  provider                = "aws.eu-west-1"
   tags                    = { "Name" = "private-subnet" }
   cidr_block              = "10.0.1.0/24"
   vpc_id                  = aws_vpc.example_vn_aws.id
@@ -98,6 +113,7 @@ resource "aws_subnet" "private_subnet_aws" {
   map_public_ip_on_launch = true
 }
 resource "aws_subnet" "public_subnet_aws" {
+  provider                = "aws.eu-west-1"
   tags                    = { "Name" = "public-subnet" }
   cidr_block              = "10.0.2.0/24"
   vpc_id                  = aws_vpc.example_vn_aws.id
@@ -174,7 +190,10 @@ resource "azurerm_resource_group" "rg1" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias  = "eu-west-1"
 }
+
+
 provider "azurerm" {
   features {
   }

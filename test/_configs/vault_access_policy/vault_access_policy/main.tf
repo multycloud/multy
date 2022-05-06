@@ -1,20 +1,24 @@
 resource "aws_ssm_parameter" "api_key_aws" {
-  name  = "/dev-test-secret-multy/api-key"
-  type  = "SecureString"
-  value = "xxx"
+  provider = "aws.eu-west-2"
+  name     = "/dev-test-secret-multy/api-key"
+  type     = "SecureString"
+  value    = "xxx"
 }
 resource "aws_vpc" "example_vn_aws" {
+  provider             = "aws.eu-west-2"
   tags                 = { "Name" = "example_vn" }
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags   = { "Name" = "example_vn" }
-  vpc_id = aws_vpc.example_vn_aws.id
+  provider = "aws.eu-west-2"
+  tags     = { "Name" = "example_vn" }
+  vpc_id   = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags   = { "Name" = "example_vn" }
-  vpc_id = aws_vpc.example_vn_aws.id
+  provider = "aws.eu-west-2"
+  tags     = { "Name" = "example_vn" }
+  vpc_id   = aws_vpc.example_vn_aws.id
   ingress {
     protocol    = "-1"
     from_port   = 0
@@ -31,19 +35,24 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_subnet" "subnet_aws" {
+  provider   = "aws.eu-west-2"
   tags       = { "Name" = "subnet" }
   cidr_block = "10.0.2.0/24"
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 data "aws_caller_identity" "vm_aws" {
+  provider = "aws.eu-west-2"
 }
 data "aws_region" "vm_aws" {
+  provider = "aws.eu-west-2"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  name = "iam_for_vm_vm_aws"
-  role = aws_iam_role.vm_aws.name
+  provider = "aws.eu-west-2"
+  name     = "iam_for_vm_vm_aws"
+  role     = aws_iam_role.vm_aws.name
 }
 resource "aws_iam_role" "vm_aws" {
+  provider           = "aws.eu-west-2"
   tags               = { "Name" = "test-vm" }
   name               = "iam_for_vm_vm_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
@@ -53,6 +62,7 @@ resource "aws_iam_role" "vm_aws" {
   }
 }
 resource "aws_instance" "vm_aws" {
+  provider                    = "aws.eu-west-2"
   tags                        = { "Name" = "test-vm" }
   ami                         = ""
   instance_type               = "t2.nano"
@@ -180,7 +190,10 @@ resource "azurerm_resource_group" "vn-rg" {
 }
 provider "aws" {
   region = "eu-west-2"
+  alias  = "eu-west-2"
 }
+
+
 provider "azurerm" {
   features {
   }

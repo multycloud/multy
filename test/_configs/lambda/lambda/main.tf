@@ -4,7 +4,8 @@ data "archive_file" "super_long_function_aws" {
   output_path = ".multy/tmp/super_long_function_aws.zip"
 }
 resource "aws_lambda_function" "super_long_function_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "super_long_function"
   }
 
@@ -16,7 +17,8 @@ resource "aws_lambda_function" "super_long_function_aws" {
   handler          = "lambda_function.lambda_handler"
 }
 resource "aws_iam_role" "iam_for_lambda_super_long_function_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "iam_for_lambda_super_long_function_aws"
   }
 
@@ -24,11 +26,13 @@ resource "aws_iam_role" "iam_for_lambda_super_long_function_aws" {
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_role_policy_attachment" "super_long_function_aws" {
+  provider   = "aws.eu-west-1"
   role       = aws_iam_role.iam_for_lambda_super_long_function_aws.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 resource "aws_api_gateway_rest_api" "super_long_function_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "super_long_function"
   }
 
@@ -36,17 +40,20 @@ resource "aws_api_gateway_rest_api" "super_long_function_aws" {
   description = ""
 }
 resource "aws_api_gateway_resource" "super_long_function_proxy" {
+  provider    = "aws.eu-west-1"
   rest_api_id = aws_api_gateway_rest_api.super_long_function_aws.id
   parent_id   = aws_api_gateway_rest_api.super_long_function_aws.root_resource_id
   path_part   = "{proxy+}"
 }
 resource "aws_api_gateway_method" "super_long_function_proxy" {
+  provider      = "aws.eu-west-1"
   rest_api_id   = aws_api_gateway_rest_api.super_long_function_aws.id
   resource_id   = aws_api_gateway_resource.super_long_function_proxy.id
   http_method   = "ANY"
   authorization = "NONE"
 }
 resource "aws_api_gateway_integration" "super_long_function_proxy" {
+  provider                = "aws.eu-west-1"
   rest_api_id             = aws_api_gateway_rest_api.super_long_function_aws.id
   resource_id             = aws_api_gateway_method.super_long_function_proxy.resource_id
   http_method             = aws_api_gateway_method.super_long_function_proxy.http_method
@@ -55,12 +62,14 @@ resource "aws_api_gateway_integration" "super_long_function_proxy" {
   uri                     = aws_lambda_function.super_long_function_aws.invoke_arn
 }
 resource "aws_api_gateway_method" "super_long_function_proxy_root" {
+  provider      = "aws.eu-west-1"
   rest_api_id   = aws_api_gateway_rest_api.super_long_function_aws.id
   resource_id   = aws_api_gateway_rest_api.super_long_function_aws.root_resource_id
   http_method   = "ANY"
   authorization = "NONE"
 }
 resource "aws_api_gateway_integration" "super_long_function_proxy_root" {
+  provider                = "aws.eu-west-1"
   rest_api_id             = aws_api_gateway_rest_api.super_long_function_aws.id
   resource_id             = aws_api_gateway_method.super_long_function_proxy_root.resource_id
   http_method             = aws_api_gateway_method.super_long_function_proxy_root.http_method
@@ -69,6 +78,7 @@ resource "aws_api_gateway_integration" "super_long_function_proxy_root" {
   uri                     = aws_lambda_function.super_long_function_aws.invoke_arn
 }
 resource "aws_api_gateway_deployment" "super_long_function_aws" {
+  provider    = "aws.eu-west-1"
   rest_api_id = aws_api_gateway_rest_api.super_long_function_aws.id
   stage_name  = "api"
 
@@ -78,6 +88,7 @@ resource "aws_api_gateway_deployment" "super_long_function_aws" {
   ]
 }
 resource "aws_lambda_permission" "super_long_function_aws" {
+  provider      = "aws.eu-west-1"
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = "super_long_function"
@@ -131,7 +142,10 @@ resource "azurerm_app_service_plan" "super_long_function_azure" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias  = "eu-west-1"
 }
+
+
 provider "azurerm" {
   features {}
 }

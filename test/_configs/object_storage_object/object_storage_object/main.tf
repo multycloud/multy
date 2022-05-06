@@ -9,6 +9,7 @@ resource "local_file" "file1_public_azure" {
 }
 
 resource "aws_s3_object" "file1_public_aws" {
+  provider       = "aws.eu-west-1"
   bucket         = aws_s3_bucket.obj_storage_aws.id
   key            = "index.html"
   acl            = "public-read"
@@ -16,6 +17,7 @@ resource "aws_s3_object" "file1_public_aws" {
   content_type   = "text/html"
 }
 resource "aws_s3_object" "file2_private_aws" {
+  provider       = "aws.eu-west-1"
   bucket         = aws_s3_bucket.obj_storage_aws.id
   key            = "index_private.html"
   acl            = "private"
@@ -23,7 +25,8 @@ resource "aws_s3_object" "file2_private_aws" {
   content_type   = "text/html"
 }
 resource "aws_s3_bucket" "obj_storage_aws" {
-  bucket = "test-storage-9999919"
+  provider = "aws.eu-west-1"
+  bucket   = "test-storage-9999919"
 }
 resource "azurerm_storage_blob" "file1_public_azure" {
   name                   = "index.html"
@@ -68,7 +71,10 @@ resource "azurerm_resource_group" "rg1" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias  = "eu-west-1"
 }
+
+
 provider "azurerm" {
   features {}
 }

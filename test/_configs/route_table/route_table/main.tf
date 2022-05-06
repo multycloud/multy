@@ -1,5 +1,6 @@
 resource "aws_vpc" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
@@ -7,14 +8,16 @@ resource "aws_vpc" "example_vn_aws" {
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
@@ -37,7 +40,8 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_route_table" "rt_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "test-rt"
   }
 
@@ -49,7 +53,8 @@ resource "aws_route_table" "rt_aws" {
   }
 }
 resource "aws_subnet" "subnet1_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "subnet1"
   }
 
@@ -57,7 +62,8 @@ resource "aws_subnet" "subnet1_aws" {
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 resource "aws_subnet" "subnet2_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "subnet2"
   }
 
@@ -119,7 +125,10 @@ resource "azurerm_resource_group" "rg1" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias  = "eu-west-1"
 }
+
+
 provider "azurerm" {
   features {}
 }

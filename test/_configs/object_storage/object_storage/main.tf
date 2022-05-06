@@ -1,8 +1,10 @@
 resource "aws_s3_bucket" "obj_storage_aws" {
-  bucket = "test-storage-12384761234"
+  provider = "aws.eu-west-1"
+  bucket   = "test-storage-12384761234"
 }
 resource "aws_s3_bucket_versioning" "obj_storage_aws" {
-  bucket = aws_s3_bucket.obj_storage_aws.id
+  provider = "aws.eu-west-1"
+  bucket   = aws_s3_bucket.obj_storage_aws.id
   versioning_configuration {
     status = "Enabled"
   }
@@ -34,7 +36,10 @@ resource "azurerm_resource_group" "rg1" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias  = "eu-west-1"
 }
+
+
 provider "azurerm" {
   features {
   }

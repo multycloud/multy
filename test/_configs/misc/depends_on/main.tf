@@ -1,10 +1,13 @@
 resource "aws_s3_bucket" "obj_storage1_aws" {
-  bucket = "mty-storage-001"
+  provider = "aws.eu-west-1"
+  bucket   = "mty-storage-001"
 }
 resource "aws_s3_bucket" "obj_storage2_aws" {
-  bucket = "mty-storage-002"
+  provider = "aws.eu-west-1"
+  bucket   = "mty-storage-002"
 }
 resource "aws_s3_bucket" "obj_storage3_aws" {
+  provider   = "aws.eu-west-1"
   bucket     = "mty-storage-003"
   depends_on = [
     aws_s3_bucket.obj_storage1_aws,
@@ -116,7 +119,10 @@ resource "azurerm_resource_group" "st-rg" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias  = "eu-west-1"
 }
+
+
 provider "azurerm" {
   features {}
 }

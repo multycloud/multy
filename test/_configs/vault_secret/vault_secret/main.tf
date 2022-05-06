@@ -1,8 +1,9 @@
 data azurerm_client_config example_azure {}
 resource "aws_ssm_parameter" "api_key_aws" {
-  name  = "/dev-test-secret-multy/api-key"
-  type  = "SecureString"
-  value = "xxx"
+  provider = "aws.eu-west-2"
+  name     = "/dev-test-secret-multy/api-key"
+  type     = "SecureString"
+  value    = "xxx"
 }
 resource "azurerm_key_vault_secret" "api_key_azure" {
   name         = "api-key"
@@ -33,7 +34,10 @@ resource "azurerm_resource_group" "rg1" {
 }
 provider "aws" {
   region = "eu-west-2"
+  alias  = "eu-west-2"
 }
+
+
 provider "azurerm" {
   features {}
 }

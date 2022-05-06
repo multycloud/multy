@@ -1,5 +1,6 @@
 resource "aws_vpc" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
@@ -7,14 +8,16 @@ resource "aws_vpc" "example_vn_aws" {
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "example_vn"
   }
 
@@ -37,14 +40,16 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_network_interface" "nic_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "test-nic"
   }
 
   subnet_id = aws_subnet.subnet_aws.id
 }
 resource "aws_subnet" "subnet_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "subnet"
   }
 
@@ -53,16 +58,19 @@ resource "aws_subnet" "subnet_aws" {
   availability_zone = "eu-west-1b"
 }
 resource "aws_iam_role" "vm_aws" {
+  provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
   name               = "iam_for_vm_vm_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  name = "iam_for_vm_vm_aws"
-  role = aws_iam_role.vm_aws.name
+  provider = "aws.eu-west-1"
+  name     = "iam_for_vm_vm_aws"
+  role     = aws_iam_role.vm_aws.name
 }
 resource "aws_instance" "vm_aws" {
-  tags = {
+  provider = "aws.eu-west-1"
+  tags     = {
     "Name" = "test-vm"
   }
 
@@ -152,6 +160,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
 }
 
 data "aws_ami" "vm_aws" {
+  provider    = "aws.eu-west-1"
   owners      = ["099720109477"]
   most_recent = true
   filter {
@@ -173,7 +182,10 @@ resource "azurerm_resource_group" "rg1" {
 }
 provider "aws" {
   region = "eu-west-1"
+  alias  = "eu-west-1"
 }
+
+
 provider "azurerm" {
   features {}
 }
