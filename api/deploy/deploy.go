@@ -222,6 +222,7 @@ type tfOutput struct {
 	Diagnostic struct {
 		Summary string `json:"summary"`
 		Detail  string `json:"detail"`
+		Address string `json:"address"`
 	} `json:"diagnostic"`
 }
 
@@ -303,6 +304,10 @@ func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configp
 	}
 
 	tmpDir := filepath.Join(os.TempDir(), dir, c.UserId)
+	err = os.MkdirAll(tmpDir, os.ModeDir|(os.ModePerm&0775))
+	if err != nil {
+		return EncodedResources{}, err
+	}
 	err = os.WriteFile(filepath.Join(tmpDir, tfFile), []byte(hclOutput), os.ModePerm&0664)
 	return encoded, err
 }
