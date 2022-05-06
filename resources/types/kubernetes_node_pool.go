@@ -10,7 +10,6 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/iam"
 	"github.com/multycloud/multy/resources/output/kubernetes_node_pool"
-	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 )
@@ -165,7 +164,6 @@ func (r *KubernetesNodePool) translateAzNodePool() (*kubernetes_node_pool.AzureK
 		AzResource: &common.AzResource{
 			TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 			Name:              r.Args.Name,
-			ResourceGroupName: rg.GetResourceGroupName(r.Parent.Args.CommonParameters.ResourceGroupId),
 		},
 		ClusterId:         clusterId,
 		NodeCount:         int(r.Args.StartingNodeCount),
