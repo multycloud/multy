@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/multycloud/multy/cli"
+	"github.com/multycloud/multy/cmd"
 	flag "github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -104,7 +104,7 @@ func testDb(t *testing.T, cloudSpecificConfig string, cloudName string) {
 
 	defer os.Remove(multyFileName)
 
-	cmd := cli.TranslateCommand{}
+	cmd := cmd.TranslateCommand{}
 	f := flag.NewFlagSet("test", flag.ContinueOnError)
 	cmd.ParseFlags(f, []string{multyFileName})
 	err = f.Set("output", tfDir+"/main.tf")

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"io/ioutil"
-	"os"
 )
 
 type ResourceValidationInfo struct {
@@ -15,7 +14,6 @@ type ResourceValidationInfo struct {
 }
 
 type ValidationError struct {
-	SourceRange  hcl.Range
 	ErrorMessage string
 	ResourceId   string
 	FieldName    string
@@ -24,34 +22,8 @@ type ValidationError struct {
 	ResourceNotFoundId string
 }
 
-func (e ValidationError) Print() {
-	if !e.SourceRange.Empty() {
-		printToStdErrLn("error when parsing resource %s: %s\n  on %s\n", e.ResourceId, e.ErrorMessage, e.SourceRange)
-		printLinesInRange(e.SourceRange)
-	} else {
-		printToStdErrLn("error when parsing resource %s: %s\n", e.ResourceId, e.ErrorMessage)
-	}
-}
-
 func LogInternalError(format string, a ...any) {
 	panic(fmt.Sprintf(format, a...))
-}
-
-func printLinesInRange(sourceRange hcl.Range) {
-	lines, err := ReadLinesForRange(sourceRange)
-	if err == nil {
-		for _, line := range lines {
-			printToStdErrLn("  %s", line.String())
-		}
-		printToStdErrLn("")
-	}
-}
-
-func printToStdErrLn(format string, a ...any) {
-	_, err := fmt.Fprintf(os.Stderr, format+"\n", a...)
-	if err != nil {
-		panic(err)
-	}
 }
 
 type Line struct {

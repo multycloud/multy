@@ -5,10 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
-	"github.com/multycloud/multy/api/proto/configpb"
 	"github.com/multycloud/multy/api/proto/credspb"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/encoder"
@@ -16,7 +14,6 @@ import (
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
-	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/resources/types"
 	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/codes"
@@ -39,17 +36,23 @@ var (
 	AzureCredsNotSetErr = status.Error(codes.InvalidArgument, "azure credentials are required but not set")
 )
 
+type tfOutput struct {
+	Level      string `json:"@level"`
+	Message    string `json:"@message"`
+	Diagnostic struct {
+		Summary string `json:"summary"`
+		Detail  string `json:"detail"`
+		Address string `json:"address"`
+	} `json:"diagnostic"`
+}
+
 type EncodedResources struct {
 	HclString         string
 	affectedResources []string
 }
 
-func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (EncodedResources, error) {
+func Encode(credentials *credspb.CloudCredentials, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource) (EncodedResources, error) {
 	result := EncodedResources{}
-	res, err := GetResources(c)
-	if err != nil {
-		return result, err
-	}
 
 	provider, err := getExistingProvider(prev, credentials)
 	if err != nil {
@@ -57,12 +60,9 @@ func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *con
 	}
 
 	decodedResources := &encoder.DecodedResources{
-		Resources: res,
+		Resources: c.Resources,
 		Providers: provider,
 	}
-
-	updateMultyResourceGroups(decodedResources, c)
-	addImplicitResourceGroups(c, res)
 
 	encoded, err := encoder.Encode(decodedResources, credentials)
 	if err != nil {
@@ -82,74 +82,24 @@ func Encode(credentials *credspb.CloudCredentials, c *configpb.Config, prev *con
 		}
 	}
 
-	updateDeployedResourceList(encoded, c)
-
 	affectedResources := map[string]struct{}{}
 	if prev != nil {
-		for _, dr := range prev.DeployedResourceGroup.DeployedResource {
+		for _, dr := range c.GetAffectedResources(prev.GetResourceId()) {
 			affectedResources[dr] = struct{}{}
 		}
 	}
 
+	c.UpdateMultyResourceGroups()
+	c.UpdateDeployedResourceList(encoded.DeployedResources)
+
 	if curr != nil {
-		for _, dr := range curr.DeployedResourceGroup.DeployedResource {
+		for _, dr := range c.GetAffectedResources(curr.GetResourceId()) {
 			affectedResources[dr] = struct{}{}
-		}
-		if rgId := getImplicitResourceGroupId(decodedResources.Resources, curr); rgId != nil {
-			affectedResources[*rgId] = struct{}{}
 		}
 	}
 
 	result.affectedResources = maps.Keys(affectedResources)
-
 	return result, nil
-}
-
-func getImplicitResourceGroupId(res resources.Resources, curr *configpb.Resource) *string {
-	if commonArgs, ok := res.ResourceMap[curr.ResourceId].GetCommonArgs().(*commonpb.ResourceCommonArgs); ok {
-		if commonArgs.ResourceGroupId == "" {
-			metadata, err := converter.GetConverter(curr.ResourceArgs.ResourceArgs.MessageName())
-			if err == nil {
-				res := rg.GetDefaultResourceGroupIdString(metadata.AbbreviatedName, curr.DeployedResourceGroup.GroupId)
-				return &res
-			}
-		}
-	}
-
-	return nil
-}
-
-func addImplicitResourceGroups(c *configpb.Config, res resources.Resources) {
-	for _, r := range c.Resources {
-		if res.ResourceMap[r.ResourceId].GetCloud() == commonpb.CloudProvider_AZURE {
-			// TODO: only create RGs if r.ImplicitResourceGroup
-			if args, ok := res.ResourceMap[r.ResourceId].GetCommonArgs().(*commonpb.ResourceCommonArgs); ok {
-				resourceGroup := &rg.Type{
-					ResourceId: args.ResourceGroupId,
-					Name:       args.ResourceGroupId,
-					Location:   args.Location,
-					Cloud:      commonpb.CloudProvider_AZURE,
-				}
-				res.ResourceMap[resourceGroup.GetResourceId()] = resourceGroup
-			}
-		}
-	}
-}
-
-func updateDeployedResourceList(encoded encoder.EncodedResources, c *configpb.Config) {
-	for _, resource := range c.Resources {
-		// compute everything from scratch
-		resource.DeployedResourceGroup.DeployedResource = nil
-	}
-
-	for r, deployedResources := range encoded.DeployedResources {
-		for _, resource := range c.Resources {
-			if resource.ResourceId == r.GetResourceId() {
-				resource.GetDeployedResourceGroup().DeployedResource = append(resource.GetDeployedResourceGroup().DeployedResource, deployedResources...)
-				break
-			}
-		}
-	}
 }
 
 func hasValidAzureCreds(credentials *credspb.CloudCredentials) bool {
@@ -163,77 +113,14 @@ func hasValidAwsCreds(credentials *credspb.CloudCredentials) bool {
 	return credentials.GetAwsCreds().GetAccessKey() != "" && credentials.GetAwsCreds().GetSecretKey() != ""
 }
 
-func updateMultyResourceGroups(decodedResources *encoder.DecodedResources, c *configpb.Config) {
-	resourcespbById := map[string]*configpb.Resource{}
-	for _, resource := range c.Resources {
-		resourcespbById[resource.ResourceId] = resource
-	}
-	groupIdsByResourceIds := map[string]string{}
-	for _, r := range c.Resources {
-		if r.DeployedResourceGroup != nil {
-			groupIdsByResourceIds[r.ResourceId] = r.DeployedResourceGroup.GroupId
-		}
-	}
-	deployedResourcesByGroupId := map[string]*configpb.DeployedResourceGroup{}
-	for groupId, group := range decodedResources.Resources.GetMultyResourceGroups(groupIdsByResourceIds) {
-		if _, ok := deployedResourcesByGroupId[groupId]; !ok {
-			deployedResourcesByGroupId[groupId] = &configpb.DeployedResourceGroup{GroupId: groupId}
-		}
-		for _, resource := range group.Resources {
-			if _, ok := resourcespbById[resource.GetResourceId()]; ok {
-				resourcespbById[resource.GetResourceId()].DeployedResourceGroup = deployedResourcesByGroupId[groupId]
-			} else {
-				log.Printf("[DEBUG] not adding %s to a group, it doesn't exist in the state\n", resource.GetResourceId())
-			}
-		}
-	}
-
-	for _, r := range c.Resources {
-		if commonArgs, ok := decodedResources.Resources.ResourceMap[r.ResourceId].GetCommonArgs().(*commonpb.ResourceCommonArgs); ok {
-			if rgId := getImplicitResourceGroupId(decodedResources.Resources, r); rgId != nil {
-				r.ImplicitResourceGroup = true
-				// this won't be persisted
-				commonArgs.ResourceGroupId = *rgId
-			}
-		}
-	}
-}
-
-func GetResources(c *configpb.Config) (resources.Resources, error) {
-	res := resources.NewResources()
-
-	for _, r := range c.Resources {
-		conv, err := converter.GetConverter(r.ResourceArgs.ResourceArgs.MessageName())
-		if err != nil {
-			return res, err
-		}
-		err = addMultyResource(r, res, conv)
-		if err != nil {
-			return res, err
-		}
-	}
-
-	return res, nil
-}
-
-type tfOutput struct {
-	Level      string `json:"@level"`
-	Message    string `json:"@message"`
-	Diagnostic struct {
-		Summary string `json:"summary"`
-		Detail  string `json:"detail"`
-		Address string `json:"address"`
-	} `json:"diagnostic"`
-}
-
-func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource) (*output.TfState, error) {
-	tmpDir := filepath.Join(os.TempDir(), "multy", c.UserId)
+func Deploy(ctx context.Context, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource) (*output.TfState, error) {
+	tmpDir := filepath.Join(os.TempDir(), "multy", c.GetUserId())
 	encoded, err := EncodeAndStoreTfFile(ctx, c, prev, curr, false)
 	if err != nil {
 		return nil, err
 	}
 
-	err = MaybeInit(ctx, c.UserId, false)
+	err = MaybeInit(ctx, c.GetUserId(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -272,7 +159,7 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 		}
 	}
 
-	state, err := GetState(ctx, c.UserId, false)
+	state, err := GetState(ctx, c.GetUserId(), false)
 	if err != nil {
 		return state, errors.InternalServerErrorWithMessage("error parsing state", err)
 	}
@@ -280,7 +167,7 @@ func Deploy(ctx context.Context, c *configpb.Config, prev *configpb.Resource, cu
 	return state, nil
 }
 
-func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configpb.Resource, curr *configpb.Resource, readonly bool) (EncodedResources, error) {
+func EncodeAndStoreTfFile(ctx context.Context, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource, readonly bool) (EncodedResources, error) {
 	credentials, err := util.ExtractCloudCredentials(ctx)
 	if err != nil {
 		return EncodedResources{}, err
@@ -290,7 +177,7 @@ func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configp
 		return encoded, err
 	}
 
-	tfBlock, err := GetTerraformBlock(c.UserId)
+	tfBlock, err := GetTerraformBlock(c.GetUserId())
 	if err != nil {
 		return encoded, err
 	}
@@ -303,7 +190,7 @@ func EncodeAndStoreTfFile(ctx context.Context, c *configpb.Config, prev *configp
 		dir = "multy/readonly"
 	}
 
-	tmpDir := filepath.Join(os.TempDir(), dir, c.UserId)
+	tmpDir := filepath.Join(os.TempDir(), dir, c.GetUserId())
 	err = os.MkdirAll(tmpDir, os.ModeDir|(os.ModePerm&0775))
 	if err != nil {
 		return EncodedResources{}, err
@@ -429,45 +316,16 @@ func RefreshState(ctx context.Context, userId string, readonly bool) error {
 	return err
 }
 
-func addMultyResource(r *configpb.Resource, res resources.Resources, metadata *converter.ResourceMetadata) error {
-	m, err := r.ResourceArgs.ResourceArgs.UnmarshalNew()
-	if err != nil {
-		return err
-	}
-
-	translatedResource, err := metadata.InitFunc(r.ResourceId, m, res)
-	if err != nil {
-		return err
-	}
-	res.ResourceMap[translatedResource.GetResourceId()] = translatedResource
-	return nil
-}
-
-type WithCommonParams interface {
-	GetCommonParameters() *commonpb.ResourceCommonArgs
-}
-
-func getExistingProvider(r *configpb.Resource, creds *credspb.CloudCredentials) (map[commonpb.CloudProvider]map[string]*types.Provider, error) {
+func getExistingProvider(r resources.Resource, creds *credspb.CloudCredentials) (map[commonpb.CloudProvider]map[string]*types.Provider, error) {
 	providers := map[commonpb.CloudProvider]map[string]*types.Provider{}
 	if r != nil {
-		args := r.GetResourceArgs().GetResourceArgs()
-		m, err := args.UnmarshalNew()
-		if err != nil {
-			return nil, err
-		}
-		if wcp, ok := m.(WithCommonParams); ok {
-			location, err := common.GetCloudLocation(wcp.GetCommonParameters().Location, wcp.GetCommonParameters().CloudProvider)
-			if err != nil {
-				return nil, err
-			}
-			providers[wcp.GetCommonParameters().CloudProvider] = map[string]*types.Provider{
-				location: {
-					Cloud:        wcp.GetCommonParameters().CloudProvider,
-					Location:     location,
-					NumResources: 1,
-				},
-			}
-
+		location := r.GetCloudSpecificLocation()
+		providers[r.GetCloud()] = map[string]*types.Provider{
+			location: {
+				Cloud:        r.GetCloud(),
+				Location:     location,
+				NumResources: 1,
+			},
 		}
 	}
 

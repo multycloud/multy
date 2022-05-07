@@ -14,12 +14,48 @@ import (
 	"github.com/multycloud/multy/validate"
 )
 
+var vaultAccessPolicyMetadata = resources.ResourceMetadata[*resourcespb.VaultAccessPolicyArgs, *VaultAccessPolicy, *resourcespb.VaultAccessPolicyResource]{
+	CreateFunc:        CreateVaultAccessPolicy,
+	UpdateFunc:        UpdateVaultAccessPolicy,
+	ReadFromStateFunc: VaultAccessPolicyFromState,
+	ExportFunc: func(r *VaultAccessPolicy, _ *resources.Resources) (*resourcespb.VaultAccessPolicyArgs, bool, error) {
+		return r.Args, true, nil
+	},
+	ImportFunc:      NewVaultAccessPolicy,
+	AbbreviatedName: "kv",
+}
+
 type VaultAccessPolicy struct {
 	resources.ChildResourceWithId[*Vault, *resourcespb.VaultAccessPolicyArgs]
 	Vault *Vault
 }
 
-func NewVaultAccessPolicy(resourceId string, args *resourcespb.VaultAccessPolicyArgs, others resources.Resources) (*VaultAccessPolicy, error) {
+func (r *VaultAccessPolicy) GetMetadata() resources.ResourceMetadataInterface {
+	return &vaultAccessPolicyMetadata
+}
+
+func CreateVaultAccessPolicy(resourceId string, args *resourcespb.VaultAccessPolicyArgs, others *resources.Resources) (*VaultAccessPolicy, error) {
+	return NewVaultAccessPolicy(resourceId, args, others)
+}
+
+func UpdateVaultAccessPolicy(resource *VaultAccessPolicy, vn *resourcespb.VaultAccessPolicyArgs, others *resources.Resources) error {
+	_, err := NewVaultAccessPolicy(resource.ResourceId, vn, others)
+	return err
+}
+
+func VaultAccessPolicyFromState(resource *VaultAccessPolicy, _ *output.TfState) (*resourcespb.VaultAccessPolicyResource, error) {
+	return &resourcespb.VaultAccessPolicyResource{
+		CommonParameters: &commonpb.CommonChildResourceParameters{
+			ResourceId:  resource.ResourceId,
+			NeedsUpdate: false,
+		},
+		VaultId:  resource.Args.VaultId,
+		Identity: resource.Args.Identity,
+		Access:   resource.Args.Access,
+	}, nil
+}
+
+func NewVaultAccessPolicy(resourceId string, args *resourcespb.VaultAccessPolicyArgs, others *resources.Resources) (*VaultAccessPolicy, error) {
 	vap := &VaultAccessPolicy{
 		ChildResourceWithId: resources.ChildResourceWithId[*Vault, *resourcespb.VaultAccessPolicyArgs]{
 			ResourceId: resourceId,
@@ -51,7 +87,7 @@ func (r *VaultAccessPolicy) Translate(resources.MultyContext) ([]output.TfBlock,
 		//			TerraformResource: output.TerraformResource{ResourceId: r.GetTfResourceId(cloud)},
 		//		},
 		//		Name:  fmt.Sprintf("/%s/%s", r.Vault.Name, r.Name),
-		//		Type:  "SecureString",
+		//		ResourceGroup:  "SecureString",
 		//		Value: r.Value,
 		//	},
 		//}

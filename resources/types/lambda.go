@@ -12,16 +12,30 @@ import (
 	"github.com/multycloud/multy/resources/output/local_exec"
 	"github.com/multycloud/multy/resources/output/object_storage"
 	"github.com/multycloud/multy/resources/output/object_storage_object"
-	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 	"time"
 )
 
+var lambdaMetadata = resources.ResourceMetadata[*resourcespb.LambdaArgs, *Lambda, *resourcespb.LambdaResource]{
+	CreateFunc:        CreateLambda,
+	UpdateFunc:        UpdateLambda,
+	ReadFromStateFunc: LambdaFromState,
+	ExportFunc: func(r *Lambda, _ *resources.Resources) (*resourcespb.LambdaArgs, bool, error) {
+		return r.Args, true, nil
+	},
+	ImportFunc:      NewLambda,
+	AbbreviatedName: "func",
+}
+
 type Lambda struct {
 	resources.ResourceWithId[*resourcespb.LambdaArgs]
 
 	SourceCodeObject *ObjectStorageObject `mhcl:"ref=source_code_object,optional"`
+}
+
+func (r *Lambda) GetMetadata() resources.ResourceMetadataInterface {
+	return &lambdaMetadata
 }
 
 type lambdaZip struct {
@@ -33,7 +47,36 @@ type lambdaZip struct {
 
 const SasExpirationDuration = time.Hour * 24 * 365
 
-func NewLambda(resourceId string, args *resourcespb.LambdaArgs, others resources.Resources) (*Lambda, error) {
+func CreateLambda(resourceId string, args *resourcespb.LambdaArgs, others *resources.Resources) (*Lambda, error) {
+	if args.CommonParameters.ResourceGroupId == "" {
+		rgId := NewRg("func", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		args.CommonParameters.ResourceGroupId = rgId
+	}
+
+	return NewLambda(resourceId, args, others)
+}
+
+func UpdateLambda(resource *Lambda, vn *resourcespb.LambdaArgs, others *resources.Resources) error {
+	_, err := NewLambda(resource.ResourceId, vn, others)
+	return err
+}
+
+func LambdaFromState(resource *Lambda, state *output.TfState) (*resourcespb.LambdaResource, error) {
+	return &resourcespb.LambdaResource{
+		CommonParameters: &commonpb.CommonResourceParameters{
+			ResourceId:      resource.ResourceId,
+			ResourceGroupId: resource.Args.CommonParameters.ResourceGroupId,
+			Location:        resource.Args.CommonParameters.Location,
+			CloudProvider:   resource.GetCloud(),
+			NeedsUpdate:     false,
+		},
+		Name:               resource.Args.Name,
+		Runtime:            resource.Args.Runtime,
+		SourceCodeObjectId: resource.Args.SourceCodeObjectId,
+	}, nil
+}
+
+func NewLambda(resourceId string, args *resourcespb.LambdaArgs, others *resources.Resources) (*Lambda, error) {
 	obj, _, err := resources.GetOptional[*ObjectStorageObject](resourceId, others, args.SourceCodeObjectId)
 	if err != nil {
 		return nil, err
@@ -203,7 +246,7 @@ func (r *Lambda) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 		)
 		return result, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
-		rgName := rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId)
+		rgName := GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId)
 		var result []output.TfBlock
 		function := lambda.AzureFunctionApp{
 			AzResource: common.NewAzResource(
