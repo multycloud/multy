@@ -7,6 +7,8 @@
 
 **Join the Multy Community! We are always looking for feedback and contributors!**
 
+**This document is a WIP**
+
 ## Contributing
 
 Multy is built on open-source and we are always looking for people to contribute feedback, ideas, fixes, blog posts and
