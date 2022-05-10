@@ -12,13 +12,49 @@ import (
 	"github.com/multycloud/multy/validate"
 )
 
+var vaultSecretMetadata = resources.ResourceMetadata[*resourcespb.VaultSecretArgs, *VaultSecret, *resourcespb.VaultSecretResource]{
+	CreateFunc:        CreateVaultSecret,
+	UpdateFunc:        UpdateVaultSecret,
+	ReadFromStateFunc: VaultSecretFromState,
+	ExportFunc: func(r *VaultSecret, _ *resources.Resources) (*resourcespb.VaultSecretArgs, bool, error) {
+		return r.Args, true, nil
+	},
+	ImportFunc:      NewVaultSecret,
+	AbbreviatedName: "kv",
+}
+
 type VaultSecret struct {
 	resources.ChildResourceWithId[*Vault, *resourcespb.VaultSecretArgs]
 
 	Vault *Vault
 }
 
-func NewVaultSecret(resourceId string, args *resourcespb.VaultSecretArgs, others resources.Resources) (*VaultSecret, error) {
+func (r *VaultSecret) GetMetadata() resources.ResourceMetadataInterface {
+	return &vaultSecretMetadata
+}
+
+func CreateVaultSecret(resourceId string, args *resourcespb.VaultSecretArgs, others *resources.Resources) (*VaultSecret, error) {
+	return NewVaultSecret(resourceId, args, others)
+}
+
+func UpdateVaultSecret(resource *VaultSecret, vn *resourcespb.VaultSecretArgs, others *resources.Resources) error {
+	_, err := NewVaultSecret(resource.ResourceId, vn, others)
+	return err
+}
+
+func VaultSecretFromState(resource *VaultSecret, _ *output.TfState) (*resourcespb.VaultSecretResource, error) {
+	return &resourcespb.VaultSecretResource{
+		CommonParameters: &commonpb.CommonChildResourceParameters{
+			ResourceId:  resource.ResourceId,
+			NeedsUpdate: false,
+		},
+		Name:    resource.Args.Name,
+		Value:   resource.Args.Value,
+		VaultId: resource.Args.VaultId,
+	}, nil
+}
+
+func NewVaultSecret(resourceId string, args *resourcespb.VaultSecretArgs, others *resources.Resources) (*VaultSecret, error) {
 	vap := &VaultSecret{
 		ChildResourceWithId: resources.ChildResourceWithId[*Vault, *resourcespb.VaultSecretArgs]{
 			ResourceId: resourceId,

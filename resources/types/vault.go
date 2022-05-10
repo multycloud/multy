@@ -8,15 +8,54 @@ import (
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/vault"
-	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/validate"
 )
+
+var vaultMetadata = resources.ResourceMetadata[*resourcespb.VaultArgs, *Vault, *resourcespb.VaultResource]{
+	CreateFunc:        CreateVault,
+	UpdateFunc:        UpdateVault,
+	ReadFromStateFunc: VaultFromState,
+	ExportFunc:        func(r *Vault, _ *resources.Resources) (*resourcespb.VaultArgs, bool, error) { return r.Args, true, nil },
+	ImportFunc:        NewVault,
+	AbbreviatedName:   "kv",
+}
 
 type Vault struct {
 	resources.ResourceWithId[*resourcespb.VaultArgs]
 }
 
-func NewVault(resourceId string, args *resourcespb.VaultArgs, _ resources.Resources) (*Vault, error) {
+func (r *Vault) GetMetadata() resources.ResourceMetadataInterface {
+	return &vaultMetadata
+}
+
+func CreateVault(resourceId string, args *resourcespb.VaultArgs, others *resources.Resources) (*Vault, error) {
+	if args.CommonParameters.ResourceGroupId == "" {
+		rgId := NewRg("kv", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		args.CommonParameters.ResourceGroupId = rgId
+	}
+
+	return NewVault(resourceId, args, others)
+}
+
+func UpdateVault(resource *Vault, vn *resourcespb.VaultArgs, others *resources.Resources) error {
+	_, err := NewVault(resource.ResourceId, vn, others)
+	return err
+}
+
+func VaultFromState(resource *Vault, _ *output.TfState) (*resourcespb.VaultResource, error) {
+	return &resourcespb.VaultResource{
+		CommonParameters: &commonpb.CommonResourceParameters{
+			ResourceId:      resource.ResourceId,
+			ResourceGroupId: resource.Args.CommonParameters.ResourceGroupId,
+			Location:        resource.Args.CommonParameters.Location,
+			CloudProvider:   resource.Args.CommonParameters.CloudProvider,
+			NeedsUpdate:     false,
+		},
+		Name: resource.Args.Name,
+	}, nil
+}
+
+func NewVault(resourceId string, args *resourcespb.VaultArgs, _ *resources.Resources) (*Vault, error) {
 	return &Vault{
 		ResourceWithId: resources.ResourceWithId[*resourcespb.VaultArgs]{resourceId, args},
 	}, nil
@@ -36,7 +75,7 @@ func (r *Vault) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 				AzResource: &common.AzResource{
 					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 					Name:              r.Args.Name,
-					ResourceGroupName: rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId),
+					ResourceGroupName: GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId),
 					Location:          r.GetCloudSpecificLocation(),
 				},
 				Sku:      "standard",

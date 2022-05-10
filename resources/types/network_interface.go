@@ -8,9 +8,19 @@ import (
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/network_interface"
-	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/validate"
 )
+
+var networkInterfaceMetadata = resources.ResourceMetadata[*resourcespb.NetworkInterfaceArgs, *NetworkInterface, *resourcespb.NetworkInterfaceResource]{
+	CreateFunc:        CreateNetworkInterface,
+	UpdateFunc:        UpdateNetworkInterface,
+	ReadFromStateFunc: NetworkInterfaceFromState,
+	ExportFunc: func(r *NetworkInterface, _ *resources.Resources) (*resourcespb.NetworkInterfaceArgs, bool, error) {
+		return r.Args, true, nil
+	},
+	ImportFunc:      NewNetworkInterface,
+	AbbreviatedName: "nic",
+}
 
 type NetworkInterface struct {
 	resources.ResourceWithId[*resourcespb.NetworkInterfaceArgs]
@@ -18,7 +28,44 @@ type NetworkInterface struct {
 	Subnet *Subnet
 }
 
-func NewNetworkInterface(resourceId string, args *resourcespb.NetworkInterfaceArgs, others resources.Resources) (*NetworkInterface, error) {
+func (r *NetworkInterface) GetMetadata() resources.ResourceMetadataInterface {
+	return &networkInterfaceMetadata
+}
+
+func CreateNetworkInterface(resourceId string, args *resourcespb.NetworkInterfaceArgs, others *resources.Resources) (*NetworkInterface, error) {
+	if args.CommonParameters.ResourceGroupId == "" {
+		subnet, err := resources.Get[*Subnet](resourceId, others, args.SubnetId)
+		if err != nil {
+			return nil, err
+		}
+		rgId := NewRgFromParent("nic", subnet.VirtualNetwork.Args.CommonParameters.ResourceGroupId, others,
+			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		args.CommonParameters.ResourceGroupId = rgId
+	}
+
+	return NewNetworkInterface(resourceId, args, others)
+}
+
+func UpdateNetworkInterface(resource *NetworkInterface, vn *resourcespb.NetworkInterfaceArgs, others *resources.Resources) error {
+	_, err := NewNetworkInterface(resource.ResourceId, vn, others)
+	return err
+}
+
+func NetworkInterfaceFromState(resource *NetworkInterface, _ *output.TfState) (*resourcespb.NetworkInterfaceResource, error) {
+	return &resourcespb.NetworkInterfaceResource{
+		CommonParameters: &commonpb.CommonResourceParameters{
+			ResourceId:      resource.ResourceId,
+			ResourceGroupId: resource.Args.CommonParameters.ResourceGroupId,
+			Location:        resource.Args.CommonParameters.Location,
+			CloudProvider:   resource.Args.CommonParameters.CloudProvider,
+			NeedsUpdate:     false,
+		},
+		Name:     resource.Args.Name,
+		SubnetId: resource.Args.SubnetId,
+	}, nil
+}
+
+func NewNetworkInterface(resourceId string, args *resourcespb.NetworkInterfaceArgs, others *resources.Resources) (*NetworkInterface, error) {
 	subnet, err := resources.Get[*Subnet](resourceId, others, args.SubnetId)
 	if err != nil {
 		return nil, err
@@ -46,7 +93,7 @@ func (r *NetworkInterface) Translate(ctx resources.MultyContext) ([]output.TfBlo
 			},
 		}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
-		rgName := rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId)
+		rgName := GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId)
 		nic := network_interface.AzureNetworkInterface{
 			AzResource: common.NewAzResource(
 				r.ResourceId, r.Args.Name, rgName,

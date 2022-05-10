@@ -1,21 +1,17 @@
 package resources
 
-import (
-	"github.com/multycloud/multy/api/proto/commonpb"
-)
-
 type MultyContext struct {
-	resources    map[string]Resource
+	Resources    *Resources
 	dependencies map[Resource][]Resource
 }
 
-func NewMultyContext(r map[string]Resource) MultyContext {
-	return MultyContext{resources: r, dependencies: map[Resource][]Resource{}}
+func NewMultyContext(r *Resources) MultyContext {
+	return MultyContext{Resources: r, dependencies: map[Resource][]Resource{}}
 }
 
 func GetAllResources[T Resource](ctx MultyContext) []T {
 	var result []T
-	for _, r := range ctx.resources {
+	for _, r := range ctx.Resources.ResourceMap {
 		if casted, canCast := r.(T); canCast {
 			result = append(result, casted)
 		}
@@ -25,7 +21,7 @@ func GetAllResources[T Resource](ctx MultyContext) []T {
 
 func GetAllResourcesWithRef[T Resource, T2 Resource](ctx MultyContext, refGetter func(T) T2, ref T2) []T {
 	var result []T
-	for _, r := range ctx.resources {
+	for _, r := range ctx.Resources.ResourceMap {
 		if casted, canCast := r.(T); canCast && refGetter(casted).GetResourceId() == ref.GetResourceId() {
 			result = append(result, casted)
 		}
@@ -35,7 +31,7 @@ func GetAllResourcesWithRef[T Resource, T2 Resource](ctx MultyContext, refGetter
 
 func GetAllResourcesWithListRef[T Resource, T2 Resource](ctx MultyContext, refGetter func(T) []T2, ref T2) []T {
 	var result []T
-	for _, r := range ctx.resources {
+	for _, r := range ctx.Resources.ResourceMap {
 		if casted, canCast := r.(T); canCast {
 			for _, tentativeRef := range refGetter(casted) {
 				if tentativeRef.GetResourceId() == ref.GetResourceId() {
@@ -44,19 +40,6 @@ func GetAllResourcesWithListRef[T Resource, T2 Resource](ctx MultyContext, refGe
 				}
 			}
 
-		}
-	}
-	return result
-}
-
-func GetAllResourcesInCloud[T Resource](ctx MultyContext, cloud commonpb.CloudProvider) []T {
-	var result []T
-	for _, r := range ctx.resources {
-		if r.GetCloud() != cloud {
-			continue
-		}
-		if casted, canCast := r.(T); canCast {
-			result = append(result, casted)
 		}
 	}
 	return result
