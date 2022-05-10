@@ -10,94 +10,36 @@ The Multy Engine is a GRPC server that translates a multy infrastructure resourc
 .
 ├── api # GRPC server
 │    ├── aws # aws backend 
-│    ├── converter
-│    ├── deploy
-│    ├── errors
-│    ├── proto
+│    ├── deploy # runs terraform to refresh/plan/apply the translated config
+│    ├── errors # common API errors returned 
+│    ├── proto # contains all proto definitions and services exposed by the GRPC server 
 │    │    ├── commonpb
 │    │    ├── configpb
 │    │    ├── credspb
 │    │    ├── errorspb
 │    │    └── resourcespb
-│    ├── services
-│    │    ├── database
-│    │    ├── kubernetes_cluster
-│    │    ├── kubernetes_node_pool
-│    │    ├── lambda
-│    │    ├── network_interface
-│    │    ├── network_security_group
-│    │    ├── object_storage
-│    │    ├── object_storage_object
-│    │    ├── public_ip
-│    │    ├── route_table
-│    │    ├── route_table_association
-│    │    ├── subnet
-│    │    ├── vault
-│    │    ├── virtual_machine
-│    │    └── virtual_network
+│    ├── services # generic implementation of all resource services
 │    └── util
-├── cli
-├── db # database with User API Keys and Locks
-├── encoder
+├── cmd # command line tool to list/delete resources and start the server
+├── db # database with user API keys and locks
+├── encoder # translates all resources into terraform
 ├── flags
-├── mhcl
+├── mhcl # implements custom go tag processors
 ├── resources
 │    ├── common
 │    ├── output # cloud specific resource outputs
-│    │    ├── database
-│    │    ├── iam
-│    │    ├── kubernetes_node_pool
-│    │    ├── kubernetes_service
-│    │    ├── lambda
-│    │    ├── local_exec
-│    │    ├── network_interface
-│    │    ├── network_security_group
-│    │    ├── object_storage
-│    │    ├── object_storage_object
-│    │    ├── provider
-│    │    ├── public_ip
-│    │    ├── route_table
-│    │    ├── route_table_association
-│    │    ├── subnet
-│    │    ├── terraform
-│    │    ├── vault
-│    │    ├── vault_access_policy
-│    │    ├── vault_secret
-│    │    ├── virtual_machine
-│    │    └── virtual_network
-│    ├── resource_group
-│    ├── tags
-│    └── types
+│    └── types # contains all translation logic for every multy resource
 ├── test
 │    ├── _configs # resource unit tests
-│    │    ├── database
-│    │    ├── functions
-│    │    ├── kubernetes
-│    │    ├── lambda
-│    │    ├── network_interface
-│    │    ├── network_security_group
-│    │    ├── object_storage
-│    │    ├── object_storage_object
-│    │    ├── public_ip
-│    │    ├── resource_group
-│    │    ├── route_table
-│    │    ├── subnet
-│    │    ├── vault
-│    │    ├── vault_access_policy
-│    │    ├── vault_secret
-│    │    ├── virtual_machine
-│    │    └── virtual_network
 │    └── e2e # end-to-end testing (deployment and test)
-│        ├── database
-│        └── kubernetes
-├── util
-└── validate
+├── util 
+└── validate # validation errors
 
 ```
 
 ## Technologies
 
-- Golang (>1.18)
+- Golang (>=1.18)
 - Terraform - Backend for resource deployment
 - MySQL - Store API keys and locks
 - Amazon S3 - Store internal user configuration (WIP to remove dependency)
@@ -116,34 +58,36 @@ cd multy
 
 - Install dependencies
 
-MySQL
+  1. MySQL
 
-- Installation guide: https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/
-- Run `./db/init.sql` script
-- To create a new local Multy API Key
-  run `INSERT INTO multydb.ApiKeys (ApiKey, UserId) VALUES ("test-key", "test-user");`
+      - Installation guide: https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/
 
-Terraform - https://learn.hashicorp.com/tutorials/terraform/install-cli
+      - Run `./db/init.sql` script
+
+      - To create a new local Multy API Key, run `INSERT INTO multydb.ApiKeys (ApiKey, UserId) VALUES ("test-key", "test-user");`
+
+  2. Terraform - https://learn.hashicorp.com/tutorials/terraform/install-cli
+  3. AWS CLI - https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
 - Setup environment
 
-Setup your AWS account, adding your credentials locally by running `aws configure`.
+  Setup your AWS account, adding your credentials locally by running `aws configure`.
 
-Create an Amazon S3 bucket
+  Create an Amazon S3 bucket
 
 - Build project
 
-```bash
-make build
-```
+  ```bash
+  make build
+  ```
 
 - Set environment variables
 
-```bash
-export MULTY_API_ENDPOINT="root:@tcp(localhost:3306)/multydb?parseTime=true;"
-export MULTY_DB_CONN_STRING="localhost"
-export USER_STORAGE_NAME=#YOUR_S3_BUCKET_NAME#
-```
+  ```bash
+  export MULTY_API_ENDPOINT="root:@tcp(localhost:3306)/multydb?parseTime=true;"
+  export MULTY_DB_CONN_STRING="localhost"
+  export USER_STORAGE_NAME=#YOUR_S3_BUCKET_NAME#
+  ```
 
 3. Run server
 
@@ -151,18 +95,25 @@ export USER_STORAGE_NAME=#YOUR_S3_BUCKET_NAME#
 go run main.go serve 
 ```
 
-You can add the `--dry_run` flag when running the server. Dry run mode will work normally except it will not deploy any
+  You can add the `--dry_run` flag when running the server. Dry run mode will work normally except it will not deploy any
 resources.
 
 4. Deploy configuration
 
-You can find some examples of infrastructure configuration on
+  You can find some examples of infrastructure configuration on
 the [Terraform provider](https://github.com/multycloud/terraform-provider-multy/tree/main/tests)
 
 Check the [docs](https://docs.multy.dev/getting-started) for more details.
 
 5. Run tests
 
+To run unit tests without running terraform, run:
 ```bash
+go test ./test/... -v 
+```
 
+To also test that `terraform plan` works correctly on the generated configs, you can run:
+
+```bash
+go test ./test/... -v --tags=plan .
 ```
