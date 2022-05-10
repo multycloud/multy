@@ -8,23 +8,11 @@ import (
 	"github.com/multycloud/multy/api/proto"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
-	"github.com/multycloud/multy/api/services/database"
-	"github.com/multycloud/multy/api/services/kubernetes_cluster"
-	"github.com/multycloud/multy/api/services/kubernetes_node_pool"
-	"github.com/multycloud/multy/api/services/lambda"
-	"github.com/multycloud/multy/api/services/network_interface"
-	"github.com/multycloud/multy/api/services/network_security_group"
-	"github.com/multycloud/multy/api/services/object_storage"
-	"github.com/multycloud/multy/api/services/object_storage_object"
-	"github.com/multycloud/multy/api/services/public_ip"
-	"github.com/multycloud/multy/api/services/route_table"
-	"github.com/multycloud/multy/api/services/route_table_association"
-	"github.com/multycloud/multy/api/services/subnet"
-	"github.com/multycloud/multy/api/services/vault"
-	"github.com/multycloud/multy/api/services/virtual_machine"
-	"github.com/multycloud/multy/api/services/virtual_network"
+	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"log"
@@ -36,23 +24,23 @@ import (
 type Server struct {
 	proto.UnimplementedMultyResourceServiceServer
 	*db.Database
-	virtual_network.VnService
-	subnet.SubnetService
-	network_interface.NetworkInterfaceService
-	route_table.RouteTableService
-	route_table_association.RouteTableAssociationService
-	network_security_group.NetworkSecurityGroupService
-	database.DatabaseService
-	object_storage.ObjectStorageService
-	object_storage_object.ObjectStorageObjectService
-	public_ip.PublicIpService
-	kubernetes_cluster.KubernetesClusterService
-	kubernetes_node_pool.KubernetesNodePoolService
-	lambda.LambdaService
-	vault.VaultService
-	vault.VaultAccessPolicyService
-	vault.VaultSecretService
-	virtual_machine.VirtualMachineService
+	VnService                    services.Service[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]
+	SubnetService                services.Service[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]
+	NetworkInterfaceService      services.Service[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]
+	RouteTableService            services.Service[*resourcespb.RouteTableArgs, *resourcespb.RouteTableResource]
+	RouteTableAssociationService services.Service[*resourcespb.RouteTableAssociationArgs, *resourcespb.RouteTableAssociationResource]
+	NetworkSecurityGroupService  services.Service[*resourcespb.NetworkSecurityGroupArgs, *resourcespb.NetworkSecurityGroupResource]
+	DatabaseService              services.Service[*resourcespb.DatabaseArgs, *resourcespb.DatabaseResource]
+	ObjectStorageService         services.Service[*resourcespb.ObjectStorageArgs, *resourcespb.ObjectStorageResource]
+	ObjectStorageObjectService   services.Service[*resourcespb.ObjectStorageObjectArgs, *resourcespb.ObjectStorageObjectResource]
+	PublicIpService              services.Service[*resourcespb.PublicIpArgs, *resourcespb.PublicIpResource]
+	KubernetesClusterService     services.Service[*resourcespb.KubernetesClusterArgs, *resourcespb.KubernetesClusterResource]
+	KubernetesNodePoolService    services.Service[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]
+	LambdaService                services.Service[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]
+	VaultService                 services.Service[*resourcespb.VaultArgs, *resourcespb.VaultResource]
+	VaultAccessPolicyService     services.Service[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]
+	VaultSecretService           services.Service[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]
+	VirtualMachineService        services.Service[*resourcespb.VirtualMachineArgs, *resourcespb.VirtualMachineResource]
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -96,23 +84,23 @@ func RunServer(ctx context.Context, port int) {
 	server := Server{
 		proto.UnimplementedMultyResourceServiceServer{},
 		d,
-		virtual_network.NewVnService(d),
-		subnet.NewSubnetService(d),
-		network_interface.NewNetworkInterfaceService(d),
-		route_table.NewRouteTableService(d),
-		route_table_association.NewRouteTableAssociationService(d),
-		network_security_group.NewNetworkSecurityGroupService(d),
-		database.NewDatabaseService(d),
-		object_storage.NewObjectStorageService(d),
-		object_storage_object.NewObjectStorageObjectService(d),
-		public_ip.NewPublicIpService(d),
-		kubernetes_cluster.NewKubernetesClusterService(d),
-		kubernetes_node_pool.NewKubernetesNodePoolService(d),
-		lambda.NewLambdaService(d),
-		vault.NewVaultService(d),
-		vault.NewVaultAccessPolicyService(d),
-		vault.NewVaultSecretService(d),
-		virtual_machine.NewVirtualMachineService(d),
+		services.NewService[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]("virtual_network", d),
+		services.NewService[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]("subnet", d),
+		services.NewService[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]("network_interface", d),
+		services.NewService[*resourcespb.RouteTableArgs, *resourcespb.RouteTableResource]("route_table", d),
+		services.NewService[*resourcespb.RouteTableAssociationArgs, *resourcespb.RouteTableAssociationResource]("route_table_association", d),
+		services.NewService[*resourcespb.NetworkSecurityGroupArgs, *resourcespb.NetworkSecurityGroupResource]("network_security_group", d),
+		services.NewService[*resourcespb.DatabaseArgs, *resourcespb.DatabaseResource]("database", d),
+		services.NewService[*resourcespb.ObjectStorageArgs, *resourcespb.ObjectStorageResource]("object_storage", d),
+		services.NewService[*resourcespb.ObjectStorageObjectArgs, *resourcespb.ObjectStorageObjectResource]("object_storage_object", d),
+		services.NewService[*resourcespb.PublicIpArgs, *resourcespb.PublicIpResource]("public_ip", d),
+		services.NewService[*resourcespb.KubernetesClusterArgs, *resourcespb.KubernetesClusterResource]("kubernetes_cluster", d),
+		services.NewService[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]("kubernetes_node_pool", d),
+		services.NewService[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]("lambda", d),
+		services.NewService[*resourcespb.VaultArgs, *resourcespb.VaultResource]("vault", d),
+		services.NewService[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]("vault_access_policy", d),
+		services.NewService[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]("vault_secret", d),
+		services.NewService[*resourcespb.VirtualMachineArgs, *resourcespb.VirtualMachineResource]("virtual_machine", d),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -123,224 +111,224 @@ func RunServer(ctx context.Context, port int) {
 }
 
 func (s *Server) CreateVirtualNetwork(ctx context.Context, in *resourcespb.CreateVirtualNetworkRequest) (*resourcespb.VirtualNetworkResource, error) {
-	return s.VnService.Service.Create(ctx, in)
+	return s.VnService.Create(ctx, in)
 }
 func (s *Server) ReadVirtualNetwork(ctx context.Context, in *resourcespb.ReadVirtualNetworkRequest) (*resourcespb.VirtualNetworkResource, error) {
-	return s.VnService.Service.Read(ctx, in)
+	return s.VnService.Read(ctx, in)
 }
 func (s *Server) UpdateVirtualNetwork(ctx context.Context, in *resourcespb.UpdateVirtualNetworkRequest) (*resourcespb.VirtualNetworkResource, error) {
-	return s.VnService.Service.Update(ctx, in)
+	return s.VnService.Update(ctx, in)
 }
 func (s *Server) DeleteVirtualNetwork(ctx context.Context, in *resourcespb.DeleteVirtualNetworkRequest) (*commonpb.Empty, error) {
-	return s.VnService.Service.Delete(ctx, in)
+	return s.VnService.Delete(ctx, in)
 }
 
 func (s *Server) CreateSubnet(ctx context.Context, in *resourcespb.CreateSubnetRequest) (*resourcespb.SubnetResource, error) {
-	return s.SubnetService.Service.Create(ctx, in)
+	return s.SubnetService.Create(ctx, in)
 }
 func (s *Server) ReadSubnet(ctx context.Context, in *resourcespb.ReadSubnetRequest) (*resourcespb.SubnetResource, error) {
-	return s.SubnetService.Service.Read(ctx, in)
+	return s.SubnetService.Read(ctx, in)
 }
 func (s *Server) UpdateSubnet(ctx context.Context, in *resourcespb.UpdateSubnetRequest) (*resourcespb.SubnetResource, error) {
-	return s.SubnetService.Service.Update(ctx, in)
+	return s.SubnetService.Update(ctx, in)
 }
 func (s *Server) DeleteSubnet(ctx context.Context, in *resourcespb.DeleteSubnetRequest) (*commonpb.Empty, error) {
-	return s.SubnetService.Service.Delete(ctx, in)
+	return s.SubnetService.Delete(ctx, in)
 }
 
 func (s *Server) CreateNetworkInterface(ctx context.Context, in *resourcespb.CreateNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error) {
-	return s.NetworkInterfaceService.Service.Create(ctx, in)
+	return s.NetworkInterfaceService.Create(ctx, in)
 }
 func (s *Server) ReadNetworkInterface(ctx context.Context, in *resourcespb.ReadNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error) {
-	return s.NetworkInterfaceService.Service.Read(ctx, in)
+	return s.NetworkInterfaceService.Read(ctx, in)
 }
 func (s *Server) UpdateNetworkInterface(ctx context.Context, in *resourcespb.UpdateNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error) {
-	return s.NetworkInterfaceService.Service.Update(ctx, in)
+	return s.NetworkInterfaceService.Update(ctx, in)
 }
 func (s *Server) DeleteNetworkInterface(ctx context.Context, in *resourcespb.DeleteNetworkInterfaceRequest) (*commonpb.Empty, error) {
-	return s.NetworkInterfaceService.Service.Delete(ctx, in)
+	return s.NetworkInterfaceService.Delete(ctx, in)
 }
 
 func (s *Server) CreateRouteTable(ctx context.Context, in *resourcespb.CreateRouteTableRequest) (*resourcespb.RouteTableResource, error) {
-	return s.RouteTableService.Service.Create(ctx, in)
+	return s.RouteTableService.Create(ctx, in)
 }
 func (s *Server) ReadRouteTable(ctx context.Context, in *resourcespb.ReadRouteTableRequest) (*resourcespb.RouteTableResource, error) {
-	return s.RouteTableService.Service.Read(ctx, in)
+	return s.RouteTableService.Read(ctx, in)
 }
 func (s *Server) UpdateRouteTable(ctx context.Context, in *resourcespb.UpdateRouteTableRequest) (*resourcespb.RouteTableResource, error) {
-	return s.RouteTableService.Service.Update(ctx, in)
+	return s.RouteTableService.Update(ctx, in)
 }
 func (s *Server) DeleteRouteTable(ctx context.Context, in *resourcespb.DeleteRouteTableRequest) (*commonpb.Empty, error) {
-	return s.RouteTableService.Service.Delete(ctx, in)
+	return s.RouteTableService.Delete(ctx, in)
 }
 
 func (s *Server) CreateRouteTableAssociation(ctx context.Context, in *resourcespb.CreateRouteTableAssociationRequest) (*resourcespb.RouteTableAssociationResource, error) {
-	return s.RouteTableAssociationService.Service.Create(ctx, in)
+	return s.RouteTableAssociationService.Create(ctx, in)
 }
 func (s *Server) ReadRouteTableAssociation(ctx context.Context, in *resourcespb.ReadRouteTableAssociationRequest) (*resourcespb.RouteTableAssociationResource, error) {
-	return s.RouteTableAssociationService.Service.Read(ctx, in)
+	return s.RouteTableAssociationService.Read(ctx, in)
 }
 func (s *Server) UpdateRouteTableAssociation(ctx context.Context, in *resourcespb.UpdateRouteTableAssociationRequest) (*resourcespb.RouteTableAssociationResource, error) {
-	return s.RouteTableAssociationService.Service.Update(ctx, in)
+	return s.RouteTableAssociationService.Update(ctx, in)
 }
 func (s *Server) DeleteRouteTableAssociation(ctx context.Context, in *resourcespb.DeleteRouteTableAssociationRequest) (*commonpb.Empty, error) {
-	return s.RouteTableService.Service.Delete(ctx, in)
+	return s.RouteTableService.Delete(ctx, in)
 }
 
 func (s *Server) CreateNetworkSecurityGroup(ctx context.Context, in *resourcespb.CreateNetworkSecurityGroupRequest) (*resourcespb.NetworkSecurityGroupResource, error) {
-	return s.NetworkSecurityGroupService.Service.Create(ctx, in)
+	return s.NetworkSecurityGroupService.Create(ctx, in)
 }
 func (s *Server) ReadNetworkSecurityGroup(ctx context.Context, in *resourcespb.ReadNetworkSecurityGroupRequest) (*resourcespb.NetworkSecurityGroupResource, error) {
-	return s.NetworkSecurityGroupService.Service.Read(ctx, in)
+	return s.NetworkSecurityGroupService.Read(ctx, in)
 }
 func (s *Server) UpdateNetworkSecurityGroup(ctx context.Context, in *resourcespb.UpdateNetworkSecurityGroupRequest) (*resourcespb.NetworkSecurityGroupResource, error) {
-	return s.NetworkSecurityGroupService.Service.Update(ctx, in)
+	return s.NetworkSecurityGroupService.Update(ctx, in)
 }
 func (s *Server) DeleteNetworkSecurityGroup(ctx context.Context, in *resourcespb.DeleteNetworkSecurityGroupRequest) (*commonpb.Empty, error) {
-	return s.NetworkSecurityGroupService.Service.Delete(ctx, in)
+	return s.NetworkSecurityGroupService.Delete(ctx, in)
 }
 
 func (s *Server) CreateDatabase(ctx context.Context, in *resourcespb.CreateDatabaseRequest) (*resourcespb.DatabaseResource, error) {
-	return s.DatabaseService.Service.Create(ctx, in)
+	return s.DatabaseService.Create(ctx, in)
 }
 func (s *Server) ReadDatabase(ctx context.Context, in *resourcespb.ReadDatabaseRequest) (*resourcespb.DatabaseResource, error) {
-	return s.DatabaseService.Service.Read(ctx, in)
+	return s.DatabaseService.Read(ctx, in)
 }
 func (s *Server) UpdateDatabase(ctx context.Context, in *resourcespb.UpdateDatabaseRequest) (*resourcespb.DatabaseResource, error) {
-	return s.DatabaseService.Service.Update(ctx, in)
+	return s.DatabaseService.Update(ctx, in)
 }
 func (s *Server) DeleteDatabase(ctx context.Context, in *resourcespb.DeleteDatabaseRequest) (*commonpb.Empty, error) {
-	return s.DatabaseService.Service.Delete(ctx, in)
+	return s.DatabaseService.Delete(ctx, in)
 }
 
 func (s *Server) CreateObjectStorage(ctx context.Context, in *resourcespb.CreateObjectStorageRequest) (*resourcespb.ObjectStorageResource, error) {
-	return s.ObjectStorageService.Service.Create(ctx, in)
+	return s.ObjectStorageService.Create(ctx, in)
 }
 func (s *Server) ReadObjectStorage(ctx context.Context, in *resourcespb.ReadObjectStorageRequest) (*resourcespb.ObjectStorageResource, error) {
-	return s.ObjectStorageService.Service.Read(ctx, in)
+	return s.ObjectStorageService.Read(ctx, in)
 }
 func (s *Server) UpdateObjectStorage(ctx context.Context, in *resourcespb.UpdateObjectStorageRequest) (*resourcespb.ObjectStorageResource, error) {
-	return s.ObjectStorageService.Service.Update(ctx, in)
+	return s.ObjectStorageService.Update(ctx, in)
 }
 func (s *Server) DeleteObjectStorage(ctx context.Context, in *resourcespb.DeleteObjectStorageRequest) (*commonpb.Empty, error) {
-	return s.ObjectStorageService.Service.Delete(ctx, in)
+	return s.ObjectStorageService.Delete(ctx, in)
 }
 
 func (s *Server) CreateObjectStorageObject(ctx context.Context, in *resourcespb.CreateObjectStorageObjectRequest) (*resourcespb.ObjectStorageObjectResource, error) {
-	return s.ObjectStorageObjectService.Service.Create(ctx, in)
+	return s.ObjectStorageObjectService.Create(ctx, in)
 }
 func (s *Server) ReadObjectStorageObject(ctx context.Context, in *resourcespb.ReadObjectStorageObjectRequest) (*resourcespb.ObjectStorageObjectResource, error) {
-	return s.ObjectStorageObjectService.Service.Read(ctx, in)
+	return s.ObjectStorageObjectService.Read(ctx, in)
 }
 func (s *Server) UpdateObjectStorageObject(ctx context.Context, in *resourcespb.UpdateObjectStorageObjectRequest) (*resourcespb.ObjectStorageObjectResource, error) {
-	return s.ObjectStorageObjectService.Service.Update(ctx, in)
+	return s.ObjectStorageObjectService.Update(ctx, in)
 }
 func (s *Server) DeleteObjectStorageObject(ctx context.Context, in *resourcespb.DeleteObjectStorageObjectRequest) (*commonpb.Empty, error) {
-	return s.ObjectStorageObjectService.Service.Delete(ctx, in)
+	return s.ObjectStorageObjectService.Delete(ctx, in)
 }
 
 func (s *Server) CreatePublicIp(ctx context.Context, in *resourcespb.CreatePublicIpRequest) (*resourcespb.PublicIpResource, error) {
-	return s.PublicIpService.Service.Create(ctx, in)
+	return s.PublicIpService.Create(ctx, in)
 }
 func (s *Server) ReadPublicIp(ctx context.Context, in *resourcespb.ReadPublicIpRequest) (*resourcespb.PublicIpResource, error) {
-	return s.PublicIpService.Service.Read(ctx, in)
+	return s.PublicIpService.Read(ctx, in)
 }
 func (s *Server) UpdatePublicIp(ctx context.Context, in *resourcespb.UpdatePublicIpRequest) (*resourcespb.PublicIpResource, error) {
-	return s.PublicIpService.Service.Update(ctx, in)
+	return s.PublicIpService.Update(ctx, in)
 }
 func (s *Server) DeletePublicIp(ctx context.Context, in *resourcespb.DeletePublicIpRequest) (*commonpb.Empty, error) {
-	return s.PublicIpService.Service.Delete(ctx, in)
+	return s.PublicIpService.Delete(ctx, in)
 }
 
 func (s *Server) CreateKubernetesCluster(ctx context.Context, in *resourcespb.CreateKubernetesClusterRequest) (*resourcespb.KubernetesClusterResource, error) {
-	return s.KubernetesClusterService.Service.Create(ctx, in)
+	return s.KubernetesClusterService.Create(ctx, in)
 }
 func (s *Server) ReadKubernetesCluster(ctx context.Context, in *resourcespb.ReadKubernetesClusterRequest) (*resourcespb.KubernetesClusterResource, error) {
-	return s.KubernetesClusterService.Service.Read(ctx, in)
+	return s.KubernetesClusterService.Read(ctx, in)
 }
 func (s *Server) UpdateKubernetesCluster(ctx context.Context, in *resourcespb.UpdateKubernetesClusterRequest) (*resourcespb.KubernetesClusterResource, error) {
-	return s.KubernetesClusterService.Service.Update(ctx, in)
+	return s.KubernetesClusterService.Update(ctx, in)
 }
 func (s *Server) DeleteKubernetesCluster(ctx context.Context, in *resourcespb.DeleteKubernetesClusterRequest) (*commonpb.Empty, error) {
-	return s.KubernetesClusterService.Service.Delete(ctx, in)
+	return s.KubernetesClusterService.Delete(ctx, in)
 }
 
 func (s *Server) CreateKubernetesNodePool(ctx context.Context, in *resourcespb.CreateKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error) {
-	return s.KubernetesNodePoolService.Service.Create(ctx, in)
+	return s.KubernetesNodePoolService.Create(ctx, in)
 }
 func (s *Server) ReadKubernetesNodePool(ctx context.Context, in *resourcespb.ReadKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error) {
-	return s.KubernetesNodePoolService.Service.Read(ctx, in)
+	return s.KubernetesNodePoolService.Read(ctx, in)
 }
 func (s *Server) UpdateKubernetesNodePool(ctx context.Context, in *resourcespb.UpdateKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error) {
-	return s.KubernetesNodePoolService.Service.Update(ctx, in)
+	return s.KubernetesNodePoolService.Update(ctx, in)
 }
 func (s *Server) DeleteKubernetesNodePool(ctx context.Context, in *resourcespb.DeleteKubernetesNodePoolRequest) (*commonpb.Empty, error) {
-	return s.KubernetesNodePoolService.Service.Delete(ctx, in)
+	return s.KubernetesNodePoolService.Delete(ctx, in)
 }
 
 func (s *Server) CreateLambda(ctx context.Context, in *resourcespb.CreateLambdaRequest) (*resourcespb.LambdaResource, error) {
-	return s.LambdaService.Service.Create(ctx, in)
+	return s.LambdaService.Create(ctx, in)
 }
 func (s *Server) ReadLambda(ctx context.Context, in *resourcespb.ReadLambdaRequest) (*resourcespb.LambdaResource, error) {
-	return s.LambdaService.Service.Read(ctx, in)
+	return s.LambdaService.Read(ctx, in)
 }
 func (s *Server) UpdateLambda(ctx context.Context, in *resourcespb.UpdateLambdaRequest) (*resourcespb.LambdaResource, error) {
-	return s.LambdaService.Service.Update(ctx, in)
+	return s.LambdaService.Update(ctx, in)
 }
 func (s *Server) DeleteLambda(ctx context.Context, in *resourcespb.DeleteLambdaRequest) (*commonpb.Empty, error) {
-	return s.LambdaService.Service.Delete(ctx, in)
+	return s.LambdaService.Delete(ctx, in)
 }
 
 func (s *Server) CreateVault(ctx context.Context, in *resourcespb.CreateVaultRequest) (*resourcespb.VaultResource, error) {
-	return s.VaultService.Service.Create(ctx, in)
+	return s.VaultService.Create(ctx, in)
 }
 func (s *Server) ReadVault(ctx context.Context, in *resourcespb.ReadVaultRequest) (*resourcespb.VaultResource, error) {
-	return s.VaultService.Service.Read(ctx, in)
+	return s.VaultService.Read(ctx, in)
 }
 func (s *Server) UpdateVault(ctx context.Context, in *resourcespb.UpdateVaultRequest) (*resourcespb.VaultResource, error) {
-	return s.VaultService.Service.Update(ctx, in)
+	return s.VaultService.Update(ctx, in)
 }
 func (s *Server) DeleteVault(ctx context.Context, in *resourcespb.DeleteVaultRequest) (*commonpb.Empty, error) {
-	return s.VaultService.Service.Delete(ctx, in)
+	return s.VaultService.Delete(ctx, in)
 }
 
 func (s *Server) CreateVaultSecret(ctx context.Context, in *resourcespb.CreateVaultSecretRequest) (*resourcespb.VaultSecretResource, error) {
-	return s.VaultSecretService.Service.Create(ctx, in)
+	return s.VaultSecretService.Create(ctx, in)
 }
 func (s *Server) ReadVaultSecret(ctx context.Context, in *resourcespb.ReadVaultSecretRequest) (*resourcespb.VaultSecretResource, error) {
-	return s.VaultSecretService.Service.Read(ctx, in)
+	return s.VaultSecretService.Read(ctx, in)
 }
 func (s *Server) UpdateVaultSecret(ctx context.Context, in *resourcespb.UpdateVaultSecretRequest) (*resourcespb.VaultSecretResource, error) {
-	return s.VaultSecretService.Service.Update(ctx, in)
+	return s.VaultSecretService.Update(ctx, in)
 }
 func (s *Server) DeleteVaultSecret(ctx context.Context, in *resourcespb.DeleteVaultSecretRequest) (*commonpb.Empty, error) {
-	return s.VaultSecretService.Service.Delete(ctx, in)
+	return s.VaultSecretService.Delete(ctx, in)
 }
 
 func (s *Server) CreateVaultAccessPolicy(ctx context.Context, in *resourcespb.CreateVaultAccessPolicyRequest) (*resourcespb.VaultAccessPolicyResource, error) {
-	return s.VaultAccessPolicyService.Service.Create(ctx, in)
+	return s.VaultAccessPolicyService.Create(ctx, in)
 }
 func (s *Server) ReadVaultAccessPolicy(ctx context.Context, in *resourcespb.ReadVaultAccessPolicyRequest) (*resourcespb.VaultAccessPolicyResource, error) {
-	return s.VaultAccessPolicyService.Service.Read(ctx, in)
+	return s.VaultAccessPolicyService.Read(ctx, in)
 }
 func (s *Server) UpdateVaultAccessPolicy(ctx context.Context, in *resourcespb.UpdateVaultAccessPolicyRequest) (*resourcespb.VaultAccessPolicyResource, error) {
-	return s.VaultAccessPolicyService.Service.Update(ctx, in)
+	return s.VaultAccessPolicyService.Update(ctx, in)
 }
 func (s *Server) DeleteVaultAccessPolicy(ctx context.Context, in *resourcespb.DeleteVaultAccessPolicyRequest) (*commonpb.Empty, error) {
-	return s.VaultAccessPolicyService.Service.Delete(ctx, in)
+	return s.VaultAccessPolicyService.Delete(ctx, in)
 }
 
 func (s *Server) CreateVirtualMachine(ctx context.Context, in *resourcespb.CreateVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error) {
-	return s.VirtualMachineService.Service.Create(ctx, in)
+	return s.VirtualMachineService.Create(ctx, in)
 }
 func (s *Server) ReadVirtualMachine(ctx context.Context, in *resourcespb.ReadVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error) {
-	return s.VirtualMachineService.Service.Read(ctx, in)
+	return s.VirtualMachineService.Read(ctx, in)
 }
 func (s *Server) UpdateVirtualMachine(ctx context.Context, in *resourcespb.UpdateVirtualMachineRequest) (*resourcespb.VirtualMachineResource, error) {
-	return s.VirtualMachineService.Service.Update(ctx, in)
+	return s.VirtualMachineService.Update(ctx, in)
 }
 func (s *Server) DeleteVirtualMachine(ctx context.Context, in *resourcespb.DeleteVirtualMachineRequest) (*commonpb.Empty, error) {
-	return s.VirtualMachineService.Service.Delete(ctx, in)
+	return s.VirtualMachineService.Delete(ctx, in)
 }
 
 func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (_ *commonpb.Empty, err error) {
@@ -374,8 +362,12 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 	if err != nil {
 		return nil, err
 	}
+	mconfig, err := resources.LoadConfig(c, types.Metadatas)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err = deploy.EncodeAndStoreTfFile(ctx, c, nil, nil, true)
+	_, err = deploy.EncodeAndStoreTfFile(ctx, mconfig, nil, nil, true)
 	if err != nil {
 		return nil, err
 	}

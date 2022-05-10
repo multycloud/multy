@@ -40,6 +40,10 @@ func (r *ResourceWithId[T]) GetResourceId() string {
 	return r.ResourceId
 }
 
+func (r *ResourceWithId[T]) GetResourceGroupId() string {
+	return r.Args.GetCommonParameters().GetResourceGroupId()
+}
+
 func (r *ResourceWithId[T]) GetCloud() commonpb.CloudProvider {
 	return r.Args.GetCommonParameters().CloudProvider
 }

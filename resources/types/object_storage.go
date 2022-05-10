@@ -9,15 +9,29 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/object_storage"
 	"github.com/multycloud/multy/resources/output/object_storage_object"
-	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/validate"
 )
+
+var objectStorageMetadata = resources.ResourceMetadata[*resourcespb.ObjectStorageArgs, *ObjectStorage, *resourcespb.ObjectStorageResource]{
+	CreateFunc:        CreateObjectStorage,
+	UpdateFunc:        UpdateObjectStorage,
+	ReadFromStateFunc: ObjectStorageFromState,
+	ExportFunc: func(r *ObjectStorage, _ *resources.Resources) (*resourcespb.ObjectStorageArgs, bool, error) {
+		return r.Args, true, nil
+	},
+	ImportFunc:      NewObjectStorage,
+	AbbreviatedName: "st",
+}
 
 type ObjectStorage struct {
 	resources.ResourceWithId[*resourcespb.ObjectStorageArgs]
 }
 
-func NewObjectStorage(resourceId string, db *resourcespb.ObjectStorageArgs, _ resources.Resources) (*ObjectStorage, error) {
+func (r *ObjectStorage) GetMetadata() resources.ResourceMetadataInterface {
+	return &objectStorageMetadata
+}
+
+func NewObjectStorage(resourceId string, db *resourcespb.ObjectStorageArgs, _ *resources.Resources) (*ObjectStorage, error) {
 	return &ObjectStorage{
 		ResourceWithId: resources.ResourceWithId[*resourcespb.ObjectStorageArgs]{
 			ResourceId: resourceId,
@@ -26,7 +40,35 @@ func NewObjectStorage(resourceId string, db *resourcespb.ObjectStorageArgs, _ re
 	}, nil
 }
 
+func CreateObjectStorage(resourceId string, args *resourcespb.ObjectStorageArgs, others *resources.Resources) (*ObjectStorage, error) {
+	if args.CommonParameters.ResourceGroupId == "" {
+		rgId := NewRg("st", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		args.CommonParameters.ResourceGroupId = rgId
+	}
+
+	return NewObjectStorage(resourceId, args, others)
+}
+
+func UpdateObjectStorage(resource *ObjectStorage, vn *resourcespb.ObjectStorageArgs, others *resources.Resources) error {
+	_, err := NewObjectStorage(resource.ResourceId, vn, others)
+	return err
+}
+
 type AclRules struct{}
+
+func ObjectStorageFromState(resource *ObjectStorage, _ *output.TfState) (*resourcespb.ObjectStorageResource, error) {
+	return &resourcespb.ObjectStorageResource{
+		CommonParameters: &commonpb.CommonResourceParameters{
+			ResourceId:      resource.ResourceId,
+			ResourceGroupId: resource.Args.CommonParameters.ResourceGroupId,
+			Location:        resource.Args.CommonParameters.Location,
+			CloudProvider:   resource.Args.CommonParameters.CloudProvider,
+			NeedsUpdate:     false,
+		},
+		Name:       resource.Args.Name,
+		Versioning: resource.Args.Versioning,
+	}, nil
+}
 
 func (r *ObjectStorage) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
@@ -50,7 +92,7 @@ func (r *ObjectStorage) Translate(resources.MultyContext) ([]output.TfBlock, err
 		}
 		return awsResources, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
-		rgName := rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId)
+		rgName := GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId)
 
 		storageAccount := object_storage.AzureStorageAccount{
 			AzResource: common.NewAzResource(

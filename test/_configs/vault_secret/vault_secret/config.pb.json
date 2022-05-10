@@ -49,6 +49,19 @@
         }
       },
       "resource_id": "api_key_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ResourceGroupArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "EU_WEST_2"
+          },
+          "name": "rg1"
+        }
+      },
+      "resource_id": "rg1"
     }
   ]
 }

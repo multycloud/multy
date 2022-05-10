@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/multycloud/multy/cli"
+	"github.com/multycloud/multy/cmd"
 )
 
 func main() {
-	cli.StartCli()
+	cmd.StartCli()
 }

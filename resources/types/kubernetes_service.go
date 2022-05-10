@@ -4,17 +4,28 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/iam"
 	"github.com/multycloud/multy/resources/output/kubernetes_node_pool"
 	"github.com/multycloud/multy/resources/output/kubernetes_service"
-	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 )
+
+var kubernetesClusterMetadata = resources.ResourceMetadata[*resourcespb.KubernetesClusterArgs, *KubernetesCluster, *resourcespb.KubernetesClusterResource]{
+	CreateFunc:        CreateKubernetesCluster,
+	UpdateFunc:        UpdateKubernetesCluster,
+	ReadFromStateFunc: KubernetesClusterFromState,
+	ExportFunc: func(r *KubernetesCluster, _ *resources.Resources) (*resourcespb.KubernetesClusterArgs, bool, error) {
+		return r.Args, true, nil
+	},
+	ImportFunc:      NewKubernetesCluster,
+	AbbreviatedName: "ks",
+}
 
 type KubernetesCluster struct {
 	resources.ResourceWithId[*resourcespb.KubernetesClusterArgs]
@@ -23,7 +34,11 @@ type KubernetesCluster struct {
 	DefaultNodePool *KubernetesNodePool
 }
 
-func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesClusterArgs, others resources.Resources) (*KubernetesCluster, error) {
+func (r *KubernetesCluster) GetMetadata() resources.ResourceMetadataInterface {
+	return &kubernetesClusterMetadata
+}
+
+func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesClusterArgs, others *resources.Resources) (*KubernetesCluster, error) {
 	subnets, err := util.MapSliceValuesErr(args.SubnetIds, func(subnetId string) (*Subnet, error) {
 		return resources.Get[*Subnet](resourceId, others, subnetId)
 	})
@@ -40,6 +55,74 @@ func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesCluster
 
 	cluster.DefaultNodePool, err = newKubernetesNodePool(fmt.Sprintf("%s_default_pool", resourceId), args.DefaultNodePool, others, cluster)
 	return cluster, err
+}
+
+func CreateKubernetesCluster(resourceId string, args *resourcespb.KubernetesClusterArgs, others *resources.Resources) (*KubernetesCluster, error) {
+	if args.CommonParameters.ResourceGroupId == "" {
+		subnet, err := resources.Get[*Subnet](resourceId, others, args.SubnetIds[0])
+		if err != nil {
+			return nil, err
+		}
+		rgId := NewRgFromParent("ks", subnet.VirtualNetwork.Args.CommonParameters.ResourceGroupId, others,
+			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		args.CommonParameters.ResourceGroupId = rgId
+	}
+
+	return NewKubernetesCluster(resourceId, args, others)
+}
+
+func UpdateKubernetesCluster(resource *KubernetesCluster, vn *resourcespb.KubernetesClusterArgs, others *resources.Resources) error {
+	_, err := NewKubernetesCluster(resource.ResourceId, vn, others)
+	return err
+}
+
+func KubernetesClusterFromState(resource *KubernetesCluster, state *output.TfState) (*resourcespb.KubernetesClusterResource, error) {
+	var err error
+	endpoint := "dryrun"
+	if !flags.DryRun {
+		endpoint, err = getEndpoint(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	defaultNodePool, err := KubernetesNodePoolFromState(resource.DefaultNodePool, state)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resourcespb.KubernetesClusterResource{
+		CommonParameters: &commonpb.CommonResourceParameters{
+			ResourceId:      resource.ResourceId,
+			ResourceGroupId: resource.Args.CommonParameters.ResourceGroupId,
+			Location:        resource.Args.CommonParameters.Location,
+			CloudProvider:   resource.Args.CommonParameters.CloudProvider,
+			NeedsUpdate:     false,
+		},
+		Name:            resource.Args.Name,
+		SubnetIds:       resource.Args.SubnetIds,
+		Endpoint:        endpoint,
+		DefaultNodePool: defaultNodePool,
+	}, nil
+}
+
+func getEndpoint(resourceId string, state *output.TfState, cloud commonpb.CloudProvider) (string, error) {
+	switch cloud {
+	case commonpb.CloudProvider_AWS:
+		values, err := state.GetValues(kubernetes_service.AwsEksCluster{}, resourceId)
+		if err != nil {
+			return "", err
+		}
+		return values["endpoint"].(string), nil
+	case commonpb.CloudProvider_AZURE:
+		values, err := state.GetValues(kubernetes_service.AzureEksCluster{}, resourceId)
+		if err != nil {
+			return "", err
+		}
+		return values["kube_config"].([]interface{})[0].(map[string]interface{})["host"].(string), nil
+	}
+
+	return "", fmt.Errorf("unknown cloud: %s", cloud.String())
 }
 
 func (r *KubernetesCluster) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
@@ -117,7 +200,7 @@ func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBl
 
 		return []output.TfBlock{
 			&kubernetes_service.AzureEksCluster{
-				AzResource:      common.NewAzResource(r.ResourceId, r.Args.Name, rg.GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId), r.GetCloudSpecificLocation()),
+				AzResource:      common.NewAzResource(r.ResourceId, r.Args.Name, GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId), r.GetCloudSpecificLocation()),
 				DefaultNodePool: defaultPool,
 				DnsPrefix:       common.UniqueId(r.Args.Name, "aks", common.LowercaseAlphanumericFormatFunc),
 				Identity:        kubernetes_service.AzureIdentity{Type: "SystemAssigned"},

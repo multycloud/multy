@@ -14,6 +14,17 @@ import (
 	"github.com/multycloud/multy/validate"
 )
 
+var kubernetesNodePoolMetadata = resources.ResourceMetadata[*resourcespb.KubernetesNodePoolArgs, *KubernetesNodePool, *resourcespb.KubernetesNodePoolResource]{
+	CreateFunc:        CreateKubernetesNodePool,
+	UpdateFunc:        UpdateKubernetesNodePool,
+	ReadFromStateFunc: KubernetesNodePoolFromState,
+	ExportFunc: func(r *KubernetesNodePool, _ *resources.Resources) (*resourcespb.KubernetesNodePoolArgs, bool, error) {
+		return r.Args, true, nil
+	},
+	ImportFunc:      NewKubernetesNodePool,
+	AbbreviatedName: "ks",
+}
+
 type KubernetesNodePool struct {
 	resources.ChildResourceWithId[*KubernetesCluster, *resourcespb.KubernetesNodePoolArgs]
 
@@ -21,7 +32,20 @@ type KubernetesNodePool struct {
 	Subnets           []*Subnet // azure??
 }
 
-func NewKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePoolArgs, others resources.Resources) (*KubernetesNodePool, error) {
+func (r *KubernetesNodePool) GetMetadata() resources.ResourceMetadataInterface {
+	return &kubernetesNodePoolMetadata
+}
+
+func CreateKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePoolArgs, others *resources.Resources) (*KubernetesNodePool, error) {
+	return NewKubernetesNodePool(resourceId, args, others)
+}
+
+func UpdateKubernetesNodePool(resource *KubernetesNodePool, vn *resourcespb.KubernetesNodePoolArgs, others *resources.Resources) error {
+	_, err := NewKubernetesNodePool(resource.ResourceId, vn, others)
+	return err
+}
+
+func NewKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePoolArgs, others *resources.Resources) (*KubernetesNodePool, error) {
 	cluster, err := resources.Get[*KubernetesCluster](resourceId, others, args.ClusterId)
 	if err != nil {
 		return nil, errors.ValidationErrors([]validate.ValidationError{{
@@ -33,7 +57,25 @@ func NewKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePo
 	return newKubernetesNodePool(resourceId, args, others, cluster)
 }
 
-func newKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePoolArgs, others resources.Resources, cluster *KubernetesCluster) (*KubernetesNodePool, error) {
+func KubernetesNodePoolFromState(resource *KubernetesNodePool, _ *output.TfState) (*resourcespb.KubernetesNodePoolResource, error) {
+	return &resourcespb.KubernetesNodePoolResource{
+		CommonParameters: &commonpb.CommonChildResourceParameters{
+			ResourceId:  resource.ResourceId,
+			NeedsUpdate: false,
+		},
+		Name:              resource.Args.Name,
+		SubnetIds:         resource.Args.SubnetIds,
+		ClusterId:         resource.Args.ClusterId,
+		StartingNodeCount: resource.Args.StartingNodeCount,
+		MinNodeCount:      resource.Args.MinNodeCount,
+		MaxNodeCount:      resource.Args.MaxNodeCount,
+		VmSize:            resource.Args.VmSize,
+		DiskSizeGb:        resource.Args.DiskSizeGb,
+		Labels:            resource.Args.Labels,
+	}, nil
+}
+
+func newKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePoolArgs, others *resources.Resources, cluster *KubernetesCluster) (*KubernetesNodePool, error) {
 	knp := &KubernetesNodePool{
 		ChildResourceWithId: resources.ChildResourceWithId[*KubernetesCluster, *resourcespb.KubernetesNodePoolArgs]{
 			ResourceId: resourceId,

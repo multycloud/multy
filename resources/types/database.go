@@ -4,15 +4,26 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/database"
-	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"strings"
 )
+
+var dbMetadata = resources.ResourceMetadata[*resourcespb.DatabaseArgs, *Database, *resourcespb.DatabaseResource]{
+	CreateFunc:        CreateDatabase,
+	UpdateFunc:        UpdateDatabase,
+	ReadFromStateFunc: DatabaseFromState,
+	ExportFunc: func(r *Database, _ *resources.Resources) (*resourcespb.DatabaseArgs, bool, error) {
+		return r.Args, true, nil
+	},
+	ImportFunc:      NewDatabase,
+	AbbreviatedName: "db",
+}
 
 type Database struct {
 	resources.ResourceWithId[*resourcespb.DatabaseArgs]
@@ -20,7 +31,11 @@ type Database struct {
 	Subnets []*Subnet
 }
 
-func NewDatabase(resourceId string, db *resourcespb.DatabaseArgs, others resources.Resources) (*Database, error) {
+func (r *Database) GetMetadata() resources.ResourceMetadataInterface {
+	return &dbMetadata
+}
+
+func NewDatabase(resourceId string, db *resourcespb.DatabaseArgs, others *resources.Resources) (*Database, error) {
 	subnets, err := util.MapSliceValuesErr(db.SubnetIds, func(subnetId string) (*Subnet, error) {
 		return resources.Get[*Subnet](resourceId, others, subnetId)
 	})
@@ -34,6 +49,74 @@ func NewDatabase(resourceId string, db *resourcespb.DatabaseArgs, others resourc
 		},
 		Subnets: subnets,
 	}, nil
+}
+
+func CreateDatabase(resourceId string, args *resourcespb.DatabaseArgs, others *resources.Resources) (*Database, error) {
+	if args.CommonParameters.ResourceGroupId == "" {
+		subnet, err := resources.Get[*Subnet](resourceId, others, args.SubnetIds[0])
+		if err != nil {
+			return nil, err
+		}
+		rgId := NewRgFromParent("db", subnet.VirtualNetwork.Args.CommonParameters.ResourceGroupId, others,
+			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		args.CommonParameters.ResourceGroupId = rgId
+	}
+
+	return NewDatabase(resourceId, args, others)
+}
+
+func UpdateDatabase(resource *Database, vn *resourcespb.DatabaseArgs, others *resources.Resources) error {
+	_, err := NewDatabase(resource.ResourceId, vn, others)
+	return err
+}
+
+func DatabaseFromState(resource *Database, state *output.TfState) (*resourcespb.DatabaseResource, error) {
+	var err error
+	host := "dyrun"
+	if !flags.DryRun {
+		host, err = getHost(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &resourcespb.DatabaseResource{
+		CommonParameters: &commonpb.CommonResourceParameters{
+			ResourceId:      resource.ResourceId,
+			ResourceGroupId: resource.Args.CommonParameters.ResourceGroupId,
+			Location:        resource.Args.CommonParameters.Location,
+			CloudProvider:   resource.Args.CommonParameters.CloudProvider,
+			NeedsUpdate:     false,
+		},
+		Name:          resource.Args.Name,
+		Engine:        resource.Args.Engine,
+		EngineVersion: resource.Args.EngineVersion,
+		StorageGb:     resource.Args.StorageGb,
+		Size:          resource.Args.Size,
+		Username:      resource.Args.Username,
+		Password:      resource.Args.Password,
+		SubnetIds:     resource.Args.SubnetIds,
+		Host:          host,
+	}, nil
+}
+
+func getHost(resourceId string, state *output.TfState, cloud commonpb.CloudProvider) (string, error) {
+	switch cloud {
+	case commonpb.CloudProvider_AWS:
+		values, err := state.GetValues(database.AwsDbInstance{}, resourceId)
+		if err != nil {
+			return "", err
+		}
+		return values["address"].(string), nil
+	case commonpb.CloudProvider_AZURE:
+		values, err := state.GetValues(database.AzureMySqlServer{}, resourceId)
+		if err != nil {
+			return "", err
+		}
+		return values["fqdn"].(string), nil
+	}
+
+	return "", fmt.Errorf("unknown cloud: %s", cloud.String())
 }
 
 func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
@@ -74,7 +157,7 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 				AzResource: &common.AzResource{
 					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 					Name:              r.Args.Name,
-					ResourceGroupName: rg.GetResourceGroupName(r.Args.GetCommonParameters().ResourceGroupId),
+					ResourceGroupName: GetResourceGroupName(r.Args.GetCommonParameters().ResourceGroupId),
 					Location:          r.GetCloudSpecificLocation(),
 				},
 				Engine:                     strings.ToLower(r.Args.Engine.String()),

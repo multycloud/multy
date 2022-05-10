@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option go_package = "github.com/multycloud/multy/api/proto/resourcespb";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.resources";
+option java_outer_classname = "ResourcesProto";
+
+import "api/proto/commonpb/common.proto";
+
+package dev.multy.resources;
+
+message CreateResourceGroupRequest {
+  ResourceGroupArgs resource = 1;
+}
+
+message ReadResourceGroupRequest {
+  string resource_id = 1;
+}
+
+message UpdateResourceGroupRequest {
+  string resource_id = 1;
+  ResourceGroupArgs resource = 2;
+}
+
+message DeleteResourceGroupRequest {
+  string resource_id = 1;
+}
+
+message ResourceGroupArgs {
+  common.ResourceCommonArgs common_parameters = 1;
+  string name = 2;
+}
+
+message ResourceGroupResource {
+  common.CommonResourceParameters common_parameters = 1;
+  string name = 2;
+}

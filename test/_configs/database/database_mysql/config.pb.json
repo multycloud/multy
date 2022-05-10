@@ -196,6 +196,19 @@
         }
       },
       "resource_id": "example_db_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ResourceGroupArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "US_EAST_1"
+          },
+          "name": "rg1"
+        }
+      },
+      "resource_id": "rg1"
     }
   ]
 }
