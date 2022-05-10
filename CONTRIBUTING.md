@@ -14,9 +14,11 @@ more!
 
 If you are interested in contributing to Multy, here are a few ideas:
 
-- Join the discussion on our community [Discord Server](https://discord.gg/rgaKXY4tCZ)!
-- Raise any feedback/ideas as a GitHub Issue.
-- Star the repository to spread the word!
+💬 Join the discussion on our community [Discord Server](https://discord.gg/rgaKXY4tCZ)!
+
+💡 Raise any feedback/ideas as a GitHub Issue.
+
+⭐️ Star the repository to spread the word!
 
 The guide will provide you with an overview on Multy projects and how to contribute!
 
@@ -25,7 +27,7 @@ The guide will provide you with an overview on Multy projects and how to contrib
 To get started, you should first look at the project [overview document](/.github/overview.md) that goes over the folder
 structure and how the
 project is laid out. For any question, you can always talk to the maintainers on
-our [discord server](https://discord.gg/rgaKXY4tCZ). You can also submit an issue discuss anything with the team!
+our [discord server](https://discord.gg/rgaKXY4tCZ). You can also submit an issue to discuss anything with the team!
 
 ## Submitting a pull request
 
@@ -33,15 +35,15 @@ PR naming convention is `TYPE: overview-of-pull-request`
 
 When TYPE can be:
 
-- feat - is a new feature
-- doc - documentation only changes
-- fix - a bug fix
-- refactor - code change that neither fixes a bug nor adds a feature
+- **feat** - is a new feature
+- **doc** - documentation only changes
+- **fix** - a bug fix
+- **refactor** - code change that neither fixes a bug nor adds a feature
 
 For the initial start, fork the project and use git clone command to download the repository to your computer. A
 standard procedure for working on an issue would be to:
 
-1. git pull, before creating a new branch, pull the changes from upstream. Your master needs to be up to date.
+1. Pull the repository to get the latest changes
 
 ```bash
 $ git pull
@@ -64,8 +66,9 @@ $ git push origin [name_of_your_new_branch]
 5. Submit your changes for review
    If you go to your repository on GitHub, you'll see a `Compare & pull request` button. Click on that button.
 6. Start a Pull Request
+
    Now submit the pull request and click on `Create pull request`.
-7. Get a code review approval/reject
+7. Get a code review approval
 8. After approval, merge your PR
 9. GitHub will automatically delete the branch after the merge is done. (they can still be restored).
 
@@ -95,15 +98,3 @@ thoughts on our [discord server](https://discord.gg/rgaKXY4tCZ)
 
 The right documentation is how new people get started with Multy and it's important for us to keep everything up to date
 and cover all use cases. From spell checks to updated docs, all contributions are appreciated!
-
-### Multy Projects
-
-[Multy](https://github.com/multycloud/multy) - This project is the brains of the tool, where the translation is
-performed and where Multy resource is
-translated it the specific cloud resources.
-
-[Multy Terraform Provider](https://github.com/multycloud/terraform-provider-multy) - Our terraform provider allows you
-to deploy Multy resources through the Terraform tool.
-
-[Multy Docs](https://github.com/multycloud/multy-docs) - This repo is where our docs are located
-for [docs.multy.dev](https://docs.multy.dev)
