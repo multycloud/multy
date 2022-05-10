@@ -13,7 +13,7 @@ resource "azurerm_key_vault_secret" "api_key_azure" {
 resource "azurerm_key_vault" "example_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
   name                = "dev-test-secret-multy"
-  location            = "ukwest"
+  location            = "uksouth"
   sku_name            = "standard"
   tenant_id           = data.azurerm_client_config.example_azure.tenant_id
 
@@ -30,7 +30,7 @@ resource "azurerm_key_vault" "example_azure" {
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
-  location = "ukwest"
+  location = "uksouth"
 }
 provider "aws" {
   region = "eu-west-2"

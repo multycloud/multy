@@ -80,7 +80,7 @@ data "azurerm_client_config" "example_azure" {
 resource "azurerm_key_vault" "example_azure" {
   resource_group_name = azurerm_resource_group.kv-rg.name
   name                = "dev-test-secret-multy"
-  location            = "ukwest"
+  location            = "uksouth"
   sku_name            = "standard"
   tenant_id           = data.azurerm_client_config.example_azure.tenant_id
   access_policy {
@@ -94,13 +94,13 @@ resource "azurerm_key_vault" "example_azure" {
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
   name                = "example_vn"
-  location            = "ukwest"
+  location            = "uksouth"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
   name                = "example_vn"
-  location            = "ukwest"
+  location            = "uksouth"
   route {
     name           = "local"
     address_prefix = "0.0.0.0/0"
@@ -109,7 +109,7 @@ resource "azurerm_route_table" "example_vn_azure" {
 }
 resource "azurerm_resource_group" "kv-rg" {
   name     = "kv-rg"
-  location = "ukwest"
+  location = "uksouth"
 }
 data "azurerm_client_config" "kv_ap_azure" {
 }
@@ -134,13 +134,13 @@ resource "azurerm_subnet_route_table_association" "subnet_azure" {
 resource "azurerm_public_ip" "vm_azure" {
   resource_group_name = azurerm_resource_group.vm-rg.name
   name                = "test-vm"
-  location            = "ukwest"
+  location            = "uksouth"
   allocation_method   = "Static"
 }
 resource "azurerm_network_interface" "vm_azure" {
   resource_group_name = azurerm_resource_group.vm-rg.name
   name                = "test-vm"
-  location            = "ukwest"
+  location            = "uksouth"
   ip_configuration {
     name                          = "external"
     private_ip_address_allocation = "Dynamic"
@@ -160,7 +160,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
   name                  = "test-vm"
   computer_name         = "testvm"
-  location              = "ukwest"
+  location              = "uksouth"
   size                  = "Standard_B1ls"
   network_interface_ids = [azurerm_network_interface.vm_azure.id]
   os_disk {
@@ -182,11 +182,11 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
 }
 resource "azurerm_resource_group" "vm-rg" {
   name     = "vm-rg"
-  location = "ukwest"
+  location = "uksouth"
 }
 resource "azurerm_resource_group" "vn-rg" {
   name     = "vn-rg"
-  location = "ukwest"
+  location = "uksouth"
 }
 provider "aws" {
   region = "eu-west-2"
