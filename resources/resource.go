@@ -15,17 +15,37 @@ import (
 type Resources struct {
 	ResourceMap  map[string]Resource
 	dependencies map[string][]string
+	resources    []Resource
 }
 
-func NewResources() Resources {
-	return Resources{
+func NewResources() *Resources {
+	return &Resources{
 		ResourceMap:  map[string]Resource{},
 		dependencies: map[string][]string{},
 	}
 }
 
+func (r *Resources) Add(resource Resource) {
+	r.ResourceMap[resource.GetResourceId()] = resource
+	r.resources = append(r.resources, resource)
+}
+
+func (r *Resources) Delete(resourceId string) {
+	for i, resource := range r.resources {
+		if resource.GetResourceId() == resourceId {
+			r.resources = slices.Delete(r.resources, i, i+1)
+			break
+		}
+	}
+	delete(r.ResourceMap, resourceId)
+}
+
+func (r *Resources) GetAll() []Resource {
+	return r.resources
+}
+
 // Get finds the resource with the given id and adds a dependency between dependentResourceId and id.
-func Get[T Resource](dependentResourceId string, resources Resources, id string) (T, error) {
+func Get[T Resource](dependentResourceId string, resources *Resources, id string) (T, error) {
 	item, exists, err := GetOptional[T](dependentResourceId, resources, id)
 	if err != nil {
 		return item, err
@@ -37,7 +57,7 @@ func Get[T Resource](dependentResourceId string, resources Resources, id string)
 	return item, nil
 }
 
-func GetOptional[T Resource](dependentResourceId string, resources Resources, id string) (T, bool, error) {
+func GetOptional[T Resource](dependentResourceId string, resources *Resources, id string) (T, bool, error) {
 	if r, ok := resources.ResourceMap[id]; ok {
 		if _, okType := r.(T); !okType {
 			return *new(T), true, fmt.Errorf("resource with id %s is of the wrong type", id)
@@ -49,7 +69,7 @@ func GetOptional[T Resource](dependentResourceId string, resources Resources, id
 	return *new(T), false, nil
 }
 
-func (r Resources) AddDependency(dependentResourceId string, id string) {
+func (r *Resources) AddDependency(dependentResourceId string, id string) {
 	r.dependencies[dependentResourceId] = append(r.dependencies[dependentResourceId], id)
 }
 
@@ -65,7 +85,7 @@ func generateUniqueGroupId(existingGroups []string) (groupId string) {
 	return
 }
 
-func (r Resources) GetMultyResourceGroups(existingGroupsByResource map[string]string) map[string]*MultyResourceGroup {
+func (r *Resources) GetMultyResourceGroups(existingGroupsByResource map[string]string) map[Resource]*MultyResourceGroup {
 	groups := map[Resource]*MultyResourceGroup{}
 	// creates 1 group per resource
 	for _, resource := range util.GetSortedMapValues(r.ResourceMap) {
@@ -94,12 +114,7 @@ func (r Resources) GetMultyResourceGroups(existingGroupsByResource map[string]st
 		}
 	}
 
-	res := map[string]*MultyResourceGroup{}
-	for _, group := range groups {
-		res[group.GroupId] = group
-	}
-
-	return res
+	return groups
 }
 
 func mergeGroups(all map[Resource]*MultyResourceGroup, res1 Resource, res2 Resource) {
@@ -155,6 +170,8 @@ type Resource interface {
 	GetCloud() commonpb.CloudProvider
 
 	GetCommonArgs() any
+
+	GetMetadata() ResourceMetadataInterface
 }
 
 func (c *CloudSpecificResource) GetMainOutputId() (string, error) {

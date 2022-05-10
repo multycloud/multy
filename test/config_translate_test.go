@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/proto/configpb"
+	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/types"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 	"google.golang.org/grpc/status"
@@ -91,8 +93,12 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 	if err != nil {
 		t.Fatalf("unable to parse input file: %v", err)
 	}
+	mconfig, err := resources.LoadConfig(&c, types.Metadatas)
+	if err != nil {
+		t.Fatalf("error loading config: %v", err)
+	}
 
-	encoded, err := deploy.Encode(nil, &c, nil, nil)
+	encoded, err := deploy.Encode(nil, mconfig, nil, nil)
 	if err != nil && err != deploy.AwsCredsNotSetErr && err != deploy.AzureCredsNotSetErr {
 		if s, ok := status.FromError(err); ok {
 			fmt.Println(s.Details())

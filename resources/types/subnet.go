@@ -10,7 +10,6 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/route_table_association"
 	"github.com/multycloud/multy/resources/output/subnet"
-	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 )
@@ -20,13 +19,33 @@ Notes:
 Azure: New subnets will be associated with a default route table to block traffic to internet
 */
 
+var subnetMetadata = resources.ResourceMetadata[*resourcespb.SubnetArgs, *Subnet, *resourcespb.SubnetResource]{
+	ImportFunc:        NewSubnet,
+	CreateFunc:        CreateSubnet,
+	UpdateFunc:        UpdateSubnet,
+	ReadFromStateFunc: SubnetFromState,
+	ExportFunc: func(r *Subnet, _ *resources.Resources) (*resourcespb.SubnetArgs, bool, error) {
+		return r.Args, true, nil
+	},
+	AbbreviatedName: "vn",
+}
+
 type Subnet struct {
 	resources.ChildResourceWithId[*VirtualNetwork, *resourcespb.SubnetArgs]
 
 	VirtualNetwork *VirtualNetwork
 }
 
-func NewSubnet(resourceId string, subnet *resourcespb.SubnetArgs, others resources.Resources) (*Subnet, error) {
+func CreateSubnet(resourceId string, args *resourcespb.SubnetArgs, others *resources.Resources) (*Subnet, error) {
+	return NewSubnet(resourceId, args, others)
+}
+
+func UpdateSubnet(resource *Subnet, vn *resourcespb.SubnetArgs, others *resources.Resources) error {
+	_, err := NewSubnet(resource.ResourceId, vn, others)
+	return err
+}
+
+func NewSubnet(resourceId string, subnet *resourcespb.SubnetArgs, others *resources.Resources) (*Subnet, error) {
 	s := &Subnet{
 		ChildResourceWithId: resources.ChildResourceWithId[*VirtualNetwork, *resourcespb.SubnetArgs]{
 			ResourceId: resourceId,
@@ -40,6 +59,23 @@ func NewSubnet(resourceId string, subnet *resourcespb.SubnetArgs, others resourc
 	s.Parent = vn
 	s.VirtualNetwork = vn
 	return s, nil
+}
+
+func SubnetFromState(r *Subnet, _ *output.TfState) (*resourcespb.SubnetResource, error) {
+	return &resourcespb.SubnetResource{
+		CommonParameters: &commonpb.CommonChildResourceParameters{
+			ResourceId:  r.ResourceId,
+			NeedsUpdate: false,
+		},
+		Name:             r.Args.Name,
+		CidrBlock:        r.Args.CidrBlock,
+		AvailabilityZone: r.Args.AvailabilityZone,
+		VirtualNetworkId: r.Args.VirtualNetworkId,
+	}, nil
+}
+
+func (r *Subnet) GetMetadata() resources.ResourceMetadataInterface {
+	return &subnetMetadata
 }
 
 func (r *Subnet) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
@@ -71,7 +107,7 @@ func (r *Subnet) Translate(ctx resources.MultyContext) ([]output.TfBlock, error)
 			AzResource: &common.AzResource{
 				TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 				Name:              r.Args.Name,
-				ResourceGroupName: rg.GetResourceGroupName(r.VirtualNetwork.Args.GetCommonParameters().GetResourceGroupId()),
+				ResourceGroupName: GetResourceGroupName(r.VirtualNetwork.Args.GetCommonParameters().GetResourceGroupId()),
 			},
 			AddressPrefixes:    []string{r.Args.CidrBlock},
 			VirtualNetworkName: r.VirtualNetwork.GetVirtualNetworkName(),

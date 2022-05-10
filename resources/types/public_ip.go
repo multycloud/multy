@@ -8,7 +8,6 @@ import (
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/public_ip"
-	rg "github.com/multycloud/multy/resources/resource_group"
 	"github.com/multycloud/multy/validate"
 )
 
@@ -18,12 +17,56 @@ AWS: NIC association done on public_ip
 Azure: NIC association done on NIC creation
 */
 
+var publicIpMetadata = resources.ResourceMetadata[*resourcespb.PublicIpArgs, *PublicIp, *resourcespb.PublicIpResource]{
+	CreateFunc:        CreatePublicIp,
+	UpdateFunc:        UpdatePublicIp,
+	ReadFromStateFunc: PublicIpFromState,
+	ExportFunc: func(r *PublicIp, _ *resources.Resources) (*resourcespb.PublicIpArgs, bool, error) {
+		return r.Args, true, nil
+	},
+	ImportFunc:      NewPublicIp,
+	AbbreviatedName: "pip",
+}
+
 type PublicIp struct {
 	resources.ResourceWithId[*resourcespb.PublicIpArgs]
 	NetworkInterface *NetworkInterface
 }
 
-func NewPublicIp(resourceId string, args *resourcespb.PublicIpArgs, others resources.Resources) (*PublicIp, error) {
+func (r *PublicIp) GetMetadata() resources.ResourceMetadataInterface {
+	return &publicIpMetadata
+}
+
+func CreatePublicIp(resourceId string, args *resourcespb.PublicIpArgs, others *resources.Resources) (*PublicIp, error) {
+	if args.CommonParameters.ResourceGroupId == "" {
+		// todo: maybe put in the same RG as VM?
+		rgId := NewRg("pip", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		args.CommonParameters.ResourceGroupId = rgId
+	}
+
+	return NewPublicIp(resourceId, args, others)
+}
+
+func UpdatePublicIp(resource *PublicIp, vn *resourcespb.PublicIpArgs, others *resources.Resources) error {
+	_, err := NewPublicIp(resource.ResourceId, vn, others)
+	return err
+}
+
+func PublicIpFromState(resource *PublicIp, _ *output.TfState) (*resourcespb.PublicIpResource, error) {
+	return &resourcespb.PublicIpResource{
+		CommonParameters: &commonpb.CommonResourceParameters{
+			ResourceId:      resource.ResourceId,
+			ResourceGroupId: resource.Args.CommonParameters.ResourceGroupId,
+			Location:        resource.Args.CommonParameters.Location,
+			CloudProvider:   resource.Args.CommonParameters.CloudProvider,
+			NeedsUpdate:     false,
+		},
+		Name:               resource.Args.Name,
+		NetworkInterfaceId: resource.Args.NetworkInterfaceId,
+	}, nil
+}
+
+func NewPublicIp(resourceId string, args *resourcespb.PublicIpArgs, others *resources.Resources) (*PublicIp, error) {
 	ni, _, err := resources.GetOptional[*NetworkInterface](resourceId, others, args.NetworkInterfaceId)
 	if err != nil {
 		return nil, err
@@ -58,7 +101,7 @@ func (r *PublicIp) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 		return []output.TfBlock{
 			public_ip.AzurePublicIp{
 				AzResource: common.NewAzResource(
-					r.ResourceId, r.Args.Name, rg.GetResourceGroupName(r.Args.GetCommonParameters().ResourceGroupId),
+					r.ResourceId, r.Args.Name, GetResourceGroupName(r.Args.GetCommonParameters().ResourceGroupId),
 					r.GetCloudSpecificLocation(),
 				),
 				AllocationMethod: "Static",

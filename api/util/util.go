@@ -3,7 +3,6 @@ package util
 import (
 	"context"
 	"fmt"
-	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/configpb"
@@ -56,26 +55,6 @@ func ExtractCloudCredentials(ctx context.Context) (*credspb.CloudCredentials, er
 	res := credspb.CloudCredentials{}
 	err := proto.Unmarshal([]byte(cloudCredsBin[0]), &res)
 	return &res, err
-}
-
-func InsertIntoConfig[Arg proto.Message](in Arg, c *configpb.Config) (*configpb.Resource, error) {
-	args, err := convert(in)
-	if err != nil {
-		return nil, errors.InternalServerErrorWithMessage("error marhsalling resource", err)
-	}
-
-	conv, err := converter.GetConverter(proto.MessageName(in))
-	if err != nil {
-		return nil, err
-	}
-
-	c.ResourceCounter = c.ResourceCounter + 1
-	resource := configpb.Resource{
-		ResourceId:   fmt.Sprintf("multy_%s_u%s_r%d", conv.AbbreviatedName, c.UserId, c.ResourceCounter),
-		ResourceArgs: args,
-	}
-	c.Resources = append(c.Resources, &resource)
-	return &resource, nil
 }
 
 func convert[Arg proto.Message](in Arg) (*configpb.ResourceArgs, error) {

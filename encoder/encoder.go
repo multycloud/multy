@@ -33,7 +33,7 @@ func (w WithProvider) AddDependency(s string) {
 }
 
 type DecodedResources struct {
-	Resources resources.Resources
+	Resources *resources.Resources
 	Outputs   map[string]DecodedOutput
 	Providers map[commonpb.CloudProvider]map[string]*types.Provider
 }
@@ -51,7 +51,7 @@ type EncodedResources struct {
 }
 
 func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCredentials) (EncodedResources, error) {
-	ctx := resources.NewMultyContext(decodedResources.Resources.ResourceMap)
+	ctx := resources.NewMultyContext(decodedResources.Resources)
 
 	translatedResources, errs, err := TranslateResources(decodedResources, ctx)
 	if len(errs) > 0 || err != nil {

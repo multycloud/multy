@@ -2,17 +2,17 @@ package services
 
 import (
 	"context"
-	"github.com/multycloud/multy/api/converter"
 	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
-	"github.com/multycloud/multy/api/proto/configpb"
 	pberr "github.com/multycloud/multy/api/proto/errorspb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/flags"
+	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -36,8 +36,11 @@ type WithResourceId interface {
 
 type Service[Arg proto.Message, OutT proto.Message] struct {
 	Db           *db.Database
-	Converters   converter.ResourceConverters[Arg, OutT]
 	ResourceName string
+}
+
+func NewService[Arg proto.Message, OutT proto.Message](resourceName string, db *db.Database) Service[Arg, OutT] {
+	return Service[Arg, OutT]{ResourceName: resourceName, Db: db}
 }
 
 func (s Service[Arg, OutT]) updateErrorMetric(err error, method string) {
@@ -71,26 +74,47 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	}
 	defer s.Db.UnlockConfig(ctx, lock)
 
-	c, err := s.Db.LoadUserConfig(userId, lock)
+	c, err := s.getConfig(userId, lock)
 	if err != nil {
 		return *new(OutT), err
 	}
-	resource, err := util.InsertIntoConfig(in.GetResource(), c)
+	resource, err := c.CreateResource(in.GetResource())
 	if err != nil {
 		return *new(OutT), err
 	}
 
-	log.Printf("[INFO] Deploying %s\n", resource.ResourceId)
+	log.Printf("[INFO] Deploying %s\n", resource.GetResourceId())
 	_, err = deploy.Deploy(ctx, c, nil, resource)
 	if err != nil {
 		return *new(OutT), err
 	}
 
-	err = s.Db.StoreUserConfig(c, lock)
+	err = s.saveConfig(c, lock)
 	if err != nil {
 		return *new(OutT), err
 	}
-	return s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.ResourceId}, false)
+	return s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.GetResourceId()}, false)
+}
+
+func (s Service[Arg, OutT]) getConfig(userId string, lock *db.ConfigLock) (*resources.MultyConfig, error) {
+	c, err := s.Db.LoadUserConfig(userId, lock)
+	if err != nil {
+		return nil, err
+	}
+	mconfig, err := resources.LoadConfig(c, types.Metadatas)
+	if err != nil {
+		return nil, err
+	}
+	return mconfig, err
+}
+
+func (s Service[Arg, OutT]) saveConfig(c *resources.MultyConfig, lock *db.ConfigLock) error {
+	exportedConfig, err := c.ExportConfig()
+	if err != nil {
+		return err
+	}
+
+	return s.Db.StoreUserConfig(exportedConfig, lock)
 }
 
 func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (out OutT, err error) {
@@ -112,7 +136,7 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		return *new(OutT), err
 	}
 
-	c, err := s.Db.LoadUserConfig(userId, nil)
+	c, err := s.getConfig(userId, nil)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -129,29 +153,26 @@ type stateParser[OutT any] interface {
 	FromState(state *output.TfState) (OutT, error)
 }
 
-func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *configpb.Config, in WithResourceId, readonly bool) (OutT, error) {
-	allResources, err := deploy.GetResources(c)
-	if err != nil {
-		return *new(OutT), err
-	}
-	for _, r := range c.Resources {
-		if r.ResourceId == in.GetResourceId() {
-			converted, err := r.ResourceArgs.ResourceArgs.UnmarshalNew()
+func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.MultyConfig, in WithResourceId, readonly bool) (OutT, error) {
+	for _, r := range c.Resources.GetAll() {
+		if r.GetResourceId() == in.GetResourceId() {
+			err := deploy.MaybeInit(ctx, c.GetUserId(), readonly)
 			if err != nil {
 				return *new(OutT), err
 			}
-			err = deploy.MaybeInit(ctx, c.UserId, readonly)
+			state, err := deploy.GetState(ctx, c.GetUserId(), readonly)
 			if err != nil {
 				return *new(OutT), err
 			}
-			state, err := deploy.GetState(ctx, c.UserId, readonly)
-			if err != nil {
-				return *new(OutT), err
-			}
-			if parser, ok := allResources.ResourceMap[r.ResourceId].(stateParser[OutT]); ok && !flags.DryRun {
+			if parser, ok := r.(stateParser[OutT]); ok && !flags.DryRun {
 				return parser.FromState(state)
 			}
-			return s.Converters.Convert(in.GetResourceId(), converted.(Arg), state)
+
+			out, err := r.GetMetadata().ReadFromState(r, state)
+			if err != nil {
+				return *new(OutT), err
+			}
+			return out.(OutT), err
 		}
 	}
 
@@ -181,22 +202,22 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 	}
 	defer s.Db.UnlockConfig(ctx, lock)
 
-	c, err := s.Db.LoadUserConfig(userId, lock)
-	if err != nil {
-		return *new(OutT), err
-	}
-	previousResource := find(c, in.GetResourceId())
-	err = util.UpdateInConfig(c, in.GetResourceId(), in.GetResource())
+	c, err := s.getConfig(userId, lock)
 	if err != nil {
 		return *new(OutT), err
 	}
 
-	_, err = deploy.Deploy(ctx, c, previousResource, find(c, in.GetResourceId()))
+	r, err := c.UpdateResource(in.GetResourceId(), in.GetResource())
 	if err != nil {
 		return *new(OutT), err
 	}
 
-	err = s.Db.StoreUserConfig(c, lock)
+	_, err = deploy.Deploy(ctx, c, r, r)
+	if err != nil {
+		return *new(OutT), err
+	}
+
+	err = s.saveConfig(c, lock)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -225,12 +246,11 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*com
 		return nil, err
 	}
 	defer s.Db.UnlockConfig(ctx, lock)
-	c, err := s.Db.LoadUserConfig(userId, lock)
+	c, err := s.getConfig(userId, lock)
 	if err != nil {
 		return nil, err
 	}
-	previousResource := find(c, in.GetResourceId())
-	err = util.DeleteResourceFromConfig(c, in.GetResourceId())
+	previousResource, err := c.DeleteResource(in.GetResourceId())
 	if err != nil {
 		return nil, err
 	}
@@ -248,18 +268,9 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*com
 		return nil, err
 	}
 
-	err = s.Db.StoreUserConfig(c, lock)
+	err = s.saveConfig(c, lock)
 	if err != nil {
 		return nil, err
 	}
 	return &commonpb.Empty{}, nil
-}
-
-func find(c *configpb.Config, resourceId string) *configpb.Resource {
-	for _, r := range c.Resources {
-		if r.ResourceId == resourceId {
-			return r
-		}
-	}
-	return nil
 }
