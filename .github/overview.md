@@ -40,7 +40,7 @@ The Multy Engine is a GRPC server that translates a multy infrastructure resourc
 ## Technologies
 
 - Golang (>=1.18)
-- Terraform - Backend for resource deployment
+- Terraform (>=1.0) - Backend for resource deployment
 - MySQL - Store API keys and locks
 - Amazon S3 - Store internal user configuration (WIP to remove dependency)
 - GRPC
@@ -58,16 +58,17 @@ cd multy
 
 - Install dependencies
 
-  1. MySQL
+    1. MySQL
 
-      - Installation guide: https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/
+        - Installation guide: https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/
 
-      - Run `./db/init.sql` script
+        - Run `./db/init.sql` script
 
-      - To create a new local Multy API Key, run `INSERT INTO multydb.ApiKeys (ApiKey, UserId) VALUES ("test-key", "test-user");`
+        - To create a new local Multy API Key,
+          run `INSERT INTO multydb.ApiKeys (ApiKey, UserId) VALUES ("test-key", "test-user");`
 
-  2. Terraform - https://learn.hashicorp.com/tutorials/terraform/install-cli
-  3. AWS CLI - https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+    2. Terraform - https://learn.hashicorp.com/tutorials/terraform/install-cli
+    3. AWS CLI - https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
 - Setup environment
 
@@ -84,8 +85,8 @@ cd multy
 - Set environment variables
 
   ```bash
-  export MULTY_API_ENDPOINT="root:@tcp(localhost:3306)/multydb?parseTime=true;"
-  export MULTY_DB_CONN_STRING="localhost"
+  export MULTY_API_ENDPOINT="localhost"
+  export MULTY_DB_CONN_STRING="root:@tcp(localhost:3306)/multydb?parseTime=true;"
   export USER_STORAGE_NAME=#YOUR_S3_BUCKET_NAME#
   ```
 
@@ -95,12 +96,12 @@ cd multy
 go run main.go serve 
 ```
 
-  You can add the `--dry_run` flag when running the server. Dry run mode will work normally except it will not deploy any
+You can add the `--dry_run` flag when running the server. Dry run mode will work normally except it will not deploy any
 resources.
 
 4. Deploy configuration
 
-  You can find some examples of infrastructure configuration on
+You can find some examples of infrastructure configuration on
 the [Terraform provider](https://github.com/multycloud/terraform-provider-multy/tree/main/tests)
 
 Check the [docs](https://docs.multy.dev/getting-started) for more details.
@@ -108,6 +109,7 @@ Check the [docs](https://docs.multy.dev/getting-started) for more details.
 5. Run tests
 
 To run unit tests without running terraform, run:
+
 ```bash
 go test ./test/... -v 
 ```

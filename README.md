@@ -217,10 +217,13 @@ With Multy, **you write once, and deploy anywhere**.
 
 ---
 
-To get started, have a look at the multy terraform provider repo and the documentation.
+To get started, have a look at our contributing guide and overview document, the multy terraform provider repo and join
+us on
+discord!
 
-Terraform
-Provider: [https://registry.terraform.io/providers/multycloud/multy/latest/docs](https://registry.terraform.io/providers/multycloud/multy/latest/docs)
+Contributing guide: [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+Repo overview: [OVERVIEW.md](./.github/overview.md)
 
 Multy TF Provider
 Repo: [https://github.com/multycloud/terraform-provider-multy](https://github.com/multycloud/terraform-provider-multy?ref=multy-gh-repo)
