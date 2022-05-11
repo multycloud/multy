@@ -42,13 +42,13 @@ resource "aws_default_security_group" "example_vn_aws" {
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
-  location            = "ukwest"
+  location            = "uksouth"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
-  location            = "ukwest"
+  location            = "uksouth"
 
   route {
     name           = "local"
@@ -58,7 +58,7 @@ resource "azurerm_route_table" "example_vn_azure" {
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
-  location = "ukwest"
+  location = "uksouth"
 }
 provider "aws" {
   region = "eu-west-2"

@@ -9,12 +9,12 @@ require (
 	github.com/gruntwork-io/terratest v0.40.5
 	github.com/hashicorp/hc-install v0.3.1
 	github.com/hashicorp/hcl/v2 v2.11.1
-	github.com/hashicorp/terraform-exec v0.15.0
+	github.com/hashicorp/terraform-exec v0.16.0
 	github.com/jhump/protoreflect v1.12.0
 	github.com/multy-dev/hclencoder v0.1.2
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.1
-	github.com/zclconf/go-cty v1.9.1
+	github.com/zclconf/go-cty v1.10.0
 	golang.org/x/exp v0.0.0-20220218215828-6cf2b201936e
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
 	google.golang.org/grpc v1.45.0
@@ -36,7 +36,7 @@ require (
 	github.com/hashicorp/go-getter v1.5.9 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
-	github.com/hashicorp/go-version v1.3.0 // indirect
+	github.com/hashicorp/go-version v1.4.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/terraform-json v0.13.0 // indirect
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a // indirect
