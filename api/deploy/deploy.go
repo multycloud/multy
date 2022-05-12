@@ -114,7 +114,7 @@ func hasValidAwsCreds(credentials *credspb.CloudCredentials) bool {
 }
 
 func Deploy(ctx context.Context, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource) (*output.TfState, error) {
-	tmpDir := filepath.Join(os.TempDir(), "multy", c.GetUserId())
+	tmpDir := getTempDirForUser(false, c.GetUserId())
 	encoded, err := EncodeAndStoreTfFile(ctx, c, prev, curr, false)
 	if err != nil {
 		return nil, err
@@ -185,12 +185,7 @@ func EncodeAndStoreTfFile(ctx context.Context, c *resources.MultyConfig, prev re
 	// TODO: move this to a proper place
 	hclOutput := tfBlock + encoded.HclString
 
-	dir := "multy"
-	if readonly {
-		dir = "multy/readonly"
-	}
-
-	tmpDir := filepath.Join(os.TempDir(), dir, c.GetUserId())
+	tmpDir := getTempDirForUser(readonly, c.GetUserId())
 	err = os.MkdirAll(tmpDir, os.ModeDir|(os.ModePerm&0775))
 	if err != nil {
 		return EncodedResources{}, err
@@ -232,12 +227,7 @@ func parseTfOutputs(outputJson *bytes.Buffer) ([]tfOutput, error) {
 }
 
 func MaybeInit(ctx context.Context, userId string, readonly bool) error {
-	dir := "multy"
-	if readonly {
-		dir = "multy/readonly"
-	}
-
-	tmpDir := filepath.Join(os.TempDir(), dir, userId)
+	tmpDir := getTempDirForUser(readonly, userId)
 	_, err := os.Stat(filepath.Join(tmpDir, tfDir))
 	if os.IsNotExist(err) {
 		start := time.Now()
@@ -250,12 +240,12 @@ func MaybeInit(ctx context.Context, userId string, readonly bool) error {
 			return errors.InternalServerErrorWithMessage("error creating output file", err)
 		}
 
-		cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "init")
+		cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "init", "-reconfigure")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		err = cmd.Run()
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to initialize terraform")
 		}
 	} else if err != nil {
 		return err
@@ -264,12 +254,7 @@ func MaybeInit(ctx context.Context, userId string, readonly bool) error {
 }
 
 func GetState(ctx context.Context, userId string, readonly bool) (*output.TfState, error) {
-	dir := "multy"
-	if readonly {
-		dir = "multy/readonly"
-	}
-
-	tmpDir := filepath.Join(os.TempDir(), dir, userId)
+	tmpDir := getTempDirForUser(readonly, userId)
 	state := output.TfState{}
 	stateJson := new(bytes.Buffer)
 	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "show", "-json")
@@ -292,12 +277,8 @@ func RefreshState(ctx context.Context, userId string, readonly bool) error {
 	defer func() {
 		log.Printf("[DEBUG] refresh finished in %s", time.Since(start))
 	}()
-	dir := "multy"
-	if readonly {
-		dir = "multy/readonly"
-	}
 
-	tmpDir := filepath.Join(os.TempDir(), dir, userId)
+	tmpDir := getTempDirForUser(readonly, userId)
 	outputJson := new(bytes.Buffer)
 	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+tmpDir, "refresh", "-json")
 	cmd.Stdout = outputJson
@@ -355,4 +336,18 @@ func getExistingProvider(r resources.Resource, creds *credspb.CloudCredentials) 
 	}
 
 	return providers, nil
+}
+
+func getTempDirForUser(readonly bool, userId string) string {
+	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
+
+	if flags.Environment == flags.Local {
+		tmpDir = filepath.Join(tmpDir, "local")
+	}
+
+	if readonly {
+		tmpDir = filepath.Join(tmpDir, "readonly")
+	}
+
+	return tmpDir
 }

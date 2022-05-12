@@ -7,6 +7,7 @@ import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	pberr "github.com/multycloud/multy/api/proto/errorspb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/api/service_context"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/flags"
@@ -35,17 +36,17 @@ type WithResourceId interface {
 }
 
 type Service[Arg proto.Message, OutT proto.Message] struct {
-	Db           *db.Database
-	ResourceName string
+	ServiceContext *service_context.ServiceContext
+	ResourceName   string
 }
 
-func NewService[Arg proto.Message, OutT proto.Message](resourceName string, db *db.Database) Service[Arg, OutT] {
-	return Service[Arg, OutT]{ResourceName: resourceName, Db: db}
+func NewService[Arg proto.Message, OutT proto.Message](resourceName string, db *service_context.ServiceContext) Service[Arg, OutT] {
+	return Service[Arg, OutT]{ResourceName: resourceName, ServiceContext: db}
 }
 
 func (s Service[Arg, OutT]) updateErrorMetric(err error, method string) {
 	if err != nil {
-		go s.Db.AwsClient.UpdateErrorMetric(s.ResourceName, method, errors.ErrorCode(err))
+		go s.ServiceContext.AwsClient.UpdateErrorMetric(s.ResourceName, method, errors.ErrorCode(err))
 	}
 }
 
@@ -55,7 +56,7 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
-	go s.Db.AwsClient.UpdateQPSMetric(s.ResourceName, "create")
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "create")
 
 	log.Println("Service create")
 	key, err := util.ExtractApiKey(ctx)
@@ -63,16 +64,16 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 		return *new(OutT), err
 	}
 
-	userId, err := s.Db.GetUserId(ctx, key)
+	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
 		return *new(OutT), err
 	}
 
-	lock, err := s.Db.LockConfig(ctx, userId)
+	lock, err := s.ServiceContext.LockConfig(ctx, userId)
 	if err != nil {
 		return *new(OutT), err
 	}
-	defer s.Db.UnlockConfig(ctx, lock)
+	defer s.ServiceContext.UnlockConfig(ctx, lock)
 
 	c, err := s.getConfig(userId, lock)
 	if err != nil {
@@ -97,7 +98,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) getConfig(userId string, lock *db.ConfigLock) (*resources.MultyConfig, error) {
-	c, err := s.Db.LoadUserConfig(userId, lock)
+	c, err := s.ServiceContext.LoadUserConfig(userId, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +115,7 @@ func (s Service[Arg, OutT]) saveConfig(c *resources.MultyConfig, lock *db.Config
 		return err
 	}
 
-	return s.Db.StoreUserConfig(exportedConfig, lock)
+	return s.ServiceContext.StoreUserConfig(exportedConfig, lock)
 }
 
 func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (out OutT, err error) {
@@ -123,7 +124,7 @@ func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (out Ou
 }
 
 func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, error) {
-	go s.Db.AwsClient.UpdateQPSMetric(s.ResourceName, "read")
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "read")
 
 	log.Printf("Service read: %s\n", in.GetResourceId())
 	key, err := util.ExtractApiKey(ctx)
@@ -131,7 +132,7 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		return *new(OutT), err
 	}
 
-	userId, err := s.Db.GetUserId(ctx, key)
+	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -185,22 +186,22 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
-	go s.Db.AwsClient.UpdateQPSMetric(s.ResourceName, "update")
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "update")
 
 	log.Printf("Service update: %s\n", in.GetResourceId())
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return *new(OutT), err
 	}
-	userId, err := s.Db.GetUserId(ctx, key)
+	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
 		return *new(OutT), err
 	}
-	lock, err := s.Db.LockConfig(ctx, userId)
+	lock, err := s.ServiceContext.LockConfig(ctx, userId)
 	if err != nil {
 		return *new(OutT), err
 	}
-	defer s.Db.UnlockConfig(ctx, lock)
+	defer s.ServiceContext.UnlockConfig(ctx, lock)
 
 	c, err := s.getConfig(userId, lock)
 	if err != nil {
@@ -230,22 +231,22 @@ func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (_ *c
 }
 
 func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
-	go s.Db.AwsClient.UpdateQPSMetric(s.ResourceName, "delete")
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "delete")
 
 	log.Printf("Service delete: %s\n", in.GetResourceId())
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return nil, err
 	}
-	userId, err := s.Db.GetUserId(ctx, key)
+	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
 		return nil, err
 	}
-	lock, err := s.Db.LockConfig(ctx, userId)
+	lock, err := s.ServiceContext.LockConfig(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
-	defer s.Db.UnlockConfig(ctx, lock)
+	defer s.ServiceContext.UnlockConfig(ctx, lock)
 	c, err := s.getConfig(userId, lock)
 	if err != nil {
 		return nil, err

@@ -3,14 +3,17 @@ package api
 import (
 	"context"
 	"fmt"
+	aws_client "github.com/multycloud/multy/api/aws"
 	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/api/service_context"
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/types"
 	"google.golang.org/grpc"
@@ -23,7 +26,7 @@ import (
 
 type Server struct {
 	proto.UnimplementedMultyResourceServiceServer
-	*db.Database
+	*service_context.ServiceContext
 	VnService                    services.Service[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]
 	SubnetService                services.Service[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]
 	NetworkInterfaceService      services.Service[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]
@@ -50,24 +53,22 @@ func RunServer(ctx context.Context, port int) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	connectionStr, exists := os.LookupEnv("MULTY_DB_CONN_STRING")
-	if !exists {
-		log.Fatalf("db_connection_string env var is not set")
-	}
-
-	endpoint, exists := os.LookupEnv("MULTY_API_ENDPOINT")
-	if !exists {
-		log.Fatalf("api_endpoint env var is not set")
-	}
-
-	certFile := fmt.Sprintf("/etc/letsencrypt/live/%s/fullchain.pem", endpoint)
-	keyFile := fmt.Sprintf("/etc/letsencrypt/live/%s/privkey.pem", endpoint)
-	creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)
 	var s *grpc.Server
-	if err != nil {
-		log.Printf("unable to read certificate (%s), running in insecure mode", err.Error())
+	if flags.Environment == flags.Local {
+		log.Println("[INFO] running in local mode")
 		s = grpc.NewServer()
 	} else {
+		endpoint, exists := os.LookupEnv("MULTY_API_ENDPOINT")
+		if !exists {
+			log.Fatalf("api_endpoint env var is not set")
+		}
+
+		certFile := fmt.Sprintf("/etc/letsencrypt/live/%s/fullchain.pem", endpoint)
+		keyFile := fmt.Sprintf("/etc/letsencrypt/live/%s/privkey.pem", endpoint)
+		creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)
+		if err != nil {
+			log.Fatalf("unable to read certificate (%s)", err.Error())
+		}
 		s = grpc.NewServer(grpc.Creds(creds))
 	}
 
@@ -76,31 +77,40 @@ func RunServer(ctx context.Context, port int) {
 		s.GracefulStop()
 		_ = lis.Close()
 	}()
-	d, err := db.NewDatabase(connectionStr)
+	awsClient, err := aws_client.NewClient()
+	if err != nil {
+		log.Fatalf("failed to initialize aws client: %v", err)
+	}
+	database, err := db.NewDatabase(awsClient)
 	if err != nil {
 		log.Fatalf("failed to load db: %v", err)
 	}
-	defer d.Close()
+	defer database.Close()
+	serviceContext := &service_context.ServiceContext{
+		Database:  database,
+		AwsClient: awsClient,
+	}
+
 	server := Server{
 		proto.UnimplementedMultyResourceServiceServer{},
-		d,
-		services.NewService[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]("virtual_network", d),
-		services.NewService[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]("subnet", d),
-		services.NewService[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]("network_interface", d),
-		services.NewService[*resourcespb.RouteTableArgs, *resourcespb.RouteTableResource]("route_table", d),
-		services.NewService[*resourcespb.RouteTableAssociationArgs, *resourcespb.RouteTableAssociationResource]("route_table_association", d),
-		services.NewService[*resourcespb.NetworkSecurityGroupArgs, *resourcespb.NetworkSecurityGroupResource]("network_security_group", d),
-		services.NewService[*resourcespb.DatabaseArgs, *resourcespb.DatabaseResource]("database", d),
-		services.NewService[*resourcespb.ObjectStorageArgs, *resourcespb.ObjectStorageResource]("object_storage", d),
-		services.NewService[*resourcespb.ObjectStorageObjectArgs, *resourcespb.ObjectStorageObjectResource]("object_storage_object", d),
-		services.NewService[*resourcespb.PublicIpArgs, *resourcespb.PublicIpResource]("public_ip", d),
-		services.NewService[*resourcespb.KubernetesClusterArgs, *resourcespb.KubernetesClusterResource]("kubernetes_cluster", d),
-		services.NewService[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]("kubernetes_node_pool", d),
-		services.NewService[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]("lambda", d),
-		services.NewService[*resourcespb.VaultArgs, *resourcespb.VaultResource]("vault", d),
-		services.NewService[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]("vault_access_policy", d),
-		services.NewService[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]("vault_secret", d),
-		services.NewService[*resourcespb.VirtualMachineArgs, *resourcespb.VirtualMachineResource]("virtual_machine", d),
+		serviceContext,
+		services.NewService[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]("virtual_network", serviceContext),
+		services.NewService[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]("subnet", serviceContext),
+		services.NewService[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]("network_interface", serviceContext),
+		services.NewService[*resourcespb.RouteTableArgs, *resourcespb.RouteTableResource]("route_table", serviceContext),
+		services.NewService[*resourcespb.RouteTableAssociationArgs, *resourcespb.RouteTableAssociationResource]("route_table_association", serviceContext),
+		services.NewService[*resourcespb.NetworkSecurityGroupArgs, *resourcespb.NetworkSecurityGroupResource]("network_security_group", serviceContext),
+		services.NewService[*resourcespb.DatabaseArgs, *resourcespb.DatabaseResource]("database", serviceContext),
+		services.NewService[*resourcespb.ObjectStorageArgs, *resourcespb.ObjectStorageResource]("object_storage", serviceContext),
+		services.NewService[*resourcespb.ObjectStorageObjectArgs, *resourcespb.ObjectStorageObjectResource]("object_storage_object", serviceContext),
+		services.NewService[*resourcespb.PublicIpArgs, *resourcespb.PublicIpResource]("public_ip", serviceContext),
+		services.NewService[*resourcespb.KubernetesClusterArgs, *resourcespb.KubernetesClusterResource]("kubernetes_cluster", serviceContext),
+		services.NewService[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]("kubernetes_node_pool", serviceContext),
+		services.NewService[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]("lambda", serviceContext),
+		services.NewService[*resourcespb.VaultArgs, *resourcespb.VaultResource]("vault", serviceContext),
+		services.NewService[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]("vault_access_policy", serviceContext),
+		services.NewService[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]("vault_secret", serviceContext),
+		services.NewService[*resourcespb.VirtualMachineArgs, *resourcespb.VirtualMachineResource]("virtual_machine", serviceContext),
 	}
 	proto.RegisterMultyResourceServiceServer(s, &server)
 	log.Printf("server listening at %v", lis.Addr())
@@ -334,7 +344,7 @@ func (s *Server) DeleteVirtualMachine(ctx context.Context, in *resourcespb.Delet
 func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (_ *commonpb.Empty, err error) {
 	defer func() {
 		if err != nil {
-			go s.Database.AwsClient.UpdateErrorMetric("refresh", "refresh", errors.ErrorCode(err))
+			go s.AwsClient.UpdateErrorMetric("refresh", "refresh", errors.ErrorCode(err))
 		}
 	}()
 	return errors.WrappingErrors(s.refresh)(ctx, &commonpb.Empty{})
@@ -393,7 +403,7 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 func (s *Server) ListResources(ctx context.Context, _ *commonpb.Empty) (resp *commonpb.ListResourcesResponse, err error) {
 	defer func() {
 		if err != nil {
-			go s.Database.AwsClient.UpdateErrorMetric("list", "list", errors.ErrorCode(err))
+			go s.AwsClient.UpdateErrorMetric("list", "list", errors.ErrorCode(err))
 		}
 	}()
 	return errors.WrappingErrors(s.list)(ctx, &commonpb.Empty{})
@@ -433,7 +443,7 @@ func (s *Server) list(ctx context.Context, _ *commonpb.Empty) (*commonpb.ListRes
 func (s *Server) DeleteResource(ctx context.Context, req *proto.DeleteResourceRequest) (_ *commonpb.Empty, err error) {
 	defer func() {
 		if err != nil {
-			go s.Database.AwsClient.UpdateErrorMetric("delete", "delete", errors.ErrorCode(err))
+			go s.AwsClient.UpdateErrorMetric("delete", "delete", errors.ErrorCode(err))
 		}
 	}()
 	return errors.WrappingErrors(s.deleteResource)(ctx, req)

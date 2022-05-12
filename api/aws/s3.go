@@ -23,7 +23,7 @@ type Client struct {
 	userStorageName  string
 }
 
-func Configure() (*Client, error) {
+func newS3Client() (*Client, error) {
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(region)},
 	))
