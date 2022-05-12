@@ -28,7 +28,7 @@ func GetTerraformBlock(userId string) (string, error) {
 }
 
 func getLocalStateBlock(userId string) string {
-	p := path.Join(os.TempDir(), userId, tfState)
+	p := path.Join(os.TempDir(), "multy", userId, "local", tfState)
 	return fmt.Sprintf(
 		`backend "local" {
     path = "%s"
