@@ -58,17 +58,8 @@ cd multy
 
 - Install dependencies
 
-    1. MySQL
-
-        - Installation guide: https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/
-
-        - Run `./db/init.sql` script
-
-        - To create a new local Multy API Key,
-          run `INSERT INTO multydb.ApiKeys (ApiKey, UserId) VALUES ("test-key", "test-user");`
-
-    2. Terraform - https://learn.hashicorp.com/tutorials/terraform/install-cli
-    3. AWS CLI - https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+    1. Terraform - https://learn.hashicorp.com/tutorials/terraform/install-cli
+    2. AWS CLI - https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
 - Setup environment
 
@@ -76,24 +67,16 @@ cd multy
 
   Create an Amazon S3 bucket
 
-- Build project
+- Build project (and generate protos)
 
   ```bash
   make build
   ```
 
-- Set environment variables
-
-  ```bash
-  export MULTY_API_ENDPOINT="localhost"
-  export MULTY_DB_CONN_STRING="root:@tcp(localhost:3306)/multydb?parseTime=true;"
-  export USER_STORAGE_NAME=#YOUR_S3_BUCKET_NAME#
-  ```
-
-3. Run server
+3. Run server locally
 
 ```bash
-go run main.go serve 
+go run main.go serve --env=local
 ```
 
 You can add the `--dry_run` flag when running the server. Dry run mode will work normally except it will not deploy any
