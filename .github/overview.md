@@ -56,16 +56,7 @@ cd multy
 
 2. Setup project
 
-- Install dependencies
-
-    1. Terraform - https://learn.hashicorp.com/tutorials/terraform/install-cli
-    2. AWS CLI - https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
-
-- Setup environment
-
-  Setup your AWS account, adding your credentials locally by running `aws configure`.
-
-  Create an Amazon S3 bucket
+- Install Terraform - https://learn.hashicorp.com/tutorials/terraform/install-cli
 
 - Build project (and generate protos)
 
@@ -97,8 +88,7 @@ To run unit tests without running terraform, run:
 go test ./test/... -v 
 ```
 
-To also test that `terraform plan` works correctly on the generated configs, you can run:
+To also test that `terraform plan` works correctly on the generated configs, you need to:
 
-```bash
-go test ./test/... -v --tags=plan .
-```
+1. Setup AWS (run `aws configure`) and Azure credentials (run `az login`)
+2. Run the tests `go test ./test/... -v --tags=plan .`
