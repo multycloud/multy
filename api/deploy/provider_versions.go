@@ -40,7 +40,7 @@ func getRemoteStateBlock(userId, userStorageName string) string {
     key            = "%s/%s"
     region         = "%s"
     profile        = "multy"
-  }`, userId, userStorageName, tfState, tfStateRegion)
+  }`, userStorageName, userId, tfState, tfStateRegion)
 }
 
 func getTerraformBlock(providerBlock string) (string, error) {
