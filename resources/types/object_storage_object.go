@@ -5,6 +5,7 @@ import (
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -47,21 +48,6 @@ func UpdateObjectStorageObject(resource *ObjectStorageObject, vn *resourcespb.Ob
 	return nil
 }
 
-func ObjectStorageObjectFromState(resource *ObjectStorageObject, _ *output.TfState) (*resourcespb.ObjectStorageObjectResource, error) {
-	return &resourcespb.ObjectStorageObjectResource{
-		CommonParameters: &commonpb.CommonChildResourceParameters{
-			ResourceId:  resource.ResourceId,
-			NeedsUpdate: false,
-		},
-		Name:            resource.Args.Name,
-		Acl:             resource.Args.Acl,
-		ObjectStorageId: resource.Args.ObjectStorageId,
-		ContentBase64:   resource.Args.ContentBase64,
-		ContentType:     resource.Args.ContentType,
-		Source:          resource.Args.Source,
-	}, nil
-}
-
 func NewObjectStorageObject(resourceId string, args *resourcespb.ObjectStorageObjectArgs, others *resources.Resources) (*ObjectStorageObject, error) {
 	o := &ObjectStorageObject{
 		ChildResourceWithId: resources.ChildResourceWithId[*ObjectStorage, *resourcespb.ObjectStorageObjectArgs]{
@@ -78,7 +64,7 @@ func NewObjectStorageObject(resourceId string, args *resourcespb.ObjectStorageOb
 	return o, nil
 }
 
-func (r *ObjectStorageObject) FromState(state *output.TfState) (*resourcespb.ObjectStorageObjectResource, error) {
+func ObjectStorageObjectFromState(r *ObjectStorageObject, state *output.TfState) (*resourcespb.ObjectStorageObjectResource, error) {
 	out := new(resourcespb.ObjectStorageObjectResource)
 	out.CommonParameters = &commonpb.CommonChildResourceParameters{
 		ResourceId:  r.ResourceId,
@@ -97,19 +83,23 @@ func (r *ObjectStorageObject) FromState(state *output.TfState) (*resourcespb.Obj
 	out.Acl = r.Args.Acl
 	out.Source = r.Args.Source
 
-	switch r.GetCloud() {
-	case common.AWS:
-		stateResource, err := output.GetParsed[object_storage.AwsS3Bucket](state, id)
-		if err != nil {
-			return nil, err
+	if !flags.DryRun {
+		switch r.GetCloud() {
+		case common.AWS:
+			stateResource, err := output.GetParsed[object_storage.AwsS3Bucket](state, id)
+			if err != nil {
+				return nil, err
+			}
+			out.Url = fmt.Sprintf("https://%s.s3.amazonaws.com/%s", stateResource.Bucket, r.Args.Name)
+		case common.AZURE:
+			stateResource, err := output.GetParsed[object_storage.AzureStorageAccount](state, id)
+			if err != nil {
+				return nil, err
+			}
+			out.Url = fmt.Sprintf("https://%s.blob.core.windows.net/public/%s", stateResource.AzResource.Name, r.Args.Name)
 		}
-		out.Url = fmt.Sprintf("https://%s.s3.amazonaws.com/%s", stateResource.Bucket, r.Args.Name)
-	case common.AZURE:
-		stateResource, err := output.GetParsed[object_storage.AzureStorageAccount](state, id)
-		if err != nil {
-			return nil, err
-		}
-		out.Url = fmt.Sprintf("https://%s.blob.core.windows.net/public/%s", stateResource.AzResource.Name, r.Args.Name)
+	} else {
+		out.Url = "dryrun"
 	}
 
 	return out, nil
