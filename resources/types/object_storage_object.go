@@ -43,8 +43,8 @@ func CreateObjectStorageObject(resourceId string, args *resourcespb.ObjectStorag
 }
 
 func UpdateObjectStorageObject(resource *ObjectStorageObject, vn *resourcespb.ObjectStorageObjectArgs, others *resources.Resources) error {
-	_, err := NewObjectStorageObject(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func ObjectStorageObjectFromState(resource *ObjectStorageObject, _ *output.TfState) (*resourcespb.ObjectStorageObjectResource, error) {

@@ -41,8 +41,8 @@ func CreateSubnet(resourceId string, args *resourcespb.SubnetArgs, others *resou
 }
 
 func UpdateSubnet(resource *Subnet, vn *resourcespb.SubnetArgs, others *resources.Resources) error {
-	_, err := NewSubnet(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func NewSubnet(resourceId string, subnet *resourcespb.SubnetArgs, others *resources.Resources) (*Subnet, error) {

@@ -47,8 +47,8 @@ func CreateNetworkInterface(resourceId string, args *resourcespb.NetworkInterfac
 }
 
 func UpdateNetworkInterface(resource *NetworkInterface, vn *resourcespb.NetworkInterfaceArgs, others *resources.Resources) error {
-	_, err := NewNetworkInterface(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func NetworkInterfaceFromState(resource *NetworkInterface, _ *output.TfState) (*resourcespb.NetworkInterfaceResource, error) {

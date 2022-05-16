@@ -69,8 +69,8 @@ func CreateVirtualMachine(resourceId string, args *resourcespb.VirtualMachineArg
 }
 
 func UpdateVirtualMachine(resource *VirtualMachine, vn *resourcespb.VirtualMachineArgs, others *resources.Resources) error {
-	_, err := NewVirtualMachine(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func VirtualMachineFromState(resource *VirtualMachine, state *output.TfState) (*resourcespb.VirtualMachineResource, error) {

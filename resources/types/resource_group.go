@@ -52,8 +52,7 @@ func CreateResourceGroup(resourceId string, args *resourcespb.ResourceGroupArgs,
 }
 
 func UpdateResourceGroup(resource *ResourceGroup, vn *resourcespb.ResourceGroupArgs, others *resources.Resources) error {
-	_, err := ImportResourceGroup(resource.ResourceId, vn, others)
-	return err
+	return fmt.Errorf("can't update resource group")
 }
 
 func ResourceGroupFromState(resource *ResourceGroup, _ *output.TfState) (*resourcespb.ResourceGroupResource, error) {

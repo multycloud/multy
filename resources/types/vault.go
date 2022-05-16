@@ -38,8 +38,8 @@ func CreateVault(resourceId string, args *resourcespb.VaultArgs, others *resourc
 }
 
 func UpdateVault(resource *Vault, vn *resourcespb.VaultArgs, others *resources.Resources) error {
-	_, err := NewVault(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func VaultFromState(resource *Vault, _ *output.TfState) (*resourcespb.VaultResource, error) {

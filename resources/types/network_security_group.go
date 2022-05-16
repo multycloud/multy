@@ -55,8 +55,8 @@ func CreateNetworkSecurityGroup(resourceId string, args *resourcespb.NetworkSecu
 	return NewNetworkSecurityGroup(resourceId, args, others)
 }
 func UpdateNetworkSecurityGroup(resource *NetworkSecurityGroup, vn *resourcespb.NetworkSecurityGroupArgs, others *resources.Resources) error {
-	_, err := NewNetworkSecurityGroup(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func NetworkSecurityGroupFromState(resource *NetworkSecurityGroup, _ *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {

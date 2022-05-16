@@ -66,8 +66,8 @@ func CreateDatabase(resourceId string, args *resourcespb.DatabaseArgs, others *r
 }
 
 func UpdateDatabase(resource *Database, vn *resourcespb.DatabaseArgs, others *resources.Resources) error {
-	_, err := NewDatabase(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func DatabaseFromState(resource *Database, state *output.TfState) (*resourcespb.DatabaseResource, error) {

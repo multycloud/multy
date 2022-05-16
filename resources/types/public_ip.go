@@ -48,8 +48,8 @@ func CreatePublicIp(resourceId string, args *resourcespb.PublicIpArgs, others *r
 }
 
 func UpdatePublicIp(resource *PublicIp, vn *resourcespb.PublicIpArgs, others *resources.Resources) error {
-	_, err := NewPublicIp(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func PublicIpFromState(resource *PublicIp, _ *output.TfState) (*resourcespb.PublicIpResource, error) {

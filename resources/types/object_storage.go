@@ -50,8 +50,8 @@ func CreateObjectStorage(resourceId string, args *resourcespb.ObjectStorageArgs,
 }
 
 func UpdateObjectStorage(resource *ObjectStorage, vn *resourcespb.ObjectStorageArgs, others *resources.Resources) error {
-	_, err := NewObjectStorage(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 type AclRules struct{}

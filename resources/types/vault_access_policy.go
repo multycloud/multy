@@ -39,8 +39,8 @@ func CreateVaultAccessPolicy(resourceId string, args *resourcespb.VaultAccessPol
 }
 
 func UpdateVaultAccessPolicy(resource *VaultAccessPolicy, vn *resourcespb.VaultAccessPolicyArgs, others *resources.Resources) error {
-	_, err := NewVaultAccessPolicy(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func VaultAccessPolicyFromState(resource *VaultAccessPolicy, _ *output.TfState) (*resourcespb.VaultAccessPolicyResource, error) {

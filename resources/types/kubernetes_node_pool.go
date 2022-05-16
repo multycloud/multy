@@ -41,8 +41,8 @@ func CreateKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNod
 }
 
 func UpdateKubernetesNodePool(resource *KubernetesNodePool, vn *resourcespb.KubernetesNodePoolArgs, others *resources.Resources) error {
-	_, err := NewKubernetesNodePool(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func NewKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePoolArgs, others *resources.Resources) (*KubernetesNodePool, error) {

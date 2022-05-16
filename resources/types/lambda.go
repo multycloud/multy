@@ -57,8 +57,8 @@ func CreateLambda(resourceId string, args *resourcespb.LambdaArgs, others *resou
 }
 
 func UpdateLambda(resource *Lambda, vn *resourcespb.LambdaArgs, others *resources.Resources) error {
-	_, err := NewLambda(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func LambdaFromState(resource *Lambda, state *output.TfState) (*resourcespb.LambdaResource, error) {
