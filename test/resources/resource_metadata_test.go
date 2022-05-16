@@ -34,14 +34,14 @@ func TestResourceMetadataImport(t *testing.T) {
 		t.Fatalf("unable to load config: %s", err)
 	}
 
-	assert.Equal(t, c.GetUserId(), "test-user")
-	assert.Equal(t, len(config.Resources.GetAll()), 1)
+	assert.Equal(t, "test-user", c.GetUserId())
+	assert.Equal(t, 1, len(config.Resources.GetAll()))
 	virtualNetwork, ok := config.Resources.ResourceMap["resource1"].(*types.VirtualNetwork)
 	if !ok {
 		t.Fatalf("resource should of type virtual network, but is %t", config.Resources.ResourceMap["resource1"])
 	}
-	assert.Equal(t, virtualNetwork.GetResourceId(), "resource1")
-	assert.Equal(t, virtualNetwork.Args.String(), args.String())
+	assert.Equal(t, "resource1", virtualNetwork.GetResourceId())
+	assert.Equal(t, args.String(), virtualNetwork.Args.String())
 }
 
 func TestResourceMetadataImport_returnsAffectedResources(t *testing.T) {
@@ -74,7 +74,7 @@ func TestResourceMetadataImport_returnsAffectedResources(t *testing.T) {
 		t.Fatalf("unable to load config: %s", err)
 	}
 
-	assert.Equal(t, c.GetUserId(), "test-user")
+	assert.Equal(t, "test-user", c.GetUserId())
 	assert.Contains(t, config.GetAffectedResources("resource1"), "aws_vpc.resource1")
 	assert.Contains(t, config.GetAffectedResources("resource2"), "aws_vpc.resource1")
 	assert.Contains(t, config.GetAffectedResources("resource1"), "aws_vpc.resource2")
@@ -104,17 +104,17 @@ func TestResourceMetadataCreate_createsResourceGroup(t *testing.T) {
 	}
 
 	resourceId := r.GetResourceId()
-	assert.Equal(t, len(config.Resources.GetAll()), 2)
+	assert.Equal(t, 2, len(config.Resources.GetAll()))
 
 	// assert virtual network, except resource group id
 	virtualNetwork, ok := config.Resources.ResourceMap[resourceId].(*types.VirtualNetwork)
 	if !ok {
 		t.Fatalf("resource should of type virtual network, but is %t", config.Resources.ResourceMap[resourceId])
 	}
-	assert.Equal(t, virtualNetwork.GetResourceId(), resourceId)
+	assert.Equal(t, resourceId, virtualNetwork.GetResourceId())
 	actualArgsExceptRgId := proto.Clone(virtualNetwork.Args).(*resourcespb.VirtualNetworkArgs)
 	actualArgsExceptRgId.CommonParameters.ResourceGroupId = ""
-	assert.Equal(t, actualArgsExceptRgId.String(), args.String())
+	assert.Equal(t, args.String(), actualArgsExceptRgId.String())
 
 	// assert resource group
 	rgId := virtualNetwork.Args.CommonParameters.ResourceGroupId
@@ -122,9 +122,147 @@ func TestResourceMetadataCreate_createsResourceGroup(t *testing.T) {
 	if !ok {
 		t.Fatalf("resource should of type resource group, but is %t", config.Resources.ResourceMap[rgId])
 	}
-	assert.Equal(t, rg.Name, rgId)
-	assert.Equal(t, rg.Location, args.CommonParameters.Location)
-	assert.Equal(t, rg.Cloud, args.CommonParameters.CloudProvider)
+	assert.Equal(t, rgId, rg.Name)
+	assert.Equal(t, args.CommonParameters.Location, rg.Location)
+	assert.Equal(t, args.CommonParameters.CloudProvider, rg.Cloud)
+}
+
+func TestResourceMetadataDelete_deletesResourceGroup(t *testing.T) {
+	c := &configpb.Config{
+		UserId: "test-user",
+	}
+	config, err := resources.LoadConfig(c, types.Metadatas)
+	if err != nil {
+		t.Fatalf("unable to load config: %s", err)
+	}
+	args := &resourcespb.VirtualNetworkArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      commonpb.Location_EU_NORTH_1,
+			CloudProvider: commonpb.CloudProvider_AWS,
+		},
+		Name:      "test-vn",
+		CidrBlock: "10.0.0.0/16",
+	}
+
+	r, err := config.CreateResource(proto.Clone(args))
+	if err != nil {
+		t.Fatalf("unable to create resource: %s", err)
+	}
+
+	resourceId := r.GetResourceId()
+	// assert we have 2 resources: virtual network and resource group
+	assert.Equal(t, 2, len(config.Resources.GetAll()))
+
+	_, err = config.DeleteResource(resourceId)
+	if err != nil {
+		t.Fatalf("unable to delete resource: %s", err)
+	}
+
+	exportedConfig, err := config.ExportConfig()
+	if err != nil {
+		t.Fatalf("unable to export resources: %s", err)
+	}
+
+	assert.Equal(t, 0, len(exportedConfig.Resources))
+}
+
+func TestResourceMetadataExport(t *testing.T) {
+	c := &configpb.Config{
+		UserId: "test-user",
+	}
+	config, err := resources.LoadConfig(c, types.Metadatas)
+	if err != nil {
+		t.Fatalf("unable to load config: %s", err)
+	}
+	args := &resourcespb.VirtualNetworkArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      commonpb.Location_EU_NORTH_1,
+			CloudProvider: commonpb.CloudProvider_AWS,
+		},
+		Name:      "test-vn",
+		CidrBlock: "10.0.0.0/16",
+	}
+
+	_, err = config.CreateResource(proto.Clone(args))
+	if err != nil {
+		t.Fatalf("unable to create resource: %s", err)
+	}
+
+	numResources := len(config.Resources.GetAll())
+	assert.Greater(t, numResources, 0)
+
+	config.UpdateMultyResourceGroups()
+	exportedConfig, err := config.ExportConfig()
+	if err != nil {
+		t.Fatalf("unable to export resources: %s", err)
+	}
+
+	assert.Equal(t, len(exportedConfig.Resources), numResources)
+}
+
+func TestResourceMetadataUpdateMultyResourceGroups(t *testing.T) {
+	c := &configpb.Config{
+		UserId: "test-user",
+	}
+	config, err := resources.LoadConfig(c, types.Metadatas)
+	if err != nil {
+		t.Fatalf("unable to load config: %s", err)
+	}
+	args := &resourcespb.VirtualNetworkArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      commonpb.Location_EU_NORTH_1,
+			CloudProvider: commonpb.CloudProvider_AWS,
+		},
+		Name:      "test-vn",
+		CidrBlock: "10.0.0.0/16",
+	}
+
+	vn1, err := config.CreateResource(proto.Clone(args))
+	if err != nil {
+		t.Fatalf("unable to create resource: %s", err)
+	}
+	vn2, err := config.CreateResource(proto.Clone(args))
+	if err != nil {
+		t.Fatalf("unable to create resource: %s", err)
+	}
+
+	subnetArgs1 := &resourcespb.SubnetArgs{
+		Name:             "test-vn",
+		CidrBlock:        "10.0.0.0/16",
+		VirtualNetworkId: vn1.GetResourceId(),
+	}
+	subnetArgs2 := &resourcespb.SubnetArgs{
+		Name:             "test-vn",
+		CidrBlock:        "10.0.0.0/16",
+		VirtualNetworkId: vn2.GetResourceId(),
+	}
+	subnet1, err := config.CreateResource(proto.Clone(subnetArgs1))
+	if err != nil {
+		t.Fatalf("unable to create resource: %s", err)
+	}
+	subnet2, err := config.CreateResource(proto.Clone(subnetArgs2))
+	if err != nil {
+		t.Fatalf("unable to create resource: %s", err)
+	}
+
+	config.UpdateMultyResourceGroups()
+
+	config.UpdateDeployedResourceList(map[resources.Resource][]string{})
+	affectedResourcesSubnet1 := config.GetAffectedResources(subnet1.GetResourceId())
+	affectedResourcesVn1 := config.GetAffectedResources(vn1.GetResourceId())
+	affectedResourcesSubnet2 := config.GetAffectedResources(subnet2.GetResourceId())
+	affectedResourcesVn2 := config.GetAffectedResources(vn2.GetResourceId())
+
+	// asserts that vns and subnets are in the same group
+	assert.Equal(t, affectedResourcesSubnet1, affectedResourcesVn1)
+	assert.Equal(t, affectedResourcesSubnet2, affectedResourcesVn2)
+	// asserts that the two groups are not merged together
+	for _, affectedResource := range affectedResourcesSubnet1 {
+		assert.NotContains(t, affectedResourcesSubnet2, affectedResource)
+	}
+	for _, affectedResource := range affectedResourcesSubnet2 {
+		assert.NotContains(t, affectedResourcesSubnet1, affectedResource)
+	}
 }
 
 func newResource(t *testing.T, resourceId string, msg proto.Message) *configpb.Resource {

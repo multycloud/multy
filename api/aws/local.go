@@ -43,7 +43,7 @@ func (c LocalClient) ReadFile(userId string, fileName string) (string, error) {
 }
 
 func (c LocalClient) getFilePath(userId string, fileName string) (string, error) {
-	tmpDir := path.Join(os.TempDir(), userId)
+	tmpDir := path.Join(os.TempDir(), "multy", userId, "local")
 	err := os.MkdirAll(tmpDir, os.ModeDir|(os.ModePerm&0775))
 	if err != nil {
 		return "", err

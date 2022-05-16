@@ -10,9 +10,7 @@ import (
 	"github.com/multycloud/multy/api/service_context"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
-	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
-	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -150,10 +148,6 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 	return s.readFromConfig(ctx, c, in, true)
 }
 
-type stateParser[OutT any] interface {
-	FromState(state *output.TfState) (OutT, error)
-}
-
 func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.MultyConfig, in WithResourceId, readonly bool) (OutT, error) {
 	for _, r := range c.Resources.GetAll() {
 		if r.GetResourceId() == in.GetResourceId() {
@@ -164,9 +158,6 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.Mul
 			state, err := deploy.GetState(ctx, c.GetUserId(), readonly)
 			if err != nil {
 				return *new(OutT), err
-			}
-			if parser, ok := r.(stateParser[OutT]); ok && !flags.DryRun {
-				return parser.FromState(state)
 			}
 
 			out, err := r.GetMetadata().ReadFromState(r, state)
