@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	aws_client "github.com/multycloud/multy/api/aws"
 	"github.com/multycloud/multy/api/errors"
+	"log"
 	"os"
 	"time"
 )
@@ -43,8 +44,10 @@ func (d *database) GetUserId(ctx context.Context, apiKey string) (string, error)
 	var userId string
 	err := d.sqlConnection.QueryRowContext(ctx, "SELECT UserId FROM ApiKeys WHERE ApiKey = ?;", apiKey).Scan(&userId)
 	if err == sql.ErrNoRows {
+		log.Printf("[WARNING] api key %s not found\n", apiKey)
 		return "", errors.PermissionDenied(fmt.Sprintf("Api key '%s' is invalid", apiKey))
 	} else if err != nil {
+		log.Printf("[ERROR] unable to retrieve user id from api key %s \n", apiKey)
 		return "", err
 	}
 
