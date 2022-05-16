@@ -265,6 +265,50 @@ func TestResourceMetadataUpdateMultyResourceGroups(t *testing.T) {
 	}
 }
 
+func TestResourceMetadataUpdate(t *testing.T) {
+	args := &resourcespb.VirtualNetworkArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			ResourceGroupId: "test-rg1",
+			Location:        commonpb.Location_EU_WEST_1,
+			CloudProvider:   commonpb.CloudProvider_AZURE,
+		},
+		Name:      "test-vn",
+		CidrBlock: "10.0.0.0/16",
+	}
+	c := &configpb.Config{
+		UserId: "test-user",
+		Resources: []*configpb.Resource{
+			newResource(t, "resource1", args),
+		},
+	}
+
+	config, err := resources.LoadConfig(c, types.Metadatas)
+	if err != nil {
+		t.Fatalf("unable to load config: %s", err)
+	}
+
+	updatedVn, err := config.UpdateResource("resource1", &resourcespb.VirtualNetworkArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			ResourceGroupId: "test-rg1",
+			Location:        commonpb.Location_EU_WEST_1,
+			CloudProvider:   commonpb.CloudProvider_AZURE,
+		},
+		Name:      "changed-name",
+		CidrBlock: "10.0.0.0/16",
+	})
+	if err != nil {
+		t.Fatalf("unable to update resource: %s", err)
+	}
+
+	assert.Equal(t, "changed-name", updatedVn.(*types.VirtualNetwork).Args.Name)
+	assert.Equal(t, 1, len(config.Resources.GetAll()))
+	virtualNetwork, ok := config.Resources.ResourceMap["resource1"].(*types.VirtualNetwork)
+	if !ok {
+		t.Fatalf("resource should of type virtual network, but is %t", config.Resources.ResourceMap["resource1"])
+	}
+	assert.Equal(t, "changed-name", virtualNetwork.Args.Name)
+}
+
 func newResource(t *testing.T, resourceId string, msg proto.Message) *configpb.Resource {
 	a, err := anypb.New(msg)
 	if err != nil {
