@@ -39,8 +39,8 @@ func CreateRouteTableAssociation(resourceId string, args *resourcespb.RouteTable
 }
 
 func UpdateRouteTableAssociation(resource *RouteTableAssociation, vn *resourcespb.RouteTableAssociationArgs, others *resources.Resources) error {
-	_, err := NewRouteTableAssociation(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func RouteTableAssociationFromState(resource *RouteTableAssociation, _ *output.TfState) (*resourcespb.RouteTableAssociationResource, error) {

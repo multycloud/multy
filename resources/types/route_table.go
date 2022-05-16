@@ -54,8 +54,8 @@ func CreateRouteTable(resourceId string, args *resourcespb.RouteTableArgs, other
 }
 
 func UpdateRouteTable(resource *RouteTable, vn *resourcespb.RouteTableArgs, others *resources.Resources) error {
-	_, err := NewRouteTable(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func RouteTableFromState(resource *RouteTable, _ *output.TfState) (*resourcespb.RouteTableResource, error) {

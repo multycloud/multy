@@ -45,8 +45,8 @@ func CreateVirtualNetwork(resourceId string, args *resourcespb.VirtualNetworkArg
 }
 
 func UpdateVirtualNetwork(resource *VirtualNetwork, vn *resourcespb.VirtualNetworkArgs, others *resources.Resources) error {
-	_, err := NewVirtualNetwork(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func NewVirtualNetwork(resourceId string, vn *resourcespb.VirtualNetworkArgs, _ *resources.Resources) (*VirtualNetwork, error) {

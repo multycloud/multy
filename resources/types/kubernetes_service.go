@@ -72,8 +72,8 @@ func CreateKubernetesCluster(resourceId string, args *resourcespb.KubernetesClus
 }
 
 func UpdateKubernetesCluster(resource *KubernetesCluster, vn *resourcespb.KubernetesClusterArgs, others *resources.Resources) error {
-	_, err := NewKubernetesCluster(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func KubernetesClusterFromState(resource *KubernetesCluster, state *output.TfState) (*resourcespb.KubernetesClusterResource, error) {

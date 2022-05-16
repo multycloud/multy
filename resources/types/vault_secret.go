@@ -38,8 +38,8 @@ func CreateVaultSecret(resourceId string, args *resourcespb.VaultSecretArgs, oth
 }
 
 func UpdateVaultSecret(resource *VaultSecret, vn *resourcespb.VaultSecretArgs, others *resources.Resources) error {
-	_, err := NewVaultSecret(resource.ResourceId, vn, others)
-	return err
+	resource.Args = vn
+	return nil
 }
 
 func VaultSecretFromState(resource *VaultSecret, _ *output.TfState) (*resourcespb.VaultSecretResource, error) {
