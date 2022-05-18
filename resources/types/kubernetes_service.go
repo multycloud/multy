@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"github.com/apparentlymart/go-cidr/cidr"
+	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/flags"
@@ -9,11 +11,14 @@ import (
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/iam"
-	"github.com/multycloud/multy/resources/output/kubernetes_node_pool"
 	"github.com/multycloud/multy/resources/output/kubernetes_service"
-	"github.com/multycloud/multy/util"
+	"github.com/multycloud/multy/resources/output/route_table"
+	"github.com/multycloud/multy/resources/output/route_table_association"
+	"github.com/multycloud/multy/resources/output/subnet"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
+	"log"
+	"net"
 )
 
 var kubernetesClusterMetadata = resources.ResourceMetadata[*resourcespb.KubernetesClusterArgs, *KubernetesCluster, *resourcespb.KubernetesClusterResource]{
@@ -30,7 +35,7 @@ var kubernetesClusterMetadata = resources.ResourceMetadata[*resourcespb.Kubernet
 type KubernetesCluster struct {
 	resources.ResourceWithId[*resourcespb.KubernetesClusterArgs]
 
-	Subnets         []*Subnet
+	VirtualNetwork  *VirtualNetwork
 	DefaultNodePool *KubernetesNodePool
 }
 
@@ -39,9 +44,7 @@ func (r *KubernetesCluster) GetMetadata() resources.ResourceMetadataInterface {
 }
 
 func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesClusterArgs, others *resources.Resources) (*KubernetesCluster, error) {
-	subnets, err := util.MapSliceValuesErr(args.SubnetIds, func(subnetId string) (*Subnet, error) {
-		return resources.Get[*Subnet](resourceId, others, subnetId)
-	})
+	vn, err := resources.Get[*VirtualNetwork](resourceId, others, args.VirtualNetworkId)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +53,10 @@ func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesCluster
 			ResourceId: resourceId,
 			Args:       args,
 		},
-		Subnets: subnets,
+		VirtualNetwork: vn,
 	}
+
+	log.Println(args)
 
 	cluster.DefaultNodePool, err = newKubernetesNodePool(fmt.Sprintf("%s_default_pool", resourceId), args.DefaultNodePool, others, cluster)
 	return cluster, err
@@ -59,13 +64,16 @@ func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesCluster
 
 func CreateKubernetesCluster(resourceId string, args *resourcespb.KubernetesClusterArgs, others *resources.Resources) (*KubernetesCluster, error) {
 	if args.CommonParameters.ResourceGroupId == "" {
-		subnet, err := resources.Get[*Subnet](resourceId, others, args.SubnetIds[0])
+		vn, err := resources.Get[*VirtualNetwork](resourceId, others, args.VirtualNetworkId)
 		if err != nil {
 			return nil, err
 		}
-		rgId := NewRgFromParent("ks", subnet.VirtualNetwork.Args.CommonParameters.ResourceGroupId, others,
+		rgId := NewRgFromParent("ks", vn.Args.CommonParameters.ResourceGroupId, others,
 			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
 		args.CommonParameters.ResourceGroupId = rgId
+	}
+	if args.ServiceCidr == "" {
+		args.ServiceCidr = "10.100.0.0/16"
 	}
 
 	return NewKubernetesCluster(resourceId, args, others)
@@ -100,9 +108,9 @@ func KubernetesClusterFromState(resource *KubernetesCluster, state *output.TfSta
 			NeedsUpdate:     false,
 		},
 		Name:            resource.Args.Name,
-		SubnetIds:       resource.Args.SubnetIds,
 		Endpoint:        endpoint,
 		DefaultNodePool: defaultNodePool,
+		ServiceCidr:     resource.Args.ServiceCidr,
 	}, nil
 }
 
@@ -127,9 +135,6 @@ func getEndpoint(resourceId string, state *output.TfState, cloud commonpb.CloudP
 
 func (r *KubernetesCluster) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
-	if len(r.Subnets) < 2 {
-		errs = append(errs, r.NewValidationError(fmt.Errorf("at least 2 subnet ids must be provided"), "subnet_ids"))
-	}
 	if r.Args.GetDefaultNodePool() == nil {
 		errs = append(errs, r.NewValidationError(fmt.Errorf("cluster must have a default node pool"), "default_node_pool"))
 	}
@@ -150,13 +155,6 @@ func (r *KubernetesCluster) GetMainResourceName() (string, error) {
 }
 
 func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
-
-	subnetIds, err := util.MapSliceValuesErr(r.Subnets, func(v *Subnet) (string, error) {
-		return resources.GetMainOutputId(v)
-	})
-	if err != nil {
-		return nil, err
-	}
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		var outputs []output.TfBlock
 		defaultNodePoolResources, err := r.DefaultNodePool.Translate(ctx)
@@ -164,6 +162,16 @@ func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBl
 			return nil, err
 		}
 		outputs = append(outputs, defaultNodePoolResources...)
+		subnets, subnetResources, err := r.getAwsSubnets()
+		if err != nil {
+			return nil, err
+		}
+		var subnetIds []string
+		for _, s := range subnets {
+			subnetIds = append(subnetIds, fmt.Sprintf("%s.%s.id", output.GetResourceName(s), s.ResourceId))
+		}
+
+		outputs = append(outputs, subnetResources...)
 		roleName := fmt.Sprintf("iam_for_k8cluster_%s", r.Args.Name)
 		role := iam.AwsIamRole{
 			AwsResource:      common.NewAwsResource(r.ResourceId, roleName),
@@ -184,13 +192,15 @@ func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBl
 			&kubernetes_service.AwsEksCluster{
 				AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
 				RoleArn:     fmt.Sprintf("aws_iam_role.%s.arn", r.ResourceId),
-				VpcConfig:   kubernetes_service.VpcConfig{SubnetIds: subnetIds},
+				VpcConfig:   kubernetes_service.VpcConfig{SubnetIds: subnetIds, EndpointPrivateAccess: true},
 				Name:        r.Args.Name,
+				KubernetesNetworkConfig: kubernetes_service.KubernetesNetworkConfig{
+					ServiceIpv4Cidr: r.Args.ServiceCidr,
+				},
 			})
 		return outputs, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
-		var defaultPool *kubernetes_node_pool.AzureKubernetesNodePool
-		defaultPool, err = r.DefaultNodePool.translateAzNodePool()
+		defaultPool, err := r.DefaultNodePool.translateAzNodePool()
 		if err != nil {
 			return nil, err
 		}
@@ -204,10 +214,80 @@ func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBl
 				DefaultNodePool: defaultPool,
 				DnsPrefix:       common.UniqueId(r.Args.Name, "aks", common.LowercaseAlphanumericFormatFunc),
 				Identity:        kubernetes_service.AzureIdentity{Type: "SystemAssigned"},
+				NetworkProfile: kubernetes_service.NetworkProfile{
+					NetworkPlugin:    "azure",
+					DnsServiceIp:     "10.100.0.10",
+					DockerBridgeCidr: "172.17.0.1/16",
+					ServiceCidr:      r.Args.ServiceCidr,
+				},
 			},
 		}, nil
 	}
 	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
+}
+
+func (r *KubernetesCluster) getAwsSubnets() ([]subnet.AwsSubnet, []output.TfBlock, error) {
+	block := r.VirtualNetwork.Args.CidrBlock
+	_, vnNet, err := net.ParseCIDR(block)
+	if err != nil {
+		return nil, nil, err
+	}
+	tempSubnet, _ := cidr.NextSubnet(vnNet, 31)
+	subnetBlock1, _ := cidr.PreviousSubnet(tempSubnet, 28)
+	subnetBlock2, _ := cidr.PreviousSubnet(subnetBlock1, 28)
+	validationError := validate.ValidationError{
+		ErrorMessage: fmt.Sprintf("Not enough availabilty zones available in region %s. Kubernetes clusters in AWS require 2 availabilty zones.", r.VirtualNetwork.GetLocation()),
+		ResourceId:   r.ResourceId,
+		FieldName:    "virtual_network_id",
+	}
+	az1, err := common.GetAvailabilityZone(r.VirtualNetwork.GetLocation(), 0, r.GetCloud())
+	if err != nil {
+		return nil, nil, errors.ValidationErrors([]validate.ValidationError{validationError})
+	}
+	az2, err := common.GetAvailabilityZone(r.VirtualNetwork.GetLocation(), 0, r.GetCloud())
+	if err != nil {
+		return nil, nil, errors.ValidationErrors([]validate.ValidationError{validationError})
+	}
+
+	vpcId, err := resources.GetMainOutputId(r.VirtualNetwork)
+	gtw, err := r.VirtualNetwork.GetAssociatedInternetGateway()
+	if err != nil {
+		return nil, nil, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	rt := route_table.AwsRouteTable{
+		AwsResource: common.NewAwsResource(r.ResourceId+"_public_rt", r.Args.Name+"_public_rt"),
+		VpcId:       vpcId,
+		Routes: []route_table.AwsRouteTableRoute{
+			{
+				CidrBlock: "0.0.0.0/0",
+				GatewayId: gtw,
+			},
+		},
+	}
+
+	subnet1 := subnet.AwsSubnet{
+		AwsResource:      common.NewAwsResource(r.ResourceId+"_public_subnet", r.Args.Name+"_public_subnet"),
+		CidrBlock:        subnetBlock1.String(),
+		VpcId:            r.VirtualNetwork.GetVirtualNetworkId(),
+		AvailabilityZone: az1,
+	}
+	subnet2 := subnet.AwsSubnet{
+		AwsResource:      common.NewAwsResource(r.ResourceId+"_private_subnet", r.Args.Name+"_private_subnet"),
+		CidrBlock:        subnetBlock2.String(),
+		VpcId:            r.VirtualNetwork.GetVirtualNetworkId(),
+		AvailabilityZone: az2,
+	}
+
+	rta := route_table_association.AwsRouteTableAssociation{
+		AwsResource:  common.NewAwsResourceWithIdOnly(r.ResourceId + "_public_rta"),
+		SubnetId:     fmt.Sprintf("%s.%s.id", output.GetResourceName(subnet1), subnet1.ResourceId),
+		RouteTableId: fmt.Sprintf("%s.%s.id", output.GetResourceName(rt), rt.ResourceId),
+	}
+
+	return []subnet.AwsSubnet{subnet1, subnet2}, []output.TfBlock{subnet1, subnet2, rt, rta}, nil
 }
 
 func (r *KubernetesCluster) GetOutputValues(cloud commonpb.CloudProvider) map[string]cty.Value {

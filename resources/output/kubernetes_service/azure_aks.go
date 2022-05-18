@@ -17,6 +17,14 @@ type AzureEksCluster struct {
 	DefaultNodePool    *kubernetes_node_pool.AzureKubernetesNodePool `hcl:"default_node_pool"`
 	DnsPrefix          string                                        `hcl:"dns_prefix"`
 	Identity           AzureIdentity                                 `hcl:"identity"`
+	NetworkProfile     NetworkProfile                                `hcl:"network_profile"`
+}
+
+type NetworkProfile struct {
+	NetworkPlugin    string `hcl:"network_plugin"`
+	DnsServiceIp     string `hcl:"dns_service_ip"`
+	DockerBridgeCidr string `hcl:"docker_bridge_cidr"`
+	ServiceCidr      string `hcl:"service_cidr"`
 }
 
 type AzureUserAssignedIdentity struct {

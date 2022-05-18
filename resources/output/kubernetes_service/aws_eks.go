@@ -5,12 +5,18 @@ import (
 )
 
 type AwsEksCluster struct {
-	*common.AwsResource `hcl:",squash" default:"name=aws_eks_cluster"`
-	RoleArn             string    `hcl:"role_arn,expr"`
-	VpcConfig           VpcConfig `hcl:"vpc_config"`
-	Name                string    `hcl:"name"`
+	*common.AwsResource     `hcl:",squash" default:"name=aws_eks_cluster"`
+	RoleArn                 string                  `hcl:"role_arn,expr"`
+	VpcConfig               VpcConfig               `hcl:"vpc_config"`
+	KubernetesNetworkConfig KubernetesNetworkConfig `hcl:"kubernetes_network_config"`
+	Name                    string                  `hcl:"name"`
 }
 
 type VpcConfig struct {
-	SubnetIds []string `hcl:"subnet_ids,expr"`
+	SubnetIds             []string `hcl:"subnet_ids,expr"`
+	EndpointPrivateAccess bool     `hcl:"endpoint_private_access"`
+}
+
+type KubernetesNetworkConfig struct {
+	ServiceIpv4Cidr string `hcl:"service_ipv4_cidr"`
 }
