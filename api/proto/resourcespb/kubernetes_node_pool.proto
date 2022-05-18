@@ -29,7 +29,7 @@ message DeleteKubernetesNodePoolRequest {
 message KubernetesNodePoolArgs {
   common.ChildResourceCommonArgs common_parameters = 1;
   string name = 2;
-  repeated string subnet_ids = 3;
+  string subnet_id = 3;
   string cluster_id = 4;
   int32 starting_node_count = 5;
   int32 min_node_count = 6;
@@ -44,7 +44,7 @@ message KubernetesNodePoolArgs {
 message KubernetesNodePoolResource {
   common.CommonChildResourceParameters common_parameters = 1;
   string name = 2;
-  repeated string subnet_ids = 3;
+  string subnet_id = 3;
   string cluster_id = 4;
   int32 starting_node_count = 5;
   int32 min_node_count = 6;

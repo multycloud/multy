@@ -94,10 +94,10 @@ func (r *Subnet) Translate(ctx resources.MultyContext) ([]output.TfBlock, error)
 		// This flag needs to be set so that eks nodes can connect to the kubernetes cluster
 		// https://aws.amazon.com/blogs/containers/upcoming-changes-to-ip-assignment-for-eks-managed-node-groups/
 		// How to tell if this subnet is private?
-		if len(resources.GetAllResourcesWithListRef(ctx, func(k *KubernetesNodePool) []*Subnet { return k.Subnets }, r)) > 0 {
+		if len(resources.GetAllResourcesWithRef(ctx, func(k *KubernetesNodePool) *Subnet { return k.Subnet }, r)) > 0 {
 			awsSubnet.MapPublicIpOnLaunch = true
 		}
-		if len(resources.GetAllResourcesWithListRef(ctx, func(k *KubernetesCluster) []*Subnet { return k.DefaultNodePool.Subnets }, r)) > 0 {
+		if len(resources.GetAllResourcesWithRef(ctx, func(k *KubernetesCluster) *Subnet { return k.DefaultNodePool.Subnet }, r)) > 0 {
 			awsSubnet.MapPublicIpOnLaunch = true
 		}
 		return []output.TfBlock{awsSubnet}, nil

@@ -30,17 +30,19 @@ message DeleteKubernetesClusterRequest {
 message KubernetesClusterArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
-  repeated string subnet_ids = 3;
+  string service_cidr = 3;
+  string virtual_network_id = 4;
 
-  KubernetesNodePoolArgs default_node_pool = 4;
+  KubernetesNodePoolArgs default_node_pool = 5;
 }
 
 message KubernetesClusterResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
-  repeated string subnet_ids = 3;
+  string service_cidr = 3;
   KubernetesNodePoolResource default_node_pool = 4;
+  string virtual_network_id = 5;
 
   // outputs
-  string endpoint = 5;
+  string endpoint = 6;
 }

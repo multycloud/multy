@@ -10,7 +10,6 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/iam"
 	"github.com/multycloud/multy/resources/output/kubernetes_node_pool"
-	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 )
 
@@ -29,7 +28,7 @@ type KubernetesNodePool struct {
 	resources.ChildResourceWithId[*KubernetesCluster, *resourcespb.KubernetesNodePoolArgs]
 
 	KubernetesCluster *KubernetesCluster
-	Subnets           []*Subnet // azure??
+	Subnet            *Subnet
 }
 
 func (r *KubernetesNodePool) GetMetadata() resources.ResourceMetadataInterface {
@@ -64,7 +63,7 @@ func KubernetesNodePoolFromState(resource *KubernetesNodePool, _ *output.TfState
 			NeedsUpdate: false,
 		},
 		Name:              resource.Args.Name,
-		SubnetIds:         resource.Args.SubnetIds,
+		SubnetId:          resource.Args.SubnetId,
 		ClusterId:         resource.Args.ClusterId,
 		StartingNodeCount: resource.Args.StartingNodeCount,
 		MinNodeCount:      resource.Args.MinNodeCount,
@@ -90,13 +89,11 @@ func newKubernetesNodePool(resourceId string, args *resourcespb.KubernetesNodePo
 	knp.Parent = cluster
 	knp.KubernetesCluster = cluster
 
-	subnets, err := util.MapSliceValuesErr(args.SubnetIds, func(subnetId string) (*Subnet, error) {
-		return resources.Get[*Subnet](resourceId, others, subnetId)
-	})
+	subnet, err := resources.Get[*Subnet](resourceId, others, args.SubnetId)
 	if err != nil {
 		return nil, err
 	}
-	knp.Subnets = subnets
+	knp.Subnet = subnet
 	return knp, nil
 }
 
@@ -116,6 +113,9 @@ func (r *KubernetesNodePool) Validate(ctx resources.MultyContext) (errs []valida
 	if r.Args.VmSize == commonpb.VmSize_UNKNOWN_VM_SIZE {
 		errs = append(errs, r.NewValidationError(fmt.Errorf("unknown vm size"), "vm_size"))
 	}
+	if r.Subnet.VirtualNetwork.ResourceId != r.KubernetesCluster.VirtualNetwork.ResourceId {
+		errs = append(errs, r.NewValidationError(fmt.Errorf("subnet must be in the same virtual network as the cluster"), "subnet_id"))
+	}
 
 	return errs
 }
@@ -131,9 +131,10 @@ func (r *KubernetesNodePool) GetMainResourceName() (string, error) {
 }
 
 func (r *KubernetesNodePool) Translate(resources.MultyContext) ([]output.TfBlock, error) {
-	subnetIds, err := util.MapSliceValuesErr(r.Subnets, func(v *Subnet) (string, error) {
-		return resources.GetMainOutputId(v)
-	})
+	subnetId, err := resources.GetMainOutputId(r.Subnet)
+	if err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +171,7 @@ func (r *KubernetesNodePool) Translate(resources.MultyContext) ([]output.TfBlock
 				ClusterName:   clusterId,
 				NodeGroupName: r.Args.Name,
 				NodeRoleArn:   fmt.Sprintf("aws_iam_role.%s.arn", r.ResourceId),
-				SubnetIds:     subnetIds,
+				SubnetIds:     []string{subnetId},
 				ScalingConfig: kubernetes_node_pool.ScalingConfig{
 					DesiredSize: int(r.Args.StartingNodeCount),
 					MaxSize:     int(r.Args.MaxNodeCount),
@@ -198,7 +199,7 @@ func (r *KubernetesNodePool) translateAzNodePool() (*kubernetes_node_pool.AzureK
 	if err != nil {
 		return nil, err
 	}
-	subnetId, err := resources.GetMainOutputId(r.Subnets[0])
+	subnetId, err := resources.GetMainOutputId(r.Subnet)
 	if err != nil {
 		return nil, err
 	}
@@ -207,14 +208,14 @@ func (r *KubernetesNodePool) translateAzNodePool() (*kubernetes_node_pool.AzureK
 			TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 			Name:              r.Args.Name,
 		},
-		ClusterId:         clusterId,
-		NodeCount:         int(r.Args.StartingNodeCount),
-		MaxSize:           int(r.Args.MaxNodeCount),
-		MinSize:           int(r.Args.MinNodeCount),
-		Labels:            r.Args.Labels,
-		EnableAutoScaling: true,
-		VmSize:            common.VMSIZE[r.Args.VmSize][r.GetCloud()],
-		PodSubnetId:       subnetId,
+		ClusterId:              clusterId,
+		NodeCount:              int(r.Args.StartingNodeCount),
+		MaxSize:                int(r.Args.MaxNodeCount),
+		MinSize:                int(r.Args.MinNodeCount),
+		Labels:                 r.Args.Labels,
+		EnableAutoScaling:      true,
+		VmSize:                 common.VMSIZE[r.Args.VmSize][r.GetCloud()],
+		VirtualNetworkSubnetId: subnetId,
 	}, nil
 }
 
