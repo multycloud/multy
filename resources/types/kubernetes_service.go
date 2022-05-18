@@ -107,10 +107,11 @@ func KubernetesClusterFromState(resource *KubernetesCluster, state *output.TfSta
 			CloudProvider:   resource.Args.CommonParameters.CloudProvider,
 			NeedsUpdate:     false,
 		},
-		Name:            resource.Args.Name,
-		Endpoint:        endpoint,
-		DefaultNodePool: defaultNodePool,
-		ServiceCidr:     resource.Args.ServiceCidr,
+		Name:             resource.Args.Name,
+		Endpoint:         endpoint,
+		DefaultNodePool:  defaultNodePool,
+		ServiceCidr:      resource.Args.ServiceCidr,
+		VirtualNetworkId: resource.Args.VirtualNetworkId,
 	}, nil
 }
 
