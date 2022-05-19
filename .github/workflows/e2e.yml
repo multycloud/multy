@@ -2,6 +2,8 @@ name: "e2e"
 on:
   schedule:
     - cron: '0 6 * * *' # run at 6 AM UTC
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
