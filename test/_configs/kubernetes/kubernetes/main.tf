@@ -33,16 +33,18 @@ resource "aws_eks_node_group" "cluster_aws_default_pool" {
   provider       = "aws.eu-west-1"
 }
 resource "aws_subnet" "cluster_aws_public_subnet" {
-  tags       = { "Name" = "cluster_aws_public_subnet" }
-  cidr_block = "10.0.255.240/28"
-  vpc_id     = aws_vpc.example_vn_aws.id
-  provider   = "aws.eu-west-1"
+  tags              = { "Name" = "cluster_aws_public_subnet" }
+  cidr_block        = "10.0.255.240/28"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  provider          = "aws.eu-west-1"
+  availability_zone = "eu-west-1a"
 }
 resource "aws_subnet" "cluster_aws_private_subnet" {
-  tags       = { "Name" = "cluster_aws_private_subnet" }
-  cidr_block = "10.0.255.224/28"
-  vpc_id     = aws_vpc.example_vn_aws.id
-  provider   = "aws.eu-west-1"
+  tags              = { "Name" = "cluster_aws_private_subnet" }
+  cidr_block        = "10.0.255.224/28"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  provider          = "aws.eu-west-1"
+  availability_zone = "eu-west-1b"
 }
 resource "aws_route_table" "cluster_aws_public_rt" {
   tags   = { "Name" = "cluster_aws_public_rt" }
