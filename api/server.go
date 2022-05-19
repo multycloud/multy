@@ -91,7 +91,17 @@ func RunServer(ctx context.Context, port int) {
 		AwsClient: awsClient,
 	}
 
-	server := Server{
+	server := CreateServer(serviceContext)
+	proto.RegisterMultyResourceServiceServer(s, &server)
+	log.Printf("server listening at %v", lis.Addr())
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+}
+
+func CreateServer(serviceContext *service_context.ServiceContext) Server {
+	return Server{
 		proto.UnimplementedMultyResourceServiceServer{},
 		serviceContext,
 		services.NewService[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]("virtual_network", serviceContext),
@@ -111,12 +121,6 @@ func RunServer(ctx context.Context, port int) {
 		services.NewService[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]("vault_access_policy", serviceContext),
 		services.NewService[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]("vault_secret", serviceContext),
 		services.NewService[*resourcespb.VirtualMachineArgs, *resourcespb.VirtualMachineResource]("virtual_machine", serviceContext),
-	}
-	proto.RegisterMultyResourceServiceServer(s, &server)
-	log.Printf("server listening at %v", lis.Addr())
-
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
 	}
 }
 

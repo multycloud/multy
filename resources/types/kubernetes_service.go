@@ -241,11 +241,11 @@ func (r *KubernetesCluster) getAwsSubnets() ([]subnet.AwsSubnet, []output.TfBloc
 		ResourceId:   r.ResourceId,
 		FieldName:    "virtual_network_id",
 	}
-	az1, err := common.GetAvailabilityZone(r.VirtualNetwork.GetLocation(), 0, r.GetCloud())
+	az1, err := common.GetAvailabilityZone(r.VirtualNetwork.GetLocation(), 1, r.GetCloud())
 	if err != nil {
 		return nil, nil, errors.ValidationErrors([]validate.ValidationError{validationError})
 	}
-	az2, err := common.GetAvailabilityZone(r.VirtualNetwork.GetLocation(), 0, r.GetCloud())
+	az2, err := common.GetAvailabilityZone(r.VirtualNetwork.GetLocation(), 2, r.GetCloud())
 	if err != nil {
 		return nil, nil, errors.ValidationErrors([]validate.ValidationError{validationError})
 	}

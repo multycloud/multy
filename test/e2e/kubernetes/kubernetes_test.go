@@ -7,83 +7,25 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/multycloud/multy/cmd"
-	flag "github.com/spf13/pflag"
+	"github.com/multycloud/multy/api"
+	aws_client "github.com/multycloud/multy/api/aws"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/api/proto/credspb"
+	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/api/service_context"
+	"github.com/multycloud/multy/db"
+	"github.com/multycloud/multy/flags"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/maps"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/proto"
+	"log"
 	"os"
 	"os/exec"
 	"testing"
 )
 
 const DestroyAfter = true
-
-const aws_global_config = `
-config {
-  clouds   = ["aws"]
-  location = "EU_WEST_1"
-}
-`
-
-const azure_global_config = `
-config {
-  clouds   = ["azure"]
-  location = "us-east"
-}
-`
-
-var config = `
-multy "kubernetes_service" "kubernetes_test" {
-    name = "kbn-test"
-    subnet_ids = [subnet1.id, subnet2.id]
-}
-
-multy "kubernetes_node_pool" "kbn_test_pool" {
-  name = "kbntestpool"
-  cluster_id = kubernetes_test.id
-  subnet_ids = [subnet1.id, subnet2.id]
-  starting_node_count = 1
-  max_node_count = 1
-  min_node_count = 1
-  labels = { "multy.dev/env": "test" }
-  vm_size = "medium"
-  is_default_pool = true
-}
-
-
-multy "virtual_network" "kbn_test_vn" {
-  name       = "kbn_test_vn"
-  cidr_block = "10.0.0.0/16"
-}
-multy "subnet" "subnet1" {
-  name              = "private-subnet"
-  cidr_block        = "10.0.1.0/24"
-  virtual_network   = kbn_test_vn
-  availability_zone = 1
-}
-multy "subnet" "subnet2" {
-  name              = "public-subnet"
-  cidr_block        = "10.0.2.0/24"
-  virtual_network   = kbn_test_vn
-  availability_zone = 2
-}
-
-multy route_table "rt" {
-  name            = "test-rt"
-  virtual_network = kbn_test_vn
-  routes          = [
-    {
-      cidr_block  = "0.0.0.0/0"
-      destination = "internet"
-    }
-  ]
-}
-multy route_table_association rta {
-  route_table_id = rt.id
-  subnet_id      = subnet2.id
-}
-`
 
 type GetNodesOutput struct {
 	Items []Node `json:"items"`
@@ -103,59 +45,168 @@ type Node struct {
 	} `json:"metadata"`
 }
 
-func testKubernetes(t *testing.T, cloudSpecificConfig string, cloudName string) {
-	multyFileName := fmt.Sprintf("kubernetes_%s.hcl", cloudName)
-	tfDir := fmt.Sprintf("terraform_%s", cloudName)
+var server *api.Server
 
-	err := os.WriteFile(multyFileName, []byte(cloudSpecificConfig+config), 0664)
+func init() {
+	if server != nil {
+		return
+	}
+	flags.Environment = flags.Local
+	flags.DryRun = false
+	awsClient, err := aws_client.NewClient()
 	if err != nil {
-		t.Fatal(err.Error())
+		log.Fatalf("failed to initialize aws client: %v", err)
+	}
+	database, err := db.NewDatabase(awsClient)
+	if err != nil {
+		log.Fatalf("failed to load db: %v", err)
+	}
+	serviceContext := &service_context.ServiceContext{
+		Database:  database,
+		AwsClient: awsClient,
 	}
 
-	defer os.Remove(multyFileName)
+	s := api.CreateServer(serviceContext)
+	server = &s
+}
 
-	cmd := cmd.TranslateCommand{}
-	f := flag.NewFlagSet("test", flag.ContinueOnError)
-	cmd.ParseFlags(f, []string{multyFileName})
-	err = f.Set("output", tfDir+"/main.tf")
-	if err != nil {
-		t.Fatal(err.Error())
-	}
+func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
+	ctx := getCtx(t)
 
-	ctx := context.Background()
-	err = cmd.Execute(ctx)
+	t.Logf("creating virtual network")
+	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      commonpb.Location_EU_WEST_2,
+			CloudProvider: cloud,
+		},
+		Name:      "k8-test-vn",
+		CidrBlock: "10.0.0.0/16",
+	}}
+	vn, err := server.VnService.Create(ctx, createVnRequest)
 	if err != nil {
-		t.Fatal(err.Error())
+		t.Fatalf("unable to create vn: %s", err)
 	}
 
 	defer func() {
 		if DestroyAfter {
-			os.RemoveAll(tfDir)
+			_, err := server.VnService.Delete(ctx, &resourcespb.DeleteVirtualNetworkRequest{ResourceId: vn.CommonParameters.ResourceId})
+			if err != nil {
+				t.Logf("unable to delete resource %s", err)
+			}
 		}
 	}()
 
-	tfOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{TerraformDir: tfDir})
-	terraform.InitAndApply(t, tfOptions)
+	t.Logf("creating subnet")
+	createSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
+		Name:             "k8-test-subnet",
+		CidrBlock:        "10.0.0.0/24",
+		VirtualNetworkId: vn.CommonParameters.ResourceId,
+	}}
+	subnet, err := server.SubnetService.Create(ctx, createSubnetRequest)
+	if err != nil {
+		t.Fatalf("unable to create subnet: %s", err)
+	}
 
 	defer func() {
 		if DestroyAfter {
-			terraform.Destroy(t, tfOptions)
+			_, err := server.SubnetService.Delete(ctx, &resourcespb.DeleteSubnetRequest{ResourceId: subnet.CommonParameters.ResourceId})
+			if err != nil {
+				t.Logf("unable to delete resource %s", err)
+			}
+		}
+	}()
+
+	t.Logf("creating route table")
+	createRtRequest := &resourcespb.CreateRouteTableRequest{Resource: &resourcespb.RouteTableArgs{
+		Name:             "k8-test-rt",
+		VirtualNetworkId: vn.CommonParameters.ResourceId,
+		Routes: []*resourcespb.Route{
+			{
+				CidrBlock:   "0.0.0.0/0",
+				Destination: resourcespb.RouteDestination_INTERNET,
+			},
+		},
+	}}
+	rt, err := server.RouteTableService.Create(ctx, createRtRequest)
+	if err != nil {
+		t.Fatalf("unable to create route table: %s", err)
+	}
+	defer func() {
+		if DestroyAfter {
+			_, err := server.RouteTableService.Delete(ctx, &resourcespb.DeleteRouteTableRequest{ResourceId: rt.CommonParameters.ResourceId})
+			if err != nil {
+				t.Logf("unable to delete resource %s", err)
+			}
+		}
+	}()
+
+	t.Logf("creating route table association")
+	createRtaRequest := &resourcespb.CreateRouteTableAssociationRequest{Resource: &resourcespb.RouteTableAssociationArgs{
+		SubnetId:     subnet.CommonParameters.ResourceId,
+		RouteTableId: rt.CommonParameters.ResourceId,
+	}}
+	rta, err := server.RouteTableAssociationService.Create(ctx, createRtaRequest)
+	if err != nil {
+		t.Fatalf("unable to create route table association: %s", err)
+	}
+	defer func() {
+		if DestroyAfter {
+			_, err := server.RouteTableAssociationService.Delete(ctx, &resourcespb.DeleteRouteTableAssociationRequest{ResourceId: rta.CommonParameters.ResourceId})
+			if err != nil {
+				t.Logf("unable to delete resource %s", err)
+			}
+		}
+	}()
+
+	t.Logf("creating kubernetes cluster")
+	createK8sClusterRequest := &resourcespb.CreateKubernetesClusterRequest{Resource: &resourcespb.KubernetesClusterArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      commonpb.Location_EU_WEST_2,
+			CloudProvider: cloud,
+		},
+		Name:             "k8testmulty",
+		VirtualNetworkId: vn.CommonParameters.ResourceId,
+		DefaultNodePool: &resourcespb.KubernetesNodePoolArgs{
+			Name:              "default",
+			SubnetId:          subnet.CommonParameters.ResourceId,
+			StartingNodeCount: 1,
+			MinNodeCount:      1,
+			MaxNodeCount:      3,
+			VmSize:            commonpb.VmSize_MEDIUM,
+			DiskSizeGb:        20,
+			Labels: map[string]string{
+				"multy.dev/env": "test",
+			},
+		},
+	}}
+	k8s, err := server.KubernetesClusterService.Create(ctx, createK8sClusterRequest)
+	if err != nil {
+		t.Fatalf("unable to create kubernetes cluster: %s", err)
+	}
+	defer func() {
+		if DestroyAfter {
+			_, err := server.KubernetesClusterService.Delete(ctx, &resourcespb.DeleteKubernetesClusterRequest{ResourceId: k8s.CommonParameters.ResourceId})
+			if err != nil {
+				t.Logf("unable to delete resource %s", err)
+			}
 		}
 	}()
 
 	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
-	if cloudName == "aws" {
+	if cloud == commonpb.CloudProvider_AWS {
 		// aws eks --region eu-west-1 update-kubeconfig --name kubernetes_test
-		out, err := exec.Command("/usr/bin/aws", "eks", "--region", "eu-west-1", "update-kubeconfig", "--name", "kbn-test").CombinedOutput()
+		out, err := exec.Command("/usr/bin/aws", "eks", "--region", "eu-west-1", "update-kubeconfig", "--name", k8s.Name).CombinedOutput()
+		if err != nil {
+			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
+		}
+	} else if cloud == commonpb.CloudProvider_AZURE {
+		// az aks get-credentials --resource-group ks-rg --name example
+		out, err := exec.Command("/usr/bin/az", "aks", "get-credentials", "--resource-group", k8s.CommonParameters.ResourceGroupId, "--name", k8s.Name).CombinedOutput()
 		if err != nil {
 			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 		}
 	} else {
-		// az aks get-credentials --resource-group ks-rg --name example
-		out, err := exec.Command("/usr/bin/az", "aks", "get-credentials", "--resource-group", "ks-rg", "--name", "kbn-test").CombinedOutput()
-		if err != nil {
-			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
-		}
+		t.Fatalf("unknown cloud: %s", cloud)
 	}
 	// kubectl get nodes -o json
 	out, err := exec.Command("/usr/local/bin/kubectl", "get", "nodes", "-o", "json").CombinedOutput()
@@ -181,9 +232,56 @@ func testKubernetes(t *testing.T, cloudSpecificConfig string, cloudName string) 
 	assert.Equal(t, labels["multy.dev/env"], "test")
 }
 
+func getCtx(t *testing.T) context.Context {
+	accessKeyId, exists := os.LookupEnv("AWS_ACCESS_KEY_ID")
+	if !exists {
+		t.Fatalf("AWS_ACCESS_KEY_ID not set")
+	}
+	accessKeySecret, exists := os.LookupEnv("AWS_SECRET_ACCESS_KEY")
+	if !exists {
+		t.Fatalf("AWS_SECRET_ACCESS_KEY not set")
+	}
+	azSubscriptionId, exists := os.LookupEnv("ARM_SUBSCRIPTION_ID")
+	if !exists {
+		t.Fatalf("ARM_SUBSCRIPTION_ID not set")
+	}
+	azClientId, exists := os.LookupEnv("ARM_CLIENT_ID")
+	if !exists {
+		t.Fatalf("ARM_CLIENT_ID not set")
+	}
+	azClientSecret, exists := os.LookupEnv("ARM_CLIENT_SECRET")
+	if !exists {
+		t.Fatalf("ARM_CLIENT_SECRET not set")
+	}
+	azTenantId, exists := os.LookupEnv("ARM_TENANT_ID")
+	if !exists {
+		t.Fatalf("ARM_TENANT_ID not set")
+	}
+	credentials := &credspb.CloudCredentials{
+		AwsCreds: &credspb.AwsCredentials{
+			AccessKey: accessKeyId,
+			SecretKey: accessKeySecret,
+		},
+		AzureCreds: &credspb.AzureCredentials{
+			SubscriptionId: azSubscriptionId,
+			TenantId:       azTenantId,
+			ClientId:       azClientId,
+			ClientSecret:   azClientSecret,
+		},
+	}
+	b, err := proto.Marshal(credentials)
+	if err != nil {
+		t.Fatalf("unable to marshal creds: %s", err)
+	}
+
+	md := map[string][]string{"api_key": {"test"}, "cloud-creds-bin": {string(b)}}
+	ctx := metadata.NewIncomingContext(context.Background(), md)
+	return ctx
+}
+
 func TestAwsKubernetes(t *testing.T) {
-	testKubernetes(t, aws_global_config, "aws")
+	testKubernetes(t, commonpb.CloudProvider_AWS)
 }
 func TestAzureKubernetes(t *testing.T) {
-	testKubernetes(t, azure_global_config, "azure")
+	testKubernetes(t, commonpb.CloudProvider_AZURE)
 }
