@@ -207,7 +207,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
 	if cloud == commonpb.CloudProvider_AWS {
 		// aws eks --region eu-west-2 update-kubeconfig --name kubernetes_test
-		out, err := exec.Command("/usr/bin/aws", "eks", "--region", "eu-west-2", "update-kubeconfig", "--name", k8s.Name, "--kubeconfig", kubecfg).CombinedOutput()
+		out, err := exec.Command("aws", "eks", "--region", "eu-west-2", "update-kubeconfig", "--name", k8s.Name, "--kubeconfig", kubecfg).CombinedOutput()
 		if err != nil {
 			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 		}
