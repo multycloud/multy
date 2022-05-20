@@ -12,6 +12,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: '1.1.*'
+          terraform_wrapper: false
 
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -43,7 +46,7 @@ jobs:
           golint .
 
       - name: Test
-        run: go test ./test/... -v -tags=e2e -timeout=180m
+        run: go test ./test/... -v -tags=e2e -timeout=180m -parallel 4
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

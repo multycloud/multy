@@ -28,6 +28,7 @@ type TfBlock interface {
 	GetFullResourceRef() string
 	GetBlockType() string
 	AddDependency(string)
+	GetResourceId() string
 }
 
 type TerraformResource struct {
@@ -52,6 +53,10 @@ func (t *TerraformResource) SetName(name string) {
 	t.ResourceName = name
 }
 
+func (t *TerraformResource) GetResourceId() string {
+	return t.ResourceId
+}
+
 type TerraformDataSource struct {
 	ResourceName string   `hcl:",key"`
 	ResourceId   string   `hcl:",key"`
@@ -72,6 +77,10 @@ func (t *TerraformDataSource) AddDependency(dep string) {
 
 func (t *TerraformDataSource) SetName(name string) {
 	t.ResourceName = name
+}
+
+func (t *TerraformDataSource) GetResourceId() string {
+	return t.ResourceId
 }
 
 func WrapWithBlockType(block TfBlock) (any, error) {

@@ -31,6 +31,9 @@ func (w WithProvider) GetBlockType() string {
 func (w WithProvider) AddDependency(s string) {
 	w.Resource.AddDependency(s)
 }
+func (w WithProvider) GetResourceId() string {
+	return w.Resource.GetResourceId()
+}
 
 type DecodedResources struct {
 	Resources *resources.Resources

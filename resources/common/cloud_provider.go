@@ -140,6 +140,12 @@ func NewAwsResource(resourceId string, name string) *AwsResource {
 		Tags:              map[string]string{"Name": name}}
 }
 
+func NewAwsResourceWithDeps(resourceId string, name string, deps []string) *AwsResource {
+	return &AwsResource{
+		TerraformResource: output.TerraformResource{ResourceId: resourceId, DependsOn: deps},
+		Tags:              map[string]string{"Name": name}}
+}
+
 func NewAwsResourceWithIdOnly(resourceId string) *AwsResource {
 	return &AwsResource{
 		TerraformResource: output.TerraformResource{ResourceId: resourceId}}

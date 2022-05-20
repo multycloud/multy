@@ -17,7 +17,6 @@ import (
 	"github.com/multycloud/multy/resources/output/subnet"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
-	"log"
 	"net"
 )
 
@@ -55,8 +54,6 @@ func NewKubernetesCluster(resourceId string, args *resourcespb.KubernetesCluster
 		},
 		VirtualNetwork: vn,
 	}
-
-	log.Println(args)
 
 	cluster.DefaultNodePool, err = newKubernetesNodePool(fmt.Sprintf("%s_default_pool", resourceId), args.DefaultNodePool, others, cluster)
 	return cluster, err
@@ -173,25 +170,41 @@ func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBl
 		}
 
 		outputs = append(outputs, subnetResources...)
+		var deps []string
+		for _, s := range subnetResources {
+			// todo: get the id without casting
+			deps = append(deps, fmt.Sprintf("%s.%s", output.GetResourceName(s), s.GetResourceId()))
+		}
+
 		roleName := fmt.Sprintf("iam_for_k8cluster_%s", r.Args.Name)
 		role := iam.AwsIamRole{
 			AwsResource:      common.NewAwsResource(r.ResourceId, roleName),
 			Name:             fmt.Sprintf("iam_for_k8cluster_%s", r.Args.Name),
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("eks.amazonaws.com"),
 		}
+
+		role.GetFullResourceRef()
+
+		policy1Id := fmt.Sprintf("%s_%s", r.ResourceId, "AmazonEKSClusterPolicy")
+		policy1 := iam.AwsIamRolePolicyAttachment{
+			AwsResource: common.NewAwsResourceWithIdOnly(policy1Id),
+			Role:        fmt.Sprintf("aws_iam_role.%s.name", r.ResourceId),
+			PolicyArn:   "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
+		}
+		policy2Id := fmt.Sprintf("%s_%s", r.ResourceId, "AmazonEKSVPCResourceController")
+		policy2 := iam.AwsIamRolePolicyAttachment{
+			AwsResource: common.NewAwsResourceWithIdOnly(policy2Id),
+			Role:        fmt.Sprintf("aws_iam_role.%s.name", r.ResourceId),
+			PolicyArn:   "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController",
+		}
+		deps = append(deps, fmt.Sprintf("%s.%s", output.GetResourceName(policy1), policy1Id),
+			fmt.Sprintf("%s.%s", output.GetResourceName(policy1), policy2Id))
+
 		outputs = append(outputs, &role,
-			iam.AwsIamRolePolicyAttachment{
-				AwsResource: common.NewAwsResourceWithIdOnly(fmt.Sprintf("%s_%s", r.ResourceId, "AmazonEKSClusterPolicy")),
-				Role:        fmt.Sprintf("aws_iam_role.%s.name", r.ResourceId),
-				PolicyArn:   "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
-			},
-			iam.AwsIamRolePolicyAttachment{
-				AwsResource: common.NewAwsResourceWithIdOnly(fmt.Sprintf("%s_%s", r.ResourceId, "AmazonEKSVPCResourceController")),
-				Role:        fmt.Sprintf("aws_iam_role.%s.name", r.ResourceId),
-				PolicyArn:   "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController",
-			},
+			policy1,
+			policy2,
 			&kubernetes_service.AwsEksCluster{
-				AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
+				AwsResource: common.NewAwsResourceWithDeps(r.ResourceId, r.Args.Name, deps),
 				RoleArn:     fmt.Sprintf("aws_iam_role.%s.arn", r.ResourceId),
 				VpcConfig:   kubernetes_service.VpcConfig{SubnetIds: subnetIds, EndpointPrivateAccess: true},
 				Name:        r.Args.Name,

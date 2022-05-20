@@ -86,8 +86,14 @@ resource "aws_eks_cluster" "cluster_aws" {
   kubernetes_network_config {
     service_ipv4_cidr = "10.100.0.0/16"
   }
-  name     = "cluster_aws"
-  provider = "aws.eu-west-1"
+  name       = "cluster_aws"
+  provider   = "aws.eu-west-1"
+  depends_on = [
+    aws_subnet.cluster_aws_public_subnet, aws_subnet.cluster_aws_private_subnet,
+    aws_route_table.cluster_aws_public_rt, aws_route_table_association.cluster_aws_public_rta,
+    aws_iam_role_policy_attachment.cluster_aws_AmazonEKSClusterPolicy,
+    aws_iam_role_policy_attachment.cluster_aws_AmazonEKSVPCResourceController
+  ]
 }
 resource "azurerm_kubernetes_cluster" "cluster_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
