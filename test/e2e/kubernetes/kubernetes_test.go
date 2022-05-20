@@ -84,7 +84,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}}
 	vn, err := server.VnService.Create(ctx, createVnRequest)
 	if err != nil {
-		t.Fatalf("unable to create vn: %s", err)
+		t.Fatalf("unable to create vn: %+v", err)
 	}
 
 	defer func() {
@@ -104,14 +104,14 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}}
 	subnet, err := server.SubnetService.Create(ctx, createSubnetRequest)
 	if err != nil {
-		t.Fatalf("unable to create subnet: %s", err)
+		t.Fatalf("unable to create subnet: %+v", err)
 	}
 
 	defer func() {
 		if DestroyAfter {
 			_, err := server.SubnetService.Delete(ctx, &resourcespb.DeleteSubnetRequest{ResourceId: subnet.CommonParameters.ResourceId})
 			if err != nil {
-				t.Logf("unable to delete resource %s", err)
+				t.Logf("unable to delete resource %+v", err)
 			}
 		}
 	}()
@@ -129,13 +129,13 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}}
 	rt, err := server.RouteTableService.Create(ctx, createRtRequest)
 	if err != nil {
-		t.Fatalf("unable to create route table: %s", err)
+		t.Fatalf("unable to create route table: %+v", err)
 	}
 	defer func() {
 		if DestroyAfter {
 			_, err := server.RouteTableService.Delete(ctx, &resourcespb.DeleteRouteTableRequest{ResourceId: rt.CommonParameters.ResourceId})
 			if err != nil {
-				t.Logf("unable to delete resource %s", err)
+				t.Logf("unable to delete resource %+v", err)
 			}
 		}
 	}()
@@ -147,13 +147,13 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}}
 	rta, err := server.RouteTableAssociationService.Create(ctx, createRtaRequest)
 	if err != nil {
-		t.Fatalf("unable to create route table association: %s", err)
+		t.Fatalf("unable to create route table association: %+v", err)
 	}
 	defer func() {
 		if DestroyAfter {
 			_, err := server.RouteTableAssociationService.Delete(ctx, &resourcespb.DeleteRouteTableAssociationRequest{ResourceId: rta.CommonParameters.ResourceId})
 			if err != nil {
-				t.Logf("unable to delete resource %s", err)
+				t.Logf("unable to delete resource %+v", err)
 			}
 		}
 	}()
@@ -181,13 +181,13 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}}
 	k8s, err := server.KubernetesClusterService.Create(ctx, createK8sClusterRequest)
 	if err != nil {
-		t.Fatalf("unable to create kubernetes cluster: %s", err)
+		t.Fatalf("unable to create kubernetes cluster: %+v", err)
 	}
 	defer func() {
 		if DestroyAfter {
 			_, err := server.KubernetesClusterService.Delete(ctx, &resourcespb.DeleteKubernetesClusterRequest{ResourceId: k8s.CommonParameters.ResourceId})
 			if err != nil {
-				t.Logf("unable to delete resource %s", err)
+				t.Logf("unable to delete resource %+v", err)
 			}
 		}
 	}()
@@ -218,7 +218,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 
 	err = json.Unmarshal(out, &o)
 	if err != nil {
-		t.Fatal(fmt.Errorf("output cant be parsed: %s", err.Error()))
+		t.Fatal(fmt.Errorf("output cant be parsed: %s", err))
 	}
 
 	assert.Len(t, o.Items, 1)
