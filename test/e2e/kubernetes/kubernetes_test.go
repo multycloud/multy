@@ -18,10 +18,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"testing"
 )
 
@@ -71,9 +73,8 @@ func init() {
 }
 
 func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
-	ctx := getCtx(t)
+	ctx := getCtx(t, cloud)
 
-	t.Logf("creating virtual network")
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
 			Location:      commonpb.Location_EU_WEST_2,
@@ -84,19 +85,20 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}}
 	vn, err := server.VnService.Create(ctx, createVnRequest)
 	if err != nil {
-		t.Fatalf("unable to create vn: %s", err)
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create vn: %+v", err)
 	}
 
-	defer func() {
+	t.Cleanup(func() {
 		if DestroyAfter {
 			_, err := server.VnService.Delete(ctx, &resourcespb.DeleteVirtualNetworkRequest{ResourceId: vn.CommonParameters.ResourceId})
 			if err != nil {
+				logGrpcErrorDetails(t, err)
 				t.Logf("unable to delete resource %s", err)
 			}
 		}
-	}()
+	})
 
-	t.Logf("creating subnet")
 	createSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
 		Name:             "k8-test-subnet",
 		CidrBlock:        "10.0.0.0/24",
@@ -104,19 +106,20 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}}
 	subnet, err := server.SubnetService.Create(ctx, createSubnetRequest)
 	if err != nil {
-		t.Fatalf("unable to create subnet: %s", err)
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create subnet: %+v", err)
 	}
 
-	defer func() {
+	t.Cleanup(func() {
 		if DestroyAfter {
 			_, err := server.SubnetService.Delete(ctx, &resourcespb.DeleteSubnetRequest{ResourceId: subnet.CommonParameters.ResourceId})
 			if err != nil {
-				t.Logf("unable to delete resource %s", err)
+				logGrpcErrorDetails(t, err)
+				t.Logf("unable to delete resource %+v", err)
 			}
 		}
-	}()
+	})
 
-	t.Logf("creating route table")
 	createRtRequest := &resourcespb.CreateRouteTableRequest{Resource: &resourcespb.RouteTableArgs{
 		Name:             "k8-test-rt",
 		VirtualNetworkId: vn.CommonParameters.ResourceId,
@@ -129,36 +132,38 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}}
 	rt, err := server.RouteTableService.Create(ctx, createRtRequest)
 	if err != nil {
-		t.Fatalf("unable to create route table: %s", err)
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create route table: %+v", err)
 	}
-	defer func() {
+	t.Cleanup(func() {
 		if DestroyAfter {
 			_, err := server.RouteTableService.Delete(ctx, &resourcespb.DeleteRouteTableRequest{ResourceId: rt.CommonParameters.ResourceId})
 			if err != nil {
-				t.Logf("unable to delete resource %s", err)
+				logGrpcErrorDetails(t, err)
+				t.Logf("unable to delete resource %+v", err)
 			}
 		}
-	}()
+	})
 
-	t.Logf("creating route table association")
 	createRtaRequest := &resourcespb.CreateRouteTableAssociationRequest{Resource: &resourcespb.RouteTableAssociationArgs{
 		SubnetId:     subnet.CommonParameters.ResourceId,
 		RouteTableId: rt.CommonParameters.ResourceId,
 	}}
 	rta, err := server.RouteTableAssociationService.Create(ctx, createRtaRequest)
 	if err != nil {
-		t.Fatalf("unable to create route table association: %s", err)
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create route table association: %+v", err)
 	}
-	defer func() {
+	t.Cleanup(func() {
 		if DestroyAfter {
 			_, err := server.RouteTableAssociationService.Delete(ctx, &resourcespb.DeleteRouteTableAssociationRequest{ResourceId: rta.CommonParameters.ResourceId})
 			if err != nil {
-				t.Logf("unable to delete resource %s", err)
+				logGrpcErrorDetails(t, err)
+				t.Logf("unable to delete resource %+v", err)
 			}
 		}
-	}()
+	})
 
-	t.Logf("creating kubernetes cluster")
 	createK8sClusterRequest := &resourcespb.CreateKubernetesClusterRequest{Resource: &resourcespb.KubernetesClusterArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
 			Location:      commonpb.Location_EU_WEST_2,
@@ -181,27 +186,38 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}}
 	k8s, err := server.KubernetesClusterService.Create(ctx, createK8sClusterRequest)
 	if err != nil {
-		t.Fatalf("unable to create kubernetes cluster: %s", err)
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create kubernetes cluster: %+v", err)
 	}
-	defer func() {
+	t.Cleanup(func() {
 		if DestroyAfter {
 			_, err := server.KubernetesClusterService.Delete(ctx, &resourcespb.DeleteKubernetesClusterRequest{ResourceId: k8s.CommonParameters.ResourceId})
 			if err != nil {
-				t.Logf("unable to delete resource %s", err)
+				logGrpcErrorDetails(t, err)
+				t.Logf("unable to delete resource %+v", err)
 			}
 		}
-	}()
+	})
 
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("cannot get home dir: %s", err)
+	}
+	kubecfg := path.Join(home, ".kube", fmt.Sprintf("config-%s", cloud.String()))
 	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
 	if cloud == commonpb.CloudProvider_AWS {
-		// aws eks --region eu-west-1 update-kubeconfig --name kubernetes_test
-		out, err := exec.Command("/usr/bin/aws", "eks", "--region", "eu-west-1", "update-kubeconfig", "--name", k8s.Name).CombinedOutput()
+		// aws eks --region eu-west-2 update-kubeconfig --name kubernetes_test
+		out, err := exec.Command("aws", "eks", "--region", "eu-west-2", "update-kubeconfig", "--name", k8s.Name, "--kubeconfig", kubecfg).CombinedOutput()
 		if err != nil {
 			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 		}
 	} else if cloud == commonpb.CloudProvider_AZURE {
+		out, err := exec.Command("/usr/bin/az", "login", "--service-principal", "-u", os.Getenv("ARM_CLIENT_ID"), "-p", os.Getenv("ARM_CLIENT_SECRET"), "--tenant", os.Getenv("ARM_TENANT_ID")).CombinedOutput()
+		if err != nil {
+			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err, string(out)))
+		}
 		// az aks get-credentials --resource-group ks-rg --name example
-		out, err := exec.Command("/usr/bin/az", "aks", "get-credentials", "--resource-group", k8s.CommonParameters.ResourceGroupId, "--name", k8s.Name).CombinedOutput()
+		out, err = exec.Command("/usr/bin/az", "aks", "get-credentials", "--resource-group", k8s.CommonParameters.ResourceGroupId, "--name", k8s.Name, "--file", kubecfg).CombinedOutput()
 		if err != nil {
 			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 		}
@@ -209,7 +225,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("unknown cloud: %s", cloud)
 	}
 	// kubectl get nodes -o json
-	out, err := exec.Command("/usr/local/bin/kubectl", "get", "nodes", "-o", "json").CombinedOutput()
+	out, err := exec.Command("/usr/local/bin/kubectl", "--kubeconfig", kubecfg, "get", "nodes", "-o", "json").CombinedOutput()
 	if err != nil {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
@@ -218,7 +234,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 
 	err = json.Unmarshal(out, &o)
 	if err != nil {
-		t.Fatal(fmt.Errorf("output cant be parsed: %s", err.Error()))
+		t.Fatal(fmt.Errorf("output cant be parsed: %s", err))
 	}
 
 	assert.Len(t, o.Items, 1)
@@ -232,7 +248,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	assert.Equal(t, labels["multy.dev/env"], "test")
 }
 
-func getCtx(t *testing.T) context.Context {
+func getCtx(t *testing.T, cloud commonpb.CloudProvider) context.Context {
 	accessKeyId, exists := os.LookupEnv("AWS_ACCESS_KEY_ID")
 	if !exists {
 		t.Fatalf("AWS_ACCESS_KEY_ID not set")
@@ -257,6 +273,7 @@ func getCtx(t *testing.T) context.Context {
 	if !exists {
 		t.Fatalf("ARM_TENANT_ID not set")
 	}
+
 	credentials := &credspb.CloudCredentials{
 		AwsCreds: &credspb.AwsCredentials{
 			AccessKey: accessKeyId,
@@ -274,14 +291,26 @@ func getCtx(t *testing.T) context.Context {
 		t.Fatalf("unable to marshal creds: %s", err)
 	}
 
-	md := map[string][]string{"api_key": {"test"}, "cloud-creds-bin": {string(b)}}
+	md := map[string][]string{"api_key": {fmt.Sprintf("test-%s", cloud.String())}, "cloud-creds-bin": {string(b)}}
 	ctx := metadata.NewIncomingContext(context.Background(), md)
 	return ctx
 }
 
+func logGrpcErrorDetails(t *testing.T, err error) {
+	if s, ok := status.FromError(err); ok {
+		for _, details := range s.Details() {
+			if msg, ok := details.(interface{ GetErrorMessage() string }); ok {
+				t.Logf("server returned error: %s", msg.GetErrorMessage())
+			}
+		}
+	}
+}
+
 func TestAwsKubernetes(t *testing.T) {
+	t.Parallel()
 	testKubernetes(t, commonpb.CloudProvider_AWS)
 }
 func TestAzureKubernetes(t *testing.T) {
+	t.Parallel()
 	testKubernetes(t, commonpb.CloudProvider_AZURE)
 }

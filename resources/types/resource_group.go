@@ -86,9 +86,9 @@ const AzureResourceName = "azurerm_resource_group"
 
 func NewRgFromParent(resourceType string, parentResourceGroupId string, r *resources.Resources, location commonpb.Location, cloud commonpb.CloudProvider) string {
 	var rgId string
-	if rg, exists, err := resources.GetOptional[*ResourceGroup]("", r, parentResourceGroupId); exists && err != nil {
-		if groupId := regexp.MustCompile("%s-(%s)-rg").FindStringSubmatch(rg.Name)[1]; len(groupId) > 0 {
-			rgId = getDefaultResourceGroupIdString(resourceType, groupId)
+	if rg, exists, err := resources.GetOptional[*ResourceGroup]("", r, parentResourceGroupId); exists && err == nil {
+		if matches := regexp.MustCompile("\\w+-(\\w+)-rg").FindStringSubmatch(rg.Name); len(matches) >= 2 {
+			rgId = getDefaultResourceGroupIdString(resourceType, matches[1])
 			r.Add(NewResourceGroup(rgId, location, cloud))
 			return rgId
 		}
