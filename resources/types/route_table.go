@@ -89,13 +89,13 @@ func RouteTableFromState(resource *RouteTable, state *output.TfState) (*resource
 		if err != nil {
 			return nil, err
 		}
-		out.Name = stateResource.ResourceName
-		out.VirtualNetworkId = stateResource.VpcId
+		out.Name = stateResource.AwsResource.Tags["Name"]
+		out.VirtualNetworkId = resource.Args.VirtualNetworkId
 		routes := []*resourcespb.Route{}
 		for _, r := range stateResource.Routes {
 			route := &resourcespb.Route{
 				CidrBlock:   r.CidrBlock,
-				Destination: resourcespb.RouteDestination(resourcespb.RouteDestination_value[r.GatewayId]),
+				Destination: resourcespb.RouteDestination_INTERNET,
 			}
 			routes = append(routes, route)
 		}
@@ -106,11 +106,12 @@ func RouteTableFromState(resource *RouteTable, state *output.TfState) (*resource
 			return nil, err
 		}
 		out.Name = stateResource.Name
+		out.VirtualNetworkId = resource.Args.VirtualNetworkId
 		routes := []*resourcespb.Route{}
 		for _, r := range stateResource.Routes {
 			route := &resourcespb.Route{
 				CidrBlock:   r.AddressPrefix,
-				Destination: resourcespb.RouteDestination(resourcespb.RouteDestination_value[r.NextHopType]),
+				Destination: resourcespb.RouteDestination_INTERNET,
 			}
 			routes = append(routes, route)
 		}
