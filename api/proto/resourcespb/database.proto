@@ -56,4 +56,5 @@ message DatabaseResource {
 
   //outputs
   string host = 10;
+  string connection_username = 11;
 }
