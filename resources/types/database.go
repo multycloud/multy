@@ -79,6 +79,10 @@ func DatabaseFromState(resource *Database, state *output.TfState) (*resourcespb.
 			return nil, err
 		}
 	}
+	connectionUsername := resource.Args.Username
+	if resource.GetCloud() == commonpb.CloudProvider_AZURE {
+		connectionUsername = fmt.Sprintf("%s@%s", resource.Args.Username, host)
+	}
 
 	return &resourcespb.DatabaseResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
@@ -88,15 +92,16 @@ func DatabaseFromState(resource *Database, state *output.TfState) (*resourcespb.
 			CloudProvider:   resource.Args.CommonParameters.CloudProvider,
 			NeedsUpdate:     false,
 		},
-		Name:          resource.Args.Name,
-		Engine:        resource.Args.Engine,
-		EngineVersion: resource.Args.EngineVersion,
-		StorageGb:     resource.Args.StorageGb,
-		Size:          resource.Args.Size,
-		Username:      resource.Args.Username,
-		Password:      resource.Args.Password,
-		SubnetIds:     resource.Args.SubnetIds,
-		Host:          host,
+		Name:               resource.Args.Name,
+		Engine:             resource.Args.Engine,
+		EngineVersion:      resource.Args.EngineVersion,
+		StorageGb:          resource.Args.StorageGb,
+		Size:               resource.Args.Size,
+		Username:           resource.Args.Username,
+		Password:           resource.Args.Password,
+		SubnetIds:          resource.Args.SubnetIds,
+		Host:               host,
+		ConnectionUsername: connectionUsername,
 	}, nil
 }
 

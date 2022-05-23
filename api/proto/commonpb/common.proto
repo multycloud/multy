@@ -43,8 +43,8 @@ message OperatingSystem {
 message DatabaseSize {
   enum Enum {
     UNKNOWN_VM_SIZE = 0;
-    NANO = 1;
     MICRO = 2;
+    SMALL = 4;
     MEDIUM = 3;
   }
 }
