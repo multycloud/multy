@@ -264,10 +264,10 @@ func (r *KubernetesCluster) getAwsSubnets() ([]subnet.AwsSubnet, []output.TfBloc
 	}
 
 	vpcId, err := resources.GetMainOutputId(r.VirtualNetwork)
-	gtw, err := r.VirtualNetwork.GetAssociatedInternetGateway()
 	if err != nil {
 		return nil, nil, err
 	}
+	gtw, err := r.VirtualNetwork.GetAssociatedInternetGateway()
 	if err != nil {
 		return nil, nil, err
 	}

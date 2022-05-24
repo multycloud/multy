@@ -77,7 +77,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_US_EAST_1,
+			Location:      commonpb.Location_US_WEST_1,
 			CloudProvider: cloud,
 		},
 		Name:      "k8-test-vn",
@@ -166,7 +166,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createK8sClusterRequest := &resourcespb.CreateKubernetesClusterRequest{Resource: &resourcespb.KubernetesClusterArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_US_EAST_1,
+			Location:      commonpb.Location_US_WEST_1,
 			CloudProvider: cloud,
 		},
 		Name:             "k8testmulty",
