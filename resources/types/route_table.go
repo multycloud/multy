@@ -2,9 +2,11 @@ package types
 
 import (
 	"fmt"
+
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -58,16 +60,65 @@ func UpdateRouteTable(resource *RouteTable, vn *resourcespb.RouteTableArgs, othe
 	return nil
 }
 
-func RouteTableFromState(resource *RouteTable, _ *output.TfState) (*resourcespb.RouteTableResource, error) {
-	return &resourcespb.RouteTableResource{
-		CommonParameters: &commonpb.CommonChildResourceParameters{
-			ResourceId:  resource.ResourceId,
-			NeedsUpdate: false,
-		},
-		Name:             resource.Args.Name,
-		VirtualNetworkId: resource.Args.VirtualNetworkId,
-		Routes:           resource.Args.Routes,
-	}, nil
+func RouteTableFromState(resource *RouteTable, state *output.TfState) (*resourcespb.RouteTableResource, error) {
+	if flags.DryRun {
+		return &resourcespb.RouteTableResource{
+			CommonParameters: &commonpb.CommonChildResourceParameters{
+				ResourceId:  resource.ResourceId,
+				NeedsUpdate: false,
+			},
+			Name:             resource.Args.Name,
+			VirtualNetworkId: resource.Args.VirtualNetworkId,
+			Routes:           resource.Args.Routes,
+		}, nil
+	}
+	out := new(resourcespb.RouteTableResource)
+	out.CommonParameters = &commonpb.CommonChildResourceParameters{
+		ResourceId:  resource.ResourceId,
+		NeedsUpdate: false,
+	}
+
+	id, err := resources.GetMainOutputRef(resource)
+	if err != nil {
+		return nil, err
+	}
+
+	switch resource.GetCloud() {
+	case common.AWS:
+		stateResource, err := output.GetParsed[route_table.AwsRouteTable](state, id)
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.AwsResource.Tags["Name"]
+		out.VirtualNetworkId = resource.Args.VirtualNetworkId
+		routes := []*resourcespb.Route{}
+		for _, r := range stateResource.Routes {
+			route := &resourcespb.Route{
+				CidrBlock:   r.CidrBlock,
+				Destination: resourcespb.RouteDestination_INTERNET,
+			}
+			routes = append(routes, route)
+		}
+		out.Routes = routes
+	case common.AZURE:
+		stateResource, err := output.GetParsed[route_table.AzureRouteTable](state, id)
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.Name
+		out.VirtualNetworkId = resource.Args.VirtualNetworkId
+		routes := []*resourcespb.Route{}
+		for _, r := range stateResource.Routes {
+			route := &resourcespb.Route{
+				CidrBlock:   r.AddressPrefix,
+				Destination: resourcespb.RouteDestination_INTERNET,
+			}
+			routes = append(routes, route)
+		}
+		out.Routes = routes
+	}
+
+	return out, nil
 }
 
 func NewRouteTable(resourceId string, args *resourcespb.RouteTableArgs, others *resources.Resources) (*RouteTable, error) {

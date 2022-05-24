@@ -6,7 +6,7 @@ const AzureResourceName = "azurerm_route_table"
 
 type AzureRouteTable struct {
 	*common.AzResource `hcl:",squash" default:"name=azurerm_route_table"`
-	Routes             []AzureRouteTableRoute `hcl:"route,blocks"`
+	Routes             []AzureRouteTableRoute `hcl:"route,blocks" json:"route,omitempty"`
 }
 
 type AzureRouteTableRoute struct {
