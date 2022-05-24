@@ -33,4 +33,12 @@ var DBSIZE = map[commonpb.DatabaseSize_Enum]map[commonpb.CloudProvider]string{
 		commonpb.CloudProvider_AWS:   "db.t2.micro",
 		commonpb.CloudProvider_AZURE: "GP_Gen5_2",
 	},
+	commonpb.DatabaseSize_SMALL: {
+		commonpb.CloudProvider_AWS:   "db.t2.small",
+		commonpb.CloudProvider_AZURE: "GP_Gen5_4",
+	},
+	commonpb.DatabaseSize_MEDIUM: {
+		commonpb.CloudProvider_AWS:   "db.t2.medium",
+		commonpb.CloudProvider_AZURE: "GP_Gen5_6",
+	},
 }

@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/flags"
