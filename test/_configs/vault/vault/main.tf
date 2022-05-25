@@ -25,6 +25,7 @@ provider "aws" {
   region                      = "eu-west-2"
   alias                       = "eu-west-2"
   skip_credentials_validation = true
+  skip_metadata_api_check     = true
 }
 provider "azurerm" {
   features {}
