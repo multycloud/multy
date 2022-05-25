@@ -18,7 +18,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_2,
+			Location:      commonpb.Location_US_WEST_1,
 			CloudProvider: cloud,
 		},
 		Name:      "db-test-vn",
@@ -130,7 +130,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createDbRequest := &resourcespb.CreateDatabaseRequest{Resource: &resourcespb.DatabaseArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_2,
+			Location:      commonpb.Location_US_WEST_1,
 			CloudProvider: cloud,
 		},
 		Name:          "multydbtest" + common.RandomString(2),
