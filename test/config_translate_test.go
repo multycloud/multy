@@ -309,7 +309,7 @@ func compare(t *testing.T, expected *hcl.Block, expectedPrinter *BlockPrinter, a
 	}
 
 	for name, attr := range expectedAttrs {
-		if _, ok := actualAttrs[name]; !ok && name != "skip_credentials_validation" {
+		if _, ok := actualAttrs[name]; !ok && name != "access_key" && name != "secret_key" && name != "skip_credentials_validation" && name != "skip_requesting_account_id" && name != "skip_metadata_api_check" {
 			errorMessage := fmt.Sprintf(
 				"\n[%s] missing attribute '%s' in resouce '%s' \n", attr.Range, name, strings.Join(actual.Labels, "."),
 			)
