@@ -198,8 +198,8 @@ resource "azurerm_resource_group" "rg1" {
   location = "eastus"
 }
 provider "aws" {
-  region = "us-east-1"
-  alias  = "us-east-1"
+  region = "us-west-1"
+  alias  = "us-west-1"
 }
 provider "azurerm" {
   features {}
