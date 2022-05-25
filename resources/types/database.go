@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/flags"
@@ -11,7 +13,6 @@ import (
 	"github.com/multycloud/multy/resources/output/database"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
-	"strings"
 )
 
 var dbMetadata = resources.ResourceMetadata[*resourcespb.DatabaseArgs, *Database, *resourcespb.DatabaseResource]{
@@ -154,6 +155,7 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 				SkipFinalSnapshot:  true,
 				DbSubnetGroupName:  dbSubnetGroup.GetResourceName(),
 				PubliclyAccessible: true,
+				Port:               int(r.Args.Port),
 			},
 		}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
@@ -172,6 +174,7 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 				AdministratorLoginPassword: r.Args.Password,
 				SkuName:                    common.DBSIZE[r.Args.Size][r.GetCloud()],
 				SubnetIds:                  subnetIds,
+				Port:                       int(r.Args.Port),
 			},
 		), nil
 	}

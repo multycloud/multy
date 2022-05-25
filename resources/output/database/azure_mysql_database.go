@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+
 	"github.com/multycloud/multy/resources/common"
 )
 
@@ -16,6 +17,7 @@ type AzureMySqlServer struct {
 	Version                      string `hcl:"version"`
 	SslEnforcementEnabled        bool   `hcl:"ssl_enforcement_enabled"`
 	SslMinimalTlsVersionEnforced string `hcl:"ssl_minimal_tls_version_enforced"`
+	Port                         int    `hcl:"port"`
 }
 
 type AzureMySqlVirtualNetworkRule struct {

@@ -41,6 +41,7 @@ message DatabaseArgs {
   string username = 7;
   string password = 8;
   repeated string subnet_ids = 9;
+  int32 port = 10;
 }
 
 message DatabaseResource {
@@ -53,8 +54,9 @@ message DatabaseResource {
   string username = 7;
   string password = 8;
   repeated string subnet_ids = 9;
+  int32 port = 10;
 
   //outputs
-  string host = 10;
-  string connection_username = 11;
+  string host = 11;
+  string connection_username = 12;
 }

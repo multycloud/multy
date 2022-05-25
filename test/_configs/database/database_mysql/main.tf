@@ -1,19 +1,19 @@
 resource "aws_db_subnet_group" "example_db_aws" {
   provider = "aws.us-east-1"
-  tags     = {
+  tags = {
     "Name" = "example-db"
   }
 
   name        = "example-db"
   description = "Managed by Multy"
-  subnet_ids  = [
+  subnet_ids = [
     aws_subnet.subnet1_aws.id,
     aws_subnet.subnet2_aws.id,
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
   provider = "aws.us-east-1"
-  tags     = {
+  tags = {
     "Name" = "exampledb"
   }
 
@@ -27,10 +27,11 @@ resource "aws_db_instance" "example_db_aws" {
   skip_final_snapshot  = true
   db_subnet_group_name = aws_db_subnet_group.example_db_aws.name
   publicly_accessible  = true
+  port                 = 3306
 }
 resource "aws_subnet" "subnet1_aws" {
   provider = "aws.us-east-1"
-  tags     = {
+  tags = {
     "Name" = "subnet1"
   }
 
@@ -40,7 +41,7 @@ resource "aws_subnet" "subnet1_aws" {
 }
 resource "aws_subnet" "subnet2_aws" {
   provider = "aws.us-east-1"
-  tags     = {
+  tags = {
     "Name" = "subnet2"
   }
 
@@ -50,7 +51,7 @@ resource "aws_subnet" "subnet2_aws" {
 }
 resource "aws_route_table" "rt_aws" {
   provider = "aws.us-east-1"
-  tags     = {
+  tags = {
     "Name" = "db-rt"
   }
 
@@ -73,7 +74,7 @@ resource "aws_route_table_association" "subnet2_aws" {
 }
 resource "aws_vpc" "vn_aws" {
   provider = "aws.us-east-1"
-  tags     = {
+  tags = {
     "Name" = "db-vn"
   }
 
@@ -82,7 +83,7 @@ resource "aws_vpc" "vn_aws" {
 }
 resource "aws_internet_gateway" "vn_aws" {
   provider = "aws.us-east-1"
-  tags     = {
+  tags = {
     "Name" = "db-vn"
   }
 
@@ -90,7 +91,7 @@ resource "aws_internet_gateway" "vn_aws" {
 }
 resource "aws_default_security_group" "vn_aws" {
   provider = "aws.us-east-1"
-  tags     = {
+  tags = {
     "Name" = "db-vn"
   }
 

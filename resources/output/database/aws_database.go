@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+
 	"github.com/multycloud/multy/resources/common"
 )
 
@@ -21,6 +22,7 @@ type AwsDbInstance struct {
 	SkipFinalSnapshot   bool   `hcl:"skip_final_snapshot"`
 	DbSubnetGroupName   string `hcl:"db_subnet_group_name,expr"`
 	PubliclyAccessible  bool   `hcl:"publicly_accessible"`
+	Port                int    `hcl:"port"`
 }
 
 // aws_db_subnet_group
