@@ -19,6 +19,6 @@ type AwsDefaultRouteTable struct {
 }
 
 type AwsRouteTableRoute struct {
-	CidrBlock string `hcl:"cidr_block"`
-	GatewayId string `hcl:"gateway_id,expr"`
+	CidrBlock string `hcl:"cidr_block" json:"cidr_block"`
+	GatewayId string `hcl:"gateway_id,expr" json:"gateway_id"`
 }
