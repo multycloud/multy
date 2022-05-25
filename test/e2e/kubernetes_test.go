@@ -169,7 +169,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	kubecfg := path.Join(home, ".kube", fmt.Sprintf("config-%s", cloud.String()))
 	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
 	if cloud == commonpb.CloudProvider_AWS {
-		// aws eks --region eu-west-2 update-kubeconfig --name kubernetes_test
+		// aws eks --region eu-west-1 update-kubeconfig --name kubernetes_test
 		location, err := common.GetCloudLocation(commonpb.Location_US_WEST_1, commonpb.CloudProvider_AWS)
 		if err != nil {
 			t.Fatal(fmt.Errorf("location error: %s", err.Error()))
