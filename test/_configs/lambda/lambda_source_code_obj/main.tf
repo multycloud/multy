@@ -163,8 +163,8 @@ resource "azurerm_resource_group" "st-rg" {
   location = "northeurope"
 }
 provider "aws" {
-  region = "eu-west-1"
-  alias  = "eu-west-1"
+  region = "us-west-1"
+  alias  = "us-west-1"
 }
 
 

@@ -101,8 +101,8 @@ resource "azurerm_subnet_route_table_association" "subnet_azure" {
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 provider "aws" {
-  region = "eu-west-1"
-  alias  = "eu-west-1"
+  region = "us-west-1"
+  alias  = "us-west-1"
 }
 
 

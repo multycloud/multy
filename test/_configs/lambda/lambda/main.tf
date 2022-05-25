@@ -141,8 +141,8 @@ resource "azurerm_app_service_plan" "super_long_function_azure" {
   }
 }
 provider "aws" {
-  region = "eu-west-1"
-  alias  = "eu-west-1"
+  region = "us-west-1"
+  alias  = "us-west-1"
 }
 
 
