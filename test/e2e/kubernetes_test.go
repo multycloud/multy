@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/maps"
 	"os"
@@ -169,7 +170,11 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
 	if cloud == commonpb.CloudProvider_AWS {
 		// aws eks --region eu-west-2 update-kubeconfig --name kubernetes_test
-		out, err := exec.Command("aws", "eks", "--region", "eu-west-2", "update-kubeconfig", "--name", k8s.Name, "--kubeconfig", kubecfg).CombinedOutput()
+		location, err := common.GetCloudLocation(commonpb.Location_US_WEST_1, commonpb.CloudProvider_AWS)
+		if err != nil {
+			t.Fatal(fmt.Errorf("location error: %s", err.Error()))
+		}
+		out, err := exec.Command("aws", "eks", "--region", location, "update-kubeconfig", "--name", k8s.Name, "--kubeconfig", kubecfg).CombinedOutput()
 		if err != nil {
 			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 		}

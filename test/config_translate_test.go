@@ -309,7 +309,7 @@ func compare(t *testing.T, expected *hcl.Block, expectedPrinter *BlockPrinter, a
 	}
 
 	for name, attr := range expectedAttrs {
-		if _, ok := actualAttrs[name]; !ok {
+		if _, ok := actualAttrs[name]; !ok && name != "skip_credentials_validation" {
 			errorMessage := fmt.Sprintf(
 				"\n[%s] missing attribute '%s' in resouce '%s' \n", attr.Range, name, strings.Join(actual.Labels, "."),
 			)
@@ -329,7 +329,7 @@ func compare(t *testing.T, expected *hcl.Block, expectedPrinter *BlockPrinter, a
 
 	// If all attributes are correct so far, we still need to check nested blocks. HCL doesn't allow us to do that
 	// without a schema, so we'll just have to compare everything.
-	if !failed && !cmp.Equal(
+	if expected.Type != "provider" && !failed && !cmp.Equal(
 		actual, expected, cmp.Comparer(
 			func(a, b cty.Value) bool {
 				return a.Equals(b).True()

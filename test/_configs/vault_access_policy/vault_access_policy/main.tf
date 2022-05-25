@@ -189,8 +189,9 @@ resource "azurerm_resource_group" "vn-rg" {
   location = "uksouth"
 }
 provider "aws" {
-  region = "eu-west-2"
-  alias  = "eu-west-2"
+  region                      = "eu-west-2"
+  alias                       = "eu-west-2"
+  skip_credentials_validation = true
 }
 
 

@@ -181,8 +181,9 @@ resource "azurerm_resource_group" "rg1" {
   location = "northeurope"
 }
 provider "aws" {
-  region = "eu-west-1"
-  alias  = "eu-west-1"
+  region                      = "eu-west-1"
+  alias                       = "eu-west-1"
+  skip_credentials_validation = true
 }
 
 

@@ -302,8 +302,9 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   computer_name = "testvm"
 }
 provider "aws" {
-  region = "eu-west-1"
-  alias  = "eu-west-1"
+  region                      = "eu-west-1"
+  alias                       = "eu-west-1"
+  skip_credentials_validation = true
 }
 
 

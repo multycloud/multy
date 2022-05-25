@@ -213,8 +213,9 @@ resource "azurerm_subnet_route_table_association" "public_subnet_azure" {
   route_table_id = azurerm_route_table.rt_azure.id
 }
 provider "aws" {
-  region = "eu-west-1"
-  alias  = "eu-west-1"
+  region                      = "eu-west-1"
+  alias                       = "eu-west-1"
+  skip_credentials_validation = true
 }
 provider "azurerm" {
   features {
