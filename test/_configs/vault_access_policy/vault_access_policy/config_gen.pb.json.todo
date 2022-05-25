@@ -7,7 +7,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "EU_WEST_2"
+              "location": "EU_WEST_1"
             },
             "name": "test-vm",
             "generate_public_ip": true,
@@ -27,7 +27,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "EU_WEST_2"
+              "location": "EU_WEST_1"
             },
             "name": "dev-test-secret-multy"
           }
@@ -70,7 +70,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVirtualMachineArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "EU_WEST_2"
+              "location": "EU_WEST_1"
             },
             "name": "test-vm",
             "generate_public_ip": true,
@@ -90,7 +90,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultSecretArgs",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "EU_WEST_2"
+              "location": "EU_WEST_1"
             },
             "name": "api-key",
             "value": "xxx",
@@ -107,7 +107,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultSecretArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "EU_WEST_2"
+              "location": "EU_WEST_1"
             },
             "name": "api-key",
             "value": "xxx",
@@ -125,7 +125,7 @@
             "access": "owner",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "EU_WEST_2"
+              "location": "EU_WEST_1"
             },
             "identity": aws_iam_role.vm_aws.id,
             "vault_id": "example"
@@ -142,7 +142,7 @@
             "access": "owner",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "EU_WEST_2"
+              "location": "EU_WEST_1"
             },
             "identity": azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id,
             "vault_id": "example"
@@ -158,7 +158,7 @@
             "@type": "type.googleapis.com/dev.multy.resources.CloudSpecificVaultArgs",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "EU_WEST_2"
+              "location": "EU_WEST_1"
             },
             "name": "dev-test-secret-multy"
           }
@@ -174,7 +174,7 @@
             "cidr_block": "10.0.0.0/16",
             "common_parameters": {
               "cloud_provider": "AWS",
-              "location": "EU_WEST_2"
+              "location": "EU_WEST_1"
             },
             "name": "example_vn"
           }
@@ -190,7 +190,7 @@
             "cidr_block": "10.0.0.0/16",
             "common_parameters": {
               "cloud_provider": "AZURE",
-              "location": "EU_WEST_2"
+              "location": "EU_WEST_1"
             },
             "name": "example_vn"
           }
@@ -204,7 +204,7 @@
                "@type": "type.googleapis.com/dev.multy.resources.ResourceGroupArgs",
                "common_parameters": {
                  "cloud_provider": "AZURE",
-                 "location": "EU_WEST_2"
+                 "location": "EU_WEST_1"
                },
                "name": "rg1"
              }

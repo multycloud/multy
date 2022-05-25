@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/maps"
 	"os"
@@ -39,7 +40,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_2,
+			Location:      commonpb.Location_US_WEST_1,
 			CloudProvider: cloud,
 		},
 		Name:      "k8-test-vn",
@@ -128,7 +129,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createK8sClusterRequest := &resourcespb.CreateKubernetesClusterRequest{Resource: &resourcespb.KubernetesClusterArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_2,
+			Location:      commonpb.Location_US_WEST_1,
 			CloudProvider: cloud,
 		},
 		Name:             "k8testmulty",
@@ -168,8 +169,12 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	kubecfg := path.Join(home, ".kube", fmt.Sprintf("config-%s", cloud.String()))
 	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
 	if cloud == commonpb.CloudProvider_AWS {
-		// aws eks --region eu-west-2 update-kubeconfig --name kubernetes_test
-		out, err := exec.Command("aws", "eks", "--region", "eu-west-2", "update-kubeconfig", "--name", k8s.Name, "--kubeconfig", kubecfg).CombinedOutput()
+		// aws eks --region eu-west-1 update-kubeconfig --name kubernetes_test
+		location, err := common.GetCloudLocation(commonpb.Location_US_WEST_1, commonpb.CloudProvider_AWS)
+		if err != nil {
+			t.Fatal(fmt.Errorf("location error: %s", err.Error()))
+		}
+		out, err := exec.Command("aws", "eks", "--region", location, "update-kubeconfig", "--name", k8s.Name, "--kubeconfig", kubecfg).CombinedOutput()
 		if err != nil {
 			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 		}

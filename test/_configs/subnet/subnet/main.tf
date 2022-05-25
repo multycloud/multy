@@ -96,7 +96,7 @@ resource "azurerm_subnet_route_table_association" "subnet2_azure" {
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "azurerm_resource_group" "rg1" {
-  name = "rg1"
+  name     = "rg1"
   location = "northeurope"
 }
 provider "aws" {

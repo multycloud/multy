@@ -1,22 +1,22 @@
 resource "aws_ssm_parameter" "api_key_aws" {
-  provider = "aws.eu-west-2"
+  provider = "aws.eu-west-1"
   name     = "/dev-test-secret-multy/api-key"
   type     = "SecureString"
   value    = "xxx"
 }
 resource "aws_vpc" "example_vn_aws" {
-  provider             = "aws.eu-west-2"
+  provider             = "aws.eu-west-1"
   tags                 = { "Name" = "example_vn" }
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  provider = "aws.eu-west-2"
+  provider = "aws.eu-west-1"
   tags     = { "Name" = "example_vn" }
   vpc_id   = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  provider = "aws.eu-west-2"
+  provider = "aws.eu-west-1"
   tags     = { "Name" = "example_vn" }
   vpc_id   = aws_vpc.example_vn_aws.id
   ingress {
@@ -35,24 +35,24 @@ resource "aws_default_security_group" "example_vn_aws" {
   }
 }
 resource "aws_subnet" "subnet_aws" {
-  provider   = "aws.eu-west-2"
+  provider   = "aws.eu-west-1"
   tags       = { "Name" = "subnet" }
   cidr_block = "10.0.2.0/24"
   vpc_id     = aws_vpc.example_vn_aws.id
 }
 data "aws_caller_identity" "vm_aws" {
-  provider = "aws.eu-west-2"
+  provider = "aws.eu-west-1"
 }
 data "aws_region" "vm_aws" {
-  provider = "aws.eu-west-2"
+  provider = "aws.eu-west-1"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  provider = "aws.eu-west-2"
+  provider = "aws.eu-west-1"
   name     = "iam_for_vm_vm_aws"
   role     = aws_iam_role.vm_aws.name
 }
 resource "aws_iam_role" "vm_aws" {
-  provider           = "aws.eu-west-2"
+  provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
   name               = "iam_for_vm_vm_aws"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
@@ -62,7 +62,7 @@ resource "aws_iam_role" "vm_aws" {
   }
 }
 resource "aws_instance" "vm_aws" {
-  provider                    = "aws.eu-west-2"
+  provider                    = "aws.eu-west-1"
   tags                        = { "Name" = "test-vm" }
   ami                         = ""
   instance_type               = "t2.nano"
@@ -80,7 +80,7 @@ data "azurerm_client_config" "example_azure" {
 resource "azurerm_key_vault" "example_azure" {
   resource_group_name = azurerm_resource_group.kv-rg.name
   name                = "dev-test-secret-multy"
-  location            = "uksouth"
+  location            = "northeurope"
   sku_name            = "standard"
   tenant_id           = data.azurerm_client_config.example_azure.tenant_id
   access_policy {
@@ -94,13 +94,13 @@ resource "azurerm_key_vault" "example_azure" {
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
   name                = "example_vn"
-  location            = "uksouth"
+  location            = "northeurope"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.vn-rg.name
   name                = "example_vn"
-  location            = "uksouth"
+  location            = "northeurope"
   route {
     name           = "local"
     address_prefix = "0.0.0.0/0"
@@ -109,7 +109,7 @@ resource "azurerm_route_table" "example_vn_azure" {
 }
 resource "azurerm_resource_group" "kv-rg" {
   name     = "kv-rg"
-  location = "uksouth"
+  location = "northeurope"
 }
 data "azurerm_client_config" "kv_ap_azure" {
 }
@@ -134,13 +134,13 @@ resource "azurerm_subnet_route_table_association" "subnet_azure" {
 resource "azurerm_public_ip" "vm_azure" {
   resource_group_name = azurerm_resource_group.vm-rg.name
   name                = "test-vm"
-  location            = "uksouth"
+  location            = "northeurope"
   allocation_method   = "Static"
 }
 resource "azurerm_network_interface" "vm_azure" {
   resource_group_name = azurerm_resource_group.vm-rg.name
   name                = "test-vm"
-  location            = "uksouth"
+  location            = "northeurope"
   ip_configuration {
     name                          = "external"
     private_ip_address_allocation = "Dynamic"
@@ -160,7 +160,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
   name                  = "test-vm"
   computer_name         = "testvm"
-  location              = "uksouth"
+  location              = "northeurope"
   size                  = "Standard_B1ls"
   network_interface_ids = [azurerm_network_interface.vm_azure.id]
   os_disk {
@@ -182,15 +182,15 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
 }
 resource "azurerm_resource_group" "vm-rg" {
   name     = "vm-rg"
-  location = "uksouth"
+  location = "northeurope"
 }
 resource "azurerm_resource_group" "vn-rg" {
   name     = "vn-rg"
-  location = "uksouth"
+  location = "northeurope"
 }
 provider "aws" {
-  region = "eu-west-2"
-  alias  = "eu-west-2"
+  region = "eu-west-1"
+  alias  = "eu-west-1"
 }
 
 

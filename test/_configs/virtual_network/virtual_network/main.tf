@@ -1,5 +1,5 @@
 resource "aws_vpc" "example_vn_aws" {
-  provider = "aws.eu-west-2"
+  provider = "aws.eu-west-1"
   tags     = {
     "Name" = "example_vn"
   }
@@ -8,7 +8,7 @@ resource "aws_vpc" "example_vn_aws" {
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  provider = "aws.eu-west-2"
+  provider = "aws.eu-west-1"
   tags     = {
     "Name" = "example_vn"
   }
@@ -16,7 +16,7 @@ resource "aws_internet_gateway" "example_vn_aws" {
   vpc_id = aws_vpc.example_vn_aws.id
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  provider = "aws.eu-west-2"
+  provider = "aws.eu-west-1"
   tags     = {
     "Name" = "example_vn"
   }
@@ -42,13 +42,13 @@ resource "aws_default_security_group" "example_vn_aws" {
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
-  location            = "uksouth"
+  location            = "northeurope"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
   name                = "example_vn"
-  location            = "uksouth"
+  location            = "northeurope"
 
   route {
     name           = "local"
@@ -58,11 +58,11 @@ resource "azurerm_route_table" "example_vn_azure" {
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
-  location = "uksouth"
+  location = "northeurope"
 }
 provider "aws" {
-  region = "eu-west-2"
-  alias  = "eu-west-2"
+  region = "eu-west-1"
+  alias  = "eu-west-1"
 }
 
 
