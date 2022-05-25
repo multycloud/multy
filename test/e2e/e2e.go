@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api"
 	aws_client "github.com/multycloud/multy/api/aws"
+	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/credspb"
 	"github.com/multycloud/multy/api/service_context"
@@ -23,7 +24,7 @@ import (
 
 const DestroyAfter = true
 
-func getCtx(t *testing.T, cloud commonpb.CloudProvider) context.Context {
+func getCtx(t *testing.T, cloud commonpb.CloudProvider, testName string) context.Context {
 	accessKeyId, exists := os.LookupEnv("AWS_ACCESS_KEY_ID")
 	if !exists {
 		t.Fatalf("AWS_ACCESS_KEY_ID not set")
@@ -66,7 +67,7 @@ func getCtx(t *testing.T, cloud commonpb.CloudProvider) context.Context {
 		t.Fatalf("unable to marshal creds: %s", err)
 	}
 
-	md := map[string][]string{"api_key": {fmt.Sprintf("test-%s", cloud.String())}, "cloud-creds-bin": {string(b)}}
+	md := map[string][]string{"api_key": {fmt.Sprintf("test-%s-%s", testName, cloud.String())}, "cloud-creds-bin": {string(b)}}
 	ctx := metadata.NewIncomingContext(context.Background(), md)
 	return ctx
 }
@@ -98,8 +99,9 @@ func init() {
 		log.Fatalf("failed to load db: %v", err)
 	}
 	serviceContext := &service_context.ServiceContext{
-		Database:  database,
-		AwsClient: awsClient,
+		Database:           database,
+		AwsClient:          awsClient,
+		DeploymentExecutor: deploy.NewDeploymentExecutor(),
 	}
 
 	s := api.CreateServer(serviceContext)

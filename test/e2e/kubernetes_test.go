@@ -36,7 +36,7 @@ type Node struct {
 }
 
 func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
-	ctx := getCtx(t, cloud)
+	ctx := getCtx(t, cloud, "k8s")
 
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
