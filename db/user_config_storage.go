@@ -2,16 +2,14 @@ package db
 
 import (
 	"fmt"
-	"github.com/golang/protobuf/jsonpb"
 	aws_client "github.com/multycloud/multy/api/aws"
 	"github.com/multycloud/multy/api/errors"
-	"github.com/multycloud/multy/api/proto"
 	"github.com/multycloud/multy/api/proto/configpb"
+	"google.golang.org/protobuf/encoding/protojson"
 	"log"
 )
 
 type userConfigStorage struct {
-	marshaler *jsonpb.Marshaler
 	AwsClient aws_client.AwsClient
 }
 
@@ -20,12 +18,12 @@ func (d *userConfigStorage) StoreUserConfig(config *configpb.Config, lock *Confi
 		return fmt.Errorf("unable to store user config because lock is invalid")
 	}
 	log.Printf("[INFO] Storing user config from api_key %s\n", config.UserId)
-	str, err := d.marshaler.MarshalToString(config)
+	b, err := protojson.Marshal(config)
 	if err != nil {
-		return errors.InternalServerErrorWithMessage("unable to marshal configuration", err)
+		return err
 	}
 
-	err = d.AwsClient.SaveFile(config.UserId, configFile, str)
+	err = d.AwsClient.SaveFile(config.UserId, configFile, string(b))
 	if err != nil {
 		return errors.InternalServerErrorWithMessage("error storing configuration", err)
 	}
@@ -47,7 +45,8 @@ func (d *userConfigStorage) LoadUserConfig(userId string, lock *ConfigLock) (*co
 	}
 
 	if tfFileStr != "" {
-		err := jsonpb.UnmarshalString(tfFileStr, &result)
+
+		err := protojson.Unmarshal([]byte(tfFileStr), &result)
 		if err != nil {
 			return nil, errors.InternalServerErrorWithMessage("error parsing configuration", err)
 		}
@@ -56,13 +55,8 @@ func (d *userConfigStorage) LoadUserConfig(userId string, lock *ConfigLock) (*co
 }
 
 func newUserConfigStorage(awsClient aws_client.AwsClient) (*userConfigStorage, error) {
-	marshaler, err := proto.GetMarshaler()
-	if err != nil {
-		return nil, err
-	}
 
 	return &userConfigStorage{
-		marshaler: marshaler,
 		AwsClient: awsClient,
 	}, nil
 }

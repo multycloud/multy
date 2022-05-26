@@ -108,6 +108,10 @@ func LoadConfig(c *configpb.Config, metadatas map[proto.Message]ResourceMetadata
 	return multyc, nil
 }
 
+func (c *MultyConfig) GetOriginalConfig(metadatas map[proto.Message]ResourceMetadataInterface) (*MultyConfig, error) {
+	return LoadConfig(c.c, metadatas)
+}
+
 func addMultyResource(r *configpb.Resource, res *Resources, metadata ResourceMetadataInterface) error {
 	m, err := r.ResourceArgs.ResourceArgs.UnmarshalNew()
 	if err != nil {

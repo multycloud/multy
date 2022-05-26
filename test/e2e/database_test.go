@@ -14,7 +14,7 @@ import (
 )
 
 func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
-	ctx := getCtx(t, cloud)
+	ctx := getCtx(t, cloud, "database")
 
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{

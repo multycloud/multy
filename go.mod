@@ -6,11 +6,9 @@ require (
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/aws-sdk-go v1.43.33
 	github.com/go-sql-driver/mysql v1.4.1
-	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/hc-install v0.3.1
 	github.com/hashicorp/hcl/v2 v2.11.1
 	github.com/hashicorp/terraform-exec v0.16.0
-	github.com/jhump/protoreflect v1.12.0
 	github.com/multy-dev/hclencoder v0.1.2
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.1
@@ -26,6 +24,7 @@ require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-test/deep v1.0.7 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-version v1.4.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -34,6 +33,7 @@ require (
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect

@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"github.com/golang/protobuf/jsonpb"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/hashicorp/hcl/v2"
@@ -15,6 +14,7 @@ import (
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -89,7 +89,7 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 	}
 
 	c := configpb.Config{}
-	err = jsonpb.UnmarshalString(string(input), &c)
+	err = protojson.Unmarshal(input, &c)
 	if err != nil {
 		t.Fatalf("unable to parse input file: %v", err)
 	}
@@ -98,7 +98,7 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 		t.Fatalf("error loading config: %v", err)
 	}
 
-	encoded, err := deploy.Encode(nil, mconfig, nil, nil)
+	encoded, err := deploy.EncodeTfFile(nil, mconfig, nil, nil)
 	if err != nil && err != deploy.AwsCredsNotSetErr && err != deploy.AzureCredsNotSetErr {
 		if s, ok := status.FromError(err); ok {
 			fmt.Println(s.Details())

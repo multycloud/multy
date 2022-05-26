@@ -87,8 +87,9 @@ func RunServer(ctx context.Context, port int) {
 	}
 	defer database.Close()
 	serviceContext := &service_context.ServiceContext{
-		Database:  database,
-		AwsClient: awsClient,
+		Database:           database,
+		AwsClient:          awsClient,
+		DeploymentExecutor: deploy.NewDeploymentExecutor(),
 	}
 
 	server := CreateServer(serviceContext)
@@ -381,17 +382,7 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 		return nil, err
 	}
 
-	_, err = deploy.EncodeAndStoreTfFile(ctx, mconfig, nil, nil, true)
-	if err != nil {
-		return nil, err
-	}
-
-	err = deploy.MaybeInit(ctx, userId, true)
-	if err != nil {
-		return nil, err
-	}
-
-	err = deploy.RefreshState(ctx, userId, true)
+	err = s.ServiceContext.DeploymentExecutor.RefreshState(ctx, userId, mconfig)
 	if err != nil {
 		return nil, err
 	}
