@@ -5,7 +5,6 @@
 </a>
 </p>
 
-<br/>
 
 <h3 align="center">
 Multy is the easiest way to deploy multi cloud infrastructure
@@ -20,9 +19,12 @@ Multy is the easiest way to deploy multi cloud infrastructure
 
 <br>
 
+<div align="center">
+
 [![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=flat-square&logo=terraform&logoColor=white)](https://registry.terraform.io/providers/multycloud/multy/latest/docs)
 [![Discord](https://img.shields.io/badge/Multy-%237289DA.svg?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/rgaKXY4tCZ)
 [![Build Status](https://img.shields.io/github/workflow/status/multycloud/multy/go_test?label=tests&style=flat-square)](https://github.com/multycloud/multy/actions)
+</div>
 
 # What is Multy?
 
