@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os/exec"
 	"testing"
+	"time"
 )
 
 func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
@@ -18,7 +19,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_US_WEST_1,
+			Location:      commonpb.Location_US_WEST_2,
 			CloudProvider: cloud,
 		},
 		Name:      "db-test-vn",
@@ -130,7 +131,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createDbRequest := &resourcespb.CreateDatabaseRequest{Resource: &resourcespb.DatabaseArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_US_WEST_1,
+			Location:      commonpb.Location_US_WEST_2,
 			CloudProvider: cloud,
 		},
 		Name:          "multydbtest" + common.RandomString(2),
@@ -140,7 +141,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 		Size:          commonpb.DatabaseSize_MICRO,
 		Username:      "multyuser",
 		// azure requires complex stuff
-		Password:  common.RandomString(8) + "!2Ab",
+		Password:  common.RandomString(8) + "-2Ab",
 		SubnetIds: []string{publicSubnet.CommonParameters.ResourceId, subnet.CommonParameters.ResourceId},
 	}}
 	db, err := server.DatabaseService.Create(ctx, createDbRequest)
@@ -157,6 +158,9 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 			}
 		}
 	})
+
+	// wait to make sure the database is ready to take us
+	time.Sleep(30 * time.Second)
 
 	out, err := exec.Command("mysql", "-h", db.Host, "-P", "3306", "-u", db.ConnectionUsername, "--password="+db.Password, "-e", "select 12+34;").CombinedOutput()
 	if err != nil {
