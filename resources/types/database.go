@@ -131,6 +131,7 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// TODO validate subnet configuration (minimum 2 different AZs)
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
 		name := common.RemoveSpecialChars(r.Args.Name)
