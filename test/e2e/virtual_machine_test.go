@@ -15,7 +15,6 @@ import (
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/ssh"
-	"log"
 	"net"
 	"strings"
 	"testing"
@@ -140,7 +139,7 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 				To:   443,
 			},
 			CidrBlock: "0.0.0.0/0",
-			Direction: resourcespb.Direction_BOTH_DIRECTIONS,
+			Direction: resourcespb.Direction_EGRESS,
 		}, {
 			Protocol: "tcp",
 			Priority: 120,
@@ -149,7 +148,7 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 				To:   80,
 			},
 			CidrBlock: "0.0.0.0/0",
-			Direction: resourcespb.Direction_BOTH_DIRECTIONS,
+			Direction: resourcespb.Direction_EGRESS,
 		}},
 	}}
 	nsg, err := server.NetworkSecurityGroupService.Create(ctx, createNsgRequest)
@@ -168,9 +167,7 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 	})
 
 	pubKey, privKey, err := makeSSHKeyPair()
-	fmt.Println(privKey)
 	if err != nil {
-		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create ssh key: %+v", err)
 	}
 
@@ -235,26 +232,32 @@ sudo echo "hello world" > /tmp/test.txt`)),
 		},
 	}
 
-	fmt.Println(vm.GetPublicIp())
-
 	time.Sleep(3 * time.Minute)
 
 	// connect ot ssh server
 	conn, err := ssh.Dial("tcp", vm.GetPublicIp()+":22", config)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(fmt.Errorf("error in ssh connection: %+v", err))
 	}
-	defer conn.Close()
+	t.Cleanup(func() {
+		conn.Close()
+	})
 
 	session, err := conn.NewSession()
 	if err != nil {
-		t.Fatal(fmt.Errorf("error creating ssh session"))
+		t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
 	}
-	defer session.Close()
+	t.Cleanup(func() {
+		session.Close()
+	})
 
 	// run command and capture stdout/stderr
 	output, err := session.CombinedOutput("sudo cat /tmp/test.txt")
-	assert.Equal(t, string(output), "hello world\n")
+	if err != nil {
+		t.Fatal(fmt.Errorf("error running command: %+v", err))
+	}
+
+	assert.Equal(t, "hello world\n", string(output))
 }
 
 func TestAwsVirtualMachine(t *testing.T) {
