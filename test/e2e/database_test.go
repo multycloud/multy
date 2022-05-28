@@ -4,7 +4,6 @@
 package e2e
 
 import (
-	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources/common"
@@ -18,7 +17,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_US_WEST_1,
+			Location:      commonpb.Location_US_WEST_2,
 			CloudProvider: cloud,
 		},
 		Name:      "db-test-vn",
@@ -41,7 +40,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 	})
 
 	createPublicSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
-		Name:             "db-test-public-subnet",
+		Name:             "db-test-public-subnet1",
 		CidrBlock:        "10.0.0.0/24",
 		VirtualNetworkId: vn.CommonParameters.ResourceId,
 		AvailabilityZone: 1,
@@ -63,7 +62,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 	})
 
 	createSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
-		Name:             "db-test-publicSubnet",
+		Name:             "db-test-public-subnet2",
 		CidrBlock:        "10.0.1.0/24",
 		VirtualNetworkId: vn.CommonParameters.ResourceId,
 		AvailabilityZone: 2,
@@ -109,28 +108,31 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 		}
 	})
 
-	createRtaRequest := &resourcespb.CreateRouteTableAssociationRequest{Resource: &resourcespb.RouteTableAssociationArgs{
-		SubnetId:     publicSubnet.CommonParameters.ResourceId,
-		RouteTableId: rt.CommonParameters.ResourceId,
-	}}
-	rta, err := server.RouteTableAssociationService.Create(ctx, createRtaRequest)
-	if err != nil {
-		logGrpcErrorDetails(t, err)
-		t.Fatalf("unable to create route table association: %+v", err)
-	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.RouteTableAssociationService.Delete(ctx, &resourcespb.DeleteRouteTableAssociationRequest{ResourceId: rta.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
+	subnetIds := []string{publicSubnet.CommonParameters.ResourceId, subnet.CommonParameters.ResourceId}
+	for _, id := range subnetIds {
+		createRtaRequest := &resourcespb.CreateRouteTableAssociationRequest{Resource: &resourcespb.RouteTableAssociationArgs{
+			SubnetId:     id,
+			RouteTableId: rt.CommonParameters.ResourceId,
+		}}
+		rta, err := server.RouteTableAssociationService.Create(ctx, createRtaRequest)
+		if err != nil {
+			logGrpcErrorDetails(t, err)
+			t.Fatalf("unable to create route table association: %+v", err)
 		}
-	})
+		t.Cleanup(func() {
+			if DestroyAfter {
+				_, err := server.RouteTableAssociationService.Delete(ctx, &resourcespb.DeleteRouteTableAssociationRequest{ResourceId: rta.CommonParameters.ResourceId})
+				if err != nil {
+					logGrpcErrorDetails(t, err)
+					t.Logf("unable to delete resource %+v", err)
+				}
+			}
+		})
+	}
 
 	createDbRequest := &resourcespb.CreateDatabaseRequest{Resource: &resourcespb.DatabaseArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_US_WEST_1,
+			Location:      commonpb.Location_US_WEST_2,
 			CloudProvider: cloud,
 		},
 		Name:          "multydbtest" + common.RandomString(2),
@@ -140,8 +142,8 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 		Size:          commonpb.DatabaseSize_MICRO,
 		Username:      "multyuser",
 		// azure requires complex stuff
-		Password:  common.RandomString(8) + "!2Ab",
-		SubnetIds: []string{publicSubnet.CommonParameters.ResourceId, subnet.CommonParameters.ResourceId},
+		Password:  common.RandomString(8) + "-2Ab",
+		SubnetIds: subnetIds,
 	}}
 	db, err := server.DatabaseService.Create(ctx, createDbRequest)
 	if err != nil {
@@ -160,7 +162,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 
 	out, err := exec.Command("mysql", "-h", db.Host, "-P", "3306", "-u", db.ConnectionUsername, "--password="+db.Password, "-e", "select 12+34;").CombinedOutput()
 	if err != nil {
-		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
+		t.Fatalf("command failed.\n err: %s\noutput: %s", err.Error(), string(out))
 	}
 	assert.Contains(t, string(out), "46")
 }
