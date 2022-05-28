@@ -1,17 +1,41 @@
+
+<p align="center">
 <a href="https://multy.dev?utm_source=github.com">
     <img src="https://multy.dev/assets/multy_logo_horizontal.jpg" width="250">
 </a>
+</p>
 
-<br/>
-<br/>
 
-**Multy is the easiest way to deploy multi cloud infrastructure**
+<h3 align="center">
+Multy is the easiest way to deploy multi cloud infrastructure
+</h3>
+
+
+<br>
+<br>
+<p align="center">
+<img src="https://multy.dev/assets/multy-diagram.png" width="500">
+</p>
+
+<br>
+
+<div align="center">
 
 [![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=flat-square&logo=terraform&logoColor=white)](https://registry.terraform.io/providers/multycloud/multy/latest/docs)
 [![Discord](https://img.shields.io/badge/Multy-%237289DA.svg?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/rgaKXY4tCZ)
 [![Build Status](https://img.shields.io/github/workflow/status/multycloud/multy/go_test?label=tests&style=flat-square)](https://github.com/multycloud/multy/actions)
+</div>
 
-Write cloud-agnostic config deployed across multiple clouds.
+# What is Multy?
+
+**Multy** is an open-source tool that makes your infrastructure portable using a cloud-agnostic API. 
+You write your cloud-agnostic configuration once and Multy deploys it to the clouds you choose.
+
+With Multy, you don't need to worry about how resources behave differently in the different clouds providers.
+We abstract the nuances of each cloud so that moving your infrastructure between clouds is done by simply changing a `cloud` parameter.
+
+
+# Example
 
 Let's try to deploy a simple virtual machine into AWS and Azure using
 the [Multy Terraform Provider](https://github.com/multycloud/terraform-provider-multy)
@@ -213,19 +237,99 @@ provider "azurerm" {
 
 With Multy, **you write once, and deploy anywhere**.
 
-### Getting started
+## Getting started
 
----
 
-To get started, have a look at our contributing guide and overview document, the multy terraform provider repo and join
-us on
-discord!
+1. Install Terraform - [see guide](https://learn.hashicorp.com/tutorials/terraform/install-cli#install-terraform), e.g.:
+  - Brew (Homebrew/Mac OS): `brew tap hashicorp/tap && brew install hashicorp/tap/terraform`
+  - Choco (Chocolatey/Windows): `choco install terraform`
+  - Debian (Ubuntu/Linux):
+    ```
+    sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
+    curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+    sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+    sudo apt-get update && sudo apt-get install terraform
+    ```
+2. Create an account with AWS or Azure and expose its [authentication credentials via environment variables](https://docs.multy.dev/getting-started#3-generate-access-keys)
 
-Contributing guide: [CONTRIBUTING.md](./CONTRIBUTING.md)
+3. Write your configuration file, for example a file named `main.tf` with the following content:
+
+```hcl
+terraform {
+  required_providers {
+    multy = {
+      source = "multycloud/multy"
+    }
+  }
+}
+
+provider "multy" {
+  aws     = {} # this will look for aws credentials
+}
+resource "multy_virtual_network" "vn" {
+  cloud    = "aws"
+
+  name       = "multy_vn"
+  cidr_block = "10.0.0.0/16"
+  location   = "eu_west_1"
+}
+```
+
+4. Run `terraform init` and then `terraform apply`
+5. Run `terraform destroy`
+
+For a more detailed guide, see our official [getting started guide](https://docs.multy.dev/getting-started).
+
+## Contributing
+
+We love contributors! If you're interested in contributing, take a look at our [Contributing guide](./CONTRIBUTING.md).
+Join our [discord](https://discord.gg/rgaKXY4tCZ) channel to participate in live discussions or ask for support.
 
 Repo overview: [OVERVIEW.md](./.github/overview.md)
 
-Multy TF Provider
-Repo: [https://github.com/multycloud/terraform-provider-multy](https://github.com/multycloud/terraform-provider-multy?ref=multy-gh-repo)
+Terraform Provider Repo: [https://github.com/multycloud/terraform-provider-multy](https://github.com/multycloud/terraform-provider-multy?ref=multy-gh-repo)
 
 Discord Channel: [https://discord.gg/rgaKXY4tCZ](https://discord.gg/rgaKXY4tCZ)
+
+## Roadmap
+
+Have a look at our [roadmap](https://github.com/orgs/multycloud/projects/4) to know the latest features released and what we're focusing on short and long term.
+You can also vote for a specific feature you want or participate in the [discussions](https://github.com/multycloud/multy/discussions).
+
+## FAQ
+
+### Why build with Multy?
+
+Multy was born after realising how difficult it is to run the same infrastructure across multiple clouds. While providers such as AWS and Azure share the same set of core services, the small differences in how each service works make it difficult to configure your infrastructure to run in the same way.
+
+This is the problem that Multy aims to tackle. We created a single interface to deploy resources that have the same behaviour regardless of the cloud provider.
+
+
+### Can I use Multy for free?
+
+Multy is available as a free and open-source tool, so you can download it directly and run it locally.
+
+We also offer a managed solution that hosts the server for you. Managed Multy is currently offered as a free service. You can request an API key by contacting us at support@multy.dev.
+
+
+### Why not use the cloud specific Terraform providers?
+
+While Terraform and its providers are great for deploying any resource into any cloud, it puts all the burden on the infrastructure teams when it comes to understanding each provider and defining the resources. This flexibility can be seen as an advantage, however, when it comes to multi-cloud, this considerably slows down teams that are looking to move fast with deployments.
+
+By abstracting the common resources across major cloud providers, users are able to deploy the same resources on AWS and Azure without re-writing any infrastructure code.
+
+### I want to use cloud managed resources (i.e. Amazon S3 / Azure Key Vault), is Multy for me?
+
+Absolutely! The goal with Multy is to allow you to leverage cloud managed services and remain free to move your infrastructure.
+Not every resource will be supported, but we aim to support the most popular managed resources such as managed databases, object storage and vault.
+
+Let us know what services you would like to be supported by creating an Issue on the [Issues section](https://github.com/multycloud/multy/issues).
+
+### Why should I be locked in to Multy?
+
+Multy is an open-source tool that can be run locally and free. If at some point you want to move off Multy, you can export your infrastructure configuration as Terraform and use it independently.
+
+
+## License
+
+This repository is available under [Apache 2.0](./LICENSE).

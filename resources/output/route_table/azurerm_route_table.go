@@ -10,9 +10,9 @@ type AzureRouteTable struct {
 }
 
 type AzureRouteTableRoute struct {
-	Name          string `hcl:"name"`
-	AddressPrefix string `hcl:"address_prefix"`
-	NextHopType   string `hcl:"next_hop_type"` // VirtualNetworkGateway , VnetLocal , Internet , VirtualAppliance and None
+	Name          string `hcl:"name" json:"name"`
+	AddressPrefix string `hcl:"address_prefix" json:"address_prefix"`
+	NextHopType   string `hcl:"next_hop_type" json:"next_hop_type"` // VirtualNetworkGateway , VnetLocal , Internet , VirtualAppliance and None
 }
 
 type AzureRouteTableAssociation struct {

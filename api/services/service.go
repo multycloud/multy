@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	pberr "github.com/multycloud/multy/api/proto/errorspb"
@@ -83,7 +82,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	}
 
 	log.Printf("[INFO] Deploying %s\n", resource.GetResourceId())
-	_, err = deploy.Deploy(ctx, c, nil, resource)
+	_, err = s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, nil, resource)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -140,7 +139,7 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		return *new(OutT), err
 	}
 
-	_, err = deploy.EncodeAndStoreTfFile(ctx, c, nil, nil, true)
+	_, err = s.ServiceContext.DeploymentExecutor.EncodeAndStoreTfFile(ctx, c, nil, nil, true)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -151,11 +150,11 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.MultyConfig, in WithResourceId, readonly bool) (OutT, error) {
 	for _, r := range c.Resources.GetAll() {
 		if r.GetResourceId() == in.GetResourceId() {
-			err := deploy.MaybeInit(ctx, c.GetUserId(), readonly)
+			err := s.ServiceContext.DeploymentExecutor.MaybeInit(ctx, c.GetUserId(), readonly)
 			if err != nil {
 				return *new(OutT), err
 			}
-			state, err := deploy.GetState(ctx, c.GetUserId(), readonly)
+			state, err := s.ServiceContext.DeploymentExecutor.GetState(ctx, c.GetUserId(), readonly)
 			if err != nil {
 				return *new(OutT), err
 			}
@@ -204,7 +203,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 		return *new(OutT), err
 	}
 
-	_, err = deploy.Deploy(ctx, c, r, r)
+	_, err = s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, r, r)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -247,7 +246,7 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*com
 		return nil, err
 	}
 
-	_, err = deploy.Deploy(ctx, c, previousResource, nil)
+	_, err = s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, previousResource, nil)
 	if err != nil {
 		if s, ok := status.FromError(err); ok && s.Code() == codes.InvalidArgument {
 			for _, details := range s.Details() {

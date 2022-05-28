@@ -152,8 +152,8 @@ resource "azurerm_storage_container" "obj_storage_azure_private" {
   container_access_type = "private"
 }
 resource "azurerm_storage_blob" "public_source_code_azure" {
-  name                 = "source_code.zip"
-  storage_account_name = azurerm_storage_account.obj_storage_azure.name
+  name                   = "source_code.zip"
+  storage_account_name   = azurerm_storage_account.obj_storage_azure.name
   storage_container_name = azurerm_storage_container.obj_storage_azure_public.name
   type                   = "Block"
   source                 = "source_dir/azure_code.zip"

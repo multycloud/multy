@@ -91,7 +91,7 @@ func RouteTableFromState(resource *RouteTable, state *output.TfState) (*resource
 		}
 		out.Name = stateResource.AwsResource.Tags["Name"]
 		out.VirtualNetworkId = resource.Args.VirtualNetworkId
-		routes := []*resourcespb.Route{}
+		var routes []*resourcespb.Route
 		for _, r := range stateResource.Routes {
 			route := &resourcespb.Route{
 				CidrBlock:   r.CidrBlock,
@@ -107,7 +107,7 @@ func RouteTableFromState(resource *RouteTable, state *output.TfState) (*resource
 		}
 		out.Name = stateResource.Name
 		out.VirtualNetworkId = resource.Args.VirtualNetworkId
-		routes := []*resourcespb.Route{}
+		var routes []*resourcespb.Route
 		for _, r := range stateResource.Routes {
 			route := &resourcespb.Route{
 				CidrBlock:   r.AddressPrefix,
