@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/flags"
@@ -11,7 +13,6 @@ import (
 	"github.com/multycloud/multy/resources/output/database"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
-	"strings"
 )
 
 var dbMetadata = resources.ResourceMetadata[*resourcespb.DatabaseArgs, *Database, *resourcespb.DatabaseResource]{
@@ -155,6 +156,7 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 				SkipFinalSnapshot:  true,
 				DbSubnetGroupName:  dbSubnetGroup.GetResourceName(),
 				PubliclyAccessible: true,
+				Port:               int(r.Args.Port),
 			},
 		}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
@@ -186,6 +188,9 @@ func (r *Database) Validate(ctx resources.MultyContext) (errs []validate.Validat
 	}
 	if r.Args.StorageGb < 10 || r.Args.StorageGb > 20 {
 		errs = append(errs, r.NewValidationError(fmt.Errorf("storage must be between 10 and 20"), "storage"))
+	}
+	if r.GetCloud() == commonpb.CloudProvider_AZURE && r.Args.Port != 0 {
+		errs = append(errs, r.NewValidationError(fmt.Errorf("azure doesn't support custom ports"), "port"))
 	}
 	// TODO regex validate r username && password
 	// TODO validate DB Size

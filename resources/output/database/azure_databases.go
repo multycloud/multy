@@ -1,10 +1,11 @@
 package database
 
 import (
-	"github.com/multycloud/multy/resources/common"
-	"github.com/multycloud/multy/resources/output"
 	"strconv"
 	"strings"
+
+	"github.com/multycloud/multy/resources/common"
+	"github.com/multycloud/multy/resources/output"
 )
 
 type AzureDbServer struct {
