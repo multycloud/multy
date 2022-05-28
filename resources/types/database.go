@@ -174,7 +174,6 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 				AdministratorLoginPassword: r.Args.Password,
 				SkuName:                    common.DBSIZE[r.Args.Size][r.GetCloud()],
 				SubnetIds:                  subnetIds,
-				Port:                       int(r.Args.Port),
 			},
 		), nil
 	}
@@ -188,6 +187,9 @@ func (r *Database) Validate(ctx resources.MultyContext) (errs []validate.Validat
 	}
 	if r.Args.StorageGb < 10 || r.Args.StorageGb > 20 {
 		errs = append(errs, r.NewValidationError(fmt.Errorf("storage must be between 10 and 20"), "storage"))
+	}
+	if r.GetCloud() == commonpb.CloudProvider_AZURE && r.Args.Port != 0 {
+		errs = append(errs, r.NewValidationError(fmt.Errorf("azure doesn't support custom ports"), "port"))
 	}
 	// TODO regex validate r username && password
 	// TODO validate DB Size

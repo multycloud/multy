@@ -158,8 +158,7 @@
           "subnet_ids": [
             "subnet1_azure",
             "subnet2_azure"
-          ],
-          "port": 3306
+          ]
         }
       },
       "resource_id": "example_db_azure"
@@ -193,8 +192,7 @@
           "subnet_ids": [
             "subnet1_aws",
             "subnet2_aws"
-          ],
-          "port": 3306
+          ]
         }
       },
       "resource_id": "example_db_aws"

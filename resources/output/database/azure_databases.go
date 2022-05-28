@@ -17,7 +17,6 @@ type AzureDbServer struct {
 	Version                    string
 	Engine                     string
 	SubnetIds                  []string
-	Port                       int
 }
 
 func NewAzureDatabase(server AzureDbServer) []output.TfBlock {

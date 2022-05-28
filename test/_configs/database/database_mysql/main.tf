@@ -27,7 +27,6 @@ resource "aws_db_instance" "example_db_aws" {
   skip_final_snapshot  = true
   db_subnet_group_name = aws_db_subnet_group.example_db_aws.name
   publicly_accessible  = true
-  port                 = 3306
 }
 resource "aws_subnet" "subnet1_aws" {
   provider = "aws.us-east-1"
