@@ -1,3 +1,117 @@
+resource "aws_db_subnet_group" "example_db_aws" {
+  provider = "aws.us-east-1"
+  tags     = {
+    "Name" = "example-db"
+  }
+
+  name        = "example-db"
+  description = "Managed by Multy"
+  subnet_ids  = [
+    aws_subnet.subnet1_aws.id,
+    aws_subnet.subnet2_aws.id,
+  ]
+}
+resource "aws_db_instance" "example_db_aws" {
+  provider = "aws.us-east-1"
+  tags     = {
+    "Name" = "exampledb"
+  }
+
+  allocated_storage    = 10
+  engine               = "postgres"
+  engine_version       = "11"
+  username             = "multyadmin"
+  password             = "multy$Admin123!"
+  instance_class       = "db.t2.micro"
+  identifier           = "example-db"
+  skip_final_snapshot  = true
+  db_subnet_group_name = aws_db_subnet_group.example_db_aws.name
+  publicly_accessible  = true
+}
+resource "aws_subnet" "subnet1_aws" {
+  provider = "aws.us-east-1"
+  tags     = {
+    "Name" = "subnet1"
+  }
+
+  cidr_block        = "10.0.0.0/24"
+  vpc_id            = aws_vpc.vn_aws.id
+  availability_zone = "us-east-1a"
+}
+resource "aws_subnet" "subnet2_aws" {
+  provider = "aws.us-east-1"
+  tags     = {
+    "Name" = "subnet2"
+  }
+
+  cidr_block        = "10.0.1.0/24"
+  vpc_id            = aws_vpc.vn_aws.id
+  availability_zone = "us-east-1b"
+}
+resource "aws_route_table" "rt_aws" {
+  provider = "aws.us-east-1"
+  tags     = {
+    "Name" = "db-rt"
+  }
+
+  vpc_id = aws_vpc.vn_aws.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.vn_aws.id
+  }
+}
+resource "aws_route_table_association" "subnet1_aws" {
+  provider       = "aws.us-east-1"
+  subnet_id      = aws_subnet.subnet1_aws.id
+  route_table_id = aws_route_table.rt_aws.id
+}
+resource "aws_route_table_association" "subnet2_aws" {
+  provider       = "aws.us-east-1"
+  subnet_id      = aws_subnet.subnet2_aws.id
+  route_table_id = aws_route_table.rt_aws.id
+}
+resource "aws_vpc" "vn_aws" {
+  provider = "aws.us-east-1"
+  tags     = {
+    "Name" = "db-vn"
+  }
+
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+}
+resource "aws_internet_gateway" "vn_aws" {
+  provider = "aws.us-east-1"
+  tags     = {
+    "Name" = "db-vn"
+  }
+
+  vpc_id = aws_vpc.vn_aws.id
+}
+resource "aws_default_security_group" "vn_aws" {
+  provider = "aws.us-east-1"
+  tags     = {
+    "Name" = "db-vn"
+  }
+
+  vpc_id = aws_vpc.vn_aws.id
+
+  ingress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+    self        = true
+  }
+
+  egress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+    self        = true
+  }
+}
 resource "azurerm_postgresql_server" "example_db_azure" {
   resource_group_name              = azurerm_resource_group.rg1.name
   name                             = "example-db"
@@ -82,6 +196,10 @@ resource "azurerm_route_table" "vn_azure" {
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
   location = "eastus"
+}
+provider "aws" {
+  region = "us-east-1"
+  alias  = "us-east-1"
 }
 provider "azurerm" {
   features {}
