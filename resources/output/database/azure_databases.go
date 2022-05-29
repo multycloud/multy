@@ -65,6 +65,51 @@ func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 		})
 
 		return resources
+
+	case "postgres":
+		postgresqlServer := AzurePostgreSqlServer{
+			AzResource: &common.AzResource{
+				TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
+				ResourceGroupName: server.ResourceGroupName,
+				Name:              server.Name,
+				Location:          server.Location,
+			},
+			AdministratorLogin:           server.AdministratorLogin,
+			AdministratorLoginPassword:   server.AdministratorLoginPassword,
+			SkuName:                      server.SkuName,
+			StorageMb:                    server.StorageMb,
+			Version:                      server.Version,
+			SslEnforcementEnabled:        false,
+			SslMinimalTlsVersionEnforced: "TLSEnforcementDisabled",
+		}
+
+		resources := []output.TfBlock{postgresqlServer}
+		for i, subnetId := range server.SubnetIds {
+			resources = append(
+				resources, AzurePostgreSqlVirtualNetworkRule{
+					AzResource: &common.AzResource{
+						TerraformResource: output.TerraformResource{ResourceId: server.ResourceId + strconv.Itoa(i)},
+						ResourceGroupName: server.ResourceGroupName,
+						Name:              server.Name + strconv.Itoa(i),
+					},
+					ServerName: postgresqlServer.GetServerName(),
+					SubnetId:   subnetId,
+				},
+			)
+		}
+
+		resources = append(resources, AzurePostgreSqlFirewallRule{
+			AzResource: &common.AzResource{
+				TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
+				ResourceGroupName: server.ResourceGroupName,
+				Name:              "public",
+			},
+			ServerName:     postgresqlServer.GetServerName(),
+			StartIpAddress: "0.0.0.0",
+			EndIpAddress:   "255.255.255.255",
+		})
+
+		return resources
 	}
 	return nil
 }
