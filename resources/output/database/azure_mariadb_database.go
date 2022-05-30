@@ -9,14 +9,13 @@ import (
 const AzureMariaDbResourceName = "azurerm_mariadb_server"
 
 type AzureMariaDbServer struct {
-	*common.AzResource           `hcl:",squash" default:"name=azurerm_mariadb_server"`
-	AdministratorLogin           string `hcl:"administrator_login"`
-	AdministratorLoginPassword   string `hcl:"administrator_login_password"`
-	SkuName                      string `hcl:"sku_name"`
-	StorageMb                    int    `hcl:"storage_mb"`
-	Version                      string `hcl:"version"`
-	SslEnforcementEnabled        bool   `hcl:"ssl_enforcement_enabled"`
-	SslMinimalTlsVersionEnforced string `hcl:"ssl_minimal_tls_version_enforced"`
+	*common.AzResource         `hcl:",squash" default:"name=azurerm_mariadb_server"`
+	AdministratorLogin         string `hcl:"administrator_login"`
+	AdministratorLoginPassword string `hcl:"administrator_login_password"`
+	SkuName                    string `hcl:"sku_name"`
+	StorageMb                  int    `hcl:"storage_mb"`
+	Version                    string `hcl:"version"`
+	SslEnforcementEnabled      bool   `hcl:"ssl_enforcement_enabled"`
 }
 
 type AzureMariaDbVirtualNetworkRule struct {
