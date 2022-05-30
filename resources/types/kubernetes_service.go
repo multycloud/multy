@@ -176,10 +176,10 @@ func (r *KubernetesCluster) Translate(ctx resources.MultyContext) ([]output.TfBl
 			deps = append(deps, fmt.Sprintf("%s.%s", output.GetResourceName(s), s.GetResourceId()))
 		}
 
-		roleName := fmt.Sprintf("iam_for_k8cluster_%s", r.Args.Name)
+		roleName := fmt.Sprintf("multy-k8cluster-%s-role", r.Args.Name)
 		role := iam.AwsIamRole{
 			AwsResource:      common.NewAwsResource(r.ResourceId, roleName),
-			Name:             fmt.Sprintf("iam_for_k8cluster_%s", r.Args.Name),
+			Name:             roleName,
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("eks.amazonaws.com"),
 		}
 
