@@ -139,10 +139,10 @@ func (r *KubernetesNodePool) Translate(resources.MultyContext) ([]output.TfBlock
 		return nil, err
 	}
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
-		roleName := fmt.Sprintf("iam_for_k8nodepool_%s", r.Args.Name)
+		roleName := fmt.Sprintf("multy-k8nodepool-%s-%s-role", r.KubernetesCluster.Args.Name, r.Args.Name)
 		role := iam.AwsIamRole{
 			AwsResource:      common.NewAwsResource(r.ResourceId, roleName),
-			Name:             fmt.Sprintf("iam_for_k8nodepool_%s", r.Args.Name),
+			Name:             roleName,
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("ec2.amazonaws.com"),
 		}
 		clusterId, err := resources.GetMainOutputId(r.KubernetesCluster)
