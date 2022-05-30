@@ -67,13 +67,13 @@ resource "azurerm_subnet_route_table_association" "subnet_azure" {
 }
 resource "aws_iam_instance_profile" "vm2_aws" {
   provider = "aws.eu-west-1"
-  name     = "iam_for_vm_vm2_aws"
+  name     = "multy-vm-vm2_aws-role"
   role     = aws_iam_role.vm2_aws.name
 }
 resource "aws_iam_role" "vm2_aws" {
   provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
-  name               = "iam_for_vm_vm2_aws"
+  name               = "multy-vm-vm2_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 data "aws_ami" "vm2_aws" {
@@ -145,13 +145,13 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
 }
 resource "aws_iam_instance_profile" "vm3_aws" {
   provider = "aws.eu-west-1"
-  name     = "iam_for_vm_vm3_aws"
+  name     = "multy-vm-vm3_aws-role"
   role     = aws_iam_role.vm3_aws.name
 }
 resource "aws_iam_role" "vm3_aws" {
   provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
-  name               = "iam_for_vm_vm3_aws"
+  name               = "multy-vm-vm3_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 data "aws_ami" "vm3_aws" {
@@ -223,13 +223,13 @@ resource "azurerm_linux_virtual_machine" "vm3_azure" {
 }
 resource "aws_iam_instance_profile" "vm_aws" {
   provider = "aws.eu-west-1"
-  name     = "iam_for_vm_vm_aws"
+  name     = "multy-vm-vm_aws-role"
   role     = aws_iam_role.vm_aws.name
 }
 resource "aws_iam_role" "vm_aws" {
   provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
-  name               = "iam_for_vm_vm_aws"
+  name               = "multy-vm-vm_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 data "aws_ami" "vm_aws" {

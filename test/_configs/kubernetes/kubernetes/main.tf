@@ -1,6 +1,6 @@
 resource "aws_iam_role" "cluster_aws_default_pool" {
-  tags               = { "Name" = "iam_for_k8nodepool_node_pool_aws" }
-  name               = "iam_for_k8nodepool_node_pool_aws"
+  tags               = { "Name" = "multy-k8nodepool-cluster_aws-node_pool_aws-role" }
+  name               = "multy-k8nodepool-cluster_aws-node_pool_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }
@@ -61,8 +61,8 @@ resource "aws_route_table_association" "cluster_aws_public_rta" {
   provider       = "aws.eu-west-1"
 }
 resource "aws_iam_role" "cluster_aws" {
-  tags               = { "Name" = "iam_for_k8cluster_cluster_aws" }
-  name               = "iam_for_k8cluster_cluster_aws"
+  tags               = { "Name" = "multy-k8cluster-cluster_aws-role" }
+  name               = "multy-k8cluster-cluster_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"eks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }

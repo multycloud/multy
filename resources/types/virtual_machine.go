@@ -516,5 +516,5 @@ func (r *VirtualMachine) GetAwsIdentity() string {
 }
 
 func getIdentity(resourceId string) string {
-	return fmt.Sprintf("iam_for_vm_%s", resourceId)
+	return fmt.Sprintf("multy-vm-%s-role", resourceId)
 }

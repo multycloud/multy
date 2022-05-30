@@ -17,13 +17,13 @@ import (
 // todo: azure enforces rule priority, aws doesnt
 // todo: the provided RSA SSH key has 1024 bits. Only ssh-rsa keys with 2048 bits or higher are supported by Azure
 func testObjectStorageObject(t *testing.T, cloud commonpb.CloudProvider) {
-	ctx := getCtx(t, cloud, "vm")
+	ctx := getCtx(t, cloud, "obj")
 
-	objectStorageName := "teststorage" + common.RandomString(4)
+	objectStorageName := "e2eteststorage" + common.RandomString(4)
 
 	createObjStorageRequest := &resourcespb.CreateObjectStorageRequest{Resource: &resourcespb.ObjectStorageArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_US_EAST_2,
+			Location:      commonpb.Location_US_WEST_1,
 			CloudProvider: cloud,
 		},
 		Name:       objectStorageName,
@@ -68,11 +68,11 @@ func testObjectStorageObject(t *testing.T, cloud commonpb.CloudProvider) {
 
 	resp, err := http.Get(obj.GetUrl())
 	if err != nil {
-		t.Logf("unable to do GET request on %s: %s", obj.GetUrl(), err)
+		t.Fatalf("unable to do GET request on %s: %s", obj.GetUrl(), err)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		t.Logf("unable to read body: %s", err)
+		t.Fatalf("unable to read body: %s", err)
 	}
 
 	assert.Equal(t, "<h1>hello world</h1>", string(body))

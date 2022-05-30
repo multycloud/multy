@@ -6,6 +6,7 @@ require (
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/aws-sdk-go v1.43.33
 	github.com/go-sql-driver/mysql v1.4.1
+	github.com/google/uuid v1.1.2
 	github.com/hashicorp/hc-install v0.3.1
 	github.com/hashicorp/hcl/v2 v2.11.1
 	github.com/hashicorp/terraform-exec v0.16.0
