@@ -1,0 +1,214 @@
+{
+  "resources": [
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualNetworkArgs",
+          "cidr_block": "10.0.0.0/16",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "US_EAST_1"
+          },
+          "name": "db-vn"
+        }
+      },
+      "resource_id": "vn_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualNetworkArgs",
+          "cidr_block": "10.0.0.0/16",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "US_EAST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "db-vn"
+        }
+      },
+      "resource_id": "vn_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.SubnetArgs",
+          "availability_zone": 1,
+          "cidr_block": "10.0.0.0/24",
+          "name": "subnet1",
+          "virtual_network_id": "vn_aws"
+        }
+      },
+      "resource_id": "subnet1_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.SubnetArgs",
+          "availability_zone": 2,
+          "cidr_block": "10.0.1.0/24",
+          "name": "subnet2",
+          "virtual_network_id": "vn_aws"
+        }
+      },
+      "resource_id": "subnet2_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.SubnetArgs",
+          "availability_zone": 1,
+          "cidr_block": "10.0.0.0/24",
+          "name": "subnet1",
+          "virtual_network_id": "vn_azure"
+        }
+      },
+      "resource_id": "subnet1_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.RouteTableArgs",
+          "name": "db-rt",
+          "routes": [
+            {
+              "cidr_block": "0.0.0.0/0",
+              "destination": "INTERNET"
+            }
+          ],
+          "virtual_network_id": "vn_aws"
+        }
+      },
+      "resource_id": "rt_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.SubnetArgs",
+          "availability_zone": 2,
+          "cidr_block": "10.0.1.0/24",
+          "name": "subnet2",
+          "virtual_network_id": "vn_azure"
+        }
+      },
+      "resource_id": "subnet2_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.RouteTableArgs",
+          "name": "db-rt",
+          "routes": [
+            {
+              "cidr_block": "0.0.0.0/0",
+              "destination": "INTERNET"
+            }
+          ],
+          "virtual_network_id": "vn_azure"
+        }
+      },
+      "resource_id": "rt_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs",
+          "route_table_id": "rt_aws",
+          "subnet_id": "subnet1_aws"
+        }
+      },
+      "resource_id": "rta_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs",
+          "route_table_id": "rt_azure",
+          "subnet_id": "subnet1_azure"
+        }
+      },
+      "resource_id": "rta_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs",
+          "route_table_id": "rt_aws",
+          "subnet_id": "subnet2_aws"
+        }
+      },
+      "resource_id": "rta2_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.DatabaseArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "US_EAST_1",
+            "resource_group_id": "rg1"
+          },
+          "password": "multy$Admin123!",
+          "username": "multyadmin",
+          "engine": "MARIADB",
+          "engine_version": "10.5",
+          "name": "example-db",
+          "size": "MICRO",
+          "storage_gb": 10,
+          "subnet_ids": [
+            "subnet1_azure",
+            "subnet2_azure"
+          ]
+        }
+      },
+      "resource_id": "example_db_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs",
+          "route_table_id": "rt_azure",
+          "subnet_id": "subnet2_azure"
+        }
+      },
+      "resource_id": "rta2_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.DatabaseArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "US_EAST_1",
+            "resource_group_id": "rg1"
+          },
+          "password": "multy$Admin123!",
+          "username": "multyadmin",
+          "engine": "MARIADB",
+          "engine_version": "10.5",
+          "name": "example-db",
+          "size": "MICRO",
+          "storage_gb": 10,
+          "subnet_ids": [
+            "subnet1_aws",
+            "subnet2_aws"
+          ]
+        }
+      },
+      "resource_id": "example_db_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ResourceGroupArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "US_EAST_1"
+          },
+          "name": "rg1"
+        }
+      },
+      "resource_id": "rg1"
+    }
+  ]
+}
