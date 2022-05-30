@@ -30,6 +30,7 @@ enum DatabaseEngine {
   UNKNOWN_ENGINE = 0;
   MYSQL = 1;
   POSTGRES = 2;
+  MARIADB = 3;
 }
 
 message DatabaseArgs {
