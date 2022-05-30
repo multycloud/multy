@@ -98,7 +98,7 @@ func init() {
 	if err != nil {
 		log.Fatalf("failed to load db: %v", err)
 	}
-	serviceContext := &service_context.ServiceContext{
+	serviceContext := &service_context.ResourceServiceContext{
 		Database:           database,
 		AwsClient:          awsClient,
 		DeploymentExecutor: deploy.NewDeploymentExecutor(),

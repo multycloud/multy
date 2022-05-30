@@ -23,6 +23,7 @@ import "api/proto/resourcespb/route_table_association.proto";
 import "api/proto/resourcespb/network_interface.proto";
 import "api/proto/resourcespb/subnet.proto";
 import "api/proto/commonpb/common.proto";
+import "api/proto/userpb/user.proto";
 
 package dev.multy;
 
@@ -121,3 +122,7 @@ message DeleteResourceRequest {
   string resource_id = 1;
 }
 
+
+service MultyUserService {
+  rpc RegisterUser(user.RegisterUserRequest) returns (user.User) {}
+}

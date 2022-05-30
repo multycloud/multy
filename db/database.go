@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 	aws_client "github.com/multycloud/multy/api/aws"
 	"github.com/multycloud/multy/api/errors"
 	"log"
@@ -52,6 +53,34 @@ func (d *database) GetUserId(ctx context.Context, apiKey string) (string, error)
 	}
 
 	return userId, err
+}
+
+func (d *database) CreateUser(ctx context.Context, emailAddress string) (apiKey string, err error) {
+	tx, err := d.sqlConnection.Begin()
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback()
+	var userId string
+	err = tx.QueryRowContext(ctx, "SELECT * FROM Users WHERE UserId = ?;", emailAddress).Scan(&userId)
+	if err == nil {
+		return "", errors.UserAlreadyExists(emailAddress)
+	}
+	_, err = tx.ExecContext(ctx, "INSERT INTO Users (UserId) VALUES (?);", emailAddress)
+	if err != nil {
+		return "", err
+	}
+	apiKey = uuid.New().String()
+	_, err = tx.ExecContext(ctx, "INSERT INTO ApiKeys (ApiKey, UserId) VALUES (?, ?);", apiKey, emailAddress)
+	if err != nil {
+		return "", err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return "", err
+	}
+
+	return apiKey, err
 }
 
 func (d *database) LockConfig(ctx context.Context, userId string) (lock *ConfigLock, err error) {

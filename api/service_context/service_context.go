@@ -6,8 +6,12 @@ import (
 	"github.com/multycloud/multy/db"
 )
 
-type ServiceContext struct {
+type ResourceServiceContext struct {
 	db.Database
 	aws_client.AwsClient
 	deploy.DeploymentExecutor
+}
+
+type UserServiceContext struct {
+	db.Database
 }

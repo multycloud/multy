@@ -19,14 +19,16 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"strings"
+	"time"
 )
 
 type Server struct {
 	proto.UnimplementedMultyResourceServiceServer
-	*service_context.ServiceContext
+	*service_context.ResourceServiceContext
 	VnService                    services.Service[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]
 	SubnetService                services.Service[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]
 	NetworkInterfaceService      services.Service[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]
@@ -47,6 +49,7 @@ type Server struct {
 }
 
 func RunServer(ctx context.Context, port int) {
+	rand.Seed(time.Now().Unix())
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 
 	if err != nil {
@@ -86,14 +89,17 @@ func RunServer(ctx context.Context, port int) {
 		log.Fatalf("failed to load db: %v", err)
 	}
 	defer database.Close()
-	serviceContext := &service_context.ServiceContext{
+	serviceContext := &service_context.ResourceServiceContext{
 		Database:           database,
 		AwsClient:          awsClient,
 		DeploymentExecutor: deploy.NewDeploymentExecutor(),
 	}
 
 	server := CreateServer(serviceContext)
+	userService := CreateUserServer(&service_context.UserServiceContext{database})
 	proto.RegisterMultyResourceServiceServer(s, &server)
+	proto.RegisterMultyUserServiceServer(s, &userService)
+
 	log.Printf("server listening at %v", lis.Addr())
 
 	if err := s.Serve(lis); err != nil {
@@ -101,7 +107,7 @@ func RunServer(ctx context.Context, port int) {
 	}
 }
 
-func CreateServer(serviceContext *service_context.ServiceContext) Server {
+func CreateServer(serviceContext *service_context.ResourceServiceContext) Server {
 	return Server{
 		proto.UnimplementedMultyResourceServiceServer{},
 		serviceContext,
@@ -382,7 +388,7 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 		return nil, err
 	}
 
-	err = s.ServiceContext.DeploymentExecutor.RefreshState(ctx, userId, mconfig)
+	err = s.ResourceServiceContext.DeploymentExecutor.RefreshState(ctx, userId, mconfig)
 	if err != nil {
 		return nil, err
 	}
