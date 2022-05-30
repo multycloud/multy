@@ -110,6 +110,52 @@ func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 		})
 
 		return resources
+
+	case "mariadb":
+		mariaDbServer := AzureMariaDbServer{
+			AzResource: &common.AzResource{
+				TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
+				ResourceGroupName: server.ResourceGroupName,
+				Name:              server.Name,
+				Location:          server.Location,
+			},
+			AdministratorLogin:           server.AdministratorLogin,
+			AdministratorLoginPassword:   server.AdministratorLoginPassword,
+			SkuName:                      server.SkuName,
+			StorageMb:                    server.StorageMb,
+			Version:                      server.Version,
+			SslEnforcementEnabled:        false,
+			SslMinimalTlsVersionEnforced: "TLSEnforcementDisabled",
+		}
+
+		resources := []output.TfBlock{mariaDbServer}
+		for i, subnetId := range server.SubnetIds {
+			resources = append(
+				resources, AzureMariaDbVirtualNetworkRule{
+					AzResource: &common.AzResource{
+						TerraformResource: output.TerraformResource{ResourceId: server.ResourceId + strconv.Itoa(i)},
+						ResourceGroupName: server.ResourceGroupName,
+						Name:              server.Name + strconv.Itoa(i),
+					},
+					ServerName: mariaDbServer.GetServerName(),
+					SubnetId:   subnetId,
+				},
+			)
+		}
+
+		resources = append(resources, AzureMariaDbFirewallRule{
+			AzResource: &common.AzResource{
+				TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
+				ResourceGroupName: server.ResourceGroupName,
+				Name:              "public",
+			},
+			ServerName:     mariaDbServer.GetServerName(),
+			StartIpAddress: "0.0.0.0",
+			EndIpAddress:   "255.255.255.255",
+		})
+
+		return resources
+
 	}
 	return nil
 }
