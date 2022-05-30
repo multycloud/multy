@@ -122,7 +122,6 @@ resource "azurerm_mariadb_server" "example_db_azure" {
   storage_mb                       = 10240
   version                          = "10.5"
   ssl_enforcement_enabled          = false
-  ssl_minimal_tls_version_enforced = "TLSEnforcementDisabled"
 }
 resource "azurerm_mariadb_virtual_network_rule" "example_db_azure0" {
   resource_group_name = azurerm_resource_group.rg1.name
