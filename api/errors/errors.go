@@ -76,6 +76,11 @@ func ResourceNotFound(resourceId string) error {
 	return st.Err()
 }
 
+func UserAlreadyExists(emailAddress string) error {
+	st := status.New(codes.AlreadyExists, fmt.Sprintf("user with email address %s already exists", emailAddress))
+	return st.Err()
+}
+
 func ResourceInUseError(resourceId string, usedByResourceId string) error {
 	st := status.New(codes.FailedPrecondition, fmt.Sprintf("resource with id %s cannot be deleted, because it is being used by resource with id %s", resourceId, usedByResourceId))
 	st, _ = st.WithDetails(&pberr.ResourceNotFoundDetails{ResourceId: resourceId})

@@ -10,6 +10,7 @@ import (
 	context "context"
 	commonpb "github.com/multycloud/multy/api/proto/commonpb"
 	resourcespb "github.com/multycloud/multy/api/proto/resourcespb"
+	userpb "github.com/multycloud/multy/api/proto/userpb"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -2620,6 +2621,92 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteResource",
 			Handler:    _MultyResourceService_DeleteResource_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "api/proto/multy_service.proto",
+}
+
+// MultyUserServiceClient is the client API for MultyUserService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type MultyUserServiceClient interface {
+	RegisterUser(ctx context.Context, in *userpb.RegisterUserRequest, opts ...grpc.CallOption) (*userpb.User, error)
+}
+
+type multyUserServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewMultyUserServiceClient(cc grpc.ClientConnInterface) MultyUserServiceClient {
+	return &multyUserServiceClient{cc}
+}
+
+func (c *multyUserServiceClient) RegisterUser(ctx context.Context, in *userpb.RegisterUserRequest, opts ...grpc.CallOption) (*userpb.User, error) {
+	out := new(userpb.User)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyUserService/RegisterUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// MultyUserServiceServer is the server API for MultyUserService service.
+// All implementations must embed UnimplementedMultyUserServiceServer
+// for forward compatibility
+type MultyUserServiceServer interface {
+	RegisterUser(context.Context, *userpb.RegisterUserRequest) (*userpb.User, error)
+	mustEmbedUnimplementedMultyUserServiceServer()
+}
+
+// UnimplementedMultyUserServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedMultyUserServiceServer struct {
+}
+
+func (UnimplementedMultyUserServiceServer) RegisterUser(context.Context, *userpb.RegisterUserRequest) (*userpb.User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
+}
+func (UnimplementedMultyUserServiceServer) mustEmbedUnimplementedMultyUserServiceServer() {}
+
+// UnsafeMultyUserServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MultyUserServiceServer will
+// result in compilation errors.
+type UnsafeMultyUserServiceServer interface {
+	mustEmbedUnimplementedMultyUserServiceServer()
+}
+
+func RegisterMultyUserServiceServer(s grpc.ServiceRegistrar, srv MultyUserServiceServer) {
+	s.RegisterService(&MultyUserService_ServiceDesc, srv)
+}
+
+func _MultyUserService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(userpb.RegisterUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyUserServiceServer).RegisterUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyUserService/RegisterUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyUserServiceServer).RegisterUser(ctx, req.(*userpb.RegisterUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// MultyUserService_ServiceDesc is the grpc.ServiceDesc for MultyUserService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var MultyUserService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "dev.multy.MultyUserService",
+	HandlerType: (*MultyUserServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegisterUser",
+			Handler:    _MultyUserService_RegisterUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -33,11 +33,11 @@ type WithResourceId interface {
 }
 
 type Service[Arg proto.Message, OutT proto.Message] struct {
-	ServiceContext *service_context.ServiceContext
+	ServiceContext *service_context.ResourceServiceContext
 	ResourceName   string
 }
 
-func NewService[Arg proto.Message, OutT proto.Message](resourceName string, db *service_context.ServiceContext) Service[Arg, OutT] {
+func NewService[Arg proto.Message, OutT proto.Message](resourceName string, db *service_context.ResourceServiceContext) Service[Arg, OutT] {
 	return Service[Arg, OutT]{ResourceName: resourceName, ServiceContext: db}
 }
 

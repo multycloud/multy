@@ -19,6 +19,10 @@ func (d *localDatabase) GetUserId(ctx context.Context, apiKey string) (string, e
 	return apiKey, nil
 }
 
+func (d *localDatabase) CreateUser(ctx context.Context, emailAddress string) (string, error) {
+	return emailAddress, nil
+}
+
 func (d *localDatabase) LockConfig(ctx context.Context, userId string) (lock *ConfigLock, err error) {
 	return d.lockDatabase.LockConfig(ctx, userId)
 }
