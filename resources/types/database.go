@@ -123,6 +123,8 @@ func getHost(resourceId string, state *output.TfState, cloud commonpb.CloudProvi
 			azureDatabaseEngine = database.AzurePostgreSqlServer{}
 		} else if engine == resourcespb.DatabaseEngine_MARIADB {
 			azureDatabaseEngine = database.AzureMariaDbServer{}
+		} else {
+			return "", fmt.Errorf("unhandled engine %s", engine.String())
 		}
 
 		values, err := state.GetValues(azureDatabaseEngine, resourceId)
