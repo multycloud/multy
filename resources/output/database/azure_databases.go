@@ -8,6 +8,10 @@ import (
 	"github.com/multycloud/multy/resources/output"
 )
 
+type AzureDatabaseEngine interface {
+	GetServerName() string
+}
+
 type AzureDbServer struct {
 	*common.AzResource         `default:"name=azurerm_mysql_server"`
 	AdministratorLogin         string

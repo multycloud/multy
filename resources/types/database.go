@@ -75,7 +75,7 @@ func DatabaseFromState(resource *Database, state *output.TfState) (*resourcespb.
 	var err error
 	host := "dyrun"
 	if !flags.DryRun {
-		host, err = getHost(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider)
+		host, err = getHost(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider, resource.Args.Engine)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +106,7 @@ func DatabaseFromState(resource *Database, state *output.TfState) (*resourcespb.
 	}, nil
 }
 
-func getHost(resourceId string, state *output.TfState, cloud commonpb.CloudProvider) (string, error) {
+func getHost(resourceId string, state *output.TfState, cloud commonpb.CloudProvider, engine resourcespb.DatabaseEngine) (string, error) {
 	switch cloud {
 	case commonpb.CloudProvider_AWS:
 		values, err := state.GetValues(database.AwsDbInstance{}, resourceId)
@@ -115,7 +115,17 @@ func getHost(resourceId string, state *output.TfState, cloud commonpb.CloudProvi
 		}
 		return values["address"].(string), nil
 	case commonpb.CloudProvider_AZURE:
-		values, err := state.GetValues(database.AzureMySqlServer{}, resourceId)
+		var azureDatabaseEngine database.AzureDatabaseEngine
+
+		if engine == resourcespb.DatabaseEngine_MYSQL {
+			azureDatabaseEngine = database.AzureMySqlServer{}
+		} else if engine == resourcespb.DatabaseEngine_POSTGRES {
+			azureDatabaseEngine = database.AzurePostgreSqlServer{}
+		} else if engine == resourcespb.DatabaseEngine_MARIADB {
+			azureDatabaseEngine = database.AzureMariaDbServer{}
+		}
+
+		values, err := state.GetValues(azureDatabaseEngine, resourceId)
 		if err != nil {
 			return "", err
 		}
