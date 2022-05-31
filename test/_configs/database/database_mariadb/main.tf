@@ -19,7 +19,7 @@ resource "aws_db_instance" "example_db_aws" {
 
   allocated_storage    = 10
   engine               = "mariadb"
-  engine_version       = "10.5"
+  engine_version       = "10.2"
   username             = "multyadmin"
   password             = "multy$Admin123!"
   instance_class       = "db.t2.micro"
@@ -120,7 +120,7 @@ resource "azurerm_mariadb_server" "example_db_azure" {
   administrator_login_password     = "multy$Admin123!"
   sku_name                         = "GP_Gen5_2"
   storage_mb                       = 10240
-  version                          = "10.5"
+  version                          = "10.2"
   ssl_enforcement_enabled          = false
 }
 resource "azurerm_mariadb_virtual_network_rule" "example_db_azure0" {
