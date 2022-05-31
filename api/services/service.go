@@ -134,6 +134,12 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 	}
 	log.Printf("[INFO] user: %s. read %s %s", userId, s.ResourceName, in.GetResourceId())
 
+	lock, err := s.ServiceContext.LockConfig(ctx, userId)
+	if err != nil {
+		return *new(OutT), err
+	}
+	defer s.ServiceContext.UnlockConfig(ctx, lock)
+
 	c, err := s.getConfig(userId, nil)
 	if err != nil {
 		return *new(OutT), err
