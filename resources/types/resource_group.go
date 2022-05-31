@@ -89,7 +89,9 @@ func NewRgFromParent(resourceType string, parentResourceGroupId string, r *resou
 	if rg, exists, err := resources.GetOptional[*ResourceGroup]("", r, parentResourceGroupId); exists && err == nil {
 		if matches := regexp.MustCompile("\\w+-(\\w+)-rg").FindStringSubmatch(rg.Name); len(matches) >= 2 {
 			rgId = getDefaultResourceGroupIdString(resourceType, matches[1])
-			r.Add(NewResourceGroup(rgId, location, cloud))
+			if !rgNameExists(r, rgId) {
+				r.Add(NewResourceGroup(rgId, location, cloud))
+			}
 			return rgId
 		}
 	}
