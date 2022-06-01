@@ -38,6 +38,14 @@ message DeleteVirtualMachineRequest {
   string resource_id = 1;
 }
 
+message VirtualMachineAwsOverride {
+  string instance_type = 1;
+}
+
+message VirtualMachineAzureOverride {
+  string size = 1;
+}
+
 message VirtualMachineArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
@@ -50,6 +58,8 @@ message VirtualMachineArgs {
   string public_ip_id = 10;
   bool generate_public_ip = 11;
   ImageReference image_reference = 12;
+  VirtualMachineAwsOverride aws_override = 13;
+  VirtualMachineAzureOverride azure_override = 14;
 }
 
 message VirtualMachineResource {
@@ -64,7 +74,8 @@ message VirtualMachineResource {
   string public_ip_id = 10;
   bool generate_public_ip = 11;
   ImageReference image_reference = 14;
-
+  VirtualMachineAwsOverride aws_override = 15;
+  VirtualMachineAzureOverride azure_override = 16;
 
   // outputs
   string public_ip = 12;
