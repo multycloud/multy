@@ -26,6 +26,14 @@ message DeleteKubernetesNodePoolRequest {
   string resource_id = 1;
 }
 
+message KubernetesNodePoolAwsOverride {
+  repeated string instance_types = 1;
+}
+
+message KubernetesNodePoolAzureOverride {
+  string vm_size = 1;
+}
+
 message KubernetesNodePoolArgs {
   common.ChildResourceCommonArgs common_parameters = 1;
   string name = 2;
@@ -36,6 +44,8 @@ message KubernetesNodePoolArgs {
   int32 max_node_count = 7;
   common.VmSize.Enum vm_size = 8;
   int64 disk_size_gb = 9;
+  KubernetesNodePoolAwsOverride aws_override = 11;
+  KubernetesNodePoolAzureOverride azure_override = 12;
 
   map<string, string> labels = 10;
 
@@ -51,6 +61,8 @@ message KubernetesNodePoolResource {
   int32 max_node_count = 7;
   common.VmSize.Enum vm_size = 8;
   int64 disk_size_gb = 9;
+  KubernetesNodePoolAwsOverride aws_override = 11;
+  KubernetesNodePoolAzureOverride azure_override = 12;
 
   map<string, string> labels = 10;
 }
