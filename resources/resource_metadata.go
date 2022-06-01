@@ -123,8 +123,7 @@ func addMultyResource(r *configpb.Resource, res *Resources, metadata ResourceMet
 		return err
 	}
 
-	res.Add(translatedResource)
-	return nil
+	return res.Add(translatedResource)
 }
 
 func (c *MultyConfig) CreateResource(args proto.Message) (Resource, error) {
@@ -138,8 +137,8 @@ func (c *MultyConfig) CreateResource(args proto.Message) (Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.Resources.Add(r)
-	return r, nil
+	err = c.Resources.Add(r)
+	return r, err
 }
 
 func (c *MultyConfig) UpdateResource(resourceId string, args proto.Message) (Resource, error) {
