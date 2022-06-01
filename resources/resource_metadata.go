@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/anypb"
+	"sort"
 )
 
 type ResourceCreateFunc[T proto.Message, O Resource] func(string, T, *Resources) (O, error)
@@ -187,6 +188,7 @@ func (c *MultyConfig) UpdateDeployedResourceList(deployedResources map[Resource]
 				affectedResources[groupId.GroupId] = append(affectedResources[groupId.GroupId], d)
 			}
 		}
+		sort.Strings(affectedResources[groupId.GroupId])
 	}
 	c.affectedResourcesByGroupId = affectedResources
 
