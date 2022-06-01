@@ -25,9 +25,13 @@ func NewResources() *Resources {
 	}
 }
 
-func (r *Resources) Add(resource Resource) {
+func (r *Resources) Add(resource Resource) error {
+	if _, ok := r.ResourceMap[resource.GetResourceId()]; ok {
+		return fmt.Errorf("attempted to add a resource with an already existing id (%s), this should never happen", resource.GetResourceId())
+	}
 	r.ResourceMap[resource.GetResourceId()] = resource
 	r.resources = append(r.resources, resource)
+	return nil
 }
 
 func (r *Resources) Delete(resourceId string) {
