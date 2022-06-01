@@ -45,4 +45,6 @@ message KubernetesClusterResource {
 
   // outputs
   string endpoint = 6;
+  string ca_certificate = 7;
+  string kube_config_raw = 8;
 }
