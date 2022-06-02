@@ -91,21 +91,21 @@ func (c Client) ReadFile(userId string, fileName string) (string, error) {
 	return body, nil
 }
 
-func (c Client) UpdateQPSMetric(apiKey string, service string, method string) error {
+func (c Client) UpdateQPSMetric(userId string, service string, method string) error {
 	if flags.DryRun || flags.NoTelemetry {
-		return nil
+		postBody, _ := json.Marshal(map[string]string{
+			"action":  method,
+			"service": service,
+			"user_id": userId,
+			"env":     string(flags.Environment),
+		})
+		resp, err := http.Post(logUrl, "application/json", bytes.NewBuffer(postBody))
+		if err != nil {
+			log.Fatalf("Logging error occured %v", err)
+			return err
+		}
+		defer resp.Body.Close()
 	}
-	postBody, _ := json.Marshal(map[string]string{
-		"action":  method,
-		"service": service,
-		"api_key": apiKey,
-	})
-	resp, err := http.Post(logUrl, "application/json", bytes.NewBuffer(postBody))
-	if err != nil {
-		log.Fatalf("Logging error occured %v", err)
-		return err
-	}
-	defer resp.Body.Close()
 
 	metric := &cloudwatch.MetricDatum{
 		Dimensions: []*cloudwatch.Dimension{
@@ -117,12 +117,16 @@ func (c Client) UpdateQPSMetric(apiKey string, service string, method string) er
 				Name:  aws.String("method"),
 				Value: aws.String(method),
 			},
+			{
+				Name:  aws.String("env"),
+				Value: aws.String(string(flags.Environment)),
+			},
 		},
 		MetricName: aws.String("qps"),
 		Timestamp:  aws.Time(time.Now()),
 		Value:      aws.Float64(1),
 	}
-	_, err = c.cloudWatchClient.PutMetricData(&cloudwatch.PutMetricDataInput{
+	_, err := c.cloudWatchClient.PutMetricData(&cloudwatch.PutMetricDataInput{
 		MetricData: []*cloudwatch.MetricDatum{metric},
 		Namespace:  aws.String("multy/server/"),
 	})
@@ -142,6 +146,10 @@ func (c Client) UpdateErrorMetric(service string, method string, errorCode strin
 			{
 				Name:  aws.String("method"),
 				Value: aws.String(method),
+			},
+			{
+				Name:  aws.String("env"),
+				Value: aws.String(string(flags.Environment)),
 			},
 			{
 				Name:  aws.String("error_code"),

@@ -62,7 +62,8 @@ func (c LocalClient) UpdateQPSMetric(_ string, service string, method string) er
 	postBody, _ := json.Marshal(map[string]string{
 		"action":  method,
 		"service": service,
-		"api_key": "local#",
+		"user_id": "local#",
+		"env":     string(flags.Environment),
 	})
 	resp, err := http.Post(logUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {

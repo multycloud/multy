@@ -58,12 +58,12 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 		return *new(OutT), err
 	}
 
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(key, s.ResourceName, "create")
-
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
 		return *new(OutT), err
 	}
+
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "create")
 	log.Printf("[INFO] user: %s. create %s", userId, s.ResourceName)
 
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
@@ -126,12 +126,12 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		return *new(OutT), err
 	}
 
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(key, s.ResourceName, "read")
-
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
 		return *new(OutT), err
 	}
+
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "read")
 	log.Printf("[INFO] user: %s. read %s %s", userId, s.ResourceName, in.GetResourceId())
 
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
@@ -186,11 +186,11 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 	if err != nil {
 		return *new(OutT), err
 	}
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(key, s.ResourceName, "update")
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
 		return *new(OutT), err
 	}
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "update")
 	log.Printf("[INFO] user: %s. update %s %s", userId, s.ResourceName, in.GetResourceId())
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
 	if err != nil {
@@ -230,11 +230,11 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*com
 	if err != nil {
 		return nil, err
 	}
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(key, s.ResourceName, "delete")
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
 		return nil, err
 	}
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "delete")
 	log.Printf("[INFO] user: %s. delete %s %s", userId, s.ResourceName, in.GetResourceId())
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
 	if err != nil {

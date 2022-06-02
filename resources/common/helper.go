@@ -1,12 +1,10 @@
 package common
 
 import (
-	"bytes"
 	"github.com/multycloud/multy/validate"
 	"hash/fnv"
 	"log"
 	"math/rand"
-	"net"
 	"regexp"
 )
 
@@ -74,18 +72,4 @@ func generateHash(s string) string {
 		result += string(letters[idx%len(letters)])
 	}
 	return result
-}
-
-func GetMacAddr() (addr string) {
-	interfaces, err := net.Interfaces()
-	if err == nil {
-		for _, i := range interfaces {
-			if i.Flags&net.FlagUp != 0 && bytes.Compare(i.HardwareAddr, nil) != 0 {
-				// Don't use random as we have a real address
-				addr = i.HardwareAddr.String()
-				break
-			}
-		}
-	}
-	return
 }
