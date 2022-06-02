@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"testing"
 )
 
@@ -170,10 +171,14 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("cannot get home dir: %s", err)
 	}
 	kubecfg := path.Join(home, ".kube", fmt.Sprintf("config-%s", cloud.String()))
-	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
-	err = os.WriteFile(kubecfg, []byte(k8s.KubeConfigRaw), 0x777)
+	err = os.MkdirAll(filepath.Dir(kubecfg), os.ModeDir|(os.ModePerm&0775))
 	if err != nil {
-		t.Fatal(fmt.Errorf("config error: %s", err.Error()))
+		t.Fatal(fmt.Errorf("can't create kube dir: %s", err.Error()))
+	}
+	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
+	err = os.WriteFile(kubecfg, []byte(k8s.KubeConfigRaw), 0777)
+	if err != nil {
+		t.Fatal(fmt.Errorf("can't create kube config: %s", err.Error()))
 	}
 	// kubectl get nodes -o json
 	out, err := exec.Command("/usr/local/bin/kubectl", "--kubeconfig", kubecfg, "get", "nodes", "-o", "json").CombinedOutput()
