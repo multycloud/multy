@@ -2,19 +2,23 @@ package aws_client
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/multycloud/multy/flags"
 	"log"
+	"net/http"
 	"os"
 	"time"
 )
 
 const (
 	region = "eu-west-2"
+	logUrl = "https://c42wtfa4z6.execute-api.eu-west-1.amazonaws.com/logs"
 )
 
 type Client struct {
@@ -87,7 +91,22 @@ func (c Client) ReadFile(userId string, fileName string) (string, error) {
 	return body, nil
 }
 
-func (c Client) UpdateQPSMetric(service string, method string) error {
+func (c Client) UpdateQPSMetric(apiKey string, service string, method string) error {
+	if flags.DryRun {
+		return nil
+	}
+	postBody, _ := json.Marshal(map[string]string{
+		"action":  method,
+		"service": service,
+		"api_key": apiKey,
+	})
+	resp, err := http.Post(logUrl, "application/json", bytes.NewBuffer(postBody))
+	if err != nil {
+		log.Fatalf("Logging error occured %v", err)
+		return err
+	}
+	defer resp.Body.Close()
+
 	metric := &cloudwatch.MetricDatum{
 		Dimensions: []*cloudwatch.Dimension{
 			{
@@ -103,7 +122,7 @@ func (c Client) UpdateQPSMetric(service string, method string) error {
 		Timestamp:  aws.Time(time.Now()),
 		Value:      aws.Float64(1),
 	}
-	_, err := c.cloudWatchClient.PutMetricData(&cloudwatch.PutMetricDataInput{
+	_, err = c.cloudWatchClient.PutMetricData(&cloudwatch.PutMetricDataInput{
 		MetricData: []*cloudwatch.MetricDatum{metric},
 		Namespace:  aws.String("multy/server/"),
 	})

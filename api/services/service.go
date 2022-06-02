@@ -53,12 +53,12 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "create")
-
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return *new(OutT), err
 	}
+
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(key, s.ResourceName, "create")
 
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
@@ -121,12 +121,12 @@ func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (out Ou
 }
 
 func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, error) {
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "read")
-
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return *new(OutT), err
 	}
+
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(key, s.ResourceName, "read")
 
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
@@ -182,12 +182,11 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "update")
-
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return *new(OutT), err
 	}
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(key, s.ResourceName, "update")
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
 		return *new(OutT), err
@@ -227,12 +226,11 @@ func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (_ *c
 }
 
 func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "delete")
-
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return nil, err
 	}
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(key, s.ResourceName, "delete")
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
 		return nil, err
