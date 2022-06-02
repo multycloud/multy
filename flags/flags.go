@@ -9,4 +9,5 @@ const (
 )
 
 var DryRun = false
+var NoTelemetry = false
 var Environment = Prod

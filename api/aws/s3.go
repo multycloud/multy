@@ -92,7 +92,7 @@ func (c Client) ReadFile(userId string, fileName string) (string, error) {
 }
 
 func (c Client) UpdateQPSMetric(apiKey string, service string, method string) error {
-	if flags.DryRun {
+	if flags.DryRun || flags.NoTelemetry {
 		return nil
 	}
 	postBody, _ := json.Marshal(map[string]string{

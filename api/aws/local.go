@@ -56,13 +56,13 @@ func (c LocalClient) getFilePath(userId string, fileName string) (string, error)
 }
 
 func (c LocalClient) UpdateQPSMetric(_ string, service string, method string) error {
-	if flags.DryRun {
+	if flags.DryRun || flags.NoTelemetry {
 		return nil
 	}
 	postBody, _ := json.Marshal(map[string]string{
 		"action":  method,
 		"service": service,
-		"api_key": "_local_",
+		"api_key": "local#",
 	})
 	resp, err := http.Post(logUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
