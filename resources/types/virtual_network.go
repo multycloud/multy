@@ -38,7 +38,10 @@ type VirtualNetwork struct {
 
 func CreateVirtualNetwork(resourceId string, args *resourcespb.VirtualNetworkArgs, others *resources.Resources) (*VirtualNetwork, error) {
 	if args.GetCommonParameters().GetResourceGroupId() == "" {
-		rgId := NewRg("vn", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		rgId, err := NewRg("vn", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 

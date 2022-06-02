@@ -49,7 +49,10 @@ const SasExpirationDuration = time.Hour * 24 * 365
 
 func CreateLambda(resourceId string, args *resourcespb.LambdaArgs, others *resources.Resources) (*Lambda, error) {
 	if args.CommonParameters.ResourceGroupId == "" {
-		rgId := NewRg("func", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		rgId, err := NewRg("func", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 

@@ -109,8 +109,11 @@ func CreateKubernetesCluster(resourceId string, args *resourcespb.KubernetesClus
 		if err != nil {
 			return nil, err
 		}
-		rgId := NewRgFromParent("ks", vn.Args.CommonParameters.ResourceGroupId, others,
+		rgId, err := NewRgFromParent("ks", vn.Args.CommonParameters.ResourceGroupId, others,
 			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 	if args.ServiceCidr == "" {

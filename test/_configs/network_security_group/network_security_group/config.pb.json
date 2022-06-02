@@ -186,7 +186,8 @@
           "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "name": "test-vm2",
           "network_security_group_ids": [
@@ -207,7 +208,8 @@
           "@type": "type.googleapis.com/dev.multy.resources.VirtualMachineArgs",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "EU_WEST_1"
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
           },
           "name": "test-vm",
           "generate_public_ip": true,
