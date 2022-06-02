@@ -1,7 +1,11 @@
 package aws_client
 
 import (
+	"bytes"
+	"encoding/json"
+	"github.com/multycloud/multy/flags"
 	"log"
+	"net/http"
 	"os"
 	"path"
 )
@@ -51,7 +55,22 @@ func (c LocalClient) getFilePath(userId string, fileName string) (string, error)
 	return path.Join(tmpDir, fileName), nil
 }
 
-func (c LocalClient) UpdateQPSMetric(_ string, _ string) error {
+func (c LocalClient) UpdateQPSMetric(_ string, service string, method string) error {
+	if flags.DryRun || flags.NoTelemetry {
+		return nil
+	}
+	postBody, _ := json.Marshal(map[string]string{
+		"action":  method,
+		"service": service,
+		"user_id": "local#",
+		"env":     string(flags.Environment),
+	})
+	resp, err := http.Post(logUrl, "application/json", bytes.NewBuffer(postBody))
+	if err != nil {
+		log.Fatalf("Logging error occured %v", err)
+		return err
+	}
+	defer resp.Body.Close()
 	return nil
 }
 func (c LocalClient) UpdateErrorMetric(_ string, _ string, _ string) error {

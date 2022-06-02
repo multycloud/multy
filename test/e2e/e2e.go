@@ -89,6 +89,7 @@ func init() {
 		return
 	}
 	flags.Environment = flags.Local
+	flags.NoTelemetry = true
 	flags.DryRun = false
 	awsClient, err := aws_client.NewClient()
 	if err != nil {

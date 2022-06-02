@@ -53,8 +53,6 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "create")
-
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return *new(OutT), err
@@ -64,6 +62,8 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	if err != nil {
 		return *new(OutT), err
 	}
+
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "create")
 	log.Printf("[INFO] user: %s. create %s", userId, s.ResourceName)
 
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
@@ -121,8 +121,6 @@ func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (out Ou
 }
 
 func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, error) {
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "read")
-
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return *new(OutT), err
@@ -132,6 +130,8 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 	if err != nil {
 		return *new(OutT), err
 	}
+
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "read")
 	log.Printf("[INFO] user: %s. read %s %s", userId, s.ResourceName, in.GetResourceId())
 
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
@@ -182,8 +182,6 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "update")
-
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return *new(OutT), err
@@ -192,6 +190,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 	if err != nil {
 		return *new(OutT), err
 	}
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "update")
 	log.Printf("[INFO] user: %s. update %s %s", userId, s.ResourceName, in.GetResourceId())
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
 	if err != nil {
@@ -227,8 +226,6 @@ func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (_ *c
 }
 
 func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
-	go s.ServiceContext.AwsClient.UpdateQPSMetric(s.ResourceName, "delete")
-
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return nil, err
@@ -237,6 +234,7 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*com
 	if err != nil {
 		return nil, err
 	}
+	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "delete")
 	log.Printf("[INFO] user: %s. delete %s %s", userId, s.ResourceName, in.GetResourceId())
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
 	if err != nil {

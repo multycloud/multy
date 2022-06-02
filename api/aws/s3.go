@@ -2,19 +2,23 @@ package aws_client
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/multycloud/multy/flags"
 	"log"
+	"net/http"
 	"os"
 	"time"
 )
 
 const (
 	region = "eu-west-2"
+	logUrl = "https://c42wtfa4z6.execute-api.eu-west-1.amazonaws.com/logs"
 )
 
 type Client struct {
@@ -87,7 +91,22 @@ func (c Client) ReadFile(userId string, fileName string) (string, error) {
 	return body, nil
 }
 
-func (c Client) UpdateQPSMetric(service string, method string) error {
+func (c Client) UpdateQPSMetric(userId string, service string, method string) error {
+	if flags.DryRun || flags.NoTelemetry {
+		postBody, _ := json.Marshal(map[string]string{
+			"action":  method,
+			"service": service,
+			"user_id": userId,
+			"env":     string(flags.Environment),
+		})
+		resp, err := http.Post(logUrl, "application/json", bytes.NewBuffer(postBody))
+		if err != nil {
+			log.Fatalf("Logging error occured %v", err)
+			return err
+		}
+		defer resp.Body.Close()
+	}
+
 	metric := &cloudwatch.MetricDatum{
 		Dimensions: []*cloudwatch.Dimension{
 			{
@@ -97,6 +116,10 @@ func (c Client) UpdateQPSMetric(service string, method string) error {
 			{
 				Name:  aws.String("method"),
 				Value: aws.String(method),
+			},
+			{
+				Name:  aws.String("env"),
+				Value: aws.String(string(flags.Environment)),
 			},
 		},
 		MetricName: aws.String("qps"),
@@ -123,6 +146,10 @@ func (c Client) UpdateErrorMetric(service string, method string, errorCode strin
 			{
 				Name:  aws.String("method"),
 				Value: aws.String(method),
+			},
+			{
+				Name:  aws.String("env"),
+				Value: aws.String(string(flags.Environment)),
 			},
 			{
 				Name:  aws.String("error_code"),
