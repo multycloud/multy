@@ -47,8 +47,11 @@ func CreateNetworkSecurityGroup(resourceId string, args *resourcespb.NetworkSecu
 		if err != nil {
 			return nil, err
 		}
-		rgId := NewRgFromParent("nsg", vn.Args.CommonParameters.ResourceGroupId, others,
+		rgId, err := NewRgFromParent("nsg", vn.Args.CommonParameters.ResourceGroupId, others,
 			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 

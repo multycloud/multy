@@ -38,8 +38,11 @@ func CreateNetworkInterface(resourceId string, args *resourcespb.NetworkInterfac
 		if err != nil {
 			return nil, err
 		}
-		rgId := NewRgFromParent("nic", subnet.VirtualNetwork.Args.CommonParameters.ResourceGroupId, others,
+		rgId, err := NewRgFromParent("nic", subnet.VirtualNetwork.Args.CommonParameters.ResourceGroupId, others,
 			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 

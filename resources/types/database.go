@@ -58,8 +58,11 @@ func CreateDatabase(resourceId string, args *resourcespb.DatabaseArgs, others *r
 		if err != nil {
 			return nil, err
 		}
-		rgId := NewRgFromParent("db", subnet.VirtualNetwork.Args.CommonParameters.ResourceGroupId, others,
+		rgId, err := NewRgFromParent("db", subnet.VirtualNetwork.Args.CommonParameters.ResourceGroupId, others,
 			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 

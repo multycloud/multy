@@ -84,27 +84,26 @@ type AzureResourceGroup struct {
 
 const AzureResourceName = "azurerm_resource_group"
 
-func NewRgFromParent(resourceType string, parentResourceGroupId string, r *resources.Resources, location commonpb.Location, cloud commonpb.CloudProvider) string {
+func NewRgFromParent(resourceType string, parentResourceGroupId string, r *resources.Resources, location commonpb.Location, cloud commonpb.CloudProvider) (string, error) {
 	var rgId string
 	if rg, exists, err := resources.GetOptional[*ResourceGroup]("", r, parentResourceGroupId); exists && err == nil {
 		if matches := regexp.MustCompile("\\w+-(\\w+)-rg").FindStringSubmatch(rg.Name); len(matches) >= 2 {
 			rgId = getDefaultResourceGroupIdString(resourceType, matches[1])
 			if !rgNameExists(r, rgId) {
-				r.Add(NewResourceGroup(rgId, location, cloud))
+				return rgId, r.Add(NewResourceGroup(rgId, location, cloud))
 			}
-			return rgId
+			return rgId, nil
 		}
 	}
 	return NewRg(resourceType, r, location, cloud)
 }
 
-func NewRg(resourceType string, r *resources.Resources, location commonpb.Location, cloud commonpb.CloudProvider) string {
+func NewRg(resourceType string, r *resources.Resources, location commonpb.Location, cloud commonpb.CloudProvider) (string, error) {
 	var rgName string
 	for ok := false; !ok; ok = !rgNameExists(r, rgName) {
 		rgName = getDefaultResourceGroupIdString(resourceType, common.RandomString(4))
 	}
-	r.Add(NewResourceGroup(rgName, location, cloud))
-	return rgName
+	return rgName, r.Add(NewResourceGroup(rgName, location, cloud))
 }
 
 func rgNameExists(r *resources.Resources, rgName string) bool {

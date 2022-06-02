@@ -7,7 +7,8 @@
           "cidr_block": "10.0.0.0/16",
           "common_parameters": {
             "cloud_provider": "AWS",
-            "location": "US_EAST_1"
+            "location": "US_EAST_1",
+            "resource_group_id": "rg1"
           },
           "name": "db-vn"
         }

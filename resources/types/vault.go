@@ -30,7 +30,10 @@ func (r *Vault) GetMetadata() resources.ResourceMetadataInterface {
 
 func CreateVault(resourceId string, args *resourcespb.VaultArgs, others *resources.Resources) (*Vault, error) {
 	if args.CommonParameters.ResourceGroupId == "" {
-		rgId := NewRg("kv", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		rgId, err := NewRg("kv", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 
