@@ -1,5 +1,6 @@
 SHELL:=/bin/bash -O globstar
 PORT=8000
+ENV=local
 
 build:
 	go mod tidy
@@ -7,7 +8,7 @@ build:
 	go build -v -tags=e2e
 
 run: build
-	sudo -E ./multy serve --port=$(PORT)
+	sudo -E ./multy serve --port=$(PORT) --env=${ENV}
 
 clean:
 	find api/proto -name '*.pb.go' -delete
