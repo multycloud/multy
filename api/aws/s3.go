@@ -2,7 +2,6 @@ package aws_client
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -10,8 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/multycloud/multy/flags"
+	"golang.org/x/sync/errgroup"
 	"log"
-	"net/http"
 	"os"
 	"time"
 )
@@ -93,50 +92,55 @@ func (c Client) ReadFile(userId string, fileName string) (string, error) {
 
 func (c Client) UpdateQPSMetric(userId string, service string, method string) error {
 	if flags.DryRun || flags.NoTelemetry {
-		postBody, _ := json.Marshal(map[string]string{
-			"action":  method,
-			"service": service,
-			"user_id": userId,
-			"env":     string(flags.Environment),
-		})
-		resp, err := http.Post(logUrl, "application/json", bytes.NewBuffer(postBody))
+		return nil
+	}
+	var wg errgroup.Group
+	wg.Go(func() error {
+		err := logAction(userId, service, method)
 		if err != nil {
-			log.Fatalf("Logging error occured %v", err)
+			log.Printf("[WARNING] Logging error ocurred: %s\n", err)
+		}
+		return err
+	})
+
+	wg.Go(func() error {
+		metric := &cloudwatch.MetricDatum{
+			Dimensions: []*cloudwatch.Dimension{
+				{
+					Name:  aws.String("service"),
+					Value: aws.String(service),
+				},
+				{
+					Name:  aws.String("method"),
+					Value: aws.String(method),
+				},
+				{
+					Name:  aws.String("env"),
+					Value: aws.String(string(flags.Environment)),
+				},
+			},
+			MetricName: aws.String("qps"),
+			Timestamp:  aws.Time(time.Now()),
+			Value:      aws.Float64(1),
+		}
+		_, err := c.cloudWatchClient.PutMetricData(&cloudwatch.PutMetricDataInput{
+			MetricData: []*cloudwatch.MetricDatum{metric},
+			Namespace:  aws.String("multy/server/"),
+		})
+		if err != nil {
+			log.Printf("[WARNING] Cloudwatch error ocurred: %s\n", err.Error())
 			return err
 		}
-		defer resp.Body.Close()
-	}
-
-	metric := &cloudwatch.MetricDatum{
-		Dimensions: []*cloudwatch.Dimension{
-			{
-				Name:  aws.String("service"),
-				Value: aws.String(service),
-			},
-			{
-				Name:  aws.String("method"),
-				Value: aws.String(method),
-			},
-			{
-				Name:  aws.String("env"),
-				Value: aws.String(string(flags.Environment)),
-			},
-		},
-		MetricName: aws.String("qps"),
-		Timestamp:  aws.Time(time.Now()),
-		Value:      aws.Float64(1),
-	}
-	_, err := c.cloudWatchClient.PutMetricData(&cloudwatch.PutMetricDataInput{
-		MetricData: []*cloudwatch.MetricDatum{metric},
-		Namespace:  aws.String("multy/server/"),
+		return nil
 	})
-	if err != nil {
-		log.Printf("[WARNING] %s\n", err.Error())
-	}
-	return err
+
+	return wg.Wait()
 }
 
 func (c Client) UpdateErrorMetric(service string, method string, errorCode string) error {
+	if flags.DryRun || flags.NoTelemetry {
+		return nil
+	}
 	metric := &cloudwatch.MetricDatum{
 		Dimensions: []*cloudwatch.Dimension{
 			{
@@ -165,7 +169,7 @@ func (c Client) UpdateErrorMetric(service string, method string, errorCode strin
 		Namespace:  aws.String("multy/server/"),
 	})
 	if err != nil {
-		log.Printf("[WARNING] %s\n", err.Error())
+		log.Printf("[WARNING] Cloudwatch error ocurred: %s\n", err.Error())
 	}
 	return err
 }
