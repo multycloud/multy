@@ -42,7 +42,10 @@ func NewObjectStorage(resourceId string, db *resourcespb.ObjectStorageArgs, _ *r
 
 func CreateObjectStorage(resourceId string, args *resourcespb.ObjectStorageArgs, others *resources.Resources) (*ObjectStorage, error) {
 	if args.CommonParameters.ResourceGroupId == "" {
-		rgId := NewRg("st", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		rgId, err := NewRg("st", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 

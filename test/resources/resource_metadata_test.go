@@ -309,6 +309,69 @@ func TestResourceMetadataUpdate(t *testing.T) {
 	assert.Equal(t, "changed-name", virtualNetwork.Args.Name)
 }
 
+func TestResourceMetadataCreate_shouldNotCreateDuplicateRg(t *testing.T) {
+	vnArgs := &resourcespb.VirtualNetworkArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			ResourceGroupId: "vn-test-rg",
+			Location:        commonpb.Location_EU_WEST_1,
+			CloudProvider:   commonpb.CloudProvider_AZURE,
+		},
+		Name: "test-vn",
+	}
+	subnetArgs := &resourcespb.SubnetArgs{
+		Name:             "vn-test-rg",
+		CidrBlock:        "10.0.0.0/16",
+		VirtualNetworkId: "resource1",
+	}
+	rgArgs := &resourcespb.ResourceGroupArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      commonpb.Location_EU_WEST_1,
+			CloudProvider: commonpb.CloudProvider_AZURE,
+		},
+		Name: "vn-test-rg",
+	}
+	c := &configpb.Config{
+		UserId: "test-user",
+		Resources: []*configpb.Resource{
+			newResource(t, "resource1", vnArgs),
+			newResource(t, "resource2", subnetArgs),
+			newResource(t, "vn-test-rg", rgArgs),
+		},
+	}
+
+	config, err := resources.LoadConfig(c, types.Metadatas)
+	if err != nil {
+		t.Fatalf("unable to load config: %s", err)
+	}
+
+	db1, err := config.CreateResource(&resourcespb.DatabaseArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      commonpb.Location_EU_WEST_1,
+			CloudProvider: commonpb.CloudProvider_AZURE,
+		},
+		Name:      "db1",
+		SubnetIds: []string{"resource2"},
+	})
+	if err != nil {
+		t.Fatalf("unable to create db1: %s", err)
+	}
+
+	db2, err := config.CreateResource(&resourcespb.DatabaseArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      commonpb.Location_EU_WEST_1,
+			CloudProvider: commonpb.CloudProvider_AZURE,
+		},
+		Name:      "db2",
+		SubnetIds: []string{"resource2"},
+	})
+	if err != nil {
+		t.Fatalf("unable to create db2: %s", err)
+	}
+
+	assert.Equal(t, len(config.Resources.ResourceMap), len(config.Resources.GetAll()))
+	assert.Equal(t, db1.(*types.Database).GetResourceGroupId(), db2.(*types.Database).GetResourceGroupId())
+}
+
 func newResource(t *testing.T, resourceId string, msg proto.Message) *configpb.Resource {
 	a, err := anypb.New(msg)
 	if err != nil {

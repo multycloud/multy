@@ -17,8 +17,52 @@ import (
 	"github.com/multycloud/multy/resources/output/subnet"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
+	"gopkg.in/yaml.v3"
 	"net"
 )
+
+type KubeConfig struct {
+	ApiVersion     string                   `yaml:"apiVersion"`
+	Clusters       []NamedKubeConfigCluster `yaml:"clusters"`
+	Contexts       []NamedKubeConfigContext `yaml:"contexts"`
+	CurrentContext string                   `yaml:"current-context"`
+	Users          []KubeConfigUser         `yaml:"users"`
+	Kind           string                   `yaml:"kind"`
+}
+
+type NamedKubeConfigCluster struct {
+	Name    string            `yaml:"name"`
+	Cluster KubeConfigCluster `yaml:"cluster"`
+}
+
+type KubeConfigCluster struct {
+	CertificateAuthorityData string `yaml:"certificate-authority-data"`
+	Server                   string `yaml:"server"`
+}
+
+type NamedKubeConfigContext struct {
+	Name    string            `yaml:"name"`
+	Context KubeConfigContext `yaml:"context"`
+}
+
+type KubeConfigContext struct {
+	User    string `yaml:"user"`
+	Cluster string `yaml:"cluster"`
+}
+
+type KubeConfigUser struct {
+	Name string `yaml:"name"`
+	User struct {
+		Exec KubeConfigExec `yaml:"exec"`
+	} `yaml:"user"`
+}
+
+type KubeConfigExec struct {
+	ApiVersion      string   `yaml:"apiVersion"`
+	Command         string   `yaml:"command"`
+	Args            []string `yaml:"args"`
+	InteractiveMode string   `yaml:"interactiveMode"`
+}
 
 var kubernetesClusterMetadata = resources.ResourceMetadata[*resourcespb.KubernetesClusterArgs, *KubernetesCluster, *resourcespb.KubernetesClusterResource]{
 	CreateFunc:        CreateKubernetesCluster,
@@ -65,8 +109,11 @@ func CreateKubernetesCluster(resourceId string, args *resourcespb.KubernetesClus
 		if err != nil {
 			return nil, err
 		}
-		rgId := NewRgFromParent("ks", vn.Args.CommonParameters.ResourceGroupId, others,
+		rgId, err := NewRgFromParent("ks", vn.Args.CommonParameters.ResourceGroupId, others,
 			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 	if args.ServiceCidr == "" {
@@ -81,22 +128,58 @@ func UpdateKubernetesCluster(resource *KubernetesCluster, vn *resourcespb.Kubern
 	return nil
 }
 
+func createKubeConfig(clusterName string, certData string, endpoint string, awsRegion string) (string, error) {
+	username := fmt.Sprintf("clusterUser_%s", clusterName)
+	kubeConfig := &KubeConfig{
+		ApiVersion: "v1",
+		Kind:       "Config",
+		Clusters: []NamedKubeConfigCluster{
+			{
+				Name: clusterName,
+				Cluster: KubeConfigCluster{
+					CertificateAuthorityData: certData,
+					Server:                   endpoint,
+				},
+			},
+		},
+		Contexts: []NamedKubeConfigContext{
+			{
+				Name: clusterName,
+				Context: KubeConfigContext{
+					User:    username,
+					Cluster: clusterName,
+				},
+			},
+		},
+		Users: []KubeConfigUser{
+			{
+				Name: username,
+				User: struct {
+					Exec KubeConfigExec `yaml:"exec"`
+				}{
+					Exec: KubeConfigExec{
+						ApiVersion:      "client.authentication.k8s.io/v1alpha1",
+						Command:         "aws",
+						Args:            []string{"--region", awsRegion, "eks", "get-token", "--cluster-name", clusterName},
+						InteractiveMode: "IfAvailable",
+					},
+				},
+			},
+		},
+		CurrentContext: clusterName,
+	}
+
+	s, err := yaml.Marshal(kubeConfig)
+	if err != nil {
+		return "", fmt.Errorf("unable to marshal kube config, %s", err)
+	}
+
+	return string(s), nil
+}
+
 func KubernetesClusterFromState(resource *KubernetesCluster, state *output.TfState) (*resourcespb.KubernetesClusterResource, error) {
 	var err error
-	endpoint := "dryrun"
-	if !flags.DryRun {
-		endpoint, err = getEndpoint(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	defaultNodePool, err := KubernetesNodePoolFromState(resource.DefaultNodePool, state)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resourcespb.KubernetesClusterResource{
+	result := &resourcespb.KubernetesClusterResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      resource.ResourceId,
 			ResourceGroupId: resource.Args.CommonParameters.ResourceGroupId,
@@ -105,30 +188,43 @@ func KubernetesClusterFromState(resource *KubernetesCluster, state *output.TfSta
 			NeedsUpdate:     false,
 		},
 		Name:             resource.Args.Name,
-		Endpoint:         endpoint,
-		DefaultNodePool:  defaultNodePool,
 		ServiceCidr:      resource.Args.ServiceCidr,
 		VirtualNetworkId: resource.Args.VirtualNetworkId,
-	}, nil
-}
-
-func getEndpoint(resourceId string, state *output.TfState, cloud commonpb.CloudProvider) (string, error) {
-	switch cloud {
-	case commonpb.CloudProvider_AWS:
-		values, err := state.GetValues(kubernetes_service.AwsEksCluster{}, resourceId)
-		if err != nil {
-			return "", err
+	}
+	result.Endpoint = "dryrun"
+	if !flags.DryRun {
+		switch resource.GetCloud() {
+		case commonpb.CloudProvider_AWS:
+			values, err := state.GetValues(kubernetes_service.AwsEksCluster{}, resource.ResourceId)
+			if err != nil {
+				return nil, err
+			}
+			result.Endpoint = values["endpoint"].(string)
+			result.CaCertificate = values["certificate_authority"].([]interface{})[0].(map[string]interface{})["data"].(string)
+			kubeCgfRaw, err := createKubeConfig(resource.Args.Name, result.CaCertificate, result.Endpoint, resource.GetCloudSpecificLocation())
+			if err != nil {
+				return nil, err
+			}
+			result.KubeConfigRaw = kubeCgfRaw
+		case commonpb.CloudProvider_AZURE:
+			values, err := state.GetValues(kubernetes_service.AzureEksCluster{}, resource.ResourceId)
+			if err != nil {
+				return nil, err
+			}
+			result.Endpoint = values["kube_config"].([]interface{})[0].(map[string]interface{})["host"].(string)
+			result.CaCertificate = values["kube_config"].([]interface{})[0].(map[string]interface{})["cluster_ca_certificate"].(string)
+			result.KubeConfigRaw = values["kube_config_raw"].(string)
+		default:
+			return nil, fmt.Errorf("unknown cloud %s", resource.GetCloud())
 		}
-		return values["endpoint"].(string), nil
-	case commonpb.CloudProvider_AZURE:
-		values, err := state.GetValues(kubernetes_service.AzureEksCluster{}, resourceId)
-		if err != nil {
-			return "", err
-		}
-		return values["kube_config"].([]interface{})[0].(map[string]interface{})["host"].(string), nil
 	}
 
-	return "", fmt.Errorf("unknown cloud: %s", cloud.String())
+	result.DefaultNodePool, err = KubernetesNodePoolFromState(resource.DefaultNodePool, state)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, err
 }
 
 func (r *KubernetesCluster) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {

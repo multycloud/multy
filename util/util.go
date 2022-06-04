@@ -2,6 +2,7 @@ package util
 
 import (
 	"golang.org/x/exp/constraints"
+	"golang.org/x/exp/slices"
 	"sort"
 )
 
@@ -49,11 +50,12 @@ func Contains[T comparable](list []T, a T) bool {
 	return false
 }
 
-func Keys[K comparable, V any](m map[K]V) []K {
+func SortedKeys[K constraints.Ordered, V any](m map[K]V) []K {
 	var keys []K
 	for k, _ := range m {
 		keys = append(keys, k)
 	}
+	slices.Sort(keys)
 	return keys
 }
 

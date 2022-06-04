@@ -40,7 +40,10 @@ func (r *PublicIp) GetMetadata() resources.ResourceMetadataInterface {
 func CreatePublicIp(resourceId string, args *resourcespb.PublicIpArgs, others *resources.Resources) (*PublicIp, error) {
 	if args.CommonParameters.ResourceGroupId == "" {
 		// todo: maybe put in the same RG as VM?
-		rgId := NewRg("pip", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		rgId, err := NewRg("pip", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 

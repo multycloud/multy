@@ -8,7 +8,7 @@ import (
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/types"
-	"golang.org/x/exp/maps"
+	"github.com/multycloud/multy/util"
 )
 
 func EncodeTfFile(credentials *credspb.CloudCredentials, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource) (EncodedResources, error) {
@@ -58,7 +58,7 @@ func EncodeTfFile(credentials *credspb.CloudCredentials, c *resources.MultyConfi
 		}
 	}
 
-	result.affectedResources = maps.Keys(affectedResources)
+	result.affectedResources = util.SortedKeys(affectedResources)
 	return result, nil
 }
 

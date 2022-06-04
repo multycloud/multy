@@ -60,8 +60,11 @@ func CreateVirtualMachine(resourceId string, args *resourcespb.VirtualMachineArg
 		if err != nil {
 			return nil, err
 		}
-		rgId := NewRgFromParent("vm", subnet.VirtualNetwork.Args.CommonParameters.ResourceGroupId, others,
+		rgId, err := NewRgFromParent("vm", subnet.VirtualNetwork.Args.CommonParameters.ResourceGroupId, others,
 			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 
@@ -114,6 +117,8 @@ func VirtualMachineFromState(resource *VirtualMachine, state *output.TfState) (*
 		PublicIpId:              resource.Args.PublicIpId,
 		GeneratePublicIp:        resource.Args.GeneratePublicIp,
 		ImageReference:          resource.Args.ImageReference,
+		AwsOverride:             resource.Args.AwsOverride,
+		AzureOverride:           resource.Args.AzureOverride,
 
 		PublicIp:   ip,
 		IdentityId: identityId,
@@ -238,9 +243,16 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 			return nil, err
 		}
 
+		var vmSize string
+		if r.Args.AwsOverride.GetInstanceType() != "" {
+			vmSize = r.Args.AwsOverride.GetInstanceType()
+		} else {
+			vmSize = common.VMSIZE[r.Args.VmSize][r.GetCloud()]
+		}
+
 		ec2 := virtual_machine.AwsEC2{
 			AwsResource:              common.NewAwsResource(r.ResourceId, r.Args.Name),
-			InstanceType:             common.VMSIZE[r.Args.VmSize][r.GetCloud()],
+			InstanceType:             vmSize,
 			AssociatePublicIpAddress: r.Args.GeneratePublicIp,
 			UserDataBase64:           r.Args.UserDataBase64,
 			SubnetId:                 subnetId,
@@ -437,6 +449,13 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 			return nil, err
 		}
 
+		var vmSize string
+		if r.Args.AzureOverride.GetSize() != "" {
+			vmSize = r.Args.AzureOverride.GetSize()
+		} else {
+			vmSize = common.VMSIZE[r.Args.VmSize][r.GetCloud()]
+		}
+
 		azResources = append(
 			azResources, virtual_machine.AzureVirtualMachine{
 				AzResource: &common.AzResource{
@@ -445,7 +464,7 @@ func (r *VirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock
 					Name:              r.Args.Name,
 				},
 				Location:            r.GetCloudSpecificLocation(),
-				Size:                common.VMSIZE[r.Args.VmSize][r.GetCloud()],
+				Size:                vmSize,
 				NetworkInterfaceIds: nicIds,
 				CustomData:          r.Args.UserDataBase64,
 				OsDisk: virtual_machine.AzureOsDisk{

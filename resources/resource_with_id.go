@@ -62,6 +62,14 @@ func (r *ResourceWithId[T]) Validate() (errs []validate.ValidationError) {
 		})
 	}
 
+	if r.Args.GetCommonParameters().ResourceGroupId == "" {
+		errs = append(errs, validate.ValidationError{
+			ErrorMessage: "resource group id cannot be empty",
+			ResourceId:   r.ResourceId,
+			FieldName:    "resource_group_id",
+		})
+	}
+
 	return errs
 }
 

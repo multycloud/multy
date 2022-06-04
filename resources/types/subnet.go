@@ -154,7 +154,7 @@ func getServiceEndpointSubnetReferences(ctx resources.MultyContext, r *Subnet) [
 	if len(resources.GetAllResourcesWithListRef(ctx, func(db *Database) []*Subnet { return db.Subnets }, r)) > 0 {
 		serviceEndpoints[DATABASE] = true
 	}
-	return util.Keys(serviceEndpoints)
+	return util.SortedKeys(serviceEndpoints)
 }
 
 func checkSubnetRouteTableAssociated(ctx resources.MultyContext, r *Subnet) bool {

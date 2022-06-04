@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
-	"github.com/multycloud/multy/resources/common"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/maps"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"testing"
 )
 
@@ -171,29 +171,14 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("cannot get home dir: %s", err)
 	}
 	kubecfg := path.Join(home, ".kube", fmt.Sprintf("config-%s", cloud.String()))
+	err = os.MkdirAll(filepath.Dir(kubecfg), os.ModeDir|(os.ModePerm&0775))
+	if err != nil {
+		t.Fatal(fmt.Errorf("can't create kube dir: %s", err.Error()))
+	}
 	// update kubectl configuration so that we can use kubectl commands - probably can't run this in parallel
-	if cloud == commonpb.CloudProvider_AWS {
-		// aws eks --region eu-west-1 update-kubeconfig --name kubernetes_test
-		location, err := common.GetCloudLocation(commonpb.Location_US_WEST_1, commonpb.CloudProvider_AWS)
-		if err != nil {
-			t.Fatal(fmt.Errorf("location error: %s", err.Error()))
-		}
-		out, err := exec.Command("aws", "eks", "--region", location, "update-kubeconfig", "--name", k8s.Name, "--kubeconfig", kubecfg).CombinedOutput()
-		if err != nil {
-			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
-		}
-	} else if cloud == commonpb.CloudProvider_AZURE {
-		out, err := exec.Command("/usr/bin/az", "login", "--service-principal", "-u", os.Getenv("ARM_CLIENT_ID"), "-p", os.Getenv("ARM_CLIENT_SECRET"), "--tenant", os.Getenv("ARM_TENANT_ID")).CombinedOutput()
-		if err != nil {
-			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err, string(out)))
-		}
-		// az aks get-credentials --resource-group ks-rg --name example
-		out, err = exec.Command("/usr/bin/az", "aks", "get-credentials", "--resource-group", k8s.CommonParameters.ResourceGroupId, "--name", k8s.Name, "--file", kubecfg).CombinedOutput()
-		if err != nil {
-			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
-		}
-	} else {
-		t.Fatalf("unknown cloud: %s", cloud)
+	err = os.WriteFile(kubecfg, []byte(k8s.KubeConfigRaw), 0777)
+	if err != nil {
+		t.Fatal(fmt.Errorf("can't create kube config: %s", err.Error()))
 	}
 	// kubectl get nodes -o json
 	out, err := exec.Command("/usr/local/bin/kubectl", "--kubeconfig", kubecfg, "get", "nodes", "-o", "json").CombinedOutput()
