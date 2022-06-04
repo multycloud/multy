@@ -10,3 +10,4 @@ infra_key
 /main.tf
 /main.hcl
 !api/aws/terraform.tfstate
+/multy
