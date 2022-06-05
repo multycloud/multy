@@ -173,9 +173,9 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 
 	var vmSize commonpb.VmSize_Enum
 	if cloud == commonpb.CloudProvider_AWS {
-		vmSize = commonpb.VmSize_MICRO
+		vmSize = commonpb.VmSize_GENERAL_NANO
 	} else if cloud == commonpb.CloudProvider_AZURE {
-		vmSize = commonpb.VmSize_LARGE
+		vmSize = commonpb.VmSize_GENERAL_LARGE
 	}
 
 	createVmRequest := &resourcespb.CreateVirtualMachineRequest{Resource: &resourcespb.VirtualMachineArgs{

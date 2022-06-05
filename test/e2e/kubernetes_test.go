@@ -144,7 +144,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 			StartingNodeCount: 1,
 			MinNodeCount:      1,
 			MaxNodeCount:      3,
-			VmSize:            commonpb.VmSize_MEDIUM,
+			VmSize:            commonpb.VmSize_GENERAL_MEDIUM,
 			DiskSizeGb:        20,
 			Labels: map[string]string{
 				"multy.dev/env": "test",

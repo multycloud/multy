@@ -172,7 +172,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   resource_group_name   = azurerm_resource_group.vm-rg.name
   name                  = "test-vm"
   location              = "northeurope"
-  size                  = "Standard_B1ls"
+  size                  = "Standard_B1ls1"
   network_interface_ids = [azurerm_network_interface.vm_azure.id]
 
   os_disk {

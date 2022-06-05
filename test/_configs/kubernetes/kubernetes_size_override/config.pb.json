@@ -121,7 +121,7 @@
           "default_node_pool": {
             "name": "node_pool_aws",
             "subnet_id": "public_subnet_aws",
-            "vm_size": "MEDIUM",
+            "vm_size": "GENERAL_MEDIUM",
             "min_node_count": 1,
             "max_node_count": 1,
             "aws_override": {
@@ -149,7 +149,7 @@
           "default_node_pool": {
             "name": "default",
             "subnet_id": "public_subnet_azure",
-            "vm_size": "MEDIUM",
+            "vm_size": "GENERAL_MEDIUM",
             "min_node_count": 1,
             "max_node_count": 1,
             "azure_override": {
