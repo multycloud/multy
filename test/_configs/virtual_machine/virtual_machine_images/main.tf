@@ -123,7 +123,7 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   location              = "northeurope"
-  size                  = "Standard_B1ls"
+  size                  = "Standard_B1ls1"
   network_interface_ids = [azurerm_network_interface.vm2_azure.id]
   os_disk {
     caching              = "None"
@@ -201,7 +201,7 @@ resource "azurerm_linux_virtual_machine" "vm3_azure" {
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   location              = "northeurope"
-  size                  = "Standard_B1ls"
+  size                  = "Standard_B1ls1"
   network_interface_ids = [azurerm_network_interface.vm3_azure.id]
   os_disk {
     caching              = "None"
@@ -280,7 +280,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   location              = "northeurope"
-  size                  = "Standard_B1ls"
+  size                  = "Standard_B1ls1"
   network_interface_ids = [azurerm_network_interface.vm_azure.id]
   custom_data           = "ZWNobyAnSGVsbG8gV29ybGQn"
   os_disk {
@@ -311,4 +311,4 @@ provider "azurerm" {
   features {
   }
 }
-    
+

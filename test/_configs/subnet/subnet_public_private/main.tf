@@ -1,19 +1,19 @@
 resource "aws_db_subnet_group" "example_db_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "example-db"
   }
 
   name        = "example-db"
   description = "Managed by Multy"
-  subnet_ids  = [
+  subnet_ids = [
     aws_subnet.subnet1_aws.id,
     aws_subnet.subnet2_aws.id,
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "exampledb"
   }
 
@@ -30,7 +30,7 @@ resource "aws_db_instance" "example_db_aws" {
 }
 resource "aws_vpc" "example_vn_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "example_vn"
   }
 
@@ -39,7 +39,7 @@ resource "aws_vpc" "example_vn_aws" {
 }
 resource "aws_internet_gateway" "example_vn_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "example_vn"
   }
 
@@ -47,7 +47,7 @@ resource "aws_internet_gateway" "example_vn_aws" {
 }
 resource "aws_default_security_group" "example_vn_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "example_vn"
   }
 
@@ -71,7 +71,7 @@ resource "aws_default_security_group" "example_vn_aws" {
 }
 resource "aws_security_group" "nsg2_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "test-nsg2"
   }
 
@@ -137,7 +137,7 @@ resource "aws_security_group" "nsg2_aws" {
 }
 resource "aws_route_table" "rt_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "test-rt"
   }
 
@@ -155,7 +155,7 @@ resource "aws_route_table_association" "subnet3_aws" {
 }
 resource "aws_subnet" "subnet1_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "private-subnet1"
   }
 
@@ -165,7 +165,7 @@ resource "aws_subnet" "subnet1_aws" {
 }
 resource "aws_subnet" "subnet2_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "private-subnet2"
   }
 
@@ -175,7 +175,7 @@ resource "aws_subnet" "subnet2_aws" {
 }
 resource "aws_subnet" "subnet3_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "public-subnet3"
   }
 
@@ -195,7 +195,7 @@ resource "aws_iam_instance_profile" "vm_aws" {
 }
 resource "aws_instance" "vm_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "test-vm"
   }
 
@@ -204,8 +204,8 @@ resource "aws_instance" "vm_aws" {
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.subnet3_aws.id
   #  user_data_base64            = "#!/bin/bash -xe\\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \\\"<h1>Hello from Multy on AWS</h1>\\\" > /var/www/html/index.html"
-  user_data_base64            = "ZWNobyAnSGVsbG8gV29ybGQn"
-  iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
+  user_data_base64     = "ZWNobyAnSGVsbG8gV29ybGQn"
+  iam_instance_profile = aws_iam_instance_profile.vm_aws.id
 }
 resource "azurerm_mysql_server" "example_db_azure" {
   resource_group_name              = azurerm_resource_group.rg1.name
@@ -406,7 +406,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   name                  = "test-vm"
   computer_name         = "testvm"
   location              = "northeurope"
-  size                  = "Standard_B1ls"
+  size                  = "Standard_B1ls1"
   network_interface_ids = [azurerm_network_interface.vm_azure.id]
   custom_data           = "ZWNobyAnSGVsbG8gV29ybGQn"
   #  custom_data           = "#!/bin/bash -xe\\nsudo su\\n yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl status httpd.service; touch /var/www/html/index.html; echo \\\"<h1>Hello from Multy on Azure</h1>\\\" > /var/www/html/index.html"

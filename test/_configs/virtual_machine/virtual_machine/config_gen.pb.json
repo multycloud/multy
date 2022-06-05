@@ -65,7 +65,7 @@
           },
           "name": "test-vm",
           "generate_public_ip": false,
-          "vm_size": "MICRO",
+          "vm_size": "GENERAL_NANO",
           "public_ssh_key": "",
           "subnet_id": "subnet_aws",
           "user_data_base64": "ZWNobyAnSGVsbG8gV29ybGQn"
@@ -84,7 +84,7 @@
           },
           "name": "test-vm",
           "generate_public_ip": false,
-          "vm_size": "MICRO",
+          "vm_size": "GENERAL_NANO",
           "public_ssh_key": "",
           "subnet_id": "subnet_azure",
           "user_data_base64": "ZWNobyAnSGVsbG8gV29ybGQn"
@@ -103,7 +103,7 @@
           },
           "name": "test-vm",
           "generate_public_ip": false,
-          "vm_size": "MICRO",
+          "vm_size": "GENERAL_NANO",
           "public_ssh_key": "",
           "subnet_id": "subnet_aws",
           "user_data_base64": ""
@@ -122,7 +122,7 @@
           },
           "name": "test-vm",
           "generate_public_ip": false,
-          "vm_size": "MICRO",
+          "vm_size": "GENERAL_NANO",
           "public_ssh_key": "",
           "subnet_id": "subnet_azure",
           "user_data_base64": ""

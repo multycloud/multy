@@ -1,6 +1,6 @@
 resource "aws_vpc" "example_vn_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "example_vn"
   }
 
@@ -9,7 +9,7 @@ resource "aws_vpc" "example_vn_aws" {
 }
 resource "aws_internet_gateway" "example_vn_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "example_vn"
   }
 
@@ -17,7 +17,7 @@ resource "aws_internet_gateway" "example_vn_aws" {
 }
 resource "aws_default_security_group" "example_vn_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "example_vn"
   }
 
@@ -41,7 +41,7 @@ resource "aws_default_security_group" "example_vn_aws" {
 }
 resource "aws_subnet" "subnet_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "subnet"
   }
 
@@ -62,7 +62,7 @@ resource "aws_iam_instance_profile" "vm_aws" {
 }
 resource "aws_instance" "vm_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "test-vm"
   }
 
@@ -85,7 +85,7 @@ resource "aws_iam_instance_profile" "vm2_aws" {
 }
 resource "aws_instance" "vm2_aws" {
   provider = "aws.eu-west-1"
-  tags     = {
+  tags = {
     "Name" = "test-vm"
   }
 
@@ -191,7 +191,7 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   name                  = "test-vm"
   computer_name         = "testvm"
   location              = "northeurope"
-  size                  = "Standard_B1ls"
+  size                  = "Standard_B1ls1"
   network_interface_ids = [azurerm_network_interface.vm2_azure.id]
 
   os_disk {
