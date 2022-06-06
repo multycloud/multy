@@ -5,25 +5,25 @@ import (
 )
 
 var VMSIZE = map[commonpb.VmSize_Enum]map[commonpb.CloudProvider]string{
+	commonpb.VmSize_GENERAL_NANO: {
+		commonpb.CloudProvider_AWS:   "t2.nano",
+		commonpb.CloudProvider_AZURE: "Standard_B1ls",
+	},
 	commonpb.VmSize_GENERAL_MICRO: {
 		commonpb.CloudProvider_AWS:   "t2.micro",
 		commonpb.CloudProvider_AZURE: "Standard_B1s",
 	},
+	commonpb.VmSize_GENERAL_SMALL: {
+		commonpb.CloudProvider_AWS:   "t2.small",
+		commonpb.CloudProvider_AZURE: "Standard_B1ms",
+	},
 	commonpb.VmSize_GENERAL_MEDIUM: {
 		commonpb.CloudProvider_AWS:   "t2.medium",
-		commonpb.CloudProvider_AZURE: "Standard_A2_v2",
+		commonpb.CloudProvider_AZURE: "Standard_B2s",
 	},
 	commonpb.VmSize_GENERAL_LARGE: {
 		commonpb.CloudProvider_AWS:   "t2.large",
 		commonpb.CloudProvider_AZURE: "Standard_B2ms",
-	},
-	commonpb.VmSize_GENERAL_NANO: {
-		commonpb.CloudProvider_AWS:   "t2.nano",
-		commonpb.CloudProvider_AZURE: "Standard_B1ls1",
-	},
-	commonpb.VmSize_GENERAL_SMALL: {
-		commonpb.CloudProvider_AWS:   "t2.small",
-		commonpb.CloudProvider_AZURE: "Standard_A1_v2",
 	},
 	commonpb.VmSize_GENERAL_XLARGE: {
 		commonpb.CloudProvider_AWS:   "t2.xlarge",

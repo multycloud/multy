@@ -105,7 +105,7 @@ resource "azurerm_kubernetes_cluster" "cluster_azure" {
     max_count           = 1
     min_count           = 1
     enable_auto_scaling = true
-    vm_size             = "Standard_A2_v2"
+    vm_size             = "Standard_B2s"
     vnet_subnet_id      = azurerm_subnet.public_subnet_azure.id
   }
   dns_prefix = "clusterazureaks7hut"

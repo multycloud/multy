@@ -9,7 +9,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
@@ -26,9 +25,14 @@ import (
 func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 	ctx := getCtx(t, cloud, "vm")
 
+	location := commonpb.Location_EU_WEST_1
+	if cloud == commonpb.CloudProvider_AZURE {
+		location = commonpb.Location_EU_WEST_2
+	}
+
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_1,
+			Location:      location,
 			CloudProvider: cloud,
 		},
 		Name:      "vm-test-vn",
@@ -100,7 +104,6 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 		RouteTableId: rt.CommonParameters.ResourceId,
 	}}
 	rta, err := server.RouteTableAssociationService.Create(ctx, createRtaRequest)
-	fmt.Println(rta)
 	if err != nil {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create route table association: %+v", err)
@@ -117,7 +120,7 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createNsgRequest := &resourcespb.CreateNetworkSecurityGroupRequest{Resource: &resourcespb.NetworkSecurityGroupArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_1,
+			Location:      location,
 			CloudProvider: cloud,
 		},
 		Name:             "nsg-test-vm",
@@ -171,21 +174,14 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("unable to create ssh key: %+v", err)
 	}
 
-	var vmSize commonpb.VmSize_Enum
-	if cloud == commonpb.CloudProvider_AWS {
-		vmSize = commonpb.VmSize_GENERAL_NANO
-	} else if cloud == commonpb.CloudProvider_AZURE {
-		vmSize = commonpb.VmSize_GENERAL_LARGE
-	}
-
 	createVmRequest := &resourcespb.CreateVirtualMachineRequest{Resource: &resourcespb.VirtualMachineArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_1,
+			Location:      location,
 			CloudProvider: cloud,
 		},
 		Name:                    "vm-test-vm",
 		NetworkSecurityGroupIds: []string{nsg.CommonParameters.ResourceId},
-		VmSize:                  vmSize,
+		VmSize:                  commonpb.VmSize_GENERAL_NANO,
 		UserDataBase64: base64.StdEncoding.EncodeToString([]byte(`#!/bin/bash
 sudo echo "hello world" > /tmp/test.txt`)),
 		SubnetId:         publicSubnet.CommonParameters.ResourceId,
@@ -218,7 +214,7 @@ sudo echo "hello world" > /tmp/test.txt`)),
 		username = "adminuser"
 	}
 
-	signer, err := signerFromPem([]byte(privKey), []byte(""))
+	signer, err := signerFromPem([]byte(privKey))
 	if err != nil {
 		t.Fatal(fmt.Errorf("error setting up cert"))
 	}
@@ -295,71 +291,18 @@ func makeSSHKeyPair() (string, string, error) {
 	return pubKeyBuf.String(), privKeyBuf.String(), nil
 }
 
-func signerFromPem(pemBytes []byte, password []byte) (ssh.Signer, error) {
-
+func signerFromPem(pemBytes []byte) (ssh.Signer, error) {
 	// read pem block
-	err := errors.New("Pem decode failed, no key found")
 	pemBlock, _ := pem.Decode(pemBytes)
 	if pemBlock == nil {
-		return nil, err
+		return nil, fmt.Errorf("Pem decode failed, no key found")
 	}
 
-	// handle encrypted key
-	if x509.IsEncryptedPEMBlock(pemBlock) {
-		// decrypt PEM
-		pemBlock.Bytes, err = x509.DecryptPEMBlock(pemBlock, []byte(password))
-		if err != nil {
-			return nil, fmt.Errorf("Decrypting PEM block failed %v", err)
-		}
-
-		// get RSA, EC or DSA key
-		key, err := parsePemBlock(pemBlock)
-		if err != nil {
-			return nil, err
-		}
-
-		// generate signer instance from key
-		signer, err := ssh.NewSignerFromKey(key)
-		if err != nil {
-			return nil, fmt.Errorf("Creating signer from encrypted key failed %v", err)
-		}
-
-		return signer, nil
-	} else {
-		// generate signer instance from plain key
-		signer, err := ssh.ParsePrivateKey(pemBytes)
-		if err != nil {
-			return nil, fmt.Errorf("Parsing plain private key failed %v", err)
-		}
-
-		return signer, nil
+	// generate signer instance from plain key
+	signer, err := ssh.ParsePrivateKey(pemBytes)
+	if err != nil {
+		return nil, fmt.Errorf("Parsing plain private key failed %v", err)
 	}
-}
 
-func parsePemBlock(block *pem.Block) (interface{}, error) {
-	switch block.Type {
-	case "RSA PRIVATE KEY":
-		key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-		if err != nil {
-			return nil, fmt.Errorf("Parsing PKCS private key failed %v", err)
-		} else {
-			return key, nil
-		}
-	case "EC PRIVATE KEY":
-		key, err := x509.ParseECPrivateKey(block.Bytes)
-		if err != nil {
-			return nil, fmt.Errorf("Parsing EC private key failed %v", err)
-		} else {
-			return key, nil
-		}
-	case "DSA PRIVATE KEY":
-		key, err := ssh.ParseDSAPrivateKey(block.Bytes)
-		if err != nil {
-			return nil, fmt.Errorf("Parsing DSA private key failed %v", err)
-		} else {
-			return key, nil
-		}
-	default:
-		return nil, fmt.Errorf("Parsing private key failed, unsupported key type %q", block.Type)
-	}
+	return signer, nil
 }

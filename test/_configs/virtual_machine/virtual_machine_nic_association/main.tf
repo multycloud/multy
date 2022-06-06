@@ -135,7 +135,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   name                  = "test-vm"
   computer_name         = "testvm"
   location              = "northeurope"
-  size                  = "Standard_B1ls1"
+  size                  = "Standard_B1ls"
   network_interface_ids = [azurerm_network_interface.nic_azure.id]
   custom_data           = "ZWNobyAnSGVsbG8gV29ybGQn"
 
