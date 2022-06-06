@@ -53,10 +53,6 @@ var VMSIZE = map[commonpb.VmSize_Enum]map[commonpb.CloudProvider]string{
 		commonpb.CloudProvider_AWS:   "c4.8xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_F48s_v2",
 	},
-	commonpb.VmSize_MEMORY_MEDIUM: {
-		commonpb.CloudProvider_AWS:   "r6g.medium",
-		commonpb.CloudProvider_AZURE: "Standard_B2ms",
-	},
 	commonpb.VmSize_MEMORY_LARGE: {
 		commonpb.CloudProvider_AWS:   "r6g.large",
 		commonpb.CloudProvider_AZURE: "Standard_E2s_v3",
@@ -86,15 +82,6 @@ var VMSIZE = map[commonpb.VmSize_Enum]map[commonpb.CloudProvider]string{
 		commonpb.CloudProvider_AZURE: "Standard_E64a_v4",
 	},
 }
-
-const (
-	// MICRO - 1 core and 0.5 gb ram
-	MICRO = "nano"
-	// MEDIUM - 2 cores and 4 gb ram
-	MEDIUM = "medium"
-	// LARGE - 2 cores and 8 gb ram
-	LARGE = "large"
-)
 
 var DBSIZE = map[commonpb.DatabaseSize_Enum]map[commonpb.CloudProvider]string{
 	commonpb.DatabaseSize_MICRO: {
