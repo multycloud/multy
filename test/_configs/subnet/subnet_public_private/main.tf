@@ -54,19 +54,17 @@ resource "aws_default_security_group" "example_vn_aws" {
   vpc_id = aws_vpc.example_vn_aws.id
 
   ingress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 }
 resource "aws_security_group" "nsg2_aws" {

@@ -21,6 +21,7 @@ import "api/proto/resourcespb/network_security_group.proto";
 import "api/proto/resourcespb/route_table.proto";
 import "api/proto/resourcespb/route_table_association.proto";
 import "api/proto/resourcespb/network_interface.proto";
+import "api/proto/resourcespb/network_interface_security_group_association.proto";
 import "api/proto/resourcespb/subnet.proto";
 import "api/proto/commonpb/common.proto";
 import "api/proto/userpb/user.proto";
@@ -42,6 +43,11 @@ service MultyResourceService {
   rpc ReadNetworkInterface (resources.ReadNetworkInterfaceRequest) returns (resources.NetworkInterfaceResource) {}
   rpc UpdateNetworkInterface (resources.UpdateNetworkInterfaceRequest) returns (resources.NetworkInterfaceResource) {}
   rpc DeleteNetworkInterface (resources.DeleteNetworkInterfaceRequest) returns (common.Empty) {}
+
+  rpc CreateNetworkInterfaceSecurityGroupAssociation (resources.CreateNetworkInterfaceSecurityGroupAssociationRequest) returns (resources.NetworkInterfaceSecurityGroupAssociationResource) {}
+  rpc ReadNetworkInterfaceSecurityGroupAssociation (resources.ReadNetworkInterfaceSecurityGroupAssociationRequest) returns (resources.NetworkInterfaceSecurityGroupAssociationResource) {}
+  rpc UpdateNetworkInterfaceSecurityGroupAssociation (resources.UpdateNetworkInterfaceSecurityGroupAssociationRequest) returns (resources.NetworkInterfaceSecurityGroupAssociationResource) {}
+  rpc DeleteNetworkInterfaceSecurityGroupAssociation (resources.DeleteNetworkInterfaceSecurityGroupAssociationRequest) returns (common.Empty) {}
 
   rpc CreateRouteTable (resources.CreateRouteTableRequest) returns (resources.RouteTableResource) {}
   rpc ReadRouteTable (resources.ReadRouteTableRequest) returns (resources.RouteTableResource) {}

@@ -181,9 +181,18 @@ func translateAwsNsgRules(rules []*resourcespb.NetworkSecurityRule) map[string][
 					CidrBlocks: []string{rule.CidrBlock},
 				},
 			)
-		} else {
-			awsRules[BOTH] = append(
-				awsRules[BOTH], network_security_group.AwsSecurityGroupRule{
+		} else if rule.Direction == resourcespb.Direction_EGRESS {
+			awsRules[EGRESS] = append(
+				awsRules[EGRESS], network_security_group.AwsSecurityGroupRule{
+					Protocol:   awsProtocol,
+					FromPort:   awsFromPort,
+					ToPort:     awsToPort,
+					CidrBlocks: []string{rule.CidrBlock},
+				},
+			)
+		} else if rule.Direction == resourcespb.Direction_INGRESS {
+			awsRules[INGRESS] = append(
+				awsRules[INGRESS], network_security_group.AwsSecurityGroupRule{
 					Protocol:   awsProtocol,
 					FromPort:   awsFromPort,
 					ToPort:     awsToPort,

@@ -4,6 +4,7 @@
 package e2e
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -18,6 +19,11 @@ import (
 	"strings"
 	"testing"
 	"time"
+)
+
+const (
+	vnCidrBlock      = "10.0.0.0/16"
+	publicSubnetCidr = "10.0.0.0/24"
 )
 
 // todo: azure enforces rule priority, aws doesnt
@@ -36,7 +42,7 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 			CloudProvider: cloud,
 		},
 		Name:      "vm-test-vn",
-		CidrBlock: "10.0.0.0/16",
+		CidrBlock: vnCidrBlock,
 	}}
 	vn, err := server.VnService.Create(ctx, createVnRequest)
 	if err != nil {
@@ -55,7 +61,7 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createPublicSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
 		Name:             "vm-test-public-subnet",
-		CidrBlock:        "10.0.0.0/24",
+		CidrBlock:        publicSubnetCidr,
 		VirtualNetworkId: vn.CommonParameters.ResourceId,
 		AvailabilityZone: 1,
 	}}
@@ -118,6 +124,54 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 		}
 	})
 
+	createPipRequest := &resourcespb.CreatePublicIpRequest{Resource: &resourcespb.PublicIpArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      location,
+			CloudProvider: cloud,
+		},
+		Name: "pip-test-vm",
+	}}
+	pip, err := server.PublicIpService.Create(ctx, createPipRequest)
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create public ip: %+v", err)
+	}
+	t.Cleanup(func() {
+		if DestroyAfter {
+			_, err := server.PublicIpService.Delete(ctx, &resourcespb.DeletePublicIpRequest{ResourceId: pip.CommonParameters.ResourceId})
+			if err != nil {
+				logGrpcErrorDetails(t, err)
+				t.Logf("unable to delete resource %+v", err)
+			}
+		}
+	})
+
+	// FIXME "network_interface": conflicts with vpc_security_group_ids
+	// NSG might need to be associated via NIC
+	createNicRequest := &resourcespb.CreateNetworkInterfaceRequest{Resource: &resourcespb.NetworkInterfaceArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      location,
+			CloudProvider: cloud,
+		},
+		Name:       "nsg-test-vm",
+		SubnetId:   publicSubnet.CommonParameters.ResourceId,
+		PublicIpId: pip.CommonParameters.ResourceId,
+	}}
+	nic, err := server.NetworkInterfaceService.Create(ctx, createNicRequest)
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create network interface: %+v", err)
+	}
+	t.Cleanup(func() {
+		if DestroyAfter {
+			_, err := server.NetworkInterfaceService.Delete(ctx, &resourcespb.DeleteNetworkInterfaceRequest{ResourceId: nic.CommonParameters.ResourceId})
+			if err != nil {
+				logGrpcErrorDetails(t, err)
+				t.Logf("unable to delete resource %+v", err)
+			}
+		}
+	})
+
 	createNsgRequest := &resourcespb.CreateNetworkSecurityGroupRequest{Resource: &resourcespb.NetworkSecurityGroupArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
 			Location:      location,
@@ -169,6 +223,25 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 		}
 	})
 
+	createNicNsgRequest := &resourcespb.CreateNetworkInterfaceSecurityGroupAssociationRequest{Resource: &resourcespb.NetworkInterfaceSecurityGroupAssociationArgs{
+		SecurityGroupId:    nsg.CommonParameters.ResourceId,
+		NetworkInterfaceId: nic.CommonParameters.ResourceId,
+	}}
+	nicNsgAssociation, err := server.NetworkInterfaceSecurityGroupAssociationService.Create(ctx, createNicNsgRequest)
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create network interface nsg association: %+v", err)
+	}
+	t.Cleanup(func() {
+		if DestroyAfter {
+			_, err := server.NetworkInterfaceSecurityGroupAssociationService.Delete(ctx, &resourcespb.DeleteNetworkInterfaceSecurityGroupAssociationRequest{ResourceId: nicNsgAssociation.CommonParameters.ResourceId})
+			if err != nil {
+				logGrpcErrorDetails(t, err)
+				t.Logf("unable to delete resource %+v", err)
+			}
+		}
+	})
+
 	pubKey, privKey, err := makeSSHKeyPair()
 	if err != nil {
 		t.Fatalf("unable to create ssh key: %+v", err)
@@ -179,14 +252,18 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 			Location:      location,
 			CloudProvider: cloud,
 		},
-		Name:                    "vm-test-vm",
-		NetworkSecurityGroupIds: []string{nsg.CommonParameters.ResourceId},
-		VmSize:                  commonpb.VmSize_GENERAL_NANO,
+		Name: "vm-test-vm",
+		// FIXME validate NetworkSecurityGroupIds not with NetworkInterfaceIds
+		//NetworkSecurityGroupIds: []string{nsg.CommonParameters.ResourceId},
+		VmSize: commonpb.VmSize_GENERAL_NANO,
 		UserDataBase64: base64.StdEncoding.EncodeToString([]byte(`#!/bin/bash
 sudo echo "hello world" > /tmp/test.txt`)),
 		SubnetId:         publicSubnet.CommonParameters.ResourceId,
 		PublicSshKey:     pubKey,
-		GeneratePublicIp: true,
+		GeneratePublicIp: false,
+		// FIXME this does nothing
+		//PublicIpId:          pip.CommonParameters.ResourceId,
+		NetworkInterfaceIds: []string{nic.CommonParameters.ResourceId},
 		ImageReference: &resourcespb.ImageReference{
 			Os:      resourcespb.ImageReference_UBUNTU,
 			Version: "18.04",
@@ -230,8 +307,7 @@ sudo echo "hello world" > /tmp/test.txt`)),
 
 	time.Sleep(3 * time.Minute)
 
-	// connect ot ssh server
-	conn, err := ssh.Dial("tcp", vm.GetPublicIp()+":22", config)
+	conn, err := ssh.Dial("tcp", pip.GetIp()+":22", config)
 	if err != nil {
 		t.Fatal(fmt.Errorf("error in ssh connection: %+v", err))
 	}
@@ -253,7 +329,55 @@ sudo echo "hello world" > /tmp/test.txt`)),
 		t.Fatal(fmt.Errorf("error running command: %+v", err))
 	}
 
-	assert.Equal(t, "hello world\n", string(output))
+	assert.Equal(t, "hello world\n", string(output), config)
+	updateNsgRules(t, ctx, nsg, pip.GetIp(), config)
+}
+
+func updateNsgRules(t *testing.T, ctx context.Context, nsg *resourcespb.NetworkSecurityGroupResource, ip string, config *ssh.ClientConfig) {
+	nsg.Rules = []*resourcespb.NetworkSecurityRule{{
+		Protocol: "tcp",
+		Priority: 110,
+		PortRange: &resourcespb.PortRange{
+			From: 443,
+			To:   443,
+		},
+		CidrBlock: "0.0.0.0/0",
+		Direction: resourcespb.Direction_EGRESS,
+	}, {
+		Protocol: "tcp",
+		Priority: 120,
+		PortRange: &resourcespb.PortRange{
+			From: 80,
+			To:   80,
+		},
+		CidrBlock: "0.0.0.0/0",
+		Direction: resourcespb.Direction_EGRESS,
+	}}
+	_, err := server.NetworkSecurityGroupService.Update(ctx, &resourcespb.UpdateNetworkSecurityGroupRequest{
+		ResourceId: nsg.CommonParameters.ResourceId,
+		Resource: &resourcespb.NetworkSecurityGroupArgs{
+			CommonParameters: &commonpb.ResourceCommonArgs{
+				Location:        nsg.CommonParameters.Location,
+				CloudProvider:   nsg.CommonParameters.CloudProvider,
+				ResourceGroupId: nsg.CommonParameters.ResourceGroupId,
+			},
+			Name:             nsg.Name,
+			VirtualNetworkId: nsg.VirtualNetworkId,
+			Rules:            nsg.Rules,
+		},
+	})
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatal(fmt.Errorf("error updating nsg: %+v", err))
+	}
+
+	conn, err := ssh.Dial("tcp", ip+":22", config)
+	assert.Error(t, err)
+	if err == nil {
+		t.Cleanup(func() {
+			conn.Close()
+		})
+	}
 }
 
 func TestAwsVirtualMachine(t *testing.T) {

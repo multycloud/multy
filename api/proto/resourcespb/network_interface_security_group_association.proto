@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option go_package = "github.com/multycloud/multy/api/proto/resourcespb";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.resources";
+option java_outer_classname = "ResourcesProto";
+
+import "api/proto/commonpb/common.proto";
+
+package dev.multy.resources;
+
+message CreateNetworkInterfaceSecurityGroupAssociationRequest {
+  NetworkInterfaceSecurityGroupAssociationArgs resource = 1;
+}
+
+message ReadNetworkInterfaceSecurityGroupAssociationRequest {
+  string resource_id = 1;
+}
+
+message UpdateNetworkInterfaceSecurityGroupAssociationRequest {
+  string resource_id = 1;
+  NetworkInterfaceSecurityGroupAssociationArgs resource = 2;
+}
+
+message DeleteNetworkInterfaceSecurityGroupAssociationRequest {
+  string resource_id = 1;
+}
+
+message NetworkInterfaceSecurityGroupAssociationArgs {
+  common.ChildResourceCommonArgs common_parameters = 1;
+  string network_interface_id = 2;
+  string security_group_id = 3;
+}
+
+message NetworkInterfaceSecurityGroupAssociationResource {
+  common.CommonChildResourceParameters common_parameters = 1;
+  string network_interface_id = 2;
+  string security_group_id = 3;
+}

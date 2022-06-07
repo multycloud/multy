@@ -1,0 +1,225 @@
+{
+  "resources": [
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualNetworkArgs",
+          "cidr_block": "10.0.0.0/16",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "example_vn"
+        }
+      },
+      "resource_id": "example_vn_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.VirtualNetworkArgs",
+          "cidr_block": "10.0.0.0/16",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "example_vn"
+        }
+      },
+      "resource_id": "example_vn_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.SubnetArgs",
+          "availability_zone": 2,
+          "cidr_block": "10.0.2.0/24",
+          "name": "subnet",
+          "virtual_network_id": "example_vn_aws"
+        }
+      },
+      "resource_id": "subnet_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.SubnetArgs",
+          "availability_zone": 2,
+          "cidr_block": "10.0.2.0/24",
+          "name": "subnet",
+          "virtual_network_id": "example_vn_azure"
+        }
+      },
+      "resource_id": "subnet_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.PublicIpArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "test-ip"
+        }
+      },
+      "resource_id": "ip_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.PublicIpArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "test-ip"
+        }
+      },
+      "resource_id": "ip_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.NetworkInterfaceArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "test-nic",
+          "subnet_id": "subnet_azure",
+          "public_ip_id": "ip_azure"
+        }
+      },
+      "resource_id": "nic_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.NetworkInterfaceArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "test-nic",
+          "subnet_id": "subnet_aws",
+          "public_ip_id": "ip_aws"
+        }
+      },
+      "resource_id": "nic_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.NetworkSecurityGroupArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "test-nsg2",
+          "rules": [
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "BOTH_DIRECTIONS",
+              "port_range": {
+                "from": 22,
+                "to": 22
+              },
+              "priority": 120,
+              "protocol": "tcp"
+            },
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "BOTH_DIRECTIONS",
+              "port_range": {
+                "from": 443,
+                "to": 443
+              },
+              "priority": 140,
+              "protocol": "tcp"
+            }
+          ],
+          "virtual_network_id": "example_vn_aws"
+        }
+      },
+      "resource_id": "nsg2_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.NetworkSecurityGroupArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "test-nsg2",
+          "rules": [
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "BOTH_DIRECTIONS",
+              "port_range": {
+                "from": 22,
+                "to": 22
+              },
+              "priority": 120,
+              "protocol": "tcp"
+            },
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "BOTH_DIRECTIONS",
+              "port_range": {
+                "from": 443,
+                "to": 443
+              },
+              "priority": 140,
+              "protocol": "tcp"
+            }
+          ],
+          "virtual_network_id": "example_vn_azure"
+        }
+      },
+      "resource_id": "nsg2_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.NetworkInterfaceSecurityGroupAssociationArgs",
+          "network_interface_id": "nic_aws",
+          "security_group_id": "nsg2_aws"
+        }
+      },
+      "resource_id": "nic_nsg_association_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.NetworkInterfaceSecurityGroupAssociationArgs",
+          "network_interface_id": "nic_azure",
+          "security_group_id": "nsg2_azure"
+        }
+      },
+      "resource_id": "nic_nsg_association_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.ResourceGroupArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "EU_WEST_1"
+          },
+          "name": "rg1"
+        }
+      },
+      "resource_id": "rg1"
+    }
+  ]
+}

@@ -29,23 +29,24 @@ import (
 type Server struct {
 	proto.UnimplementedMultyResourceServiceServer
 	*service_context.ResourceServiceContext
-	VnService                    services.Service[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]
-	SubnetService                services.Service[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]
-	NetworkInterfaceService      services.Service[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]
-	RouteTableService            services.Service[*resourcespb.RouteTableArgs, *resourcespb.RouteTableResource]
-	RouteTableAssociationService services.Service[*resourcespb.RouteTableAssociationArgs, *resourcespb.RouteTableAssociationResource]
-	NetworkSecurityGroupService  services.Service[*resourcespb.NetworkSecurityGroupArgs, *resourcespb.NetworkSecurityGroupResource]
-	DatabaseService              services.Service[*resourcespb.DatabaseArgs, *resourcespb.DatabaseResource]
-	ObjectStorageService         services.Service[*resourcespb.ObjectStorageArgs, *resourcespb.ObjectStorageResource]
-	ObjectStorageObjectService   services.Service[*resourcespb.ObjectStorageObjectArgs, *resourcespb.ObjectStorageObjectResource]
-	PublicIpService              services.Service[*resourcespb.PublicIpArgs, *resourcespb.PublicIpResource]
-	KubernetesClusterService     services.Service[*resourcespb.KubernetesClusterArgs, *resourcespb.KubernetesClusterResource]
-	KubernetesNodePoolService    services.Service[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]
-	LambdaService                services.Service[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]
-	VaultService                 services.Service[*resourcespb.VaultArgs, *resourcespb.VaultResource]
-	VaultAccessPolicyService     services.Service[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]
-	VaultSecretService           services.Service[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]
-	VirtualMachineService        services.Service[*resourcespb.VirtualMachineArgs, *resourcespb.VirtualMachineResource]
+	VnService                                       services.Service[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]
+	SubnetService                                   services.Service[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]
+	NetworkInterfaceService                         services.Service[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]
+	NetworkInterfaceSecurityGroupAssociationService services.Service[*resourcespb.NetworkInterfaceSecurityGroupAssociationArgs, *resourcespb.NetworkInterfaceSecurityGroupAssociationResource]
+	RouteTableService                               services.Service[*resourcespb.RouteTableArgs, *resourcespb.RouteTableResource]
+	RouteTableAssociationService                    services.Service[*resourcespb.RouteTableAssociationArgs, *resourcespb.RouteTableAssociationResource]
+	NetworkSecurityGroupService                     services.Service[*resourcespb.NetworkSecurityGroupArgs, *resourcespb.NetworkSecurityGroupResource]
+	DatabaseService                                 services.Service[*resourcespb.DatabaseArgs, *resourcespb.DatabaseResource]
+	ObjectStorageService                            services.Service[*resourcespb.ObjectStorageArgs, *resourcespb.ObjectStorageResource]
+	ObjectStorageObjectService                      services.Service[*resourcespb.ObjectStorageObjectArgs, *resourcespb.ObjectStorageObjectResource]
+	PublicIpService                                 services.Service[*resourcespb.PublicIpArgs, *resourcespb.PublicIpResource]
+	KubernetesClusterService                        services.Service[*resourcespb.KubernetesClusterArgs, *resourcespb.KubernetesClusterResource]
+	KubernetesNodePoolService                       services.Service[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]
+	LambdaService                                   services.Service[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]
+	VaultService                                    services.Service[*resourcespb.VaultArgs, *resourcespb.VaultResource]
+	VaultAccessPolicyService                        services.Service[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]
+	VaultSecretService                              services.Service[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]
+	VirtualMachineService                           services.Service[*resourcespb.VirtualMachineArgs, *resourcespb.VirtualMachineResource]
 }
 
 func RunServer(ctx context.Context, port int) {
@@ -114,6 +115,7 @@ func CreateServer(serviceContext *service_context.ResourceServiceContext) Server
 		services.NewService[*resourcespb.VirtualNetworkArgs, *resourcespb.VirtualNetworkResource]("virtual_network", serviceContext),
 		services.NewService[*resourcespb.SubnetArgs, *resourcespb.SubnetResource]("subnet", serviceContext),
 		services.NewService[*resourcespb.NetworkInterfaceArgs, *resourcespb.NetworkInterfaceResource]("network_interface", serviceContext),
+		services.NewService[*resourcespb.NetworkInterfaceSecurityGroupAssociationArgs, *resourcespb.NetworkInterfaceSecurityGroupAssociationResource]("network_interface_security_group_association", serviceContext),
 		services.NewService[*resourcespb.RouteTableArgs, *resourcespb.RouteTableResource]("route_table", serviceContext),
 		services.NewService[*resourcespb.RouteTableAssociationArgs, *resourcespb.RouteTableAssociationResource]("route_table_association", serviceContext),
 		services.NewService[*resourcespb.NetworkSecurityGroupArgs, *resourcespb.NetworkSecurityGroupResource]("network_security_group", serviceContext),
@@ -168,6 +170,19 @@ func (s *Server) UpdateNetworkInterface(ctx context.Context, in *resourcespb.Upd
 }
 func (s *Server) DeleteNetworkInterface(ctx context.Context, in *resourcespb.DeleteNetworkInterfaceRequest) (*commonpb.Empty, error) {
 	return s.NetworkInterfaceService.Delete(ctx, in)
+}
+
+func (s *Server) CreateNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.CreateNetworkInterfaceSecurityGroupAssociationRequest) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+	return s.NetworkInterfaceSecurityGroupAssociationService.Create(ctx, in)
+}
+func (s *Server) ReadNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.ReadNetworkInterfaceSecurityGroupAssociationRequest) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+	return s.NetworkInterfaceSecurityGroupAssociationService.Read(ctx, in)
+}
+func (s *Server) UpdateNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.UpdateNetworkInterfaceSecurityGroupAssociationRequest) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+	return s.NetworkInterfaceSecurityGroupAssociationService.Update(ctx, in)
+}
+func (s *Server) DeleteNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.DeleteNetworkInterfaceSecurityGroupAssociationRequest) (*commonpb.Empty, error) {
+	return s.NetworkInterfaceSecurityGroupAssociationService.Delete(ctx, in)
 }
 
 func (s *Server) CreateRouteTable(ctx context.Context, in *resourcespb.CreateRouteTableRequest) (*resourcespb.RouteTableResource, error) {

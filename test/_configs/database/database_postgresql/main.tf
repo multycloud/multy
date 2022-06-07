@@ -97,19 +97,17 @@ resource "aws_default_security_group" "vn_aws" {
   vpc_id = aws_vpc.vn_aws.id
 
   ingress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 }
 resource "azurerm_postgresql_server" "example_db_azure" {

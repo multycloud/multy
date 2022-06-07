@@ -57,6 +57,34 @@
     {
       "resource_args": {
         "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.PublicIpArgs",
+          "common_parameters": {
+            "cloud_provider": "AWS",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "test-ip"
+        }
+      },
+      "resource_id": "ip_aws"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
+          "@type": "type.googleapis.com/dev.multy.resources.PublicIpArgs",
+          "common_parameters": {
+            "cloud_provider": "AZURE",
+            "location": "EU_WEST_1",
+            "resource_group_id": "rg1"
+          },
+          "name": "test-ip"
+        }
+      },
+      "resource_id": "ip_azure"
+    },
+    {
+      "resource_args": {
+        "resource_args": {
           "@type": "type.googleapis.com/dev.multy.resources.NetworkInterfaceArgs",
           "common_parameters": {
             "cloud_provider": "AZURE",
@@ -64,7 +92,8 @@
             "resource_group_id": "rg1"
           },
           "name": "test-public-nic",
-          "subnet_id": "subnet_azure"
+          "subnet_id": "subnet_azure",
+          "public_ip_id": "ip_azure"
         }
       },
       "resource_id": "public-nic_azure"
@@ -79,25 +108,11 @@
             "resource_group_id": "rg1"
           },
           "name": "test-public-nic",
-          "subnet_id": "subnet_aws"
+          "subnet_id": "subnet_aws",
+          "public_ip_id": "ip_aws"
         }
       },
       "resource_id": "public-nic_aws"
-    },
-    {
-      "resource_args": {
-        "resource_args": {
-          "@type": "type.googleapis.com/dev.multy.resources.PublicIpArgs",
-          "common_parameters": {
-            "cloud_provider": "AZURE",
-            "location": "EU_WEST_1",
-            "resource_group_id": "rg1"
-          },
-          "name": "test-ip",
-          "network_interface_id": "public-nic_azure"
-        }
-      },
-      "resource_id": "ip_azure"
     },
     {
       "resource_args": {
@@ -113,21 +128,6 @@
         }
       },
       "resource_id": "private-nic_aws"
-    },
-    {
-      "resource_args": {
-        "resource_args": {
-          "@type": "type.googleapis.com/dev.multy.resources.PublicIpArgs",
-          "common_parameters": {
-            "cloud_provider": "AWS",
-            "location": "EU_WEST_1",
-            "resource_group_id": "rg1"
-          },
-          "name": "test-ip",
-          "network_interface_id": "public-nic_aws"
-        }
-      },
-      "resource_id": "ip_aws"
     },
     {
       "resource_args": {

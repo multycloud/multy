@@ -126,6 +126,26 @@
               },
               "priority": 140,
               "protocol": "tcp"
+            },
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "INGRESS",
+              "port_range": {
+                "from": 8000,
+                "to": 8000
+              },
+              "priority": 150,
+              "protocol": "tcp"
+            },
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "EGRESS",
+              "port_range": {
+                "from": 8001,
+                "to": 8002
+              },
+              "priority": 160,
+              "protocol": "tcp"
             }
           ],
           "virtual_network_id": "example_vn_azure"
@@ -162,6 +182,26 @@
                 "to": 443
               },
               "priority": 140,
+              "protocol": "tcp"
+            },
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "INGRESS",
+              "port_range": {
+                "from": 8000,
+                "to": 8000
+              },
+              "priority": 150,
+              "protocol": "tcp"
+            },
+            {
+              "cidr_block": "0.0.0.0/0",
+              "direction": "EGRESS",
+              "port_range": {
+                "from": 8001,
+                "to": 8002
+              },
+              "priority": 160,
               "protocol": "tcp"
             }
           ],

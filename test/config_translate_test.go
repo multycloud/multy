@@ -234,7 +234,7 @@ func groupByTypeAndId(content *hcl.BodyContent) (map[string]map[string]*hcl.Bloc
 			uniqueName := strings.Join(block.Labels, ".")
 			if _, ok := result[t][uniqueName]; ok {
 				if t != "provider" {
-					return nil, &block.DefRange, fmt.Errorf("duplicate resource %s", uniqueName)
+					return nil, &block.DefRange, fmt.Errorf("duplicate resource %s ", uniqueName)
 				}
 				// TODO: IMPORTANT - handle duplicate resources
 			}
