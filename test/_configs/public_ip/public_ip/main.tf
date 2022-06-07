@@ -24,19 +24,17 @@ resource "aws_default_security_group" "example_vn_aws" {
   vpc_id = aws_vpc.example_vn_aws.id
 
   ingress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 }
 resource "aws_eip" "ip_aws" {
@@ -44,8 +42,11 @@ resource "aws_eip" "ip_aws" {
   tags     = {
     "Name" = "test-ip"
   }
-
-  network_interface = aws_network_interface.public-nic_aws.id
+}
+resource "aws_eip_association" "subnet_aws" {
+  provider             = "aws.eu-west-1"
+  network_interface_id = aws_network_interface.public-nic_aws.id
+  allocation_id        = aws_eip.ip_aws.id
 }
 resource "aws_network_interface" "private-nic_aws" {
   provider = "aws.eu-west-1"
@@ -114,7 +115,7 @@ resource "azurerm_network_interface" "public-nic_azure" {
   location            = "northeurope"
 
   ip_configuration {
-    name                          = "external-test-ip"
+    name                          = "external-test-public-nic"
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.subnet_azure.id
     public_ip_address_id          = azurerm_public_ip.ip_azure.id
@@ -139,8 +140,6 @@ provider "aws" {
   region = "eu-west-1"
   alias  = "eu-west-1"
 }
-
-
 provider "azurerm" {
   features {}
 }

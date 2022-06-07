@@ -64,6 +64,13 @@ resource "aws_security_group" "nsg2_aws" {
   }
 
   ingress {
+    protocol    = "tcp"
+    from_port   = 8000
+    to_port     = 8000
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
@@ -81,6 +88,13 @@ resource "aws_security_group" "nsg2_aws" {
     protocol    = "tcp"
     from_port   = 443
     to_port     = 443
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    protocol    = "tcp"
+    from_port   = 8001
+    to_port     = 8002
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -235,6 +249,30 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     source_port_range          = "*"
     source_address_prefix      = "*"
     destination_port_range     = "443-443"
+    destination_address_prefix = "*"
+    direction                  = "Outbound"
+  }
+
+  security_rule {
+    name                       = "4"
+    protocol                   = "Tcp"
+    priority                   = 150
+    access                     = "Allow"
+    source_port_range          = "*"
+    source_address_prefix      = "*"
+    destination_port_range     = "8000-8000"
+    destination_address_prefix = "*"
+    direction                  = "Inbound"
+  }
+
+  security_rule {
+    name                       = "5"
+    protocol                   = "Tcp"
+    priority                   = 160
+    access                     = "Allow"
+    source_port_range          = "*"
+    source_address_prefix      = "*"
+    destination_port_range     = "8001-8002"
     destination_address_prefix = "*"
     direction                  = "Outbound"
   }

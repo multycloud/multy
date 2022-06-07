@@ -51,6 +51,9 @@ func (r *Resources) GetAll() []Resource {
 // Get finds the resource with the given id and adds a dependency between dependentResourceId and id.
 func Get[T Resource](dependentResourceId string, resources *Resources, id string) (T, error) {
 	item, exists, err := GetOptional[T](dependentResourceId, resources, id)
+	if id == "" {
+		return item, errors.ResourceNotFound(id)
+	}
 	if err != nil {
 		return item, err
 	}

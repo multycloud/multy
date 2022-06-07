@@ -25,7 +25,8 @@ var networkInterfaceMetadata = resources.ResourceMetadata[*resourcespb.NetworkIn
 type NetworkInterface struct {
 	resources.ResourceWithId[*resourcespb.NetworkInterfaceArgs]
 
-	Subnet *Subnet
+	Subnet   *Subnet
+	PublicIp *PublicIp
 }
 
 func (r *NetworkInterface) GetMetadata() resources.ResourceMetadataInterface {
@@ -63,8 +64,9 @@ func NetworkInterfaceFromState(resource *NetworkInterface, _ *output.TfState) (*
 			CloudProvider:   resource.Args.CommonParameters.CloudProvider,
 			NeedsUpdate:     false,
 		},
-		Name:     resource.Args.Name,
-		SubnetId: resource.Args.SubnetId,
+		Name:       resource.Args.Name,
+		SubnetId:   resource.Args.SubnetId,
+		PublicIpId: resource.Args.PublicIpId,
 	}, nil
 }
 
@@ -73,28 +75,52 @@ func NewNetworkInterface(resourceId string, args *resourcespb.NetworkInterfaceAr
 	if err != nil {
 		return nil, err
 	}
+	pIp, _, err := resources.GetOptional[*PublicIp](resourceId, others, args.PublicIpId)
+	if err != nil {
+		return nil, err
+	}
 	return &NetworkInterface{
 		ResourceWithId: resources.ResourceWithId[*resourcespb.NetworkInterfaceArgs]{
 			ResourceId: resourceId,
 			Args:       args,
 		},
-		Subnet: subnet,
+		Subnet:   subnet,
+		PublicIp: pIp,
 	}, nil
 }
 
 func (r *NetworkInterface) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
+	var pIp string
 	subnetId, err := resources.GetMainOutputId(r.Subnet)
 	if err != nil {
 		return nil, err
 	}
+	if r.PublicIp != nil {
+		pIp, err = resources.GetMainOutputId(r.PublicIp)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
-		return []output.TfBlock{
-			network_interface.AwsNetworkInterface{
-				AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
-				SubnetId:    subnetId,
-			},
-		}, nil
+		var res []output.TfBlock
+		nic := network_interface.AwsNetworkInterface{
+			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
+			SubnetId:    subnetId,
+		}
+		if pIp != "" {
+			res = append(res, network_interface.AwsEipAssociation{
+				AwsResource: &common.AwsResource{
+					TerraformResource: output.TerraformResource{ResourceId: r.Subnet.ResourceId},
+				},
+				AllocationId:       pIp,
+				NetworkInterfaceId: fmt.Sprintf("%s.%s.id", output.GetResourceName(nic), nic.ResourceId),
+			})
+		}
+
+		res = append(res, nic)
+
+		return res, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		rgName := GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId)
 		nic := network_interface.AzureNetworkInterface{
@@ -111,8 +137,14 @@ func (r *NetworkInterface) Translate(ctx resources.MultyContext) ([]output.TfBlo
 			}},
 		}
 		// associate a public ip configuration in case a public_ip resource references this network_interface
-		if publicIpReference := r.getPublicIpReferences(ctx, subnetId); len(publicIpReference) != 0 {
-			nic.IpConfigurations = publicIpReference
+		if pIp != "" {
+			nic.IpConfigurations = []network_interface.AzureIpConfiguration{{
+				Name:                       fmt.Sprintf("external-%s", r.Args.Name),
+				PrivateIpAddressAllocation: "Dynamic",
+				PublicIpAddressId:          pIp,
+				SubnetId:                   subnetId,
+				Primary:                    true,
+			}}
 		}
 		return []output.TfBlock{nic}, nil
 	}
@@ -125,21 +157,21 @@ func (r *NetworkInterface) GetId(cloud commonpb.CloudProvider) string {
 	return fmt.Sprintf("%s.%s.id", types[cloud], r.ResourceId)
 }
 
-func (r *NetworkInterface) getPublicIpReferences(ctx resources.MultyContext, subnetId string) []network_interface.AzureIpConfiguration {
-	var ipConfigurations []network_interface.AzureIpConfiguration
-	for _, resource := range resources.GetAllResourcesWithRef(ctx, func(i *PublicIp) *NetworkInterface { return i.NetworkInterface }, r) {
-		ipConfigurations = append(
-			ipConfigurations, network_interface.AzureIpConfiguration{
-				Name:                       fmt.Sprintf("external-%s", resource.Args.Name),
-				PrivateIpAddressAllocation: "Dynamic",
-				PublicIpAddressId:          resource.GetId(common.AZURE),
-				SubnetId:                   subnetId,
-				Primary:                    true,
-			},
-		)
-	}
-	return ipConfigurations
-}
+//func (r *NetworkInterface) getPublicIpReferences(ctx resources.MultyContext, subnetId string) []network_interface.AzureIpConfiguration {
+//	var ipConfigurations []network_interface.AzureIpConfiguration
+//	for _, resource := range resources.GetAllResourcesWithRef(ctx, func(i *PublicIp) *NetworkInterface { return i.NetworkInterface }, r) {
+//		ipConfigurations = append(
+//			ipConfigurations, network_interface.AzureIpConfiguration{
+//				Name:                       fmt.Sprintf("external-%s", resource.Args.Name),
+//				PrivateIpAddressAllocation: "Dynamic",
+//				PublicIpAddressId:          resource.GetId(common.AZURE),
+//				SubnetId:                   subnetId,
+//				Primary:                    true,
+//			},
+//		)
+//	}
+//	return ipConfigurations
+//}
 
 func (r *NetworkInterface) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)

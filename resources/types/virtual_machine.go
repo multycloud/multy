@@ -78,12 +78,20 @@ func UpdateVirtualMachine(resource *VirtualMachine, vn *resourcespb.VirtualMachi
 
 func VirtualMachineFromState(resource *VirtualMachine, state *output.TfState) (*resourcespb.VirtualMachineResource, error) {
 	var err error
-	ip := "dryrun"
+	var ip string
 	identityId := "dryrun"
+	if resource.Args.GeneratePublicIp {
+		ip = "dryrun"
+	}
+
 	if !flags.DryRun {
-		ip, err = getPublicIp(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider)
-		if err != nil {
-			return nil, err
+		if resource.Args.GeneratePublicIp {
+			ip, err = getPublicIp(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider)
+			if err != nil {
+				return nil, err
+			} else {
+				ip = ""
+			}
 		}
 		identityId, err = getIdentityId(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider)
 		if err != nil {

@@ -131,11 +131,10 @@ func (r *VirtualNetwork) Translate(resources.MultyContext) ([]output.TfBlock, er
 			VpcId:       r.GetVirtualNetworkId(),
 		}
 		allowAllSgRule := []network_security_group.AwsSecurityGroupRule{{
-			Protocol:   "-1",
-			FromPort:   0,
-			ToPort:     0,
-			CidrBlocks: []string{"0.0.0.0/0"},
-			Self:       true,
+			Protocol: "-1",
+			FromPort: 0,
+			ToPort:   0,
+			Self:     true,
 		}}
 		sg := network_security_group.AwsDefaultSecurityGroup{
 			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),

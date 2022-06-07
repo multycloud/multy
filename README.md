@@ -93,7 +93,6 @@ resource "aws_default_security_group" "example_vn_aws" {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
     self        = true
   }
 
@@ -101,7 +100,6 @@ resource "aws_default_security_group" "example_vn_aws" {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
     self        = true
   }
 }

@@ -1,19 +1,19 @@
 resource "aws_db_subnet_group" "example_db_aws" {
   provider = "aws.us-east-1"
-  tags = {
+  tags     = {
     "Name" = "example-db"
   }
 
   name        = "example-db"
   description = "Managed by Multy"
-  subnet_ids = [
+  subnet_ids  = [
     aws_subnet.subnet1_aws.id,
     aws_subnet.subnet2_aws.id,
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
   provider = "aws.us-east-1"
-  tags = {
+  tags     = {
     "Name" = "exampledb"
   }
 
@@ -30,7 +30,7 @@ resource "aws_db_instance" "example_db_aws" {
 }
 resource "aws_subnet" "subnet1_aws" {
   provider = "aws.us-east-1"
-  tags = {
+  tags     = {
     "Name" = "subnet1"
   }
 
@@ -40,7 +40,7 @@ resource "aws_subnet" "subnet1_aws" {
 }
 resource "aws_subnet" "subnet2_aws" {
   provider = "aws.us-east-1"
-  tags = {
+  tags     = {
     "Name" = "subnet2"
   }
 
@@ -50,7 +50,7 @@ resource "aws_subnet" "subnet2_aws" {
 }
 resource "aws_route_table" "rt_aws" {
   provider = "aws.us-east-1"
-  tags = {
+  tags     = {
     "Name" = "db-rt"
   }
 
@@ -73,7 +73,7 @@ resource "aws_route_table_association" "subnet2_aws" {
 }
 resource "aws_vpc" "vn_aws" {
   provider = "aws.us-east-1"
-  tags = {
+  tags     = {
     "Name" = "db-vn"
   }
 
@@ -82,7 +82,7 @@ resource "aws_vpc" "vn_aws" {
 }
 resource "aws_internet_gateway" "vn_aws" {
   provider = "aws.us-east-1"
-  tags = {
+  tags     = {
     "Name" = "db-vn"
   }
 
@@ -90,38 +90,36 @@ resource "aws_internet_gateway" "vn_aws" {
 }
 resource "aws_default_security_group" "vn_aws" {
   provider = "aws.us-east-1"
-  tags = {
+  tags     = {
     "Name" = "db-vn"
   }
 
   vpc_id = aws_vpc.vn_aws.id
 
   ingress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 }
 resource "azurerm_mariadb_server" "example_db_azure" {
-  resource_group_name              = azurerm_resource_group.rg1.name
-  name                             = "example-db"
-  location                         = "eastus"
-  administrator_login              = "multyadmin"
-  administrator_login_password     = "multy$Admin123!"
-  sku_name                         = "GP_Gen5_2"
-  storage_mb                       = 10240
-  version                          = "10.2"
-  ssl_enforcement_enabled          = false
+  resource_group_name          = azurerm_resource_group.rg1.name
+  name                         = "example-db"
+  location                     = "eastus"
+  administrator_login          = "multyadmin"
+  administrator_login_password = "multy$Admin123!"
+  sku_name                     = "GP_Gen5_2"
+  storage_mb                   = 10240
+  version                      = "10.2"
+  ssl_enforcement_enabled      = false
 }
 resource "azurerm_mariadb_virtual_network_rule" "example_db_azure0" {
   resource_group_name = azurerm_resource_group.rg1.name
