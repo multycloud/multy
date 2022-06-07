@@ -89,8 +89,6 @@ func VirtualMachineFromState(resource *VirtualMachine, state *output.TfState) (*
 			ip, err = getPublicIp(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider)
 			if err != nil {
 				return nil, err
-			} else {
-				ip = ""
 			}
 		}
 		identityId, err = getIdentityId(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider)

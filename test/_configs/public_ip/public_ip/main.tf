@@ -43,7 +43,7 @@ resource "aws_eip" "ip_aws" {
     "Name" = "test-ip"
   }
 }
-resource "aws_eip_association" "subnet_aws" {
+resource "aws_eip_association" "public-nic_aws" {
   provider             = "aws.eu-west-1"
   network_interface_id = aws_network_interface.public-nic_aws.id
   allocation_id        = aws_eip.ip_aws.id

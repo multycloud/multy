@@ -134,7 +134,7 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 	pip, err := server.PublicIpService.Create(ctx, createPipRequest)
 	if err != nil {
 		logGrpcErrorDetails(t, err)
-		t.Fatalf("unable to create network interface: %+v", err)
+		t.Fatalf("unable to create public ip: %+v", err)
 	}
 	t.Cleanup(func() {
 		if DestroyAfter {

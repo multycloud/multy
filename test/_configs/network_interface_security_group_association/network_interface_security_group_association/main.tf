@@ -166,12 +166,12 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     direction                  = "Outbound"
   }
 }
-resource "aws_network_interface_sg_attachment" "nic_aws" {
+resource "aws_network_interface_sg_attachment" "nic_nsg_association_aws" {
   provider             = "aws.eu-west-1"
   security_group_id    = aws_security_group.nsg2_aws.id
   network_interface_id = aws_network_interface.nic_aws.id
 }
-resource "azurerm_network_interface_security_group_association" "nic_azure" {
+resource "azurerm_network_interface_security_group_association" "nic_nsg_association_azure" {
   network_interface_id      = azurerm_network_interface.nic_azure.id
   network_security_group_id = azurerm_network_security_group.nsg2_azure.id
 }
@@ -219,7 +219,7 @@ resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
   location = "northeurope"
 }
-resource "aws_eip_association" "subnet_aws" {
+resource "aws_eip_association" "nic_aws" {
   provider             = "aws.eu-west-1"
   network_interface_id = aws_network_interface.nic_aws.id
   allocation_id        = aws_eip.ip_aws.id

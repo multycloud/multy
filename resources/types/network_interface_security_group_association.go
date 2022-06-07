@@ -78,11 +78,11 @@ func NewNetworkInterfaceSecurityGroupAssociation(resourceId string, args *resour
 }
 
 func (r *NetworkInterfaceSecurityGroupAssociation) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
-	nic, err := resources.GetMainOutputId(r.NetworkInterface)
+	nicId, err := resources.GetMainOutputId(r.NetworkInterface)
 	if err != nil {
 		return nil, err
 	}
-	nsg, err := resources.GetMainOutputId(r.NetworkSecurityGroup)
+	nsgId, err := resources.GetMainOutputId(r.NetworkSecurityGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -91,19 +91,19 @@ func (r *NetworkInterfaceSecurityGroupAssociation) Translate(ctx resources.Multy
 		return []output.TfBlock{
 			network_interface_security_group_association.AwsNetworkInterfaceSecurityGroupAssociation{
 				AwsResource: &common.AwsResource{
-					TerraformResource: output.TerraformResource{ResourceId: r.NetworkInterface.ResourceId},
+					TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 				},
-				NetworkInterfaceId:     nic,
-				NetworkSecurityGroupId: nsg,
+				NetworkInterfaceId:     nicId,
+				NetworkSecurityGroupId: nsgId,
 			},
 		}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
 		return []output.TfBlock{network_interface_security_group_association.AzureNetworkInterfaceSecurityGroupAssociation{
 			AzResource: &common.AzResource{
-				TerraformResource: output.TerraformResource{ResourceId: r.NetworkInterface.ResourceId},
+				TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 			},
-			NetworkInterfaceId: nic,
-			SecurityGroupId:    nsg,
+			NetworkInterfaceId: nicId,
+			SecurityGroupId:    nsgId,
 		}}, nil
 	}
 

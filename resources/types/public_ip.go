@@ -31,7 +31,6 @@ var publicIpMetadata = resources.ResourceMetadata[*resourcespb.PublicIpArgs, *Pu
 
 type PublicIp struct {
 	resources.ResourceWithId[*resourcespb.PublicIpArgs]
-	//NetworkInterface *NetworkInterface
 }
 
 func (r *PublicIp) GetMetadata() resources.ResourceMetadataInterface {
@@ -75,40 +74,25 @@ func PublicIpFromState(resource *PublicIp, state *output.TfState) (*resourcespb.
 			NeedsUpdate:     false,
 		},
 		Name: resource.Args.Name,
-		//NetworkInterfaceId: resource.Args.NetworkInterfaceId,
 
 		Ip: ip,
 	}, nil
 }
 
 func NewPublicIp(resourceId string, args *resourcespb.PublicIpArgs, others *resources.Resources) (*PublicIp, error) {
-	//ni, _, err := resources.GetOptional[*NetworkInterface](resourceId, others, args.NetworkInterfaceId)
-	//if err != nil {
-	//	return nil, err
-	//}
 	return &PublicIp{
 		ResourceWithId: resources.ResourceWithId[*resourcespb.PublicIpArgs]{
 			ResourceId: resourceId,
 			Args:       args,
 		},
-		//NetworkInterface: ni,
 	}, nil
 }
 
 func (r *PublicIp) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
-		//nid := ""
-		//if r.NetworkInterface != nil {
-		//	var err error
-		//	nid, err = resources.GetMainOutputId(r.NetworkInterface)
-		//	if err != nil {
-		//		return nil, err
-		//	}
-		//}
 		return []output.TfBlock{
 			public_ip.AwsElasticIp{
 				AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
-				//NetworkInterfaceId: nid,
 				//Vpc:        true,
 			},
 		}, nil
@@ -152,9 +136,6 @@ func getIp(resourceId string, state *output.TfState, cloud commonpb.CloudProvide
 
 func (r *PublicIp) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
-	//if r.NetworkInterfaceId != "" && r.InstanceId != "" {
-	//	errs = append(errs, r.NewError(r.ResourceId, "instance_id", "cannot set both network_interface_id and instance_id"))
-	//}
 	return errs
 }
 
