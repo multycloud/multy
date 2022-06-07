@@ -7,7 +7,7 @@ import (
 	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/output"
-	"github.com/multycloud/multy/resources/types"
+	"github.com/multycloud/multy/resources/types/metadata"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
@@ -63,7 +63,7 @@ func (d DeploymentExecutor) Deploy(ctx context.Context, c *resources.MultyConfig
 		// rollback if something goes wrong
 		if err != nil {
 			log.Println("[ERROR] Something went wrong, rolling back")
-			originalC, err2 := c.GetOriginalConfig(types.Metadatas)
+			originalC, err2 := c.GetOriginalConfig(metadata.Metadatas)
 			if err2 != nil {
 				log.Printf("[ERROR] Rollback unsuccessful: %s\n", err2)
 				return

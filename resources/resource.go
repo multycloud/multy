@@ -10,6 +10,7 @@ import (
 	"github.com/multycloud/multy/validate"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
+	"google.golang.org/protobuf/proto"
 )
 
 type Resources struct {
@@ -50,7 +51,13 @@ func (r *Resources) GetAll() []Resource {
 
 // Get finds the resource with the given id and adds a dependency between dependentResourceId and id.
 func Get[T Resource](dependentResourceId string, resources *Resources, id string) (T, error) {
-	// TODO return better error on empty ID
+	if id == "" {
+		return *new(T), errors.ValidationError(validate.ValidationError{
+			ErrorMessage: fmt.Sprintf("Required id is empty in resource %s.", dependentResourceId),
+			ResourceId:   id,
+		})
+	}
+
 	item, exists, err := GetOptional[T](dependentResourceId, resources, id)
 	if err != nil {
 		return item, err
@@ -135,55 +142,34 @@ func mergeGroups(all map[Resource]*MultyResourceGroup, res1 Resource, res2 Resou
 	}
 }
 
-func GetCloudSpecificResourceId(r Resource, cloud commonpb.CloudProvider) string {
-	return GetResourceIdForCloud(r.GetResourceId(), cloud)
-}
-
-func GetResourceIdForCloud(resourceId string, cloud commonpb.CloudProvider) string {
-	return fmt.Sprintf("%s.%s", cloud, resourceId)
-}
-
-type CloudSpecificResource struct {
-	Cloud             commonpb.CloudProvider
-	Resource          Resource
-	ImplicitlyCreated bool
-}
-
-func (c *CloudSpecificResource) GetResourceId() string {
-	return GetCloudSpecificResourceId(c.Resource, c.Cloud)
-}
-
-func (c *CloudSpecificResource) GetLocation(ctx MultyContext) string {
-	return c.Resource.GetCloudSpecificLocation()
-}
-
-func (c *CloudSpecificResource) Translate(ctx MultyContext) ([]output.TfBlock, error) {
-	return c.Resource.Translate(ctx)
-}
-
 type Resource interface {
-	Translate(ctx MultyContext) ([]output.TfBlock, error)
-
 	GetResourceId() string
-
 	GetCloudSpecificLocation() string
+	GetCloud() commonpb.CloudProvider
 
 	Validate(ctx MultyContext) []validate.ValidationError
 
+	GetMetadata(ResourceMetadatas) (ResourceMetadataInterface, error)
+}
+
+type CloudSpecificResource[OutT proto.Message] interface {
+	FromState(state *output.TfState) (OutT, error)
+
+	CloudSpecificResourceTranslator
+	Resource
+}
+
+type CloudSpecificResourceTranslator interface {
 	GetMainResourceName() (string, error)
-
-	GetCloud() commonpb.CloudProvider
-
-	GetCommonArgs() any
-
-	GetMetadata() ResourceMetadataInterface
+	Translate(ctx MultyContext) ([]output.TfBlock, error)
 }
 
-func (c *CloudSpecificResource) GetMainOutputId() (string, error) {
-	return GetMainOutputId(c.Resource)
+type namedResource interface {
+	GetMainResourceName() (string, error)
+	GetResourceId() string
 }
 
-func GetMainOutputId(r Resource) (string, error) {
+func GetMainOutputId(r namedResource) (string, error) {
 	name, err := r.GetMainResourceName()
 	if err != nil {
 		return "", err
@@ -191,7 +177,7 @@ func GetMainOutputId(r Resource) (string, error) {
 	return fmt.Sprintf("%s.%s.id", name, r.GetResourceId()), nil
 }
 
-func GetMainOutputRef(r Resource) (string, error) {
+func GetMainOutputRef(r namedResource) (string, error) {
 	name, err := r.GetMainResourceName()
 	if err != nil {
 		return "", err

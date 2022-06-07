@@ -10,7 +10,7 @@ import (
 	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/proto/configpb"
 	"github.com/multycloud/multy/resources"
-	"github.com/multycloud/multy/resources/types"
+	"github.com/multycloud/multy/resources/types/metadata"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 	"google.golang.org/grpc/status"
@@ -94,7 +94,7 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 		t.Fatalf("unable to parse input file: %v", err)
 	}
 
-	mconfig, err := resources.LoadConfig(&c, types.Metadatas)
+	mconfig, err := resources.LoadConfig(&c, metadata.Metadatas)
 	if err != nil {
 		t.Fatalf("error loading config: %v", err)
 	}

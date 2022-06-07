@@ -6,6 +6,7 @@ import (
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/types"
+	"github.com/multycloud/multy/resources/types/metadata"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -29,7 +30,7 @@ func TestResourceMetadataImport(t *testing.T) {
 		},
 	}
 
-	config, err := resources.LoadConfig(c, types.Metadatas)
+	config, err := resources.LoadConfig(c, metadata.Metadatas)
 	if err != nil {
 		t.Fatalf("unable to load config: %s", err)
 	}
@@ -69,7 +70,7 @@ func TestResourceMetadataImport_returnsAffectedResources(t *testing.T) {
 		},
 	}
 
-	config, err := resources.LoadConfig(c, types.Metadatas)
+	config, err := resources.LoadConfig(c, metadata.Metadatas)
 	if err != nil {
 		t.Fatalf("unable to load config: %s", err)
 	}
@@ -85,7 +86,7 @@ func TestResourceMetadataCreate_createsResourceGroup(t *testing.T) {
 	c := &configpb.Config{
 		UserId: "test-user",
 	}
-	config, err := resources.LoadConfig(c, types.Metadatas)
+	config, err := resources.LoadConfig(c, metadata.Metadatas)
 	if err != nil {
 		t.Fatalf("unable to load config: %s", err)
 	}
@@ -122,16 +123,16 @@ func TestResourceMetadataCreate_createsResourceGroup(t *testing.T) {
 	if !ok {
 		t.Fatalf("resource should of type resource group, but is %t", config.Resources.ResourceMap[rgId])
 	}
-	assert.Equal(t, rgId, rg.Name)
-	assert.Equal(t, args.CommonParameters.Location, rg.Location)
-	assert.Equal(t, args.CommonParameters.CloudProvider, rg.Cloud)
+	assert.Equal(t, rgId, rg.Args.Name)
+	assert.Equal(t, args.CommonParameters.Location, rg.Args.CommonParameters.Location)
+	assert.Equal(t, args.CommonParameters.CloudProvider, rg.Args.CommonParameters.CloudProvider)
 }
 
 func TestResourceMetadataDelete_deletesResourceGroup(t *testing.T) {
 	c := &configpb.Config{
 		UserId: "test-user",
 	}
-	config, err := resources.LoadConfig(c, types.Metadatas)
+	config, err := resources.LoadConfig(c, metadata.Metadatas)
 	if err != nil {
 		t.Fatalf("unable to load config: %s", err)
 	}
@@ -170,7 +171,7 @@ func TestResourceMetadataExport(t *testing.T) {
 	c := &configpb.Config{
 		UserId: "test-user",
 	}
-	config, err := resources.LoadConfig(c, types.Metadatas)
+	config, err := resources.LoadConfig(c, metadata.Metadatas)
 	if err != nil {
 		t.Fatalf("unable to load config: %s", err)
 	}
@@ -204,7 +205,7 @@ func TestResourceMetadataUpdateMultyResourceGroups(t *testing.T) {
 	c := &configpb.Config{
 		UserId: "test-user",
 	}
-	config, err := resources.LoadConfig(c, types.Metadatas)
+	config, err := resources.LoadConfig(c, metadata.Metadatas)
 	if err != nil {
 		t.Fatalf("unable to load config: %s", err)
 	}
@@ -282,7 +283,7 @@ func TestResourceMetadataUpdate(t *testing.T) {
 		},
 	}
 
-	config, err := resources.LoadConfig(c, types.Metadatas)
+	config, err := resources.LoadConfig(c, metadata.Metadatas)
 	if err != nil {
 		t.Fatalf("unable to load config: %s", err)
 	}
@@ -339,7 +340,7 @@ func TestResourceMetadataCreate_shouldNotCreateDuplicateRg(t *testing.T) {
 		},
 	}
 
-	config, err := resources.LoadConfig(c, types.Metadatas)
+	config, err := resources.LoadConfig(c, metadata.Metadatas)
 	if err != nil {
 		t.Fatalf("unable to load config: %s", err)
 	}
