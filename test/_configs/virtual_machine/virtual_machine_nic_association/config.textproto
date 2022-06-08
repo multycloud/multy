@@ -1,0 +1,164 @@
+resources:  {
+  resource_id:  "example_vn_aws"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  AWS
+        }
+        name:  "example_vn"
+        cidr_block:  "10.0.0.0/16"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "example_vn_azure"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  AZURE
+        }
+        name:  "example_vn"
+        cidr_block:  "10.0.0.0/16"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "subnet_aws"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
+        name:  "subnet"
+        cidr_block:  "10.0.2.0/24"
+        virtual_network_id:  "example_vn_aws"
+        availability_zone:  2
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "subnet_azure"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
+        name:  "subnet"
+        cidr_block:  "10.0.2.0/24"
+        virtual_network_id:  "example_vn_azure"
+        availability_zone:  2
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "nic_azure"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.NetworkInterfaceArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  AZURE
+        }
+        name:  "test-nic"
+        subnet_id:  "subnet_azure"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "vm_azure"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualMachineArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  AZURE
+        }
+        name:  "test-vm"
+        network_interface_ids:  "nic_azure"
+        vm_size:  GENERAL_NANO
+        user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
+        subnet_id:  "subnet_azure"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "nic_aws"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.NetworkInterfaceArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  AWS
+        }
+        name:  "test-nic"
+        subnet_id:  "subnet_aws"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "vm_aws"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualMachineArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  AWS
+        }
+        name:  "test-vm"
+        network_interface_ids:  "nic_aws"
+        vm_size:  GENERAL_NANO
+        user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
+        subnet_id:  "subnet_aws"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "rg1"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.ResourceGroupArgs]:  {
+        common_parameters:  {
+          location:  EU_WEST_1
+          cloud_provider:  AZURE
+        }
+        name:  "rg1"
+      }
+    }
+  }
+}
+
+
+# proto-file: api/proto/configpb/config.proto
+# proto-import: api/proto/resourcespb/database.proto
+# proto-import: api/proto/resourcespb/kubernetes_cluster.proto
+# proto-import: api/proto/resourcespb/kubernetes_node_pool.proto
+# proto-import: api/proto/resourcespb/lambda.proto
+# proto-import: api/proto/resourcespb/network_interface.proto
+# proto-import: api/proto/resourcespb/network_security_group.proto
+# proto-import: api/proto/resourcespb/public_ip.proto
+# proto-import: api/proto/resourcespb/resource_group.proto
+# proto-import: api/proto/resourcespb/route_table_association.proto
+# proto-import: api/proto/resourcespb/object_storage.proto
+# proto-import: api/proto/resourcespb/object_storage_object.proto
+# proto-import: api/proto/resourcespb/route_table.proto
+# proto-import: api/proto/resourcespb/subnet.proto
+# proto-import: api/proto/resourcespb/vault.proto
+# proto-import: api/proto/resourcespb/vault_access_policy.proto
+# proto-import: api/proto/resourcespb/vault_secret.proto
+# proto-import: api/proto/resourcespb/virtual_machine.proto
+# proto-import: api/proto/resourcespb/virtual_network.proto
+# proto-message: config.Config

@@ -1,0 +1,200 @@
+resources:  {
+  resource_id:  "example_vn_aws"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  AWS
+        }
+        name:  "example_vn"
+        cidr_block:  "10.0.0.0/16"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "example_vn_azure"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  AZURE
+        }
+        name:  "example_vn"
+        cidr_block:  "10.0.0.0/16"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "public_subnet_aws"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
+        name:  "public-subnet"
+        cidr_block:  "10.0.0.0/24"
+        virtual_network_id:  "example_vn_aws"
+        availability_zone:  2
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "public_subnet_azure"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
+        name:  "public-subnet"
+        cidr_block:  "10.0.0.0/24"
+        virtual_network_id:  "example_vn_azure"
+        availability_zone:  2
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "rt_aws"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.RouteTableArgs]:  {
+        name:  "test-rt"
+        virtual_network_id:  "example_vn_aws"
+        routes:  {
+          cidr_block:  "0.0.0.0/0"
+          destination:  INTERNET
+        }
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "rt_azure"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.RouteTableArgs]:  {
+        name:  "test-rt"
+        virtual_network_id:  "example_vn_azure"
+        routes:  {
+          cidr_block:  "0.0.0.0/0"
+          destination:  INTERNET
+        }
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "rta_aws"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs]:  {
+        subnet_id:  "public_subnet_aws"
+        route_table_id:  "rt_aws"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "rta_azure"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs]:  {
+        subnet_id:  "public_subnet_azure"
+        route_table_id:  "rt_azure"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "cluster_aws"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.KubernetesClusterArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  AWS
+        }
+        name:  "cluster_aws"
+        service_cidr:  "10.100.0.0/16"
+        virtual_network_id:  "example_vn_aws"
+        default_node_pool:  {
+          name:  "node_pool_aws"
+          subnet_id:  "public_subnet_aws"
+          min_node_count:  1
+          max_node_count:  1
+          vm_size:  GENERAL_MEDIUM
+          aws_override:  {
+            instance_types:  "t3.medium"
+          }
+        }
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "cluster_azure"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.KubernetesClusterArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  AZURE
+        }
+        name:  "cluster_azure"
+        service_cidr:  "10.100.0.0/16"
+        virtual_network_id:  "example_vn_azure"
+        default_node_pool:  {
+          name:  "default"
+          subnet_id:  "public_subnet_azure"
+          min_node_count:  1
+          max_node_count:  1
+          vm_size:  GENERAL_MEDIUM
+          azure_override:  {
+            vm_size:  "Standard_DS2_v2"
+          }
+        }
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "rg1"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.ResourceGroupArgs]:  {
+        common_parameters:  {
+          location:  EU_WEST_1
+          cloud_provider:  AZURE
+        }
+        name:  "rg1"
+      }
+    }
+  }
+}
+
+
+# proto-file: api/proto/configpb/config.proto
+# proto-import: api/proto/resourcespb/database.proto
+# proto-import: api/proto/resourcespb/kubernetes_cluster.proto
+# proto-import: api/proto/resourcespb/kubernetes_node_pool.proto
+# proto-import: api/proto/resourcespb/lambda.proto
+# proto-import: api/proto/resourcespb/network_interface.proto
+# proto-import: api/proto/resourcespb/network_security_group.proto
+# proto-import: api/proto/resourcespb/public_ip.proto
+# proto-import: api/proto/resourcespb/resource_group.proto
+# proto-import: api/proto/resourcespb/route_table_association.proto
+# proto-import: api/proto/resourcespb/object_storage.proto
+# proto-import: api/proto/resourcespb/object_storage_object.proto
+# proto-import: api/proto/resourcespb/route_table.proto
+# proto-import: api/proto/resourcespb/subnet.proto
+# proto-import: api/proto/resourcespb/vault.proto
+# proto-import: api/proto/resourcespb/vault_access_policy.proto
+# proto-import: api/proto/resourcespb/vault_secret.proto
+# proto-import: api/proto/resourcespb/virtual_machine.proto
+# proto-import: api/proto/resourcespb/virtual_network.proto
+# proto-message: config.Config
