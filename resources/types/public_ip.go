@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -30,7 +31,6 @@ var publicIpMetadata = resources.ResourceMetadata[*resourcespb.PublicIpArgs, *Pu
 
 type PublicIp struct {
 	resources.ResourceWithId[*resourcespb.PublicIpArgs]
-	NetworkInterface *NetworkInterface
 }
 
 func (r *PublicIp) GetMetadata() resources.ResourceMetadataInterface {
@@ -40,7 +40,10 @@ func (r *PublicIp) GetMetadata() resources.ResourceMetadataInterface {
 func CreatePublicIp(resourceId string, args *resourcespb.PublicIpArgs, others *resources.Resources) (*PublicIp, error) {
 	if args.CommonParameters.ResourceGroupId == "" {
 		// todo: maybe put in the same RG as VM?
-		rgId := NewRg("pip", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		rgId, err := NewRg("pip", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 
@@ -52,7 +55,16 @@ func UpdatePublicIp(resource *PublicIp, vn *resourcespb.PublicIpArgs, others *re
 	return nil
 }
 
-func PublicIpFromState(resource *PublicIp, _ *output.TfState) (*resourcespb.PublicIpResource, error) {
+func PublicIpFromState(resource *PublicIp, state *output.TfState) (*resourcespb.PublicIpResource, error) {
+	var err error
+	ip := "dryrun"
+	if !flags.DryRun {
+		ip, err = getIp(resource.ResourceId, state, resource.Args.CommonParameters.CloudProvider)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &resourcespb.PublicIpResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      resource.ResourceId,
@@ -61,39 +73,26 @@ func PublicIpFromState(resource *PublicIp, _ *output.TfState) (*resourcespb.Publ
 			CloudProvider:   resource.Args.CommonParameters.CloudProvider,
 			NeedsUpdate:     false,
 		},
-		Name:               resource.Args.Name,
-		NetworkInterfaceId: resource.Args.NetworkInterfaceId,
+		Name: resource.Args.Name,
+
+		Ip: ip,
 	}, nil
 }
 
 func NewPublicIp(resourceId string, args *resourcespb.PublicIpArgs, others *resources.Resources) (*PublicIp, error) {
-	ni, _, err := resources.GetOptional[*NetworkInterface](resourceId, others, args.NetworkInterfaceId)
-	if err != nil {
-		return nil, err
-	}
 	return &PublicIp{
 		ResourceWithId: resources.ResourceWithId[*resourcespb.PublicIpArgs]{
 			ResourceId: resourceId,
 			Args:       args,
 		},
-		NetworkInterface: ni,
 	}, nil
 }
 
 func (r *PublicIp) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
-		nid := ""
-		if r.NetworkInterface != nil {
-			var err error
-			nid, err = resources.GetMainOutputId(r.NetworkInterface)
-			if err != nil {
-				return nil, err
-			}
-		}
 		return []output.TfBlock{
 			public_ip.AwsElasticIp{
-				AwsResource:        common.NewAwsResource(r.ResourceId, r.Args.Name),
-				NetworkInterfaceId: nid,
+				AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
 				//Vpc:        true,
 			},
 		}, nil
@@ -116,11 +115,27 @@ func (r *PublicIp) GetId(cloud commonpb.CloudProvider) string {
 	return fmt.Sprintf("%s.%s.id", types[cloud], r.ResourceId)
 }
 
+func getIp(resourceId string, state *output.TfState, cloud commonpb.CloudProvider) (string, error) {
+	switch cloud {
+	case commonpb.CloudProvider_AWS:
+		values, err := state.GetValues(public_ip.AwsElasticIp{}, resourceId)
+		if err != nil {
+			return "", err
+		}
+		return values["public_ip"].(string), nil
+	case commonpb.CloudProvider_AZURE:
+		values, err := state.GetValues(public_ip.AzurePublicIp{}, resourceId)
+		if err != nil {
+			return "", err
+		}
+		return values["ip_address"].(string), nil
+	}
+
+	return "", fmt.Errorf("unknown cloud: %s", cloud.String())
+}
+
 func (r *PublicIp) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
-	//if r.NetworkInterfaceId != "" && r.InstanceId != "" {
-	//	errs = append(errs, r.NewError(r.ResourceId, "instance_id", "cannot set both network_interface_id and instance_id"))
-	//}
 	return errs
 }
 

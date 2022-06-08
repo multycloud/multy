@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "github.com/multycloud/multy/api/proto/userpb";
+option java_multiple_files = true;
+option java_package = "dev.multy.api.user";
+option java_outer_classname = "MultyProto";
+
+package dev.multy.user;
+
+message User {
+  string user_id = 1;
+  string api_key = 2;
+}
+
+
+message RegisterUserRequest {
+  string email_address = 1;
+}

@@ -25,9 +25,13 @@ func NewResources() *Resources {
 	}
 }
 
-func (r *Resources) Add(resource Resource) {
+func (r *Resources) Add(resource Resource) error {
+	if _, ok := r.ResourceMap[resource.GetResourceId()]; ok {
+		return fmt.Errorf("attempted to add a resource with an already existing id (%s), this should never happen", resource.GetResourceId())
+	}
 	r.ResourceMap[resource.GetResourceId()] = resource
 	r.resources = append(r.resources, resource)
+	return nil
 }
 
 func (r *Resources) Delete(resourceId string) {
@@ -46,6 +50,7 @@ func (r *Resources) GetAll() []Resource {
 
 // Get finds the resource with the given id and adds a dependency between dependentResourceId and id.
 func Get[T Resource](dependentResourceId string, resources *Resources, id string) (T, error) {
+	// TODO return better error on empty ID
 	item, exists, err := GetOptional[T](dependentResourceId, resources, id)
 	if err != nil {
 		return item, err

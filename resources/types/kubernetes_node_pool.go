@@ -71,6 +71,8 @@ func KubernetesNodePoolFromState(resource *KubernetesNodePool, _ *output.TfState
 		VmSize:            resource.Args.VmSize,
 		DiskSizeGb:        resource.Args.DiskSizeGb,
 		Labels:            resource.Args.Labels,
+		AwsOverride:       resource.Args.AwsOverride,
+		AzureOverride:     resource.Args.AzureOverride,
 	}, nil
 }
 
@@ -138,11 +140,19 @@ func (r *KubernetesNodePool) Translate(resources.MultyContext) ([]output.TfBlock
 	if err != nil {
 		return nil, err
 	}
+
+	var instanceTypes []string
+	if r.Args.AwsOverride.GetInstanceTypes() != nil {
+		instanceTypes = r.Args.AwsOverride.GetInstanceTypes()
+	} else {
+		instanceTypes = []string{common.VMSIZE[r.Args.VmSize][r.GetCloud()]}
+	}
+
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
-		roleName := fmt.Sprintf("iam_for_k8nodepool_%s", r.Args.Name)
+		roleName := fmt.Sprintf("multy-k8nodepool-%s-%s-role", r.KubernetesCluster.Args.Name, r.Args.Name)
 		role := iam.AwsIamRole{
 			AwsResource:      common.NewAwsResource(r.ResourceId, roleName),
-			Name:             fmt.Sprintf("iam_for_k8nodepool_%s", r.Args.Name),
+			Name:             roleName,
 			AssumeRolePolicy: iam.NewAssumeRolePolicy("ec2.amazonaws.com"),
 		}
 		clusterId, err := resources.GetMainOutputId(r.KubernetesCluster)
@@ -178,7 +188,7 @@ func (r *KubernetesNodePool) Translate(resources.MultyContext) ([]output.TfBlock
 					MinSize:     int(r.Args.MinNodeCount),
 				},
 				Labels:        r.Args.Labels,
-				InstanceTypes: []string{common.VMSIZE[r.Args.VmSize][r.GetCloud()]},
+				InstanceTypes: instanceTypes,
 			},
 		}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
@@ -203,6 +213,14 @@ func (r *KubernetesNodePool) translateAzNodePool() (*kubernetes_node_pool.AzureK
 	if err != nil {
 		return nil, err
 	}
+
+	var vmSize string
+	if r.Args.AzureOverride.GetVmSize() != "" {
+		vmSize = r.Args.AzureOverride.GetVmSize()
+	} else {
+		vmSize = common.VMSIZE[r.Args.VmSize][r.GetCloud()]
+	}
+
 	return &kubernetes_node_pool.AzureKubernetesNodePool{
 		AzResource: &common.AzResource{
 			TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
@@ -214,7 +232,7 @@ func (r *KubernetesNodePool) translateAzNodePool() (*kubernetes_node_pool.AzureK
 		MinSize:                int(r.Args.MinNodeCount),
 		Labels:                 r.Args.Labels,
 		EnableAutoScaling:      true,
-		VmSize:                 common.VMSIZE[r.Args.VmSize][r.GetCloud()],
+		VmSize:                 vmSize,
 		VirtualNetworkSubnetId: subnetId,
 	}, nil
 }

@@ -16,6 +16,7 @@ type ServeCommand struct {
 func (c *ServeCommand) ParseFlags(f *flag.FlagSet, args []string) {
 	f.IntVar(&c.Port, "port", 8000, "Port to run server on")
 	f.BoolVar(&flags.DryRun, "dry_run", false, "If true, nothing will be deployed")
+	f.BoolVar(&flags.NoTelemetry, "no_telemetry", false, "If true, no logs will be stored")
 	f.StringVar(&c.Env, "env", "prod", "Environment - one of prod, dev or local")
 	_ = f.Parse(args)
 }

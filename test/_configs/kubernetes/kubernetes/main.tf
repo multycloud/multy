@@ -1,6 +1,6 @@
 resource "aws_iam_role" "cluster_aws_default_pool" {
-  tags               = { "Name" = "iam_for_k8nodepool_node_pool_aws" }
-  name               = "iam_for_k8nodepool_node_pool_aws"
+  tags               = { "Name" = "multy-k8nodepool-cluster_aws-node_pool_aws-role" }
+  name               = "multy-k8nodepool-cluster_aws-node_pool_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }
@@ -61,8 +61,8 @@ resource "aws_route_table_association" "cluster_aws_public_rta" {
   provider       = "aws.eu-west-1"
 }
 resource "aws_iam_role" "cluster_aws" {
-  tags               = { "Name" = "iam_for_k8cluster_cluster_aws" }
-  name               = "iam_for_k8cluster_cluster_aws"
+  tags               = { "Name" = "multy-k8cluster-cluster_aws-role" }
+  name               = "multy-k8cluster-cluster_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"eks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }
@@ -105,7 +105,7 @@ resource "azurerm_kubernetes_cluster" "cluster_azure" {
     max_count           = 1
     min_count           = 1
     enable_auto_scaling = true
-    vm_size             = "Standard_A2_v2"
+    vm_size             = "Standard_B2s"
     vnet_subnet_id      = azurerm_subnet.public_subnet_azure.id
   }
   dns_prefix = "clusterazureaks7hut"
@@ -135,18 +135,16 @@ resource "aws_default_security_group" "example_vn_aws" {
   tags   = { "Name" = "example_vn" }
   vpc_id = aws_vpc.example_vn_aws.id
   ingress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
   provider = "aws.eu-west-1"
 }

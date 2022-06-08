@@ -89,6 +89,7 @@ func init() {
 		return
 	}
 	flags.Environment = flags.Local
+	flags.NoTelemetry = true
 	flags.DryRun = false
 	awsClient, err := aws_client.NewClient()
 	if err != nil {
@@ -98,7 +99,7 @@ func init() {
 	if err != nil {
 		log.Fatalf("failed to load db: %v", err)
 	}
-	serviceContext := &service_context.ServiceContext{
+	serviceContext := &service_context.ResourceServiceContext{
 		Database:           database,
 		AwsClient:          awsClient,
 		DeploymentExecutor: deploy.NewDeploymentExecutor(),

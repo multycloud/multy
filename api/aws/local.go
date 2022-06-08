@@ -51,9 +51,14 @@ func (c LocalClient) getFilePath(userId string, fileName string) (string, error)
 	return path.Join(tmpDir, fileName), nil
 }
 
-func (c LocalClient) UpdateQPSMetric(_ string, _ string) error {
-	return nil
+func (c LocalClient) UpdateQPSMetric(_ string, service string, method string) error {
+	err := logAction("local#", service, method)
+	if err != nil {
+		log.Printf("[WARNING] Logging error ocurred: %s", err)
+	}
+	return err
 }
+
 func (c LocalClient) UpdateErrorMetric(_ string, _ string, _ string) error {
 	return nil
 }

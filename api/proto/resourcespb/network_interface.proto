@@ -30,10 +30,12 @@ message NetworkInterfaceArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   string subnet_id = 3;
+  string public_ip_id = 4;
 }
 
 message NetworkInterfaceResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   string subnet_id = 3;
+  string public_ip_id = 4;
 }

@@ -4,12 +4,12 @@
 package e2e
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
@@ -21,18 +21,28 @@ import (
 	"time"
 )
 
+const (
+	vnCidrBlock      = "10.0.0.0/16"
+	publicSubnetCidr = "10.0.0.0/24"
+)
+
 // todo: azure enforces rule priority, aws doesnt
 // todo: the provided RSA SSH key has 1024 bits. Only ssh-rsa keys with 2048 bits or higher are supported by Azure
 func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 	ctx := getCtx(t, cloud, "vm")
 
+	location := commonpb.Location_EU_WEST_1
+	if cloud == commonpb.CloudProvider_AZURE {
+		location = commonpb.Location_EU_WEST_2
+	}
+
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_1,
+			Location:      location,
 			CloudProvider: cloud,
 		},
 		Name:      "vm-test-vn",
-		CidrBlock: "10.0.0.0/16",
+		CidrBlock: vnCidrBlock,
 	}}
 	vn, err := server.VnService.Create(ctx, createVnRequest)
 	if err != nil {
@@ -51,7 +61,7 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 
 	createPublicSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
 		Name:             "vm-test-public-subnet",
-		CidrBlock:        "10.0.0.0/24",
+		CidrBlock:        publicSubnetCidr,
 		VirtualNetworkId: vn.CommonParameters.ResourceId,
 		AvailabilityZone: 1,
 	}}
@@ -100,7 +110,6 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 		RouteTableId: rt.CommonParameters.ResourceId,
 	}}
 	rta, err := server.RouteTableAssociationService.Create(ctx, createRtaRequest)
-	fmt.Println(rta)
 	if err != nil {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create route table association: %+v", err)
@@ -115,9 +124,57 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 		}
 	})
 
+	createPipRequest := &resourcespb.CreatePublicIpRequest{Resource: &resourcespb.PublicIpArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      location,
+			CloudProvider: cloud,
+		},
+		Name: "pip-test-vm",
+	}}
+	pip, err := server.PublicIpService.Create(ctx, createPipRequest)
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create public ip: %+v", err)
+	}
+	t.Cleanup(func() {
+		if DestroyAfter {
+			_, err := server.PublicIpService.Delete(ctx, &resourcespb.DeletePublicIpRequest{ResourceId: pip.CommonParameters.ResourceId})
+			if err != nil {
+				logGrpcErrorDetails(t, err)
+				t.Logf("unable to delete resource %+v", err)
+			}
+		}
+	})
+
+	// FIXME "network_interface": conflicts with vpc_security_group_ids
+	// NSG might need to be associated via NIC
+	createNicRequest := &resourcespb.CreateNetworkInterfaceRequest{Resource: &resourcespb.NetworkInterfaceArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      location,
+			CloudProvider: cloud,
+		},
+		Name:       "nsg-test-vm",
+		SubnetId:   publicSubnet.CommonParameters.ResourceId,
+		PublicIpId: pip.CommonParameters.ResourceId,
+	}}
+	nic, err := server.NetworkInterfaceService.Create(ctx, createNicRequest)
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create network interface: %+v", err)
+	}
+	t.Cleanup(func() {
+		if DestroyAfter {
+			_, err := server.NetworkInterfaceService.Delete(ctx, &resourcespb.DeleteNetworkInterfaceRequest{ResourceId: nic.CommonParameters.ResourceId})
+			if err != nil {
+				logGrpcErrorDetails(t, err)
+				t.Logf("unable to delete resource %+v", err)
+			}
+		}
+	})
+
 	createNsgRequest := &resourcespb.CreateNetworkSecurityGroupRequest{Resource: &resourcespb.NetworkSecurityGroupArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_1,
+			Location:      location,
 			CloudProvider: cloud,
 		},
 		Name:             "nsg-test-vm",
@@ -166,31 +223,47 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 		}
 	})
 
+	createNicNsgRequest := &resourcespb.CreateNetworkInterfaceSecurityGroupAssociationRequest{Resource: &resourcespb.NetworkInterfaceSecurityGroupAssociationArgs{
+		SecurityGroupId:    nsg.CommonParameters.ResourceId,
+		NetworkInterfaceId: nic.CommonParameters.ResourceId,
+	}}
+	nicNsgAssociation, err := server.NetworkInterfaceSecurityGroupAssociationService.Create(ctx, createNicNsgRequest)
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create network interface nsg association: %+v", err)
+	}
+	t.Cleanup(func() {
+		if DestroyAfter {
+			_, err := server.NetworkInterfaceSecurityGroupAssociationService.Delete(ctx, &resourcespb.DeleteNetworkInterfaceSecurityGroupAssociationRequest{ResourceId: nicNsgAssociation.CommonParameters.ResourceId})
+			if err != nil {
+				logGrpcErrorDetails(t, err)
+				t.Logf("unable to delete resource %+v", err)
+			}
+		}
+	})
+
 	pubKey, privKey, err := makeSSHKeyPair()
 	if err != nil {
 		t.Fatalf("unable to create ssh key: %+v", err)
 	}
 
-	var vmSize commonpb.VmSize_Enum
-	if cloud == commonpb.CloudProvider_AWS {
-		vmSize = commonpb.VmSize_MICRO
-	} else if cloud == commonpb.CloudProvider_AZURE {
-		vmSize = commonpb.VmSize_LARGE
-	}
-
 	createVmRequest := &resourcespb.CreateVirtualMachineRequest{Resource: &resourcespb.VirtualMachineArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_1,
+			Location:      location,
 			CloudProvider: cloud,
 		},
-		Name:                    "vm-test-vm",
-		NetworkSecurityGroupIds: []string{nsg.CommonParameters.ResourceId},
-		VmSize:                  vmSize,
+		Name: "vm-test-vm",
+		// FIXME validate NetworkSecurityGroupIds not with NetworkInterfaceIds
+		//NetworkSecurityGroupIds: []string{nsg.CommonParameters.ResourceId},
+		VmSize: commonpb.VmSize_GENERAL_NANO,
 		UserDataBase64: base64.StdEncoding.EncodeToString([]byte(`#!/bin/bash
 sudo echo "hello world" > /tmp/test.txt`)),
 		SubnetId:         publicSubnet.CommonParameters.ResourceId,
 		PublicSshKey:     pubKey,
-		GeneratePublicIp: true,
+		GeneratePublicIp: false,
+		// FIXME this does nothing
+		//PublicIpId:          pip.CommonParameters.ResourceId,
+		NetworkInterfaceIds: []string{nic.CommonParameters.ResourceId},
 		ImageReference: &resourcespb.ImageReference{
 			Os:      resourcespb.ImageReference_UBUNTU,
 			Version: "18.04",
@@ -218,7 +291,7 @@ sudo echo "hello world" > /tmp/test.txt`)),
 		username = "adminuser"
 	}
 
-	signer, err := signerFromPem([]byte(privKey), []byte(""))
+	signer, err := signerFromPem([]byte(privKey))
 	if err != nil {
 		t.Fatal(fmt.Errorf("error setting up cert"))
 	}
@@ -234,8 +307,7 @@ sudo echo "hello world" > /tmp/test.txt`)),
 
 	time.Sleep(3 * time.Minute)
 
-	// connect ot ssh server
-	conn, err := ssh.Dial("tcp", vm.GetPublicIp()+":22", config)
+	conn, err := ssh.Dial("tcp", pip.GetIp()+":22", config)
 	if err != nil {
 		t.Fatal(fmt.Errorf("error in ssh connection: %+v", err))
 	}
@@ -257,7 +329,57 @@ sudo echo "hello world" > /tmp/test.txt`)),
 		t.Fatal(fmt.Errorf("error running command: %+v", err))
 	}
 
-	assert.Equal(t, "hello world\n", string(output))
+	assert.Equal(t, "hello world\n", string(output), config)
+	updateNsgRules(t, ctx, nsg, pip.GetIp(), config)
+}
+
+func updateNsgRules(t *testing.T, ctx context.Context, nsg *resourcespb.NetworkSecurityGroupResource, ip string, config *ssh.ClientConfig) {
+	nsg.Rules = []*resourcespb.NetworkSecurityRule{{
+		Protocol: "tcp",
+		Priority: 110,
+		PortRange: &resourcespb.PortRange{
+			From: 443,
+			To:   443,
+		},
+		CidrBlock: "0.0.0.0/0",
+		Direction: resourcespb.Direction_EGRESS,
+	}, {
+		Protocol: "tcp",
+		Priority: 120,
+		PortRange: &resourcespb.PortRange{
+			From: 80,
+			To:   80,
+		},
+		CidrBlock: "0.0.0.0/0",
+		Direction: resourcespb.Direction_EGRESS,
+	}}
+	_, err := server.NetworkSecurityGroupService.Update(ctx, &resourcespb.UpdateNetworkSecurityGroupRequest{
+		ResourceId: nsg.CommonParameters.ResourceId,
+		Resource: &resourcespb.NetworkSecurityGroupArgs{
+			CommonParameters: &commonpb.ResourceCommonArgs{
+				Location:        nsg.CommonParameters.Location,
+				CloudProvider:   nsg.CommonParameters.CloudProvider,
+				ResourceGroupId: nsg.CommonParameters.ResourceGroupId,
+			},
+			Name:             nsg.Name,
+			VirtualNetworkId: nsg.VirtualNetworkId,
+			Rules:            nsg.Rules,
+		},
+	})
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatal(fmt.Errorf("error updating nsg: %+v", err))
+	}
+
+	time.Sleep(1 * time.Minute)
+
+	conn, err := ssh.Dial("tcp", ip+":22", config)
+	assert.Error(t, err)
+	if err == nil {
+		t.Cleanup(func() {
+			conn.Close()
+		})
+	}
 }
 
 func TestAwsVirtualMachine(t *testing.T) {
@@ -295,71 +417,18 @@ func makeSSHKeyPair() (string, string, error) {
 	return pubKeyBuf.String(), privKeyBuf.String(), nil
 }
 
-func signerFromPem(pemBytes []byte, password []byte) (ssh.Signer, error) {
-
+func signerFromPem(pemBytes []byte) (ssh.Signer, error) {
 	// read pem block
-	err := errors.New("Pem decode failed, no key found")
 	pemBlock, _ := pem.Decode(pemBytes)
 	if pemBlock == nil {
-		return nil, err
+		return nil, fmt.Errorf("Pem decode failed, no key found")
 	}
 
-	// handle encrypted key
-	if x509.IsEncryptedPEMBlock(pemBlock) {
-		// decrypt PEM
-		pemBlock.Bytes, err = x509.DecryptPEMBlock(pemBlock, []byte(password))
-		if err != nil {
-			return nil, fmt.Errorf("Decrypting PEM block failed %v", err)
-		}
-
-		// get RSA, EC or DSA key
-		key, err := parsePemBlock(pemBlock)
-		if err != nil {
-			return nil, err
-		}
-
-		// generate signer instance from key
-		signer, err := ssh.NewSignerFromKey(key)
-		if err != nil {
-			return nil, fmt.Errorf("Creating signer from encrypted key failed %v", err)
-		}
-
-		return signer, nil
-	} else {
-		// generate signer instance from plain key
-		signer, err := ssh.ParsePrivateKey(pemBytes)
-		if err != nil {
-			return nil, fmt.Errorf("Parsing plain private key failed %v", err)
-		}
-
-		return signer, nil
+	// generate signer instance from plain key
+	signer, err := ssh.ParsePrivateKey(pemBytes)
+	if err != nil {
+		return nil, fmt.Errorf("Parsing plain private key failed %v", err)
 	}
-}
 
-func parsePemBlock(block *pem.Block) (interface{}, error) {
-	switch block.Type {
-	case "RSA PRIVATE KEY":
-		key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-		if err != nil {
-			return nil, fmt.Errorf("Parsing PKCS private key failed %v", err)
-		} else {
-			return key, nil
-		}
-	case "EC PRIVATE KEY":
-		key, err := x509.ParseECPrivateKey(block.Bytes)
-		if err != nil {
-			return nil, fmt.Errorf("Parsing EC private key failed %v", err)
-		} else {
-			return key, nil
-		}
-	case "DSA PRIVATE KEY":
-		key, err := ssh.ParseDSAPrivateKey(block.Bytes)
-		if err != nil {
-			return nil, fmt.Errorf("Parsing DSA private key failed %v", err)
-		} else {
-			return key, nil
-		}
-	default:
-		return nil, fmt.Errorf("Parsing private key failed, unsupported key type %q", block.Type)
-	}
+	return signer, nil
 }

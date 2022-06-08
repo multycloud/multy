@@ -10,6 +10,7 @@ import (
 	context "context"
 	commonpb "github.com/multycloud/multy/api/proto/commonpb"
 	resourcespb "github.com/multycloud/multy/api/proto/resourcespb"
+	userpb "github.com/multycloud/multy/api/proto/userpb"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -36,6 +37,10 @@ type MultyResourceServiceClient interface {
 	ReadNetworkInterface(ctx context.Context, in *resourcespb.ReadNetworkInterfaceRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceResource, error)
 	UpdateNetworkInterface(ctx context.Context, in *resourcespb.UpdateNetworkInterfaceRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceResource, error)
 	DeleteNetworkInterface(ctx context.Context, in *resourcespb.DeleteNetworkInterfaceRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
+	CreateNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.CreateNetworkInterfaceSecurityGroupAssociationRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error)
+	ReadNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.ReadNetworkInterfaceSecurityGroupAssociationRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error)
+	UpdateNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.UpdateNetworkInterfaceSecurityGroupAssociationRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error)
+	DeleteNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.DeleteNetworkInterfaceSecurityGroupAssociationRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
 	CreateRouteTable(ctx context.Context, in *resourcespb.CreateRouteTableRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableResource, error)
 	ReadRouteTable(ctx context.Context, in *resourcespb.ReadRouteTableRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableResource, error)
 	UpdateRouteTable(ctx context.Context, in *resourcespb.UpdateRouteTableRequest, opts ...grpc.CallOption) (*resourcespb.RouteTableResource, error)
@@ -207,6 +212,42 @@ func (c *multyResourceServiceClient) UpdateNetworkInterface(ctx context.Context,
 func (c *multyResourceServiceClient) DeleteNetworkInterface(ctx context.Context, in *resourcespb.DeleteNetworkInterfaceRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
 	out := new(commonpb.Empty)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteNetworkInterface", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) CreateNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.CreateNetworkInterfaceSecurityGroupAssociationRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+	out := new(resourcespb.NetworkInterfaceSecurityGroupAssociationResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateNetworkInterfaceSecurityGroupAssociation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) ReadNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.ReadNetworkInterfaceSecurityGroupAssociationRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+	out := new(resourcespb.NetworkInterfaceSecurityGroupAssociationResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadNetworkInterfaceSecurityGroupAssociation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) UpdateNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.UpdateNetworkInterfaceSecurityGroupAssociationRequest, opts ...grpc.CallOption) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+	out := new(resourcespb.NetworkInterfaceSecurityGroupAssociationResource)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateNetworkInterfaceSecurityGroupAssociation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multyResourceServiceClient) DeleteNetworkInterfaceSecurityGroupAssociation(ctx context.Context, in *resourcespb.DeleteNetworkInterfaceSecurityGroupAssociationRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
+	out := new(commonpb.Empty)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteNetworkInterfaceSecurityGroupAssociation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -760,6 +801,10 @@ type MultyResourceServiceServer interface {
 	ReadNetworkInterface(context.Context, *resourcespb.ReadNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error)
 	UpdateNetworkInterface(context.Context, *resourcespb.UpdateNetworkInterfaceRequest) (*resourcespb.NetworkInterfaceResource, error)
 	DeleteNetworkInterface(context.Context, *resourcespb.DeleteNetworkInterfaceRequest) (*commonpb.Empty, error)
+	CreateNetworkInterfaceSecurityGroupAssociation(context.Context, *resourcespb.CreateNetworkInterfaceSecurityGroupAssociationRequest) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error)
+	ReadNetworkInterfaceSecurityGroupAssociation(context.Context, *resourcespb.ReadNetworkInterfaceSecurityGroupAssociationRequest) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error)
+	UpdateNetworkInterfaceSecurityGroupAssociation(context.Context, *resourcespb.UpdateNetworkInterfaceSecurityGroupAssociationRequest) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error)
+	DeleteNetworkInterfaceSecurityGroupAssociation(context.Context, *resourcespb.DeleteNetworkInterfaceSecurityGroupAssociationRequest) (*commonpb.Empty, error)
 	CreateRouteTable(context.Context, *resourcespb.CreateRouteTableRequest) (*resourcespb.RouteTableResource, error)
 	ReadRouteTable(context.Context, *resourcespb.ReadRouteTableRequest) (*resourcespb.RouteTableResource, error)
 	UpdateRouteTable(context.Context, *resourcespb.UpdateRouteTableRequest) (*resourcespb.RouteTableResource, error)
@@ -861,6 +906,18 @@ func (UnimplementedMultyResourceServiceServer) UpdateNetworkInterface(context.Co
 }
 func (UnimplementedMultyResourceServiceServer) DeleteNetworkInterface(context.Context, *resourcespb.DeleteNetworkInterfaceRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNetworkInterface not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) CreateNetworkInterfaceSecurityGroupAssociation(context.Context, *resourcespb.CreateNetworkInterfaceSecurityGroupAssociationRequest) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNetworkInterfaceSecurityGroupAssociation not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) ReadNetworkInterfaceSecurityGroupAssociation(context.Context, *resourcespb.ReadNetworkInterfaceSecurityGroupAssociationRequest) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadNetworkInterfaceSecurityGroupAssociation not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) UpdateNetworkInterfaceSecurityGroupAssociation(context.Context, *resourcespb.UpdateNetworkInterfaceSecurityGroupAssociationRequest) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNetworkInterfaceSecurityGroupAssociation not implemented")
+}
+func (UnimplementedMultyResourceServiceServer) DeleteNetworkInterfaceSecurityGroupAssociation(context.Context, *resourcespb.DeleteNetworkInterfaceSecurityGroupAssociationRequest) (*commonpb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNetworkInterfaceSecurityGroupAssociation not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) CreateRouteTable(context.Context, *resourcespb.CreateRouteTableRequest) (*resourcespb.RouteTableResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateRouteTable not implemented")
@@ -1264,6 +1321,78 @@ func _MultyResourceService_DeleteNetworkInterface_Handler(srv interface{}, ctx c
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MultyResourceServiceServer).DeleteNetworkInterface(ctx, req.(*resourcespb.DeleteNetworkInterfaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_CreateNetworkInterfaceSecurityGroupAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resourcespb.CreateNetworkInterfaceSecurityGroupAssociationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).CreateNetworkInterfaceSecurityGroupAssociation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/CreateNetworkInterfaceSecurityGroupAssociation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).CreateNetworkInterfaceSecurityGroupAssociation(ctx, req.(*resourcespb.CreateNetworkInterfaceSecurityGroupAssociationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_ReadNetworkInterfaceSecurityGroupAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resourcespb.ReadNetworkInterfaceSecurityGroupAssociationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).ReadNetworkInterfaceSecurityGroupAssociation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/ReadNetworkInterfaceSecurityGroupAssociation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).ReadNetworkInterfaceSecurityGroupAssociation(ctx, req.(*resourcespb.ReadNetworkInterfaceSecurityGroupAssociationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_UpdateNetworkInterfaceSecurityGroupAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resourcespb.UpdateNetworkInterfaceSecurityGroupAssociationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).UpdateNetworkInterfaceSecurityGroupAssociation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/UpdateNetworkInterfaceSecurityGroupAssociation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).UpdateNetworkInterfaceSecurityGroupAssociation(ctx, req.(*resourcespb.UpdateNetworkInterfaceSecurityGroupAssociationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MultyResourceService_DeleteNetworkInterfaceSecurityGroupAssociation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(resourcespb.DeleteNetworkInterfaceSecurityGroupAssociationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyResourceServiceServer).DeleteNetworkInterfaceSecurityGroupAssociation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyResourceService/DeleteNetworkInterfaceSecurityGroupAssociation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyResourceServiceServer).DeleteNetworkInterfaceSecurityGroupAssociation(ctx, req.(*resourcespb.DeleteNetworkInterfaceSecurityGroupAssociationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2386,6 +2515,22 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _MultyResourceService_DeleteNetworkInterface_Handler,
 		},
 		{
+			MethodName: "CreateNetworkInterfaceSecurityGroupAssociation",
+			Handler:    _MultyResourceService_CreateNetworkInterfaceSecurityGroupAssociation_Handler,
+		},
+		{
+			MethodName: "ReadNetworkInterfaceSecurityGroupAssociation",
+			Handler:    _MultyResourceService_ReadNetworkInterfaceSecurityGroupAssociation_Handler,
+		},
+		{
+			MethodName: "UpdateNetworkInterfaceSecurityGroupAssociation",
+			Handler:    _MultyResourceService_UpdateNetworkInterfaceSecurityGroupAssociation_Handler,
+		},
+		{
+			MethodName: "DeleteNetworkInterfaceSecurityGroupAssociation",
+			Handler:    _MultyResourceService_DeleteNetworkInterfaceSecurityGroupAssociation_Handler,
+		},
+		{
 			MethodName: "CreateRouteTable",
 			Handler:    _MultyResourceService_CreateRouteTable_Handler,
 		},
@@ -2620,6 +2765,92 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteResource",
 			Handler:    _MultyResourceService_DeleteResource_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "api/proto/multy_service.proto",
+}
+
+// MultyUserServiceClient is the client API for MultyUserService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type MultyUserServiceClient interface {
+	RegisterUser(ctx context.Context, in *userpb.RegisterUserRequest, opts ...grpc.CallOption) (*userpb.User, error)
+}
+
+type multyUserServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewMultyUserServiceClient(cc grpc.ClientConnInterface) MultyUserServiceClient {
+	return &multyUserServiceClient{cc}
+}
+
+func (c *multyUserServiceClient) RegisterUser(ctx context.Context, in *userpb.RegisterUserRequest, opts ...grpc.CallOption) (*userpb.User, error) {
+	out := new(userpb.User)
+	err := c.cc.Invoke(ctx, "/dev.multy.MultyUserService/RegisterUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// MultyUserServiceServer is the server API for MultyUserService service.
+// All implementations must embed UnimplementedMultyUserServiceServer
+// for forward compatibility
+type MultyUserServiceServer interface {
+	RegisterUser(context.Context, *userpb.RegisterUserRequest) (*userpb.User, error)
+	mustEmbedUnimplementedMultyUserServiceServer()
+}
+
+// UnimplementedMultyUserServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedMultyUserServiceServer struct {
+}
+
+func (UnimplementedMultyUserServiceServer) RegisterUser(context.Context, *userpb.RegisterUserRequest) (*userpb.User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
+}
+func (UnimplementedMultyUserServiceServer) mustEmbedUnimplementedMultyUserServiceServer() {}
+
+// UnsafeMultyUserServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MultyUserServiceServer will
+// result in compilation errors.
+type UnsafeMultyUserServiceServer interface {
+	mustEmbedUnimplementedMultyUserServiceServer()
+}
+
+func RegisterMultyUserServiceServer(s grpc.ServiceRegistrar, srv MultyUserServiceServer) {
+	s.RegisterService(&MultyUserService_ServiceDesc, srv)
+}
+
+func _MultyUserService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(userpb.RegisterUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MultyUserServiceServer).RegisterUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.multy.MultyUserService/RegisterUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MultyUserServiceServer).RegisterUser(ctx, req.(*userpb.RegisterUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// MultyUserService_ServiceDesc is the grpc.ServiceDesc for MultyUserService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var MultyUserService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "dev.multy.MultyUserService",
+	HandlerType: (*MultyUserServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegisterUser",
+			Handler:    _MultyUserService_RegisterUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

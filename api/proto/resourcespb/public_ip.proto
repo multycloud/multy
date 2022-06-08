@@ -29,11 +29,12 @@ message DeletePublicIpRequest {
 message PublicIpArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
-  string network_interface_id = 3;
 }
 
 message PublicIpResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
-  string network_interface_id = 3;
+
+  // outputs
+  string ip = 4;
 }

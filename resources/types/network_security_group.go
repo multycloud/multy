@@ -47,8 +47,11 @@ func CreateNetworkSecurityGroup(resourceId string, args *resourcespb.NetworkSecu
 		if err != nil {
 			return nil, err
 		}
-		rgId := NewRgFromParent("nsg", vn.Args.CommonParameters.ResourceGroupId, others,
+		rgId, err := NewRgFromParent("nsg", vn.Args.CommonParameters.ResourceGroupId, others,
 			args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 
@@ -178,9 +181,18 @@ func translateAwsNsgRules(rules []*resourcespb.NetworkSecurityRule) map[string][
 					CidrBlocks: []string{rule.CidrBlock},
 				},
 			)
-		} else {
-			awsRules[BOTH] = append(
-				awsRules[BOTH], network_security_group.AwsSecurityGroupRule{
+		} else if rule.Direction == resourcespb.Direction_EGRESS {
+			awsRules[EGRESS] = append(
+				awsRules[EGRESS], network_security_group.AwsSecurityGroupRule{
+					Protocol:   awsProtocol,
+					FromPort:   awsFromPort,
+					ToPort:     awsToPort,
+					CidrBlocks: []string{rule.CidrBlock},
+				},
+			)
+		} else if rule.Direction == resourcespb.Direction_INGRESS {
+			awsRules[INGRESS] = append(
+				awsRules[INGRESS], network_security_group.AwsSecurityGroupRule{
 					Protocol:   awsProtocol,
 					FromPort:   awsFromPort,
 					ToPort:     awsToPort,

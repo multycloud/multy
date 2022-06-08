@@ -24,19 +24,17 @@ resource "aws_default_security_group" "example_vn_aws" {
   vpc_id = aws_vpc.example_vn_aws.id
 
   ingress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 }
 resource "aws_route_table" "rt_aws" {
@@ -79,12 +77,12 @@ resource "aws_key_pair" "vm_aws" {
 resource "aws_iam_role" "vm_aws" {
   provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
-  name               = "iam_for_vm_vm_aws"
+  name               = "multy-vm-vm_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
   provider = "aws.eu-west-1"
-  name     = "iam_for_vm_vm_aws"
+  name     = "multy-vm-vm_aws-role"
   role     = aws_iam_role.vm_aws.name
 }
 resource "aws_instance" "vm_aws" {

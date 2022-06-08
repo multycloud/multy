@@ -17,16 +17,36 @@ resource "aws_db_instance" "example_db_aws" {
     "Name" = "exampledb"
   }
 
-  allocated_storage    = 10
-  engine               = "mysql"
-  engine_version       = "5.7"
-  username             = "multyadmin"
-  password             = "multy$Admin123!"
-  instance_class       = "db.t2.micro"
-  identifier           = "example-db"
-  skip_final_snapshot  = true
-  db_subnet_group_name = aws_db_subnet_group.example_db_aws.name
-  publicly_accessible  = true
+  allocated_storage      = 10
+  engine                 = "mysql"
+  engine_version         = "5.7"
+  username               = "multyadmin"
+  password               = "multy$Admin123!"
+  instance_class         = "db.t2.micro"
+  identifier             = "example-db"
+  skip_final_snapshot    = true
+  db_subnet_group_name   = aws_db_subnet_group.example_db_aws.name
+  publicly_accessible    = true
+  vpc_security_group_ids = [aws_security_group.example_db_aws.id]
+}
+resource "aws_security_group" "example_db_aws" {
+  tags        = { "Name" = "example-db" }
+  vpc_id      = aws_vpc.example_vn_aws.id
+  name        = "example-db"
+  description = "Default security group of example-db"
+  ingress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  provider = "aws.eu-west-1"
 }
 resource "aws_vpc" "example_vn_aws" {
   provider = "aws.eu-west-1"
@@ -54,19 +74,17 @@ resource "aws_default_security_group" "example_vn_aws" {
   vpc_id = aws_vpc.example_vn_aws.id
 
   ingress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 }
 resource "aws_security_group" "nsg2_aws" {
@@ -185,12 +203,12 @@ resource "aws_subnet" "subnet3_aws" {
 resource "aws_iam_role" "vm_aws" {
   provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
-  name               = "iam_for_vm_vm_aws"
+  name               = "multy-vm-vm_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
   provider = "aws.eu-west-1"
-  name     = "iam_for_vm_vm_aws"
+  name     = "multy-vm-vm_aws-role"
   role     = aws_iam_role.vm_aws.name
 }
 resource "aws_instance" "vm_aws" {

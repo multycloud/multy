@@ -51,9 +51,25 @@ message DatabaseSize {
 message VmSize {
   enum Enum {
     UNKNOWN_VM_SIZE = 0;
-    MICRO = 1;
-    MEDIUM = 2;
-    LARGE = 3;
+    GENERAL_MICRO = 1;
+    GENERAL_MEDIUM = 2;
+    GENERAL_LARGE = 3;
+    GENERAL_NANO = 4;
+    GENERAL_SMALL = 5;
+    GENERAL_XLARGE = 6;
+    GENERAL_2XLARGE = 7;
+    COMPUTE_LARGE = 8;
+    COMPUTE_XLARGE = 9;
+    COMPUTE_2XLARGE = 10;
+    COMPUTE_4XLARGE = 11;
+    COMPUTE_8XLARGE = 12;
+    MEMORY_LARGE = 13;
+    MEMORY_XLARGE = 14;
+    MEMORY_2XLARGE = 15;
+    MEMORY_4XLARGE = 16;
+    MEMORY_8XLARGE = 17;
+    MEMORY_12XLARGE = 18;
+    MEMORY_16XLARGE = 19;
   }
 }
 

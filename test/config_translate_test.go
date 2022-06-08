@@ -14,7 +14,7 @@ import (
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/encoding/prototext"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -39,7 +39,7 @@ func TestConfigTranslate(t *testing.T) {
 	root := "_configs"
 	err := filepath.WalkDir(
 		root, func(path string, info os.DirEntry, err error) error {
-			if info.IsDir() || (!strings.HasSuffix(path, ".pb.json") && filepath.Ext(path) != ".tf") || strings.HasPrefix(
+			if info.IsDir() || (!strings.HasSuffix(path, ".textproto") && filepath.Ext(path) != ".tf") || strings.HasPrefix(
 				filepath.Base(path), ".",
 			) {
 				return nil
@@ -89,10 +89,11 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 	}
 
 	c := configpb.Config{}
-	err = protojson.Unmarshal(input, &c)
+	err = prototext.Unmarshal(input, &c)
 	if err != nil {
 		t.Fatalf("unable to parse input file: %v", err)
 	}
+
 	mconfig, err := resources.LoadConfig(&c, types.Metadatas)
 	if err != nil {
 		t.Fatalf("error loading config: %v", err)
@@ -234,7 +235,7 @@ func groupByTypeAndId(content *hcl.BodyContent) (map[string]map[string]*hcl.Bloc
 			uniqueName := strings.Join(block.Labels, ".")
 			if _, ok := result[t][uniqueName]; ok {
 				if t != "provider" {
-					return nil, &block.DefRange, fmt.Errorf("duplicate resource %s", uniqueName)
+					return nil, &block.DefRange, fmt.Errorf("duplicate resource %s ", uniqueName)
 				}
 				// TODO: IMPORTANT - handle duplicate resources
 			}

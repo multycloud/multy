@@ -24,19 +24,17 @@ resource "aws_default_security_group" "example_vn_aws" {
   vpc_id = aws_vpc.example_vn_aws.id
 
   ingress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-    self        = true
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
+    self      = true
   }
 }
 resource "aws_security_group" "nsg2_aws" {
@@ -64,6 +62,13 @@ resource "aws_security_group" "nsg2_aws" {
   }
 
   ingress {
+    protocol    = "tcp"
+    from_port   = 8000
+    to_port     = 8000
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
@@ -81,6 +86,13 @@ resource "aws_security_group" "nsg2_aws" {
     protocol    = "tcp"
     from_port   = 443
     to_port     = 443
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    protocol    = "tcp"
+    from_port   = 8001
+    to_port     = 8002
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -121,12 +133,12 @@ resource "aws_subnet" "subnet1_aws" {
 resource "aws_iam_role" "vm_aws" {
   provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
-  name               = "iam_for_vm_vm_aws"
+  name               = "multy-vm-vm_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
   provider = "aws.eu-west-1"
-  name     = "iam_for_vm_vm_aws"
+  name     = "multy-vm-vm_aws-role"
   role     = aws_iam_role.vm_aws.name
 }
 resource "aws_instance" "vm_aws" {
@@ -146,12 +158,12 @@ resource "aws_instance" "vm_aws" {
 resource "aws_iam_role" "vm2_aws" {
   provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm2" }
-  name               = "iam_for_vm_vm2_aws"
+  name               = "multy-vm-vm2_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
 }
 resource "aws_iam_instance_profile" "vm2_aws" {
   provider = "aws.eu-west-1"
-  name     = "iam_for_vm_vm2_aws"
+  name     = "multy-vm-vm2_aws-role"
   role     = aws_iam_role.vm2_aws.name
 }
 resource "aws_instance" "vm2_aws" {
@@ -235,6 +247,30 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     source_port_range          = "*"
     source_address_prefix      = "*"
     destination_port_range     = "443-443"
+    destination_address_prefix = "*"
+    direction                  = "Outbound"
+  }
+
+  security_rule {
+    name                       = "4"
+    protocol                   = "Tcp"
+    priority                   = 150
+    access                     = "Allow"
+    source_port_range          = "*"
+    source_address_prefix      = "*"
+    destination_port_range     = "8000-8000"
+    destination_address_prefix = "*"
+    direction                  = "Inbound"
+  }
+
+  security_rule {
+    name                       = "5"
+    protocol                   = "Tcp"
+    priority                   = 160
+    access                     = "Allow"
+    source_port_range          = "*"
+    source_address_prefix      = "*"
+    destination_port_range     = "8001-8002"
     destination_address_prefix = "*"
     direction                  = "Outbound"
   }

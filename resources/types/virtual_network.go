@@ -38,7 +38,10 @@ type VirtualNetwork struct {
 
 func CreateVirtualNetwork(resourceId string, args *resourcespb.VirtualNetworkArgs, others *resources.Resources) (*VirtualNetwork, error) {
 	if args.GetCommonParameters().GetResourceGroupId() == "" {
-		rgId := NewRg("vn", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		rgId, err := NewRg("vn", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
+		if err != nil {
+			return nil, err
+		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 
@@ -128,11 +131,10 @@ func (r *VirtualNetwork) Translate(resources.MultyContext) ([]output.TfBlock, er
 			VpcId:       r.GetVirtualNetworkId(),
 		}
 		allowAllSgRule := []network_security_group.AwsSecurityGroupRule{{
-			Protocol:   "-1",
-			FromPort:   0,
-			ToPort:     0,
-			CidrBlocks: []string{"0.0.0.0/0"},
-			Self:       true,
+			Protocol: "-1",
+			FromPort: 0,
+			ToPort:   0,
+			Self:     true,
 		}}
 		sg := network_security_group.AwsDefaultSecurityGroup{
 			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
