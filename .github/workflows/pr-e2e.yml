@@ -1,6 +1,7 @@
 name: "e2e"
 on:
   pull_request:
+    types: [ labeled ]
     branches: [ main ]
 
 jobs:
