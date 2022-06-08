@@ -2,30 +2,11 @@ name: "e2e"
 on:
   schedule:
     - cron: '0 6 * * *' # run at 6 AM UTC
-  pull_request:
-    branches: [ main ]
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    if: ${{ contains( github.event.pull_request.labels.*.name, 'run-e2e') }}
-    steps:
-      - name: Set auto run environment
-        # if main use env that doesnt require approval
-        if: github.ref == 'refs/heads/main'
-        run: |
-          echo "env=test" >> $GITHUB_ENV 
-
-      - name: Set approval environment
-        # if other branch use env that require approval
-        if: github.ref != 'refs/heads/main'
-        run: |
-          echo "env=branch-test" >> $GITHUB_ENV 
-
   deployment:
     runs-on: ubuntu-latest
-    needs: [ check ]
-    environment: ${{ env.env }}
+    environment: tests
     steps:
       - uses: actions/checkout@v2
 
@@ -64,10 +45,10 @@ jobs:
           golint .
 
       # https://github.com/aws/aws-cli/issues/6920  there's a bug with v1.24
-      - uses: tale/kubectl-action@v1
+      - uses: azure/setup-kubectl@v2.0
         with:
-          base64-kube-config: ${{ secrets.KUBE_CONFIG }}
-          kubectl-version: v1.23.6
+          version: 'v1.23.6'
+        id: install
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1.0.3
