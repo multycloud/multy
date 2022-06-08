@@ -82,6 +82,7 @@ func SubnetFromState(r *Subnet, state *output.TfState) (*resourcespb.SubnetResou
 		NeedsUpdate: false,
 	}
 	out.AvailabilityZone = r.Args.AvailabilityZone
+	out.VirtualNetworkId = r.Args.GetVirtualNetworkId()
 
 	id, err := resources.GetMainOutputRef(r)
 	if err != nil {
@@ -95,7 +96,6 @@ func SubnetFromState(r *Subnet, state *output.TfState) (*resourcespb.SubnetResou
 		}
 		out.Name = stateResource.AwsResource.Tags["Name"]
 		out.CidrBlock = stateResource.CidrBlock
-		out.VirtualNetworkId = stateResource.VpcId
 	case common.AZURE:
 		stateResource, err := output.GetParsed[subnet.AzureSubnet](state, id)
 		if err != nil {
@@ -103,7 +103,6 @@ func SubnetFromState(r *Subnet, state *output.TfState) (*resourcespb.SubnetResou
 		}
 		out.Name = stateResource.Name
 		out.CidrBlock = stateResource.AddressPrefixes[0]
-		out.VirtualNetworkId = r.Args.GetVirtualNetworkId()
 	}
 
 	return out, nil
