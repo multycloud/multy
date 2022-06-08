@@ -17,16 +17,36 @@ resource "aws_db_instance" "example_db_aws" {
     "Name" = "exampledb"
   }
 
-  allocated_storage    = 10
-  engine               = "postgres"
-  engine_version       = "11"
-  username             = "multyadmin"
-  password             = "multy$Admin123!"
-  instance_class       = "db.t2.micro"
-  identifier           = "example-db"
-  skip_final_snapshot  = true
-  db_subnet_group_name = aws_db_subnet_group.example_db_aws.name
-  publicly_accessible  = true
+  allocated_storage      = 10
+  engine                 = "postgres"
+  engine_version         = "11"
+  username               = "multyadmin"
+  password               = "multy$Admin123!"
+  instance_class         = "db.t2.micro"
+  identifier             = "example-db"
+  skip_final_snapshot    = true
+  db_subnet_group_name   = aws_db_subnet_group.example_db_aws.name
+  publicly_accessible    = true
+  vpc_security_group_ids = [aws_security_group.example_db_aws.id]
+}
+resource "aws_security_group" "example_db_aws" {
+  tags        = { "Name" = "example-db" }
+  vpc_id      = aws_vpc.vn_aws.id
+  name        = "example-db"
+  description = "Default security group of example-db"
+  ingress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  provider = "aws.us-east-1"
 }
 resource "aws_subnet" "subnet1_aws" {
   provider = "aws.us-east-1"

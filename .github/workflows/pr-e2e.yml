@@ -1,12 +1,13 @@
-name: "e2e"
+name: "e2e-pr"
 on:
-  schedule:
-    - cron: '0 6 * * *' # run at 6 AM UTC
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: tests
+    environment: branch-tests
+    if: ${{ contains( github.event.pull_request.labels.*.name, 'run-e2e') }}
     steps:
       - uses: actions/checkout@v2
 
@@ -44,6 +45,7 @@ jobs:
           go vet .
           golint .
 
+      # https://github.com/aws/aws-cli/issues/6920  there's a bug with v1.24
       # https://github.com/aws/aws-cli/issues/6920  there's a bug with v1.24
       - uses: azure/setup-kubectl@v2.0
         with:
