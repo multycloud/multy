@@ -2,9 +2,11 @@ package types
 
 import (
 	"fmt"
+
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -61,17 +63,49 @@ func NewSubnet(resourceId string, subnet *resourcespb.SubnetArgs, others *resour
 	return s, nil
 }
 
-func SubnetFromState(r *Subnet, _ *output.TfState) (*resourcespb.SubnetResource, error) {
-	return &resourcespb.SubnetResource{
-		CommonParameters: &commonpb.CommonChildResourceParameters{
-			ResourceId:  r.ResourceId,
-			NeedsUpdate: false,
-		},
-		Name:             r.Args.Name,
-		CidrBlock:        r.Args.CidrBlock,
-		AvailabilityZone: r.Args.AvailabilityZone,
-		VirtualNetworkId: r.Args.VirtualNetworkId,
-	}, nil
+func SubnetFromState(r *Subnet, state *output.TfState) (*resourcespb.SubnetResource, error) {
+	if flags.DryRun {
+		return &resourcespb.SubnetResource{
+			CommonParameters: &commonpb.CommonChildResourceParameters{
+				ResourceId:  r.ResourceId,
+				NeedsUpdate: false,
+			},
+			Name:             r.Args.Name,
+			CidrBlock:        r.Args.CidrBlock,
+			AvailabilityZone: r.Args.AvailabilityZone,
+			VirtualNetworkId: r.Args.VirtualNetworkId,
+		}, nil
+	}
+	out := new(resourcespb.SubnetResource)
+	out.CommonParameters = &commonpb.CommonChildResourceParameters{
+		ResourceId:  r.ResourceId,
+		NeedsUpdate: false,
+	}
+	out.AvailabilityZone = r.Args.AvailabilityZone
+	out.VirtualNetworkId = r.Args.GetVirtualNetworkId()
+
+	id, err := resources.GetMainOutputRef(r)
+	if err != nil {
+		return nil, err
+	}
+	switch r.GetCloud() {
+	case common.AWS:
+		stateResource, err := output.GetParsed[subnet.AwsSubnet](state, id)
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.AwsResource.Tags["Name"]
+		out.CidrBlock = stateResource.CidrBlock
+	case common.AZURE:
+		stateResource, err := output.GetParsed[subnet.AzureSubnet](state, id)
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.Name
+		out.CidrBlock = stateResource.AddressPrefixes[0]
+	}
+
+	return out, nil
 }
 
 func (r *Subnet) GetMetadata() resources.ResourceMetadataInterface {
