@@ -2,11 +2,30 @@ name: "e2e"
 on:
   schedule:
     - cron: '0 6 * * *' # run at 6 AM UTC
+  pull_request:
+    branches: [ main ]
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        # if main use env that doesnt require approval
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "env=test" >> $GITHUB_ENV 
+
+      - name: Install dependencies
+        # if other branch use env that require approval
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "env=test" >> $GITHUB_ENV 
+
   deployment:
     runs-on: ubuntu-latest
-    environment: tests
+    needs: [ check ]
+    environment: env.env
+    if: ${{ contains( github.event.pull_request.labels.*.name, 'run-e2e') }}
     steps:
       - uses: actions/checkout@v2
 
