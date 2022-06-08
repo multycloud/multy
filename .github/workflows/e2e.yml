@@ -8,6 +8,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    if: ${{ contains( github.event.pull_request.labels.*.name, 'run-e2e') }}
     steps:
       - name: Set auto run environment
         # if main use env that doesnt require approval
@@ -24,8 +25,7 @@ jobs:
   deployment:
     runs-on: ubuntu-latest
     needs: [ check ]
-    environment: env.env
-    if: ${{ contains( github.event.pull_request.labels.*.name, 'run-e2e') }}
+    environment: ${{ env.env }}
     steps:
       - uses: actions/checkout@v2
 
