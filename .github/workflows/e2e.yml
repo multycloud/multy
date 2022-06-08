@@ -9,17 +9,17 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
+      - name: Set auto run environment
         # if main use env that doesnt require approval
         if: github.ref == 'refs/heads/main'
         run: |
           echo "env=test" >> $GITHUB_ENV 
 
-      - name: Install dependencies
+      - name: Set approval environment
         # if other branch use env that require approval
         if: github.ref != 'refs/heads/main'
         run: |
-          echo "env=test" >> $GITHUB_ENV 
+          echo "env=branch-test" >> $GITHUB_ENV 
 
   deployment:
     runs-on: ubuntu-latest
