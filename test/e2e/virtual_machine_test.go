@@ -371,7 +371,7 @@ func updateNsgRules(t *testing.T, ctx context.Context, nsg *resourcespb.NetworkS
 		t.Fatal(fmt.Errorf("error updating nsg: %+v", err))
 	}
 
-	time.Sleep(20 * time.Second)
+	time.Sleep(1 * time.Minute)
 
 	conn, err := ssh.Dial("tcp", ip+":22", config)
 	assert.Error(t, err)
