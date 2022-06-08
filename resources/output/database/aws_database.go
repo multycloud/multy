@@ -11,18 +11,19 @@ const AwsResourceName = "aws_db_instance"
 // aws_db_instance
 type AwsDbInstance struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_db_instance"`
-	AllocatedStorage    int    `hcl:"allocated_storage"`
-	Name                string `hcl:"db_name" hcle:"omitempty"`
-	Engine              string `hcl:"engine"`
-	EngineVersion       string `hcl:"engine_version"`
-	Username            string `hcl:"username"`
-	Password            string `hcl:"password"`
-	InstanceClass       string `hcl:"instance_class"`
-	Identifier          string `hcl:"identifier"`
-	SkipFinalSnapshot   bool   `hcl:"skip_final_snapshot"`
-	DbSubnetGroupName   string `hcl:"db_subnet_group_name,expr"`
-	PubliclyAccessible  bool   `hcl:"publicly_accessible"`
-	Port                int    `hcl:"port" hcle:"omitempty"`
+	AllocatedStorage    int      `hcl:"allocated_storage"`
+	Name                string   `hcl:"db_name" hcle:"omitempty"`
+	Engine              string   `hcl:"engine"`
+	EngineVersion       string   `hcl:"engine_version"`
+	Username            string   `hcl:"username"`
+	Password            string   `hcl:"password"`
+	InstanceClass       string   `hcl:"instance_class"`
+	Identifier          string   `hcl:"identifier"`
+	SkipFinalSnapshot   bool     `hcl:"skip_final_snapshot"`
+	DbSubnetGroupName   string   `hcl:"db_subnet_group_name,expr"`
+	PubliclyAccessible  bool     `hcl:"publicly_accessible"`
+	VpcSecurityGroupIds []string `hcl:"vpc_security_group_ids,expr"`
+	Port                int      `hcl:"port" hcle:"omitempty"`
 }
 
 // aws_db_subnet_group

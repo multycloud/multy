@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/resources/output/network_security_group"
 	"strings"
 
 	"github.com/multycloud/multy/api/proto/commonpb"
@@ -150,6 +151,11 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 
 	// TODO validate subnet configuration (minimum 2 different AZs)
 	if r.GetCloud() == commonpb.CloudProvider_AWS {
+		vpcId, err := resources.GetMainOutputId(r.Subnets[0].VirtualNetwork)
+		if err != nil {
+			return nil, err
+		}
+
 		name := common.RemoveSpecialChars(r.Args.Name)
 		dbSubnetGroup := database.AwsDbSubnetGroup{
 			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
@@ -157,21 +163,41 @@ func (r *Database) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 			Description: "Managed by Multy",
 			SubnetIds:   subnetIds,
 		}
+		nsg := network_security_group.AwsSecurityGroup{
+			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
+			VpcId:       vpcId,
+			Name:        r.Args.Name,
+			Description: fmt.Sprintf("Default security group of %s", r.Args.Name),
+			Ingress: []network_security_group.AwsSecurityGroupRule{{
+				Protocol:   "-1",
+				FromPort:   0,
+				ToPort:     0,
+				CidrBlocks: []string{"0.0.0.0/0"},
+			}},
+			Egress: []network_security_group.AwsSecurityGroupRule{{
+				Protocol:   "-1",
+				FromPort:   0,
+				ToPort:     0,
+				CidrBlocks: []string{"0.0.0.0/0"},
+			}},
+		}
 		return []output.TfBlock{
 			dbSubnetGroup,
+			nsg,
 			database.AwsDbInstance{
-				AwsResource:        common.NewAwsResource(r.ResourceId, name),
-				AllocatedStorage:   int(r.Args.StorageGb),
-				Engine:             strings.ToLower(r.Args.Engine.String()),
-				EngineVersion:      r.Args.EngineVersion,
-				Username:           r.Args.Username,
-				Password:           r.Args.Password,
-				InstanceClass:      common.DBSIZE[r.Args.Size][r.GetCloud()],
-				Identifier:         r.Args.Name,
-				SkipFinalSnapshot:  true,
-				DbSubnetGroupName:  dbSubnetGroup.GetResourceName(),
-				PubliclyAccessible: true,
-				Port:               int(r.Args.Port),
+				AwsResource:         common.NewAwsResource(r.ResourceId, name),
+				AllocatedStorage:    int(r.Args.StorageGb),
+				Engine:              strings.ToLower(r.Args.Engine.String()),
+				EngineVersion:       r.Args.EngineVersion,
+				Username:            r.Args.Username,
+				Password:            r.Args.Password,
+				InstanceClass:       common.DBSIZE[r.Args.Size][r.GetCloud()],
+				Identifier:          r.Args.Name,
+				SkipFinalSnapshot:   true,
+				DbSubnetGroupName:   dbSubnetGroup.GetResourceName(),
+				PubliclyAccessible:  true,
+				VpcSecurityGroupIds: []string{fmt.Sprintf("%s.%s.id", output.GetResourceName(nsg), nsg.ResourceId)},
+				Port:                int(r.Args.Port),
 			},
 		}, nil
 	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {

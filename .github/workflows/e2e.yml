@@ -2,6 +2,8 @@ name: "e2e"
 on:
   schedule:
     - cron: '0 6 * * *' # run at 6 AM UTC
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -48,6 +50,12 @@ jobs:
         with:
           version: 'v1.23.6'
         id: install
+
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1.0.3
+        with:
+          version: 2.7.6
+          arch: amd64
 
       - name: Test
         run: go test ./test/e2e -v -tags=e2e -timeout=180m -parallel 4
