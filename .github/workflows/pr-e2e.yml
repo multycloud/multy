@@ -2,7 +2,7 @@ name: "e2e-pr"
 on:
   pull_request:
     branches: [ main ]
-    types: [ labeled ]
+    types: [ labeled, unlabeled ]
 
 jobs:
   test:
