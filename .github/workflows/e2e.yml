@@ -45,7 +45,7 @@ jobs:
           golint .
 
       # https://github.com/aws/aws-cli/issues/6920  there's a bug with v1.24
-      - id: install kubectl
+      - name: install kubectl
         uses: actions-hub/kubectl@v1.23.6
 
       - id: install-aws-cli
