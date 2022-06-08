@@ -62,7 +62,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_E2E }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_E2E }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION_E2E }}
-          ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID_E2E }}
-          ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET_E2E }}
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_E2E }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET_E2E }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
