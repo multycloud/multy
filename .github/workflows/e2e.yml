@@ -45,8 +45,10 @@ jobs:
           golint .
 
       # https://github.com/aws/aws-cli/issues/6920  there's a bug with v1.24
-      - name: install kubectl
-        uses: actions-hub/kubectl@v1.23.6
+      - uses: tale/kubectl-action@v1
+        with:
+          base64-kube-config: ${{ secrets.KUBE_CONFIG }}
+          kubectl-version: v1.23.6
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1.0.3
