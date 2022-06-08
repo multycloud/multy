@@ -1,14 +1,13 @@
 name: "e2e"
 on:
   pull_request:
-    types: [ labeled ]
     branches: [ main ]
 
 jobs:
   deployment:
     runs-on: ubuntu-latest
     environment: branch-tests
-    if: ${{ github.event.label.name == 'run-e2e' }}
+    if: ${{ contains( github.event.pull_request.labels.*.name, 'run-e2e') }}
     steps:
       - uses: actions/checkout@v2
 
