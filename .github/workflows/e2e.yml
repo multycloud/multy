@@ -4,7 +4,7 @@ on:
     - cron: '0 6 * * *' # run at 6 AM UTC
 
 jobs:
-  deployment:
+  test:
     runs-on: ubuntu-latest
     environment: tests
     steps:

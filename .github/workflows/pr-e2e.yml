@@ -4,7 +4,7 @@ on:
     branches: [ main ]
 
 jobs:
-  deployment:
+  test:
     runs-on: ubuntu-latest
     environment: branch-tests
     if: ${{ contains( github.event.pull_request.labels.*.name, 'run-e2e') }}
