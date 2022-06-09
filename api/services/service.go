@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	pberr "github.com/multycloud/multy/api/proto/errorspb"
@@ -10,7 +11,7 @@ import (
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/resources"
-	"github.com/multycloud/multy/resources/types"
+	"github.com/multycloud/multy/resources/types/metadata"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -99,7 +100,7 @@ func (s Service[Arg, OutT]) getConfig(userId string, lock *db.ConfigLock) (*reso
 	if err != nil {
 		return nil, err
 	}
-	mconfig, err := resources.LoadConfig(c, types.Metadatas)
+	mconfig, err := resources.LoadConfig(c, metadata.Metadatas)
 	if err != nil {
 		return nil, err
 	}
@@ -164,10 +165,13 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.Mul
 			if err != nil {
 				return *new(OutT), err
 			}
-
-			out, err := r.GetMetadata().ReadFromState(r, state)
+			m, err := r.GetMetadata(metadata.Metadatas)
 			if err != nil {
 				return *new(OutT), err
+			}
+			out, err := m.ReadFromState(r, state)
+			if err != nil {
+				return *new(OutT), errors.InternalServerErrorWithMessage(fmt.Sprintf("Unable to retrieve data for resource %s.", r.GetResourceId()), err)
 			}
 			return out.(OutT), err
 		}

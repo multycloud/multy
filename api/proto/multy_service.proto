@@ -11,7 +11,6 @@ import "api/proto/resourcespb/vault.proto";
 import "api/proto/resourcespb/vault_access_policy.proto";
 import "api/proto/resourcespb/vault_secret.proto";
 import "api/proto/resourcespb/public_ip.proto";
-import "api/proto/resourcespb/lambda.proto";
 import "api/proto/resourcespb/kubernetes_cluster.proto";
 import "api/proto/resourcespb/kubernetes_node_pool.proto";
 import "api/proto/resourcespb/object_storage.proto";
@@ -93,11 +92,6 @@ service MultyResourceService {
   rpc ReadKubernetesNodePool (resources.ReadKubernetesNodePoolRequest) returns (resources.KubernetesNodePoolResource) {}
   rpc UpdateKubernetesNodePool (resources.UpdateKubernetesNodePoolRequest) returns (resources.KubernetesNodePoolResource) {}
   rpc DeleteKubernetesNodePool (resources.DeleteKubernetesNodePoolRequest) returns (common.Empty) {}
-
-  rpc CreateLambda (resources.CreateLambdaRequest) returns (resources.LambdaResource) {}
-  rpc ReadLambda (resources.ReadLambdaRequest) returns (resources.LambdaResource) {}
-  rpc UpdateLambda (resources.UpdateLambdaRequest) returns (resources.LambdaResource) {}
-  rpc DeleteLambda (resources.DeleteLambdaRequest) returns (common.Empty) {}
 
   rpc CreateVault (resources.CreateVaultRequest) returns (resources.VaultResource) {}
   rpc ReadVault (resources.ReadVaultRequest) returns (resources.VaultResource) {}

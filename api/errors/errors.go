@@ -70,6 +70,10 @@ func ValidationErrors(errs []validate.ValidationError) error {
 	return st.Err()
 }
 
+func ValidationError(err validate.ValidationError) error {
+	return ValidationErrors([]validate.ValidationError{err})
+}
+
 func ResourceNotFound(resourceId string) error {
 	st := status.New(codes.NotFound, fmt.Sprintf("resource with id %s not found", resourceId))
 	st, _ = st.WithDetails(&pberr.ResourceNotFoundDetails{ResourceId: resourceId})

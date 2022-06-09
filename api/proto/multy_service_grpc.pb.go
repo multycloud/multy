@@ -77,10 +77,6 @@ type MultyResourceServiceClient interface {
 	ReadKubernetesNodePool(ctx context.Context, in *resourcespb.ReadKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesNodePoolResource, error)
 	UpdateKubernetesNodePool(ctx context.Context, in *resourcespb.UpdateKubernetesNodePoolRequest, opts ...grpc.CallOption) (*resourcespb.KubernetesNodePoolResource, error)
 	DeleteKubernetesNodePool(ctx context.Context, in *resourcespb.DeleteKubernetesNodePoolRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
-	CreateLambda(ctx context.Context, in *resourcespb.CreateLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error)
-	ReadLambda(ctx context.Context, in *resourcespb.ReadLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error)
-	UpdateLambda(ctx context.Context, in *resourcespb.UpdateLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error)
-	DeleteLambda(ctx context.Context, in *resourcespb.DeleteLambdaRequest, opts ...grpc.CallOption) (*commonpb.Empty, error)
 	CreateVault(ctx context.Context, in *resourcespb.CreateVaultRequest, opts ...grpc.CallOption) (*resourcespb.VaultResource, error)
 	ReadVault(ctx context.Context, in *resourcespb.ReadVaultRequest, opts ...grpc.CallOption) (*resourcespb.VaultResource, error)
 	UpdateVault(ctx context.Context, in *resourcespb.UpdateVaultRequest, opts ...grpc.CallOption) (*resourcespb.VaultResource, error)
@@ -578,42 +574,6 @@ func (c *multyResourceServiceClient) DeleteKubernetesNodePool(ctx context.Contex
 	return out, nil
 }
 
-func (c *multyResourceServiceClient) CreateLambda(ctx context.Context, in *resourcespb.CreateLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error) {
-	out := new(resourcespb.LambdaResource)
-	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateLambda", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *multyResourceServiceClient) ReadLambda(ctx context.Context, in *resourcespb.ReadLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error) {
-	out := new(resourcespb.LambdaResource)
-	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/ReadLambda", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *multyResourceServiceClient) UpdateLambda(ctx context.Context, in *resourcespb.UpdateLambdaRequest, opts ...grpc.CallOption) (*resourcespb.LambdaResource, error) {
-	out := new(resourcespb.LambdaResource)
-	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/UpdateLambda", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *multyResourceServiceClient) DeleteLambda(ctx context.Context, in *resourcespb.DeleteLambdaRequest, opts ...grpc.CallOption) (*commonpb.Empty, error) {
-	out := new(commonpb.Empty)
-	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/DeleteLambda", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *multyResourceServiceClient) CreateVault(ctx context.Context, in *resourcespb.CreateVaultRequest, opts ...grpc.CallOption) (*resourcespb.VaultResource, error) {
 	out := new(resourcespb.VaultResource)
 	err := c.cc.Invoke(ctx, "/dev.multy.MultyResourceService/CreateVault", in, out, opts...)
@@ -841,10 +801,6 @@ type MultyResourceServiceServer interface {
 	ReadKubernetesNodePool(context.Context, *resourcespb.ReadKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error)
 	UpdateKubernetesNodePool(context.Context, *resourcespb.UpdateKubernetesNodePoolRequest) (*resourcespb.KubernetesNodePoolResource, error)
 	DeleteKubernetesNodePool(context.Context, *resourcespb.DeleteKubernetesNodePoolRequest) (*commonpb.Empty, error)
-	CreateLambda(context.Context, *resourcespb.CreateLambdaRequest) (*resourcespb.LambdaResource, error)
-	ReadLambda(context.Context, *resourcespb.ReadLambdaRequest) (*resourcespb.LambdaResource, error)
-	UpdateLambda(context.Context, *resourcespb.UpdateLambdaRequest) (*resourcespb.LambdaResource, error)
-	DeleteLambda(context.Context, *resourcespb.DeleteLambdaRequest) (*commonpb.Empty, error)
 	CreateVault(context.Context, *resourcespb.CreateVaultRequest) (*resourcespb.VaultResource, error)
 	ReadVault(context.Context, *resourcespb.ReadVaultRequest) (*resourcespb.VaultResource, error)
 	UpdateVault(context.Context, *resourcespb.UpdateVaultRequest) (*resourcespb.VaultResource, error)
@@ -1026,18 +982,6 @@ func (UnimplementedMultyResourceServiceServer) UpdateKubernetesNodePool(context.
 }
 func (UnimplementedMultyResourceServiceServer) DeleteKubernetesNodePool(context.Context, *resourcespb.DeleteKubernetesNodePoolRequest) (*commonpb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteKubernetesNodePool not implemented")
-}
-func (UnimplementedMultyResourceServiceServer) CreateLambda(context.Context, *resourcespb.CreateLambdaRequest) (*resourcespb.LambdaResource, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateLambda not implemented")
-}
-func (UnimplementedMultyResourceServiceServer) ReadLambda(context.Context, *resourcespb.ReadLambdaRequest) (*resourcespb.LambdaResource, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReadLambda not implemented")
-}
-func (UnimplementedMultyResourceServiceServer) UpdateLambda(context.Context, *resourcespb.UpdateLambdaRequest) (*resourcespb.LambdaResource, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateLambda not implemented")
-}
-func (UnimplementedMultyResourceServiceServer) DeleteLambda(context.Context, *resourcespb.DeleteLambdaRequest) (*commonpb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteLambda not implemented")
 }
 func (UnimplementedMultyResourceServiceServer) CreateVault(context.Context, *resourcespb.CreateVaultRequest) (*resourcespb.VaultResource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateVault not implemented")
@@ -2045,78 +1989,6 @@ func _MultyResourceService_DeleteKubernetesNodePool_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MultyResourceService_CreateLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resourcespb.CreateLambdaRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MultyResourceServiceServer).CreateLambda(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/dev.multy.MultyResourceService/CreateLambda",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).CreateLambda(ctx, req.(*resourcespb.CreateLambdaRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _MultyResourceService_ReadLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resourcespb.ReadLambdaRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MultyResourceServiceServer).ReadLambda(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/dev.multy.MultyResourceService/ReadLambda",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).ReadLambda(ctx, req.(*resourcespb.ReadLambdaRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _MultyResourceService_UpdateLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resourcespb.UpdateLambdaRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MultyResourceServiceServer).UpdateLambda(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/dev.multy.MultyResourceService/UpdateLambda",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).UpdateLambda(ctx, req.(*resourcespb.UpdateLambdaRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _MultyResourceService_DeleteLambda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(resourcespb.DeleteLambdaRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MultyResourceServiceServer).DeleteLambda(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/dev.multy.MultyResourceService/DeleteLambda",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultyResourceServiceServer).DeleteLambda(ctx, req.(*resourcespb.DeleteLambdaRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _MultyResourceService_CreateVault_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(resourcespb.CreateVaultRequest)
 	if err := dec(in); err != nil {
@@ -2673,22 +2545,6 @@ var MultyResourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteKubernetesNodePool",
 			Handler:    _MultyResourceService_DeleteKubernetesNodePool_Handler,
-		},
-		{
-			MethodName: "CreateLambda",
-			Handler:    _MultyResourceService_CreateLambda_Handler,
-		},
-		{
-			MethodName: "ReadLambda",
-			Handler:    _MultyResourceService_ReadLambda_Handler,
-		},
-		{
-			MethodName: "UpdateLambda",
-			Handler:    _MultyResourceService_UpdateLambda_Handler,
-		},
-		{
-			MethodName: "DeleteLambda",
-			Handler:    _MultyResourceService_DeleteLambda_Handler,
 		},
 		{
 			MethodName: "CreateVault",

@@ -44,20 +44,8 @@ jobs:
           go vet .
           golint .
 
-      # https://github.com/aws/aws-cli/issues/6920  there's a bug with v1.24
-      - uses: azure/setup-kubectl@v2.0
-        with:
-          version: 'v1.23.6'
-        id: install
-
-      - id: install-aws-cli
-        uses: unfor19/install-aws-cli-action@v1.0.3
-        with:
-          version: 2.7.6
-          arch: amd64
-
       - name: Test
-        run: go test ./test/e2e -v -tags=e2e -timeout=180m -parallel 4
+        run: go test ./test/e2e -tags=e2e -timeout=180m -parallel 4
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_E2E }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_E2E }}

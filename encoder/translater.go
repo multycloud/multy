@@ -7,6 +7,7 @@ import (
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/types"
+	"github.com/multycloud/multy/resources/types/metadata"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"golang.org/x/exp/maps"
@@ -26,7 +27,15 @@ func TranslateResources(decodedResources *DecodedResources, ctx resources.MultyC
 			errors[err] = true
 		}
 		if len(validationErrors) == 0 {
-			translationCache[r], err = r.Translate(ctx)
+			m, err2 := r.GetMetadata(metadata.Metadatas)
+			if err2 != nil {
+				return nil, nil, err2
+			}
+			cr, err2 := m.GetCloudSpecificResource(r)
+			if err2 != nil {
+				return nil, nil, err2
+			}
+			translationCache[r], err = cr.Translate(ctx)
 			if err != nil {
 				return translationCache, nil, err
 			}

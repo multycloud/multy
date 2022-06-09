@@ -11,7 +11,7 @@ import (
 	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/output"
-	"github.com/multycloud/multy/resources/types"
+	metadata2 "github.com/multycloud/multy/resources/types/metadata"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/metadata"
@@ -64,7 +64,7 @@ func TestDeploy_rollbacksIfSomethingFails(t *testing.T) {
 		UserId:          "test",
 		Resources:       nil,
 		ResourceCounter: 1,
-	}, types.Metadatas)
+	}, metadata2.Metadatas)
 	if err != nil {
 		t.Fatalf("can't load config, %s", err)
 	}
@@ -119,7 +119,7 @@ func TestDeploy_callsTfApply(t *testing.T) {
 		UserId:          "test",
 		Resources:       nil,
 		ResourceCounter: 1,
-	}, types.Metadatas)
+	}, metadata2.Metadatas)
 	if err != nil {
 		t.Fatalf("can't load config, %s", err)
 	}
@@ -168,7 +168,7 @@ func TestDeploy_onlyAffectedResources(t *testing.T) {
 		UserId:          "test",
 		Resources:       nil,
 		ResourceCounter: 1,
-	}, types.Metadatas)
+	}, metadata2.Metadatas)
 	if err != nil {
 		t.Fatalf("can't load config, %s", err)
 	}
@@ -235,7 +235,7 @@ func TestRefresh(t *testing.T) {
 		UserId:          "test",
 		Resources:       nil,
 		ResourceCounter: 1,
-	}, types.Metadatas)
+	}, metadata2.Metadatas)
 	if err != nil {
 		t.Fatalf("can't load config, %s", err)
 	}

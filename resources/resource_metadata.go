@@ -3,51 +3,77 @@ package resources
 import (
 	"fmt"
 	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/configpb"
 	"github.com/multycloud/multy/resources/output"
 	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/anypb"
+	"reflect"
 	"sort"
 )
 
-type ResourceCreateFunc[T proto.Message, O Resource] func(string, T, *Resources) (O, error)
-type ResourceUpdateFunc[T proto.Message, O Resource] func(O, T, *Resources) error
-type ResourceReadFromStateFunc[O Resource, OutT proto.Message] func(O, *output.TfState) (OutT, error)
+type ResourceMetadatas map[proto.Message]ResourceMetadataInterface
 
-type ExportFunc[T proto.Message, R Resource] func(R, *Resources) (T, bool, error)
-type ImportFunc[T proto.Message, O Resource] func(string, T, *Resources) (O, error)
+type ResourceTranslator[OutT proto.Message] interface {
+	Translate(MultyContext) ([]output.TfBlock, error)
+	FromState(state *output.TfState) (OutT, error)
+}
 
-type ResourceMetadata[ArgsT proto.Message, R Resource, OutT proto.Message] struct {
-	CreateFunc        ResourceCreateFunc[ArgsT, R]
-	UpdateFunc        ResourceUpdateFunc[ArgsT, R]
-	ReadFromStateFunc ResourceReadFromStateFunc[R, OutT]
+type ResourceExporter[ArgsT proto.Message] interface {
+	Create(resourceId string, args ArgsT, others *Resources) error
+	Update(args ArgsT, others *Resources) error
+	Import(resourceId string, args ArgsT, others *Resources) error
+	Export(others *Resources) (ArgsT, bool, error)
 
-	ImportFunc ImportFunc[ArgsT, R]
-	ExportFunc ExportFunc[ArgsT, R]
+	Resource
+}
+
+type ResourceMetadata[ArgsT proto.Message, R ResourceExporter[ArgsT], OutT proto.Message] struct {
+	Translators map[commonpb.CloudProvider]func(R) ResourceTranslator[OutT]
 
 	AbbreviatedName string
+	// Used for error messages
+	ResourceType string
 }
 
 func (m *ResourceMetadata[ArgsT, R, OutT]) Create(resourceId string, args proto.Message, resources *Resources) (Resource, error) {
-	return m.CreateFunc(resourceId, args.(ArgsT), resources)
+	r := reflect.New(reflect.TypeOf(*new(R)).Elem()).Interface().(R)
+	err := r.Create(resourceId, args.(ArgsT), resources)
+	return r, err
 }
 
 func (m *ResourceMetadata[ArgsT, R, OutT]) Update(resource Resource, args proto.Message, resources *Resources) error {
-	return m.UpdateFunc(resource.(R), args.(ArgsT), resources)
+	r := resource.(ResourceExporter[ArgsT])
+	return r.Update(args.(ArgsT), resources)
 }
 
 func (m *ResourceMetadata[ArgsT, R, OutT]) ReadFromState(resource Resource, state *output.TfState) (proto.Message, error) {
-	return m.ReadFromStateFunc(resource.(R), state)
+	out, err := m.Translators[resource.GetCloud()](resource.(R)).FromState(state)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (m *ResourceMetadata[ArgsT, R, OutT]) Export(resource Resource, resources *Resources) (proto.Message, bool, error) {
-	return m.ExportFunc(resource.(R), resources)
+	r := resource.(ResourceExporter[ArgsT])
+	return r.Export(resources)
 }
 
 func (m *ResourceMetadata[ArgsT, R, OutT]) Import(resourceId string, args proto.Message, resources *Resources) (Resource, error) {
-	return m.ImportFunc(resourceId, args.(ArgsT), resources)
+	// TODO: do this without reflection
+	r := reflect.New(reflect.TypeOf(*new(R)).Elem()).Interface().(R)
+	err := r.Import(resourceId, args.(ArgsT), resources)
+	return r, err
+}
+
+func (m *ResourceMetadata[ArgsT, R, OutT]) GetCloudSpecificResource(r Resource) (CloudSpecificResourceTranslator, error) {
+	if _, ok := m.Translators[r.GetCloud()]; !ok {
+		return nil, fmt.Errorf("resource of type %s not supported in cloud %s", m.ResourceType, r.GetCloud())
+	}
+	return m.Translators[r.GetCloud()](r.(R)).(CloudSpecificResourceTranslator), nil
 }
 
 func (m *ResourceMetadata[ArgsT, R, OutT]) GetAbbreviatedName() string {
@@ -61,6 +87,8 @@ type ResourceMetadataInterface interface {
 
 	Export(Resource, *Resources) (proto.Message, bool, error)
 	Import(string, proto.Message, *Resources) (Resource, error)
+	GetCloudSpecificResource(r Resource) (CloudSpecificResourceTranslator, error)
+
 	GetAbbreviatedName() string
 }
 
@@ -69,7 +97,7 @@ type MultyConfig struct {
 	c                          *configpb.Config
 	groupsByResourceId         map[Resource]*MultyResourceGroup
 	affectedResourcesById      map[string][]string
-	metadatas                  map[proto.Message]ResourceMetadataInterface
+	metadatas                  ResourceMetadatas
 	affectedResourcesByGroupId map[string][]string
 }
 
@@ -77,7 +105,7 @@ func (c *MultyConfig) GetUserId() string {
 	return c.c.UserId
 }
 
-func LoadConfig(c *configpb.Config, metadatas map[proto.Message]ResourceMetadataInterface) (*MultyConfig, error) {
+func LoadConfig(c *configpb.Config, metadatas ResourceMetadatas) (*MultyConfig, error) {
 	multyc := &MultyConfig{
 		c:         c,
 		metadatas: metadatas,
@@ -85,7 +113,7 @@ func LoadConfig(c *configpb.Config, metadatas map[proto.Message]ResourceMetadata
 	res := NewResources()
 
 	for _, r := range c.Resources {
-		conv, err := multyc.getConverter(r.ResourceArgs.ResourceArgs.MessageName())
+		conv, err := multyc.metadatas.getConverter(r.ResourceArgs.ResourceArgs.MessageName())
 		if err != nil {
 			return multyc, err
 		}
@@ -109,7 +137,7 @@ func LoadConfig(c *configpb.Config, metadatas map[proto.Message]ResourceMetadata
 	return multyc, nil
 }
 
-func (c *MultyConfig) GetOriginalConfig(metadatas map[proto.Message]ResourceMetadataInterface) (*MultyConfig, error) {
+func (c *MultyConfig) GetOriginalConfig(metadatas ResourceMetadatas) (*MultyConfig, error) {
 	return LoadConfig(c.c, metadatas)
 }
 
@@ -128,7 +156,7 @@ func addMultyResource(r *configpb.Resource, res *Resources, metadata ResourceMet
 }
 
 func (c *MultyConfig) CreateResource(args proto.Message) (Resource, error) {
-	conv, err := c.getConverter(proto.MessageName(args))
+	conv, err := c.metadatas.getConverter(proto.MessageName(args))
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +171,7 @@ func (c *MultyConfig) CreateResource(args proto.Message) (Resource, error) {
 }
 
 func (c *MultyConfig) UpdateResource(resourceId string, args proto.Message) (Resource, error) {
-	conv, err := c.getConverter(proto.MessageName(args))
+	conv, err := c.metadatas.getConverter(proto.MessageName(args))
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +246,11 @@ func (c *MultyConfig) ExportConfig() (*configpb.Config, error) {
 	}
 
 	for _, r := range c.Resources.GetAll() {
-		msg, export, err := r.GetMetadata().Export(r, c.Resources)
+		m, err := r.GetMetadata(c.metadatas)
+		if err != nil {
+			return nil, err
+		}
+		msg, export, err := m.Export(r, c.Resources)
 		if err != nil {
 			return nil, err
 		}
@@ -240,8 +272,8 @@ func (c *MultyConfig) ExportConfig() (*configpb.Config, error) {
 	return result, nil
 }
 
-func (c *MultyConfig) getConverter(name protoreflect.FullName) (ResourceMetadataInterface, error) {
-	for messageType, conv := range c.metadatas {
+func (m ResourceMetadatas) getConverter(name protoreflect.FullName) (ResourceMetadataInterface, error) {
+	for messageType, conv := range m {
 		if name == proto.MessageName(messageType) {
 			return conv, nil
 		}
