@@ -2,7 +2,7 @@ name: "e2e-pr"
 on:
   pull_request:
     branches: [ main ]
-    types: [ labeled, unlabeled ]
+    types: [ labeled, unlabeled, opened, synchronize, reopened]
 
 jobs:
   test:
@@ -47,7 +47,7 @@ jobs:
           golint .
 
       - name: Test
-        run: go test ./test/e2e -v -tags=e2e -timeout=180m -parallel 4
+        run: go test ./test/e2e -tags=e2e -timeout=180m -parallel 4
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_E2E }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_E2E }}

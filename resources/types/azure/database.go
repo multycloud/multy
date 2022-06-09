@@ -61,7 +61,7 @@ func (r AzureDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseRe
 		Password:           r.Args.Password,
 		SubnetIds:          r.Args.SubnetIds,
 		Host:               host,
-		ConnectionUsername: r.Args.Username,
+		ConnectionUsername: fmt.Sprintf("%s@%s", r.Args.Username, host),
 	}, nil
 }
 
