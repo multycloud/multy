@@ -103,7 +103,7 @@ func createKubeConfig(clusterName string, certData string, endpoint string, awsR
 					Exec KubeConfigExec `yaml:"exec"`
 				}{
 					Exec: KubeConfigExec{
-						ApiVersion:      "client.authentication.k8s.io/v1alpha1",
+						ApiVersion:      "client.authentication.k8s.io/v1beta1",
 						Command:         "aws",
 						Args:            []string{"--region", awsRegion, "eks", "get-token", "--cluster-name", clusterName},
 						InteractiveMode: "IfAvailable",
