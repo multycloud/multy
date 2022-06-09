@@ -31,6 +31,7 @@ func (r *ResourceGroup) Export(others *resources.Resources) (*resourcespb.Resour
 			Location:      r.Args.CommonParameters.Location,
 			CloudProvider: r.Args.CommonParameters.CloudProvider,
 		},
+		Name: r.Args.Name,
 	}, true, nil
 }
 
