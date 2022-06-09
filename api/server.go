@@ -15,7 +15,7 @@ import (
 	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
-	"github.com/multycloud/multy/resources/types"
+	"github.com/multycloud/multy/resources/types/metadata"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"log"
@@ -42,7 +42,6 @@ type Server struct {
 	PublicIpService                                 services.Service[*resourcespb.PublicIpArgs, *resourcespb.PublicIpResource]
 	KubernetesClusterService                        services.Service[*resourcespb.KubernetesClusterArgs, *resourcespb.KubernetesClusterResource]
 	KubernetesNodePoolService                       services.Service[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]
-	LambdaService                                   services.Service[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]
 	VaultService                                    services.Service[*resourcespb.VaultArgs, *resourcespb.VaultResource]
 	VaultAccessPolicyService                        services.Service[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]
 	VaultSecretService                              services.Service[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]
@@ -125,7 +124,6 @@ func CreateServer(serviceContext *service_context.ResourceServiceContext) Server
 		services.NewService[*resourcespb.PublicIpArgs, *resourcespb.PublicIpResource]("public_ip", serviceContext),
 		services.NewService[*resourcespb.KubernetesClusterArgs, *resourcespb.KubernetesClusterResource]("kubernetes_cluster", serviceContext),
 		services.NewService[*resourcespb.KubernetesNodePoolArgs, *resourcespb.KubernetesNodePoolResource]("kubernetes_node_pool", serviceContext),
-		services.NewService[*resourcespb.LambdaArgs, *resourcespb.LambdaResource]("lambda", serviceContext),
 		services.NewService[*resourcespb.VaultArgs, *resourcespb.VaultResource]("vault", serviceContext),
 		services.NewService[*resourcespb.VaultAccessPolicyArgs, *resourcespb.VaultAccessPolicyResource]("vault_access_policy", serviceContext),
 		services.NewService[*resourcespb.VaultSecretArgs, *resourcespb.VaultSecretResource]("vault_secret", serviceContext),
@@ -302,19 +300,6 @@ func (s *Server) DeleteKubernetesNodePool(ctx context.Context, in *resourcespb.D
 	return s.KubernetesNodePoolService.Delete(ctx, in)
 }
 
-func (s *Server) CreateLambda(ctx context.Context, in *resourcespb.CreateLambdaRequest) (*resourcespb.LambdaResource, error) {
-	return s.LambdaService.Create(ctx, in)
-}
-func (s *Server) ReadLambda(ctx context.Context, in *resourcespb.ReadLambdaRequest) (*resourcespb.LambdaResource, error) {
-	return s.LambdaService.Read(ctx, in)
-}
-func (s *Server) UpdateLambda(ctx context.Context, in *resourcespb.UpdateLambdaRequest) (*resourcespb.LambdaResource, error) {
-	return s.LambdaService.Update(ctx, in)
-}
-func (s *Server) DeleteLambda(ctx context.Context, in *resourcespb.DeleteLambdaRequest) (*commonpb.Empty, error) {
-	return s.LambdaService.Delete(ctx, in)
-}
-
 func (s *Server) CreateVault(ctx context.Context, in *resourcespb.CreateVaultRequest) (*resourcespb.VaultResource, error) {
 	return s.VaultService.Create(ctx, in)
 }
@@ -398,7 +383,7 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 	if err != nil {
 		return nil, err
 	}
-	mconfig, err := resources.LoadConfig(c, types.Metadatas)
+	mconfig, err := resources.LoadConfig(c, metadata.Metadatas)
 	if err != nil {
 		return nil, err
 	}

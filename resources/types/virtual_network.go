@@ -1,17 +1,8 @@
 package types
 
 import (
-	"fmt"
-
-	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
-	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
-	"github.com/multycloud/multy/resources/common"
-	"github.com/multycloud/multy/resources/output"
-	"github.com/multycloud/multy/resources/output/network_security_group"
-	"github.com/multycloud/multy/resources/output/route_table"
-	"github.com/multycloud/multy/resources/output/virtual_network"
 	"github.com/multycloud/multy/validate"
 )
 
@@ -23,175 +14,38 @@ AZ: Route table created to restrict traffic on vnet
 
 */
 
-var virtualNetworkMetadata = resources.ResourceMetadata[*resourcespb.VirtualNetworkArgs, *VirtualNetwork, *resourcespb.VirtualNetworkResource]{
-	CreateFunc:        CreateVirtualNetwork,
-	UpdateFunc:        UpdateVirtualNetwork,
-	ReadFromStateFunc: VirtualNetworkFromState,
-	ImportFunc:        NewVirtualNetwork,
-	ExportFunc:        ExportVirtualNetwork,
-	AbbreviatedName:   "vn",
-}
-
 type VirtualNetwork struct {
 	resources.ResourceWithId[*resourcespb.VirtualNetworkArgs]
 }
 
-func CreateVirtualNetwork(resourceId string, args *resourcespb.VirtualNetworkArgs, others *resources.Resources) (*VirtualNetwork, error) {
+func (r *VirtualNetwork) Create(resourceId string, args *resourcespb.VirtualNetworkArgs, others *resources.Resources) error {
 	if args.GetCommonParameters().GetResourceGroupId() == "" {
 		rgId, err := NewRg("vn", others, args.GetCommonParameters().GetLocation(), args.GetCommonParameters().GetCloudProvider())
 		if err != nil {
-			return nil, err
+			return err
 		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 
-	return NewVirtualNetwork(resourceId, args, others)
+	return NewVirtualNetwork(r, resourceId, args)
 }
 
-func UpdateVirtualNetwork(resource *VirtualNetwork, vn *resourcespb.VirtualNetworkArgs, others *resources.Resources) error {
-	resource.Args = vn
+func (r *VirtualNetwork) Update(args *resourcespb.VirtualNetworkArgs, _ *resources.Resources) error {
+	r.Args = args
 	return nil
 }
 
-func NewVirtualNetwork(resourceId string, vn *resourcespb.VirtualNetworkArgs, _ *resources.Resources) (*VirtualNetwork, error) {
-	return &VirtualNetwork{
-		ResourceWithId: resources.ResourceWithId[*resourcespb.VirtualNetworkArgs]{
-			ResourceId: resourceId,
-			Args:       vn,
-		},
-	}, nil
+func (r *VirtualNetwork) Import(resourceId string, args *resourcespb.VirtualNetworkArgs, _ *resources.Resources) error {
+	return NewVirtualNetwork(r, resourceId, args)
 }
 
-func ExportVirtualNetwork(r *VirtualNetwork, _ *resources.Resources) (*resourcespb.VirtualNetworkArgs, bool, error) {
+func (r *VirtualNetwork) Export(_ *resources.Resources) (*resourcespb.VirtualNetworkArgs, bool, error) {
 	return r.Args, true, nil
 }
 
-func VirtualNetworkFromState(r *VirtualNetwork, state *output.TfState) (*resourcespb.VirtualNetworkResource, error) {
-	if flags.DryRun {
-		return &resourcespb.VirtualNetworkResource{
-			CommonParameters: &commonpb.CommonResourceParameters{
-				ResourceId:      r.ResourceId,
-				ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
-				Location:        r.Args.CommonParameters.Location,
-				CloudProvider:   r.Args.CommonParameters.CloudProvider,
-				NeedsUpdate:     false,
-			},
-			Name:      r.Args.Name,
-			CidrBlock: r.Args.CidrBlock,
-		}, nil
-	}
-	out := new(resourcespb.VirtualNetworkResource)
-	out.CommonParameters = &commonpb.CommonResourceParameters{
-		ResourceId:      r.ResourceId,
-		ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
-		Location:        r.Args.CommonParameters.Location,
-		CloudProvider:   r.GetCloud(),
-		NeedsUpdate:     false,
-	}
-
-	id, err := resources.GetMainOutputRef(r)
-	if err != nil {
-		return nil, err
-	}
-
-	switch r.GetCloud() {
-	case common.AWS:
-		stateResource, err := output.GetParsed[virtual_network.AwsVpc](state, id)
-		if err != nil {
-			return nil, err
-		}
-		out.Name = stateResource.AwsResource.Tags["Name"]
-		out.CidrBlock = stateResource.CidrBlock
-	case common.AZURE:
-		stateResource, err := output.GetParsed[virtual_network.AzureVnet](state, id)
-		if err != nil {
-			return nil, err
-		}
-		out.Name = stateResource.Name
-		out.CidrBlock = stateResource.AddressSpace[0]
-	}
-
-	return out, nil
-}
-
-func (r *VirtualNetwork) GetMetadata() resources.ResourceMetadataInterface {
-	return &virtualNetworkMetadata
-}
-
-func (r *VirtualNetwork) Translate(resources.MultyContext) ([]output.TfBlock, error) {
-	if r.GetCloud() == commonpb.CloudProvider_AWS {
-		vpc := virtual_network.AwsVpc{
-			AwsResource:        common.NewAwsResource(r.ResourceId, r.Args.Name),
-			CidrBlock:          r.Args.CidrBlock,
-			EnableDnsHostnames: true,
-		}
-		// TODO make conditional on route_table_association with Internet Destination
-		igw := virtual_network.AwsInternetGateway{
-			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
-			VpcId:       r.GetVirtualNetworkId(),
-		}
-		allowAllSgRule := []network_security_group.AwsSecurityGroupRule{{
-			Protocol: "-1",
-			FromPort: 0,
-			ToPort:   0,
-			Self:     true,
-		}}
-		sg := network_security_group.AwsDefaultSecurityGroup{
-			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
-			VpcId:       r.GetVirtualNetworkId(),
-			Ingress:     allowAllSgRule,
-			Egress:      allowAllSgRule,
-		}
-		return []output.TfBlock{
-			vpc,
-			igw,
-			sg,
-		}, nil
-	} else if r.GetCloud() == commonpb.CloudProvider_AZURE {
-		return []output.TfBlock{virtual_network.AzureVnet{
-			AzResource: common.NewAzResource(
-				r.ResourceId, r.Args.Name, GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId),
-				r.GetCloudSpecificLocation(),
-			),
-			AddressSpace: []string{r.Args.CidrBlock},
-		}, route_table.AzureRouteTable{
-			AzResource: common.NewAzResource(
-				r.ResourceId, r.Args.Name, GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId),
-				r.GetCloudSpecificLocation(),
-			),
-			Routes: []route_table.AzureRouteTableRoute{{
-				Name:          "local",
-				AddressPrefix: "0.0.0.0/0",
-				NextHopType:   "VnetLocal",
-			}},
-		}}, nil
-	}
-
-	return nil, fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
-}
-
-func (r *VirtualNetwork) GetVirtualNetworkId() string {
-	t, _ := r.GetMainResourceName()
-	return fmt.Sprintf("%s.%s.id", t, r.ResourceId)
-}
-
-func (r *VirtualNetwork) GetVirtualNetworkName() string {
-	t, _ := r.GetMainResourceName()
-	return fmt.Sprintf("%s.%s.name", t, r.ResourceId)
-}
-
-func (r *VirtualNetwork) GetAssociatedRouteTableId() (string, error) {
-	if r.GetCloud() == commonpb.CloudProvider_AZURE {
-		return fmt.Sprintf("%s.%s.id", route_table.AzureResourceName, r.ResourceId), nil
-	}
-	return "", fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
-}
-
-func (r *VirtualNetwork) GetAssociatedInternetGateway() (string, error) {
-	if r.GetCloud() == commonpb.CloudProvider_AWS {
-		return fmt.Sprintf("%s.%s.id", virtual_network.AwsInternetGatewayName, r.ResourceId), nil
-	}
-	return "", fmt.Errorf("cloud %s is not supported for this resource type ", r.GetCloud().String())
+func NewVirtualNetwork(r *VirtualNetwork, resourceId string, vn *resourcespb.VirtualNetworkArgs) error {
+	r.ResourceWithId = resources.NewResource(resourceId, vn)
+	return nil
 }
 
 // TODO validate commonparams
@@ -208,17 +62,6 @@ func (r *VirtualNetwork) Validate(ctx resources.MultyContext) (errs []validate.V
 		})
 	}
 	return errs
-}
-
-func (r *VirtualNetwork) GetMainResourceName() (string, error) {
-	switch r.GetCloud() {
-	case commonpb.CloudProvider_AWS:
-		return virtual_network.AwsResourceName, nil
-	case commonpb.CloudProvider_AZURE:
-		return virtual_network.AzureResourceName, nil
-	default:
-		return "", fmt.Errorf("unknown cloud %s", r.GetCloud().String())
-	}
 }
 
 /*

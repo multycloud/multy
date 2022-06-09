@@ -8,14 +8,17 @@ import (
 	"github.com/multycloud/multy/validate"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 )
 
 type WithCommonParams interface {
 	GetCommonParameters() *commonpb.ResourceCommonArgs
+	proto.Message
 }
 
 type WithChildCommonParams interface {
 	GetCommonParameters() *commonpb.ChildResourceCommonArgs
+	proto.Message
 }
 
 type ResourceWithId[T WithCommonParams] struct {
@@ -48,8 +51,12 @@ func (r *ResourceWithId[T]) GetCloud() commonpb.CloudProvider {
 	return r.Args.GetCommonParameters().CloudProvider
 }
 
-func (r *ResourceWithId[T]) GetCommonArgs() any {
-	return r.Args.GetCommonParameters()
+func (r *ResourceWithId[T]) GetMetadata(m ResourceMetadatas) (ResourceMetadataInterface, error) {
+	converter, err := m.getConverter(proto.MessageName(r.Args))
+	if err != nil {
+		return nil, err
+	}
+	return converter, nil
 }
 
 func (r *ResourceWithId[T]) Validate() (errs []validate.ValidationError) {
@@ -77,13 +84,29 @@ type ChildResourceWithId[ParentT Resource, ChildT WithChildCommonParams] struct 
 	ResourceId string
 	Args       ChildT
 	Parent     ParentT
+	Metadata   ResourceMetadataInterface
 }
 
-func (r ResourceWithId[T]) NewValidationError(err error, field string) validate.ValidationError {
-	return newError(err, r.ResourceId, field)
+func NewResource[T WithCommonParams](resourceId string, args T) ResourceWithId[T] {
+	return ResourceWithId[T]{
+		ResourceId: resourceId,
+		Args:       args,
+	}
 }
 
-func newError(err error, resourceId string, fieldName string) validate.ValidationError {
+func NewChildResource[ParentT Resource, ChildT WithChildCommonParams](resourceId string, parent ParentT, args ChildT) ChildResourceWithId[ParentT, ChildT] {
+	return ChildResourceWithId[ParentT, ChildT]{
+		ResourceId: resourceId,
+		Args:       args,
+		Parent:     parent,
+	}
+}
+
+func (r *ResourceWithId[T]) NewValidationError(err error, field string) validate.ValidationError {
+	return NewError(err, r.ResourceId, field)
+}
+
+func NewError(err error, resourceId string, fieldName string) validate.ValidationError {
 	result := validate.ValidationError{
 		ErrorMessage: err.Error(),
 		ResourceId:   resourceId,
@@ -97,11 +120,11 @@ func newError(err error, resourceId string, fieldName string) validate.Validatio
 	return result
 }
 
-func (r ChildResourceWithId[A, B]) NewValidationError(err error, field string) validate.ValidationError {
-	return newError(err, r.ResourceId, field)
+func (r *ChildResourceWithId[A, B]) NewValidationError(err error, field string) validate.ValidationError {
+	return NewError(err, r.ResourceId, field)
 }
 
-func (r ChildResourceWithId[A, B]) GetResourceId() string {
+func (r *ChildResourceWithId[A, B]) GetResourceId() string {
 	return r.ResourceId
 }
 
@@ -113,6 +136,10 @@ func (r *ChildResourceWithId[A, B]) GetCloudSpecificLocation() string {
 	return r.Parent.GetCloudSpecificLocation()
 }
 
-func (r *ChildResourceWithId[A, B]) GetCommonArgs() any {
-	return r.Args.GetCommonParameters()
+func (r *ChildResourceWithId[A, B]) GetMetadata(m ResourceMetadatas) (ResourceMetadataInterface, error) {
+	converter, err := m.getConverter(proto.MessageName(r.Args))
+	if err != nil {
+		return nil, err
+	}
+	return converter, nil
 }
