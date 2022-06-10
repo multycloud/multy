@@ -150,6 +150,12 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		result.KubeConfigRaw = kubeCgfRaw
 	}
 
+	var err error
+	result.DefaultNodePool, err = AwsKubernetesNodePool{r.DefaultNodePool}.FromState(state)
+	if err != nil {
+		return nil, err
+	}
+
 	return result, nil
 }
 

@@ -43,6 +43,12 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState) (*resourcespb.K
 		result.KubeConfigRaw = values["kube_config_raw"].(string)
 	}
 
+	var err error
+	result.DefaultNodePool, err = AzureKubernetesNodePool{r.DefaultNodePool}.FromState(state)
+	if err != nil {
+		return nil, err
+	}
+
 	return result, nil
 }
 
