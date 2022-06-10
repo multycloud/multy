@@ -28,10 +28,15 @@ The Multy Engine is a GRPC server that translates a multy infrastructure resourc
 ├── resources
 │    ├── common
 │    ├── output # cloud specific resource outputs
-│    └── types # contains all translation logic for every multy resource
+│    └── types # contains every multy resource type and logic to create and export/import them
+│         ├── aws # contains translation logic for every aws resource
+│         ├── azure # contains translation logic for every azure resource
+│         └── metadata # contains metadata about every resource
 ├── test
 │    ├── _configs # resource unit tests
-│    └── e2e # end-to-end testing (deployment and test)
+│    ├── deploy # unit tests for deployments
+│    ├── e2e # end-to-end testing (deployment and test)
+│    └── resources # unit tests for resource create / import and export
 ├── util 
 └── validate # validation errors
 
