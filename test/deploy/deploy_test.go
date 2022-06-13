@@ -95,7 +95,7 @@ func TestDeploy_rollbacksIfSomethingFails(t *testing.T) {
 	mockTfCmd.
 		On("GetState", mock.Anything, mock.Anything).
 		Return(&output.TfState{}, nil)
-	_, err = sut.Deploy(ctx, config, nil, nil)
+	_, _, err = sut.Deploy(ctx, config, nil, nil)
 	assert.Error(t, err)
 
 	mockTfCmd.AssertNumberOfCalls(t, "Apply", 2)
@@ -145,7 +145,7 @@ func TestDeploy_callsTfApply(t *testing.T) {
 	mockTfCmd.
 		On("GetState", mock.Anything, mock.Anything).
 		Return(&output.TfState{}, nil)
-	_, err = sut.Deploy(ctx, config, nil, nil)
+	_, _, err = sut.Deploy(ctx, config, nil, nil)
 	if err != nil {
 		t.Fatalf("can't deploy, %s", err)
 	}
@@ -194,7 +194,7 @@ func TestDeploy_onlyAffectedResources(t *testing.T) {
 	mockTfCmd.
 		On("GetState", mock.Anything, mock.Anything).
 		Return(&output.TfState{}, nil)
-	_, err = sut.Deploy(ctx, config, nil, r1)
+	_, _, err = sut.Deploy(ctx, config, nil, r1)
 	if err != nil {
 		t.Fatalf("can't deploy, %s", err)
 	}
@@ -214,7 +214,7 @@ func TestDeploy_onlyAffectedResources(t *testing.T) {
 	mockTfCmd.
 		On("Apply", mock.Anything, mock.Anything, mock.Anything).
 		Return(nil).Once()
-	_, err = sut.Deploy(ctx, config, nil, res2)
+	_, _, err = sut.Deploy(ctx, config, nil, res2)
 	if err != nil {
 		t.Fatalf("can't deploy, %s", err)
 	}
@@ -252,4 +252,67 @@ func TestRefresh(t *testing.T) {
 	}
 
 	mockTfCmd.AssertNumberOfCalls(t, "Refresh", 1)
+}
+
+func TestDeploy_rollbacksIfGetStateFails(t *testing.T) {
+	ctx := mockCreds(t)
+	mockTfCmd := &MockTerraformCommand{}
+	sut := deploy.DeploymentExecutor{
+		TfCmd: mockTfCmd,
+	}
+
+	config, err := resources.LoadConfig(&configpb.Config{
+		UserId:          "test",
+		Resources:       nil,
+		ResourceCounter: 1,
+	}, metadata2.Metadatas)
+	if err != nil {
+		t.Fatalf("can't load config, %s", err)
+	}
+
+	res, err := config.CreateResource(&resourcespb.VirtualNetworkArgs{
+		CommonParameters: &commonpb.ResourceCommonArgs{
+			Location:      commonpb.Location_US_EAST_1,
+			CloudProvider: commonpb.CloudProvider_AZURE,
+		},
+		Name:      "test-vn",
+		CidrBlock: "10.0.0.0/16",
+	})
+	if err != nil {
+		t.Fatalf("can't create resource, %s", err)
+	}
+
+	mockTfCmd.
+		On("Init", mock.Anything, mock.Anything).
+		Return(nil)
+	mockTfCmd.
+		On("Apply", mock.Anything, mock.Anything, mock.Anything).
+		Return(nil)
+	mockTfCmd.
+		On("GetState", mock.Anything, mock.Anything).
+		Return(&output.TfState{}, nil)
+	_, rollbackFn, err := sut.Deploy(ctx, config, nil, nil)
+	if err != nil {
+		t.Fatalf("error when deploying, %s", err)
+	}
+
+	// first assert that everything was successful
+	mockTfCmd.AssertNumberOfCalls(t, "Apply", 1)
+	file, err := os.ReadFile(filepath.Join(deploy.GetTempDirForUser(false, "test"), "main.tf"))
+	if err != nil {
+		t.Fatalf("can't read main.tf, %s", err)
+	}
+	assert.Contains(t, string(file), res.GetResourceId())
+
+	// rollback and assert that apply was called again
+	rollbackFn()
+
+	mockTfCmd.AssertNumberOfCalls(t, "Apply", 2)
+
+	// assert that in the end the main.tf was applied without the new resource (aka rollback)
+	file, err = os.ReadFile(filepath.Join(deploy.GetTempDirForUser(false, "test"), "main.tf"))
+	if err != nil {
+		t.Fatalf("can't read main.tf, %s", err)
+	}
+	assert.NotContains(t, string(file), res.GetResourceId())
 }

@@ -53,15 +53,15 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 	return errors.WrappingErrors(s.create)(ctx, in)
 }
 
-func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (OutT, error) {
+func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (out OutT, err error) {
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
 
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
 
 	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "create")
@@ -69,29 +69,39 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
 
 	c, err := s.getConfig(userId, lock)
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
+
 	resource, err := c.CreateResource(in.GetResource())
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
+
+	defer func() {
+		if err == nil {
+			err = s.saveConfig(c, lock)
+		} else {
+			log.Println("[DEBUG] Something went wrong, not storing state")
+		}
+	}()
 
 	log.Printf("[INFO] Deploying %s\n", resource.GetResourceId())
-	_, err = s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, nil, resource)
+	_, rollbackFn, err := s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, nil, resource)
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
+	defer func() {
+		if err != nil {
+			rollbackFn()
+		}
+	}()
 
-	err = s.saveConfig(c, lock)
-	if err != nil {
-		return *new(OutT), err
-	}
 	return s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.GetResourceId()}, false)
 }
 
@@ -185,42 +195,50 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 	return errors.WrappingErrors(s.update)(ctx, in)
 }
 
-func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (OutT, error) {
+func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (out OutT, err error) {
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
 	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "update")
 	log.Printf("[INFO] user: %s. update %s %s", userId, s.ResourceName, in.GetResourceId())
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
 
 	c, err := s.getConfig(userId, lock)
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
 
 	r, err := c.UpdateResource(in.GetResourceId(), in.GetResource())
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
 
-	_, err = s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, r, r)
-	if err != nil {
-		return *new(OutT), err
-	}
+	defer func() {
+		if err == nil {
+			err = s.saveConfig(c, lock)
+		} else {
+			log.Println("[DEBUG] Something went wrong, not storing state")
+		}
+	}()
 
-	err = s.saveConfig(c, lock)
+	_, rollbackFn, err := s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, r, r)
 	if err != nil {
-		return *new(OutT), err
+		return
 	}
+	defer func() {
+		if err != nil {
+			rollbackFn()
+		}
+	}()
 	return s.readFromConfig(ctx, c, in, false)
 }
 
@@ -229,32 +247,40 @@ func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (_ *c
 	return errors.WrappingErrors(s.delete)(ctx, in)
 }
 
-func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*commonpb.Empty, error) {
+func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (out *commonpb.Empty, err error) {
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
-		return nil, err
+		return
 	}
 	userId, err := s.ServiceContext.GetUserId(ctx, key)
 	if err != nil {
-		return nil, err
+		return
 	}
 	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "delete")
 	log.Printf("[INFO] user: %s. delete %s %s", userId, s.ResourceName, in.GetResourceId())
 	lock, err := s.ServiceContext.LockConfig(ctx, userId)
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
 	c, err := s.getConfig(userId, lock)
 	if err != nil {
-		return nil, err
+		return
 	}
 	previousResource, err := c.DeleteResource(in.GetResourceId())
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	_, err = s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, previousResource, nil)
+	defer func() {
+		if err == nil {
+			err = s.saveConfig(c, lock)
+		} else {
+			log.Println("[DEBUG] Something went wrong, not storing state")
+		}
+	}()
+
+	_, _, err = s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, previousResource, nil)
 	if err != nil {
 		if s, ok := status.FromError(err); ok && s.Code() == codes.InvalidArgument {
 			for _, details := range s.Details() {
@@ -264,11 +290,6 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (*com
 				}
 			}
 		}
-		return nil, err
-	}
-
-	err = s.saveConfig(c, lock)
-	if err != nil {
 		return nil, err
 	}
 	return &commonpb.Empty{}, nil
