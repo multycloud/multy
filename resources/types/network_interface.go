@@ -48,7 +48,7 @@ func NewNetworkInterface(r *NetworkInterface, resourceId string, args *resources
 		return err
 	}
 	r.Subnet = subnet
-	pIp, _, err := resources.GetOptional[*PublicIp](resourceId, others, args.PublicIpId)
+	pIp, err := resources.GetOptional[*PublicIp](resourceId, others, args.PublicIpId)
 	if err != nil {
 		return err
 	}

@@ -77,7 +77,7 @@ func NewVirtualMachine(vm *VirtualMachine, resourceId string, args *resourcespb.
 	}
 	vm.Subnet = subnet
 
-	publicIp, _, err := resources.GetOptional[*PublicIp](resourceId, others, args.PublicIpId)
+	publicIp, err := resources.GetOptional[*PublicIp](resourceId, others, args.PublicIpId)
 	if err != nil {
 		return err
 	}

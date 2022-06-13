@@ -53,32 +53,27 @@ func (r *Resources) GetAll() []Resource {
 func Get[T Resource](dependentResourceId string, resources *Resources, id string) (T, error) {
 	if id == "" {
 		return *new(T), errors.ValidationError(validate.ValidationError{
-			ErrorMessage: fmt.Sprintf("Required id is empty in resource %s.", dependentResourceId),
+			ErrorMessage: fmt.Sprintf("Required id is not set in resource %s.", dependentResourceId),
 			ResourceId:   id,
 		})
 	}
 
-	item, exists, err := GetOptional[T](dependentResourceId, resources, id)
-	if err != nil {
-		return item, err
-	}
-	if !exists {
-		return item, errors.ResourceNotFound(id)
-	}
-
-	return item, nil
+	return GetOptional[T](dependentResourceId, resources, id)
 }
 
-func GetOptional[T Resource](dependentResourceId string, resources *Resources, id string) (T, bool, error) {
+func GetOptional[T Resource](dependentResourceId string, resources *Resources, id string) (T, error) {
+	if id == "" {
+		return *new(T), nil
+	}
 	if r, ok := resources.ResourceMap[id]; ok {
 		if _, okType := r.(T); !okType {
-			return *new(T), true, fmt.Errorf("resource with id %s is of the wrong type", id)
+			return *new(T), fmt.Errorf("resource with id %s is of the wrong type", id)
 		}
 		resources.AddDependency(dependentResourceId, id)
-		return r.(T), true, nil
+		return r.(T), nil
 	}
 
-	return *new(T), false, nil
+	return *new(T), errors.ResourceNotFound(id)
 }
 
 func (r *Resources) AddDependency(dependentResourceId string, id string) {
