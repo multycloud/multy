@@ -23,7 +23,13 @@ type AzureVirtualMachine struct {
 	SourceImageReference          AzureSourceImageReference `hcl:"source_image_reference"`
 	DisablePasswordAuthentication bool                      `hcl:"disable_password_authentication"`
 	Identity                      AzureIdentity             `hcl:"identity"`
+	Identities                    []AzureGeneratedIdentity  `json:"identity"`
 	ComputerName                  string                    `hcl:"computer_name"`
+}
+
+type AzureGeneratedIdentity struct {
+	// outputs
+	PrincipalId string `json:"principal_id" hcle:"omitempty"`
 }
 
 type AzureIdentity struct {

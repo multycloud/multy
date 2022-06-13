@@ -36,17 +36,17 @@ func (r AzureVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virt
 
 	if !flags.DryRun {
 		if r.Args.GeneratePublicIp {
-			values, err := state.GetValues(public_ip.AzurePublicIp{}, r.ResourceId)
+			ipResource, err := output.GetParsedById[public_ip.AzurePublicIp](state, r.ResourceId)
 			if err != nil {
 				return nil, err
 			}
-			ip = values["public_ip"].(string)
+			ip = ipResource.IpAddress
 		}
-		values, err := state.GetValues(virtual_machine.AzureVirtualMachine{}, r.ResourceId)
+		vmResource, err := output.GetParsedById[virtual_machine.AzureVirtualMachine](state, r.ResourceId)
 		if err != nil {
 			return nil, err
 		}
-		identityId = values["identity"].([]interface{})[0].(map[string]interface{})["principal_id"].(string)
+		identityId = vmResource.Identities[0].PrincipalId
 	}
 
 	// TODO: handle default values on create
