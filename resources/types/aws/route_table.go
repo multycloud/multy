@@ -37,14 +37,9 @@ func (r AwsRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTable
 		NeedsUpdate: false,
 	}
 
-	id, err := resources.GetMainOutputRef(r)
-	if err != nil {
-		return nil, err
-	}
-
 	switch r.GetCloud() {
 	case common.AWS:
-		stateResource, err := output.GetParsed[route_table.AwsRouteTable](state, id)
+		stateResource, err := output.GetParsedById[route_table.AwsRouteTable](state, r.ResourceId)
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +55,7 @@ func (r AwsRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTable
 		}
 		out.Routes = routes
 	case common.AZURE:
-		stateResource, err := output.GetParsed[route_table.AzureRouteTable](state, id)
+		stateResource, err := output.GetParsedById[route_table.AzureRouteTable](state, r.ResourceId)
 		if err != nil {
 			return nil, err
 		}

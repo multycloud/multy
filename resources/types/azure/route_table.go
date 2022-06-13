@@ -36,11 +36,7 @@ func (r AzureRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTab
 		ResourceId:  r.ResourceId,
 		NeedsUpdate: false,
 	}
-	id, err := resources.GetMainOutputRef(r)
-	if err != nil {
-		return nil, err
-	}
-	stateResource, err := output.GetParsed[route_table.AzureRouteTable](state, id)
+	stateResource, err := output.GetParsedById[route_table.AzureRouteTable](state, r.ResourceId)
 	if err != nil {
 		return nil, err
 	}

@@ -24,6 +24,9 @@ type AwsDbInstance struct {
 	PubliclyAccessible  bool     `hcl:"publicly_accessible"`
 	VpcSecurityGroupIds []string `hcl:"vpc_security_group_ids,expr"`
 	Port                int      `hcl:"port" hcle:"omitempty"`
+
+	// outputs
+	Address string `json:"address"`
 }
 
 // aws_db_subnet_group

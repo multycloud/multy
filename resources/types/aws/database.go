@@ -26,11 +26,11 @@ func InitDatabase(r *types.Database) resources.ResourceTranslator[*resourcespb.D
 func (r AwsDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseResource, error) {
 	host := "dyrun"
 	if !flags.DryRun {
-		values, err := state.GetValues(database.AwsDbInstance{}, r.ResourceId)
+		db, err := output.GetParsedById[database.AwsDbInstance](state, r.ResourceId)
 		if err != nil {
 			return nil, err
 		}
-		host = values["address"].(string)
+		host = db.Address
 	}
 
 	return &resourcespb.DatabaseResource{
