@@ -137,12 +137,12 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 	}
 	result.Endpoint = "dryrun"
 	if !flags.DryRun {
-		values, err := state.GetValues(kubernetes_service.AwsEksCluster{}, r.ResourceId)
+		cluster, err := output.GetParsedById[kubernetes_service.AwsEksCluster](state, r.ResourceId)
 		if err != nil {
 			return nil, err
 		}
-		result.Endpoint = values["endpoint"].(string)
-		result.CaCertificate = values["certificate_authority"].([]interface{})[0].(map[string]interface{})["data"].(string)
+		result.Endpoint = cluster.ResourceId
+		result.CaCertificate = cluster.CertificateAuthority[0].Data
 		kubeCgfRaw, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint, r.GetCloudSpecificLocation())
 		if err != nil {
 			return nil, err

@@ -34,13 +34,13 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState) (*resourcespb.K
 	}
 	result.Endpoint = "dryrun"
 	if !flags.DryRun {
-		values, err := state.GetValues(kubernetes_service.AzureEksCluster{}, r.ResourceId)
+		cluster, err := output.GetParsedById[kubernetes_service.AzureEksCluster](state, r.ResourceId)
 		if err != nil {
 			return nil, err
 		}
-		result.Endpoint = values["kube_config"].([]interface{})[0].(map[string]interface{})["host"].(string)
-		result.CaCertificate = values["kube_config"].([]interface{})[0].(map[string]interface{})["cluster_ca_certificate"].(string)
-		result.KubeConfigRaw = values["kube_config_raw"].(string)
+		result.Endpoint = cluster.KubeConfig[0].Host
+		result.CaCertificate = cluster.KubeConfig[0].ClusterCaCertificate
+		result.KubeConfigRaw = cluster.KubeConfigRaw
 	}
 
 	var err error

@@ -10,6 +10,10 @@ type AwsEksCluster struct {
 	VpcConfig               VpcConfig               `hcl:"vpc_config"`
 	KubernetesNetworkConfig KubernetesNetworkConfig `hcl:"kubernetes_network_config"`
 	Name                    string                  `hcl:"name"`
+
+	// outputs
+	Endpoint             string                 `json:"endpoint"`
+	CertificateAuthority []CertificateAuthority `json:"certificate_authority"`
 }
 
 type VpcConfig struct {
@@ -19,4 +23,8 @@ type VpcConfig struct {
 
 type KubernetesNetworkConfig struct {
 	ServiceIpv4Cidr string `hcl:"service_ipv4_cidr"`
+}
+
+type CertificateAuthority struct {
+	Data string `json:"data"`
 }
