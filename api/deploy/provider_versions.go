@@ -10,6 +10,7 @@ import (
 const (
 	awsProviderVersion    = "4.8.0"
 	azureProviderVersion  = "3.0.2"
+	googleProviderVersion = "4.24.0"
 	randomProviderVersion = "3.1.3"
 	localProviderVersion  = "2.2.2"
 	tfStateRegion         = "eu-west-2"
@@ -56,6 +57,10 @@ terraform {
       source = "hashicorp/azurerm"
       version = "%s"
     }
+    google = {
+      source = "hashicorp/azurerm"
+      version = "%s"
+    }
     random = {
       source  = "hashicorp/random"
       version = "%s"
@@ -66,5 +71,5 @@ terraform {
     }
   }
 }
-`, providerBlock, awsProviderVersion, azureProviderVersion, randomProviderVersion, localProviderVersion), nil
+`, providerBlock, awsProviderVersion, azureProviderVersion, googleProviderVersion, randomProviderVersion, localProviderVersion), nil
 }

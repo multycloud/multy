@@ -40,6 +40,9 @@ func EncodeTfFile(credentials *credspb.CloudCredentials, c *resources.MultyConfi
 		if r.GetCloud() == commonpb.CloudProvider_AZURE && !hasValidAzureCreds(credentials) {
 			return result, AzureCredsNotSetErr
 		}
+		if r.GetCloud() == commonpb.CloudProvider_GCP && !hasValidGcpCreds(credentials) {
+			return result, GcpCredsNotSetErr
+		}
 	}
 
 	affectedResources := map[string]struct{}{}
@@ -71,6 +74,10 @@ func hasValidAzureCreds(credentials *credspb.CloudCredentials) bool {
 
 func hasValidAwsCreds(credentials *credspb.CloudCredentials) bool {
 	return credentials.GetAwsCreds().GetAccessKey() != "" && credentials.GetAwsCreds().GetSecretKey() != ""
+}
+
+func hasValidGcpCreds(credentials *credspb.CloudCredentials) bool {
+	return credentials.GetGcpCreds().GetCredentials() != ""
 }
 
 func getExistingProvider(r resources.Resource, creds *credspb.CloudCredentials) (map[commonpb.CloudProvider]map[string]*types.Provider, error) {

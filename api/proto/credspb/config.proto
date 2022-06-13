@@ -10,6 +10,7 @@ package dev.multy.creds;
 message CloudCredentials {
   AwsCredentials aws_creds = 1;
   AzureCredentials azure_creds = 2;
+  GCPCredentials gcp_creds = 3;
 }
 
 message AwsCredentials {
@@ -24,4 +25,9 @@ message AzureCredentials {
   string tenant_id = 2;
   string client_id = 3;
   string client_secret = 4;
+}
+
+message GCPCredentials {
+  string credentials = 1;
+  string project_id = 2;
 }

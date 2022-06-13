@@ -10,41 +10,57 @@ import (
 const (
 	AWS   = commonpb.CloudProvider_AWS
 	AZURE = commonpb.CloudProvider_AZURE
+	GCP   = commonpb.CloudProvider_GCP
 )
 
 var LOCATION = map[commonpb.Location]map[commonpb.CloudProvider]string{
+	// Ireland
 	commonpb.Location_EU_WEST_1: {
 		AWS:   "eu-west-1",
 		AZURE: "northeurope",
+		GCP:   "europe-west1", // Belgium
 	},
+	// London
 	commonpb.Location_EU_WEST_2: {
 		AWS:   "eu-west-2",
 		AZURE: "uksouth",
+		GCP:   "europe-west2",
 	},
+	// France
 	commonpb.Location_EU_WEST_3: {
 		AWS:   "eu-west-3",
 		AZURE: "francecentral",
+		GCP:   "europe-west9",
 	},
-
+	// N. Virginia
 	commonpb.Location_US_EAST_1: {
 		AWS:   "us-east-1",
 		AZURE: "eastus",
+		GCP:   "us-east4", // Virginia
 	},
+	// Ohio
 	commonpb.Location_US_EAST_2: {
 		AWS:   "us-east-2",
 		AZURE: "eastus2",
+		GCP:   "us-east5",
 	},
+	// California
 	commonpb.Location_US_WEST_1: {
 		AWS:   "us-west-1",
 		AZURE: "westus2",
+		GCP:   "us-west2",
 	},
+	// Oregon
 	commonpb.Location_US_WEST_2: {
 		AWS:   "us-west-2",
 		AZURE: "westus3",
+		GCP:   "us-west1",
 	},
+	// Sweden
 	commonpb.Location_EU_NORTH_1: {
 		AWS:   "eu-north-1",
 		AZURE: "swedencentral",
+		GCP:   "europe-north1", // Finland
 	},
 }
 
@@ -160,6 +176,13 @@ func NewAzResource(resourceId string, name string, rgName string, location strin
 	}
 }
 
+func NewGcpResource(resourceId string, name string) *GcpResource {
+	return &GcpResource{
+		TerraformResource: output.TerraformResource{ResourceId: resourceId},
+		Name:              name,
+	}
+}
+
 func (r *AwsResource) SetName(name string) {
 	//r.ResourceName = name
 	r.TerraformResource.ResourceName = name
@@ -169,7 +192,16 @@ func (r *AzResource) SetName(name string) {
 	r.TerraformResource.ResourceName = name
 }
 
+func (r *GcpResource) SetName(name string) {
+	r.TerraformResource.ResourceName = name
+}
+
 type AwsResource struct {
 	output.TerraformResource `hcl:",squash"`
 	Tags                     map[string]string `hcl:"tags" hcle:"omitempty"`
+}
+
+type GcpResource struct {
+	output.TerraformResource `hcl:",squash"`
+	Name                     string `hcl:"name" hcle:"omitempty"`
 }

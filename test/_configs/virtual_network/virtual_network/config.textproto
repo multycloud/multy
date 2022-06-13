@@ -1,45 +1,62 @@
-resources:  {
-  resource_id:  "example_vn_azure"
-  resource_args:  {
-    resource_args:  {
-      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
-        common_parameters:  {
-          resource_group_id:  "rg1"
-          location:  EU_WEST_1
-          cloud_provider:  AZURE
+resources: {
+  resource_id: "example_vn_azure"
+  resource_args: {
+    resource_args: {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]: {
+        common_parameters: {
+          resource_group_id: "rg1"
+          location: EU_WEST_1
+          cloud_provider: AZURE
         }
-        name:  "example_vn"
-        cidr_block:  "10.0.0.0/16"
+        name: "example_vn"
+        cidr_block: "10.0.0.0/16"
       }
     }
   }
 }
-resources:  {
-  resource_id:  "example_vn_aws"
-  resource_args:  {
-    resource_args:  {
-      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
-        common_parameters:  {
-          resource_group_id:  "rg1"
-          location:  EU_WEST_1
-          cloud_provider:  AWS
+resources: {
+  resource_id: "example_vn_aws"
+  resource_args: {
+    resource_args: {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]: {
+        common_parameters: {
+          resource_group_id: "rg1"
+          location: EU_WEST_1
+          cloud_provider: AWS
         }
-        name:  "example_vn"
-        cidr_block:  "10.0.0.0/16"
+        name: "example_vn"
+        cidr_block: "10.0.0.0/16"
       }
     }
   }
 }
-resources:  {
-  resource_id:  "rg1"
-  resource_args:  {
-    resource_args:  {
-      [type.googleapis.com/dev.multy.resources.ResourceGroupArgs]:  {
-        common_parameters:  {
-          location:  EU_WEST_1
-          cloud_provider:  AZURE
+
+resources: {
+  resource_id: "example_vn_gcp"
+  resource_args: {
+    resource_args: {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]: {
+        common_parameters: {
+          resource_group_id: "rg1"
+          location: EU_WEST_1
+          cloud_provider: GCP
         }
-        name:  "rg1"
+        name: "example-vn"
+        cidr_block: "10.0.0.0/16"
+      }
+    }
+  }
+}
+resources: {
+  resource_id: "rg1"
+  resource_args: {
+    resource_args: {
+      [type.googleapis.com/dev.multy.resources.ResourceGroupArgs]: {
+        common_parameters: {
+          location: EU_WEST_1
+          cloud_provider: AZURE
+        }
+        name: "rg1"
       }
     }
   }

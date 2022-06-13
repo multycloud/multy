@@ -24,6 +24,7 @@ const (
 var (
 	AwsCredsNotSetErr   = status.Error(codes.InvalidArgument, "aws credentials are required but not set")
 	AzureCredsNotSetErr = status.Error(codes.InvalidArgument, "azure credentials are required but not set")
+	GcpCredsNotSetErr   = status.Error(codes.InvalidArgument, "gcp credentials are required but not set")
 )
 
 type EncodedResources struct {
