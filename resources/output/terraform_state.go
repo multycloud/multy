@@ -29,7 +29,7 @@ func (t *TfState) Get(resourceRef string) (map[string]interface{}, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("resource %s doesn't exist", resourceRef)
+	return nil, fmt.Errorf("unable to parse resource %s as it doesn't exist on state", resourceRef)
 }
 
 func GetParsed[T any](state *TfState, resourceRef string) (*T, error) {
@@ -50,4 +50,9 @@ func GetParsed[T any](state *TfState, resourceRef string) (*T, error) {
 	}
 
 	return stateResource, nil
+}
+
+func GetParsedById[T any](state *TfState, resourceId string) (*T, error) {
+	resourceRef := fmt.Sprintf("%s.%s", GetResourceName(*new(T)), resourceId)
+	return GetParsed[T](state, resourceRef)
 }

@@ -36,6 +36,45 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 		location = commonpb.Location_EU_WEST_2
 	}
 
+	pubKey, privKey, err := makeSSHKeyPair()
+	if err != nil {
+		t.Fatalf("unable to create ssh key: %+v", err)
+	}
+
+	pip, nsg := setUpVirtualMachine(t, ctx, location, cloud, pubKey)
+
+	var username string
+	if cloud == commonpb.CloudProvider_AWS {
+		username = "ubuntu"
+	} else if cloud == commonpb.CloudProvider_AZURE {
+		username = "adminuser"
+	}
+
+	signer, err := signerFromPem([]byte(privKey))
+	if err != nil {
+		t.Fatal(fmt.Errorf("error setting up cert"))
+	}
+
+	config := &ssh.ClientConfig{
+		User: username,
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+			return nil
+		},
+	}
+
+	t.Run("ssh_connection_success", func(t *testing.T) {
+		testSSHConnection(t, pip, config)
+	})
+
+	t.Run("nsg_traffic_block", func(t *testing.T) {
+		testNsgRules(t, ctx, nsg, pip.GetIp(), config)
+	})
+}
+
+func setUpVirtualMachine(t *testing.T, ctx context.Context, location commonpb.Location, cloud commonpb.CloudProvider, pubKey string) (*resourcespb.PublicIpResource, *resourcespb.NetworkSecurityGroupResource) {
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
 			Location:      location,
@@ -242,11 +281,6 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 		}
 	})
 
-	pubKey, privKey, err := makeSSHKeyPair()
-	if err != nil {
-		t.Fatalf("unable to create ssh key: %+v", err)
-	}
-
 	createVmRequest := &resourcespb.CreateVirtualMachineRequest{Resource: &resourcespb.VirtualMachineArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
 			Location:      location,
@@ -283,30 +317,11 @@ sudo echo "hello world" > /tmp/test.txt`)),
 			}
 		}
 	})
+	return pip, nsg
+}
 
-	var username string
-	if cloud == commonpb.CloudProvider_AWS {
-		username = "ubuntu"
-	} else if cloud == commonpb.CloudProvider_AZURE {
-		username = "adminuser"
-	}
-
-	signer, err := signerFromPem([]byte(privKey))
-	if err != nil {
-		t.Fatal(fmt.Errorf("error setting up cert"))
-	}
-	config := &ssh.ClientConfig{
-		User: username,
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
-		},
-		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-			return nil
-		},
-	}
-
+func testSSHConnection(t *testing.T, pip *resourcespb.PublicIpResource, config *ssh.ClientConfig) *ssh.ClientConfig {
 	time.Sleep(3 * time.Minute)
-
 	conn, err := ssh.Dial("tcp", pip.GetIp()+":22", config)
 	if err != nil {
 		t.Fatal(fmt.Errorf("error in ssh connection: %+v", err))
@@ -330,10 +345,10 @@ sudo echo "hello world" > /tmp/test.txt`)),
 	}
 
 	assert.Equal(t, "hello world\n", string(output), config)
-	updateNsgRules(t, ctx, nsg, pip.GetIp(), config)
+	return config
 }
 
-func updateNsgRules(t *testing.T, ctx context.Context, nsg *resourcespb.NetworkSecurityGroupResource, ip string, config *ssh.ClientConfig) {
+func testNsgRules(t *testing.T, ctx context.Context, nsg *resourcespb.NetworkSecurityGroupResource, ip string, config *ssh.ClientConfig) {
 	nsg.Rules = []*resourcespb.NetworkSecurityRule{{
 		Protocol: "tcp",
 		Priority: 110,

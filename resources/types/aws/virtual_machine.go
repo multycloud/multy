@@ -33,17 +33,18 @@ func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 
 	if !flags.DryRun {
 		if r.Args.GeneratePublicIp {
-			values, err := state.GetValues(virtual_machine.AwsEC2{}, r.ResourceId)
+			vmResource, err := output.GetParsedById[virtual_machine.AwsEC2](state, r.ResourceId)
 			if err != nil {
 				return nil, err
 			}
-			ip = values["public_ip"].(string)
+			ip = vmResource.PublicIp
 		}
-		values, err := state.GetValues(iam.AwsIamRole{}, r.ResourceId)
+
+		iamRoleResource, err := output.GetParsedById[iam.AwsIamRole](state, r.ResourceId)
 		if err != nil {
 			return nil, err
 		}
-		identityId = values["id"].(string)
+		identityId = iamRoleResource.Id
 	}
 
 	// TODO: handle default values on create

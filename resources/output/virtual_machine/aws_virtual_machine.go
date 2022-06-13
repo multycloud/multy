@@ -20,6 +20,9 @@ type AwsEC2 struct {
 	SecurityGroupIds         []string                 `hcl:"vpc_security_group_ids,expr" hcle:"omitempty"`
 	KeyName                  string                   `hcl:"key_name,expr" hcle:"omitempty"`
 	IamInstanceProfile       string                   `hcl:"iam_instance_profile,expr" hcle:"omitempty"`
+
+	// outputs
+	PublicIp string `json:"public_ip" hcle:"omitempty"`
 }
 
 type AwsEc2NetworkInterface struct {
