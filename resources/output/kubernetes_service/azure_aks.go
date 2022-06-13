@@ -16,7 +16,7 @@ type AzureEksCluster struct {
 	*common.AzResource `hcl:",squash" default:"name=azurerm_kubernetes_cluster"`
 	DefaultNodePool    *kubernetes_node_pool.AzureKubernetesNodePool `hcl:"default_node_pool"`
 	DnsPrefix          string                                        `hcl:"dns_prefix"`
-	Identity           AzureIdentity                                 `hcl:"identity"`
+	Identity           []AzureIdentity                               `hcl:"identity,blocks"`
 	NetworkProfile     NetworkProfile                                `hcl:"network_profile"`
 
 	// outputs
