@@ -18,6 +18,10 @@ type AzureEksCluster struct {
 	DnsPrefix          string                                        `hcl:"dns_prefix"`
 	Identity           AzureIdentity                                 `hcl:"identity"`
 	NetworkProfile     NetworkProfile                                `hcl:"network_profile"`
+
+	// outputs
+	KubeConfigRaw string       `json:"kube_config_raw" hcle:"omitempty"`
+	KubeConfig    []KubeConfig `json:"kube_config" hcle:"omitempty"`
 }
 
 type NetworkProfile struct {
@@ -25,6 +29,11 @@ type NetworkProfile struct {
 	DnsServiceIp     string `hcl:"dns_service_ip"`
 	DockerBridgeCidr string `hcl:"docker_bridge_cidr"`
 	ServiceCidr      string `hcl:"service_cidr"`
+}
+
+type KubeConfig struct {
+	Host                 string `json:"host" hcle:"omitempty"`
+	ClusterCaCertificate string `json:"cluster_ca_certificate" hcle:"omitempty"`
 }
 
 type AzureUserAssignedIdentity struct {

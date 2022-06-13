@@ -42,11 +42,7 @@ func (r AwsSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource
 	out.AvailabilityZone = r.Args.AvailabilityZone
 	out.VirtualNetworkId = r.Args.GetVirtualNetworkId()
 
-	id, err := resources.GetMainOutputRef(r)
-	if err != nil {
-		return nil, err
-	}
-	stateResource, err := output.GetParsed[subnet.AwsSubnet](state, id)
+	stateResource, err := output.GetParsedById[subnet.AwsSubnet](state, r.ResourceId)
 	if err != nil {
 		return nil, err
 	}

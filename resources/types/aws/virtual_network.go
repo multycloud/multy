@@ -44,12 +44,7 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 		NeedsUpdate:     false,
 	}
 
-	id, err := resources.GetMainOutputRef(r)
-	if err != nil {
-		return nil, err
-	}
-
-	stateResource, err := output.GetParsed[virtual_network.AwsVpc](state, id)
+	stateResource, err := output.GetParsedById[virtual_network.AwsVpc](state, r.ResourceId)
 	if err != nil {
 		return nil, err
 	}

@@ -44,12 +44,7 @@ func (r AzureVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virt
 		NeedsUpdate:     false,
 	}
 
-	id, err := resources.GetMainOutputRef(r)
-	if err != nil {
-		return nil, err
-	}
-
-	stateResource, err := output.GetParsed[virtual_network.AzureVnet](state, id)
+	stateResource, err := output.GetParsedById[virtual_network.AzureVnet](state, r.ResourceId)
 	if err != nil {
 		return nil, err
 	}
