@@ -66,7 +66,7 @@ func (r AzureKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.
 			AzResource:      common.NewAzResource(r.ResourceId, r.Args.Name, GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId), r.GetCloudSpecificLocation()),
 			DefaultNodePool: defaultPool,
 			DnsPrefix:       common.UniqueId(r.Args.Name, "aks", common.LowercaseAlphanumericFormatFunc),
-			Identity:        kubernetes_service.AzureIdentity{Type: "SystemAssigned"},
+			Identity:        []kubernetes_service.AzureIdentity{{Type: "SystemAssigned"}},
 			NetworkProfile: kubernetes_service.NetworkProfile{
 				NetworkPlugin:    "azure",
 				DnsServiceIp:     "10.100.0.10",
