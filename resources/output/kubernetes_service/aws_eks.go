@@ -12,8 +12,8 @@ type AwsEksCluster struct {
 	Name                    string                  `hcl:"name"`
 
 	// outputs
-	Endpoint             string                 `json:"endpoint"`
-	CertificateAuthority []CertificateAuthority `json:"certificate_authority"`
+	Endpoint             string                 `json:"endpoint" hcle:"omitempty"`
+	CertificateAuthority []CertificateAuthority `json:"certificate_authority"  hcle:"omitempty"`
 }
 
 type VpcConfig struct {
@@ -26,5 +26,5 @@ type KubernetesNetworkConfig struct {
 }
 
 type CertificateAuthority struct {
-	Data string `json:"data"`
+	Data string `json:"data"  hcle:"omitempty"`
 }

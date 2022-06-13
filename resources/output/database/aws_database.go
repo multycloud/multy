@@ -26,7 +26,7 @@ type AwsDbInstance struct {
 	Port                int      `hcl:"port" hcle:"omitempty"`
 
 	// outputs
-	Address string `json:"address"`
+	Address string `json:"address" hcle:"omitempty"`
 }
 
 // aws_db_subnet_group
