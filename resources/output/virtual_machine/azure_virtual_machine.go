@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources/common"
+	"golang.org/x/exp/slices"
+	"strings"
 )
 
 const AzureResourceName = "azurerm_linux_virtual_machine"
@@ -60,6 +62,10 @@ func GetLatestAzureSourceImageReference(ref *resourcespb.ImageReference) (AzureS
 	case resourcespb.ImageReference_CENT_OS:
 		offer = "CentOs"
 		publisher = "OpenLogic"
+		dotVersions := []string{"7.2", "7.3", "7.4", "7.5", "7.6", "7.7", "8.0"}
+		if !slices.Contains(dotVersions, version) {
+			version = strings.Replace(version, ".", "_", 1)
+		}
 	default:
 		return AzureSourceImageReference{}, fmt.Errorf("unknown operating system distibution %s", ref.Os)
 	}
