@@ -210,7 +210,7 @@ resource "azurerm_linux_virtual_machine" "vm3_azure" {
   source_image_reference {
     publisher = "OpenLogic"
     offer     = "CentOs"
-    sku       = "8.2"
+    sku       = "8_2"
     version   = "latest"
   }
   disable_password_authentication = false
