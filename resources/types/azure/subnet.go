@@ -44,11 +44,7 @@ func (r AzureSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResour
 	out.AvailabilityZone = r.Args.AvailabilityZone
 	out.VirtualNetworkId = r.Args.GetVirtualNetworkId()
 
-	id, err := resources.GetMainOutputRef(r)
-	if err != nil {
-		return nil, err
-	}
-	stateResource, err := output.GetParsed[subnet.AzureSubnet](state, id)
+	stateResource, err := output.GetParsedById[subnet.AzureSubnet](state, r.ResourceId)
 	if err != nil {
 		return nil, err
 	}
