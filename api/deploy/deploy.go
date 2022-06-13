@@ -39,16 +39,16 @@ func NewDeploymentExecutor() DeploymentExecutor {
 	return DeploymentExecutor{TfCmd: terraformCmd{}}
 }
 
-func (d DeploymentExecutor) Deploy(ctx context.Context, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource) (state *output.TfState, err error) {
+func (d DeploymentExecutor) Deploy(ctx context.Context, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource) (state *output.TfState, rollbackFn func(), err error) {
 	tmpDir := GetTempDirForUser(false, c.GetUserId())
 	encoded, err := d.EncodeAndStoreTfFile(ctx, c, prev, curr, false)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	err = d.MaybeInit(ctx, c.GetUserId(), false)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	start := time.Now()
@@ -56,43 +56,47 @@ func (d DeploymentExecutor) Deploy(ctx context.Context, c *resources.MultyConfig
 		log.Printf("[DEBUG] apply finished in %s", time.Since(start))
 	}()
 
-	defer func() {
+	rollbackFn = func() {
 		if flags.DryRun {
 			return
 		}
+		log.Println("[ERROR] Something went wrong, rolling back")
+		originalC, err2 := c.GetOriginalConfig(metadata.Metadatas)
+		if err2 != nil {
+			log.Printf("[ERROR] Rollback unsuccessful: %s\n", err2)
+			return
+		}
+		_, err2 = d.EncodeAndStoreTfFile(ctx, originalC, curr, prev, false)
+		if err2 != nil {
+			log.Printf("[ERROR] Rollback unsuccessful: %s\n", err2)
+			return
+		}
+
+		err2 = d.TfCmd.Apply(ctx, tmpDir, encoded.affectedResources)
+		if err2 != nil {
+			log.Printf("[ERROR] Rollback unsuccessful: %s\n", err2)
+			return
+		}
+	}
+
+	defer func() {
 		// rollback if something goes wrong
 		if err != nil {
-			log.Println("[ERROR] Something went wrong, rolling back")
-			originalC, err2 := c.GetOriginalConfig(metadata.Metadatas)
-			if err2 != nil {
-				log.Printf("[ERROR] Rollback unsuccessful: %s\n", err2)
-				return
-			}
-			_, err2 = d.EncodeAndStoreTfFile(ctx, originalC, curr, prev, false)
-			if err2 != nil {
-				log.Printf("[ERROR] Rollback unsuccessful: %s\n", err2)
-				return
-			}
-
-			err2 = d.TfCmd.Apply(ctx, tmpDir, encoded.affectedResources)
-			if err2 != nil {
-				log.Printf("[ERROR] Rollback unsuccessful: %s\n", err2)
-				return
-			}
+			rollbackFn()
 		}
 	}()
 
 	err = d.TfCmd.Apply(ctx, tmpDir, encoded.affectedResources)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	state, err = d.GetState(ctx, c.GetUserId(), false)
 	if err != nil {
-		return state, errors.InternalServerErrorWithMessage("error parsing state", err)
+		return state, rollbackFn, errors.InternalServerErrorWithMessage("error parsing state", err)
 	}
 
-	return state, nil
+	return
 }
 
 func (d DeploymentExecutor) EncodeAndStoreTfFile(ctx context.Context, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource, readonly bool) (EncodedResources, error) {

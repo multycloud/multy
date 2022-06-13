@@ -48,7 +48,7 @@ func (c Client) SaveFile(userId string, fileName string, content string) error {
 	})
 
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("[ERROR] Error saving file to S3: %s\n", err)
 		return err
 	}
 
