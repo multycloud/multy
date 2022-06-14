@@ -141,7 +141,7 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		if err != nil {
 			return nil, err
 		}
-		result.Endpoint = cluster.ResourceId
+		result.Endpoint = cluster.Endpoint
 		result.CaCertificate = cluster.CertificateAuthority[0].Data
 		kubeCgfRaw, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint, r.GetCloudSpecificLocation())
 		if err != nil {
