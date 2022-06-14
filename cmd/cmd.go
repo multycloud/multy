@@ -62,7 +62,8 @@ func StartCli() {
 			cancel()
 			go func() {
 				// If it hasn't stopped gracefully by now, just bruteforce it.
-				time.Sleep(5 * time.Second)
+				time.Sleep(60 * 60 * time.Second)
+				fmt.Println("Graceful cancel taking too long. Exiting...")
 				os.Exit(1)
 			}()
 		case <-ctx.Done():
