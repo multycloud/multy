@@ -77,8 +77,8 @@ func RunServer(ctx context.Context, port int) {
 
 	go func() {
 		<-ctx.Done()
+		log.Println("[DEBUG] Server is gracefully shutting down. No new connections will be accepted.")
 		s.GracefulStop()
-		_ = lis.Close()
 	}()
 	awsClient, err := aws_client.NewClient()
 	if err != nil {
