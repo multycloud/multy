@@ -67,3 +67,17 @@ provider "aws" {
 provider "azurerm" {
   features {}
 }
+
+provider "google" {
+  region = "europe-west1"
+  alias  = "europe-west1"
+}
+
+resource "google_compute_network" "example_vn_gcp" {
+  name                            = "example-vn"
+  routing_mode                    = "REGIONAL"
+  description                     = "Managed by Multy"
+  auto_create_subnetworks         = false
+  delete_default_routes_on_create = true
+  provider                        = "google.europe-west1"
+}

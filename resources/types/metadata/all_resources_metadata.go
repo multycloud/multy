@@ -7,6 +7,7 @@ import (
 	"github.com/multycloud/multy/resources/types"
 	aws_resources "github.com/multycloud/multy/resources/types/aws"
 	azure_resources "github.com/multycloud/multy/resources/types/azure"
+	gcp_resources "github.com/multycloud/multy/resources/types/gcp"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -17,6 +18,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.VirtualNetwork) resources.ResourceTranslator[*resourcespb.VirtualNetworkResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitVirtualNetwork,
 			commonpb.CloudProvider_AZURE: azure_resources.InitVirtualNetwork,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitVirtualNetwork,
 		},
 	},
 	&resourcespb.SubnetArgs{}: &resources.ResourceMetadata[*resourcespb.SubnetArgs, *types.Subnet, *resourcespb.SubnetResource]{

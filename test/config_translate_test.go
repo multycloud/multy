@@ -100,7 +100,7 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 	}
 
 	encoded, err := deploy.EncodeTfFile(nil, mconfig, nil, nil)
-	if err != nil && err != deploy.AwsCredsNotSetErr && err != deploy.AzureCredsNotSetErr {
+	if err != nil && err != deploy.AwsCredsNotSetErr && err != deploy.AzureCredsNotSetErr && err != deploy.GcpCredsNotSetErr {
 		if s, ok := status.FromError(err); ok {
 			fmt.Println(s.Details())
 		}

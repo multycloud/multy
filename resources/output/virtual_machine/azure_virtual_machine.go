@@ -34,6 +34,9 @@ type AzureGeneratedIdentity struct {
 
 type AzureIdentity struct {
 	Type string `hcl:"type"`
+
+	// outputs
+	PrincipalId string `json:"principal_id" hcle:"omitempty"`
 }
 
 type AzureAdminSshKey struct {
