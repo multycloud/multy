@@ -52,6 +52,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.RouteTable) resources.ResourceTranslator[*resourcespb.RouteTableResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitRouteTable,
 			commonpb.CloudProvider_AZURE: azure_resources.InitRouteTable,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitRouteTable,
 		},
 	},
 	&resourcespb.RouteTableAssociationArgs{}: &resources.ResourceMetadata[*resourcespb.RouteTableAssociationArgs, *types.RouteTableAssociation, *resourcespb.RouteTableAssociationResource]{
@@ -60,6 +61,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.RouteTableAssociation) resources.ResourceTranslator[*resourcespb.RouteTableAssociationResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitRouteTableAssociation,
 			commonpb.CloudProvider_AZURE: azure_resources.InitRouteTableAssociation,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitRouteTableAssociation,
 		},
 	},
 	&resourcespb.KubernetesNodePoolArgs{}: &resources.ResourceMetadata[*resourcespb.KubernetesNodePoolArgs, *types.KubernetesNodePool, *resourcespb.KubernetesNodePoolResource]{
