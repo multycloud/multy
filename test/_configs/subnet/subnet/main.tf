@@ -102,7 +102,31 @@ provider "aws" {
   alias  = "eu-west-1"
 }
 
-
 provider "azurerm" {
   features {}
+}
+
+resource "google_compute_subnetwork" "subnet2_gcp" {
+  name          = "subnet2"
+  ip_cidr_range = "10.0.2.0/24"
+  network       = google_compute_network.example_vn_gcp.id
+  provider      = "google.europe-west1"
+}
+resource "google_compute_network" "example_vn_gcp" {
+  name                            = "example-vn"
+  routing_mode                    = "REGIONAL"
+  description                     = "Managed by Multy"
+  auto_create_subnetworks         = false
+  delete_default_routes_on_create = true
+  provider                        = "google.europe-west1"
+}
+resource "google_compute_subnetwork" "subnet1_gcp" {
+  name          = "subnet1"
+  ip_cidr_range = "10.0.1.0/24"
+  network       = google_compute_network.example_vn_gcp.id
+  provider      = "google.europe-west1"
+}
+provider "google" {
+  region = "europe-west1"
+  alias  = "europe-west1"
 }

@@ -31,6 +31,22 @@ resources:  {
   }
 }
 resources:  {
+  resource_id:  "example_vn_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "example-vn"
+        cidr_block:  "10.0.0.0/16"
+      }
+    }
+  }
+}
+resources:  {
   resource_id:  "subnet1_aws"
   resource_args:  {
     resource_args:  {
@@ -75,6 +91,31 @@ resources:  {
         name:  "subnet2"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_azure"
+        availability_zone:  2
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "subnet1_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
+        name:  "subnet1"
+        cidr_block:  "10.0.1.0/24"
+        virtual_network_id:  "example_vn_gcp"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "subnet2_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
+        name:  "subnet2"
+        cidr_block:  "10.0.2.0/24"
+        virtual_network_id:  "example_vn_gcp"
         availability_zone:  2
       }
     }
