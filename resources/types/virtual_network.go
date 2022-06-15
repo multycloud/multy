@@ -4,6 +4,7 @@ import (
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/validate"
+	"net"
 )
 
 /*
@@ -57,6 +58,13 @@ func (r *VirtualNetwork) Validate(ctx resources.MultyContext) (errs []validate.V
 	if len(r.Args.CidrBlock) == 0 { // max len?
 		errs = append(errs, validate.ValidationError{
 			ErrorMessage: "cidr_block length is invalid",
+			ResourceId:   r.ResourceId,
+			FieldName:    "cidr_block",
+		})
+	}
+	if _, _, err := net.ParseCIDR(r.Args.CidrBlock); err != nil {
+		errs = append(errs, validate.ValidationError{
+			ErrorMessage: err.Error(),
 			ResourceId:   r.ResourceId,
 			FieldName:    "cidr_block",
 		})
