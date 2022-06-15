@@ -2,10 +2,12 @@ package types
 
 import (
 	"fmt"
+	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/validate"
+	"net"
 )
 
 /*
@@ -50,10 +52,25 @@ func NewSubnet(s *Subnet, resourceId string, subnet *resourcespb.SubnetArgs, oth
 func (r *Subnet) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	//if vn.Name contains not letters,numbers,_,- { return false }
 	//if vn.Name length? { return false }
-	//if vn.CidrBlock valid CIDR { return false }
 	//if vn.AvailbilityZone valid { return false }
 	if len(r.Args.CidrBlock) == 0 { // max len?
-		errs = append(errs, r.NewValidationError(fmt.Errorf("%r cidr_block length is invalid", r.ResourceId), "cidr_block"))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("%s cidr_block length is invalid", r.ResourceId), "cidr_block"))
+	}
+
+	if _, vNetBlock, err := net.ParseCIDR(r.Args.CidrBlock); err == nil {
+		if _, subnetBlock, err := net.ParseCIDR(r.Args.CidrBlock); err != nil {
+			errs = append(errs, validate.ValidationError{
+				ErrorMessage: err.Error(),
+				ResourceId:   r.ResourceId,
+				FieldName:    "cidr_block",
+			})
+		} else if err := cidr.VerifyNoOverlap([]*net.IPNet{subnetBlock}, vNetBlock); err != nil {
+			errs = append(errs, validate.ValidationError{
+				ErrorMessage: err.Error(),
+				ResourceId:   r.ResourceId,
+				FieldName:    "cidr_block",
+			})
+		}
 	}
 
 	return errs
