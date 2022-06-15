@@ -27,6 +27,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.Subnet) resources.ResourceTranslator[*resourcespb.SubnetResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitSubnet,
 			commonpb.CloudProvider_AZURE: azure_resources.InitSubnet,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitSubnet,
 		},
 	},
 	&resourcespb.DatabaseArgs{}: &resources.ResourceMetadata[*resourcespb.DatabaseArgs, *types.Database, *resourcespb.DatabaseResource]{
