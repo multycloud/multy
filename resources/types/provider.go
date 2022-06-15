@@ -41,8 +41,9 @@ func (p *Provider) Translate() []any {
 		return []any{provider.GcpProvider{
 			ResourceName: p.getResourceName(),
 			Region:       p.Location,
+			Alias:        p.getAlias(),
 			Credentials:  p.Credentials.GetGcpCreds().GetCredentials(),
-			ProjectId:    p.Credentials.GetGcpCreds().GetProjectId(),
+			Project:      p.Credentials.GetGcpCreds().GetProject(),
 		}}
 	}
 	return nil

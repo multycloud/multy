@@ -58,7 +58,7 @@ terraform {
       version = "%s"
     }
     google = {
-      source = "hashicorp/azurerm"
+      source = "hashicorp/google"
       version = "%s"
     }
     random = {
