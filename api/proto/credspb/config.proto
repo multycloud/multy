@@ -29,5 +29,5 @@ message AzureCredentials {
 
 message GCPCredentials {
   string credentials = 1;
-  string project_id = 2;
+  string project = 2;
 }

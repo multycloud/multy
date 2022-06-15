@@ -155,6 +155,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.ResourceGroup) resources.ResourceTranslator[*resourcespb.ResourceGroupResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitResourceGroup,
 			commonpb.CloudProvider_AZURE: azure_resources.InitResourceGroup,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitResourceGroup,
 		},
 	},
 }
