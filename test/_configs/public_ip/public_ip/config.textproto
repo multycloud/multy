@@ -167,6 +167,22 @@ resources: {
   }
 }
 
+resources: {
+  resource_id: "ip_gcp"
+  resource_args: {
+    resource_args: {
+      [type.googleapis.com/dev.multy.resources.PublicIpArgs]: {
+        common_parameters: {
+          resource_group_id: "rg1"
+          location: EU_WEST_1
+          cloud_provider: GCP
+        }
+        name: "test-ip"
+      }
+    }
+  }
+}
+
 
 # proto-file: api/proto/configpb/config.proto
 # proto-import: api/proto/resourcespb/database.proto

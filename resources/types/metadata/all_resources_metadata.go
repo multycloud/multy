@@ -44,6 +44,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.PublicIp) resources.ResourceTranslator[*resourcespb.PublicIpResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitPublicIp,
 			commonpb.CloudProvider_AZURE: azure_resources.InitPublicIp,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitPublicIp,
 		},
 	},
 	&resourcespb.RouteTableArgs{}: &resources.ResourceMetadata[*resourcespb.RouteTableArgs, *types.RouteTable, *resourcespb.RouteTableResource]{

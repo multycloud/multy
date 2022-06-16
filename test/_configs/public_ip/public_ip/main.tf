@@ -143,3 +143,14 @@ provider "aws" {
 provider "azurerm" {
   features {}
 }
+
+provider "google" {
+  region = "europe-west1"
+  alias  = "europe-west1"
+}
+
+resource "google_compute_address" "ip_gcp" {
+  name         = "test-ip"
+  network_tier = "STANDARD"
+  provider     = "google.europe-west1"
+}
