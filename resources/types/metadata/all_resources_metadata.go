@@ -102,6 +102,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.NetworkSecurityGroup) resources.ResourceTranslator[*resourcespb.NetworkSecurityGroupResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitNetworkSecurityGroup,
 			commonpb.CloudProvider_AZURE: azure_resources.InitNetworkSecurityGroup,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitNetworkSecurityGroup,
 		},
 	},
 	&resourcespb.ObjectStorageArgs{}: &resources.ResourceMetadata[*resourcespb.ObjectStorageArgs, *types.ObjectStorage, *resourcespb.ObjectStorageResource]{
