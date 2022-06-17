@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 )
 
@@ -12,18 +13,22 @@ var VMSIZE = map[commonpb.VmSize_Enum]map[commonpb.CloudProvider]string{
 	commonpb.VmSize_GENERAL_MICRO: {
 		commonpb.CloudProvider_AWS:   "t2.micro",
 		commonpb.CloudProvider_AZURE: "Standard_B1s",
+		commonpb.CloudProvider_GCP:   "e2-micro",
 	},
 	commonpb.VmSize_GENERAL_SMALL: {
 		commonpb.CloudProvider_AWS:   "t2.small",
 		commonpb.CloudProvider_AZURE: "Standard_B1ms",
+		commonpb.CloudProvider_GCP:   "e2-small",
 	},
 	commonpb.VmSize_GENERAL_MEDIUM: {
 		commonpb.CloudProvider_AWS:   "t2.medium",
 		commonpb.CloudProvider_AZURE: "Standard_B2s",
+		commonpb.CloudProvider_GCP:   "e2-medium",
 	},
 	commonpb.VmSize_GENERAL_LARGE: {
 		commonpb.CloudProvider_AWS:   "t2.large",
 		commonpb.CloudProvider_AZURE: "Standard_B2ms",
+		commonpb.CloudProvider_GCP:   "e2-standard-2",
 	},
 	commonpb.VmSize_GENERAL_XLARGE: {
 		commonpb.CloudProvider_AWS:   "t2.xlarge",
@@ -96,4 +101,14 @@ var DBSIZE = map[commonpb.DatabaseSize_Enum]map[commonpb.CloudProvider]string{
 		commonpb.CloudProvider_AWS:   "db.t2.medium",
 		commonpb.CloudProvider_AZURE: "GP_Gen5_6",
 	},
+}
+
+func GetVmSize(s commonpb.VmSize_Enum, c commonpb.CloudProvider) (string, error) {
+	if size, ok := VMSIZE[s]; !ok {
+		return "", fmt.Errorf("size %s is not available yet", s.String())
+	} else if result, ok := size[c]; !ok {
+		return "", fmt.Errorf("size %s is not available in cloud %s", s.String(), c.String())
+	} else {
+		return result, nil
+	}
 }

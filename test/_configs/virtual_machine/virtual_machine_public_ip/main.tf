@@ -182,7 +182,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   source_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
+    sku       = "18.04-LTS"
     version   = "latest"
   }
   identity {
@@ -196,7 +196,7 @@ data "aws_ami" "vm_aws" {
   most_recent = true
   filter {
     name   = "name"
-    values = ["ubuntu*-16.04-amd64-server-*"]
+    values = ["ubuntu*-18.04-amd64-server-*"]
   }
   filter {
     name   = "root-device-type"
@@ -219,4 +219,60 @@ provider "aws" {
 
 provider "azurerm" {
   features {}
+}
+
+
+resource "google_compute_subnetwork" "subnet_gcp" {
+  name                     = "subnet"
+  ip_cidr_range            = "10.0.2.0/24"
+  network                  = google_compute_network.example_vn_gcp.id
+  private_ip_google_access = true
+  provider                 = "google.europe-west1"
+}
+
+resource "google_compute_instance" "vm_gcp" {
+  name         = "test-vm"
+  machine_type = "e2-standard-2"
+  zone         = "europe-west1-c"
+  tags         = ["subnet-subnet"]
+  boot_disk {
+    initialize_params {
+      image = "ubuntu-os-cloud/ubuntu-1804-lts"
+    }
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet_gcp.self_link
+    access_config {
+      network_tier = "STANDARD"
+    }
+  }
+  metadata = {
+    "ssh-keys"  = "adminuser:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCwSjgjEIKewBWACaOVGg4qsGSHhIeteCmbtn4/DpL0yugLf5c/K/RJVQOKG+dVXVfWD3oAb4JY8jvkZdVACcuocoCewrIEHXxZJmGehxgCeUG8HZ+14mODosUOUYCe3kKCWU2SnUhjX+8x6btxqDOEhtghN3qR52kjm/OUw0Ap43weR1sdkJwtUz7CAXzdCxEKj16R0SY/dNn3uIISPetqm7vqy0ecMJdasbj/X6IAKeiZHe5UKtmOCGYMLwYfKqsrEnzk5rCfa3PK0iYoPv8AB3ocpONcuBshJyDZWhaFBhBrs5SGrWcF34wckD37SNtRZJt+Fuaxe8MpqUVueGTgFViKokCxCfbTnKWRbdGXpSfS6Q0OSvZTWkUEy5ZjxsA03LT4Bcbzq19sABdbyrcEMdv8bq0fhNyGJcGYNJr2uC4+J7irXAM/TuFje4CpJ0G+J3gCrQ2BUeWOYBdjfeP+LckgVXP+TMcEEe4iq5B9psyIS7o58KeNQdFH9jQteIE= joao@Joaos-MBP",
+    "user-data" = "echo 'Hello World'"
+  }
+  provider = "google.europe-west1"
+}
+
+resource "google_compute_network" "example_vn_gcp" {
+  name                            = "example_gcp"
+  routing_mode                    = "REGIONAL"
+  description                     = "Managed by Multy"
+  auto_create_subnetworks         = false
+  delete_default_routes_on_create = true
+  provider                        = "google.europe-west1"
+}
+
+resource "google_compute_route" "rt_gcp-0" {
+  name             = "test-rt-0"
+  dest_range       = "0.0.0.0/0"
+  network          = google_compute_network.example_vn_gcp.id
+  priority         = 1000
+  tags             = ["subnet-subnet"]
+  next_hop_gateway = "default-internet-gateway"
+  provider         = "google.europe-west1"
+}
+
+provider "google" {
+  region = "europe-west1"
+  alias  = "europe-west1"
 }

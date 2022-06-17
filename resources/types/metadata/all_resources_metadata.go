@@ -152,6 +152,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.VirtualMachine) resources.ResourceTranslator[*resourcespb.VirtualMachineResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitVirtualMachine,
 			commonpb.CloudProvider_AZURE: azure_resources.InitVirtualMachine,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitVirtualMachine,
 		},
 	},
 	&resourcespb.ResourceGroupArgs{}: &resources.ResourceMetadata[*resourcespb.ResourceGroupArgs, *types.ResourceGroup, *resourcespb.ResourceGroupResource]{

@@ -1,6 +1,7 @@
 package gcp_resources
 
 import (
+	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/flags"
@@ -54,4 +55,8 @@ func (r GcpPublicIp) Translate(resources.MultyContext) ([]output.TfBlock, error)
 
 func (r GcpPublicIp) GetMainResourceName() (string, error) {
 	return output.GetResourceName(public_ip.GoogleComputeAddress{}), nil
+}
+
+func (r GcpPublicIp) GetAddress() string {
+	return fmt.Sprintf("%s.%s.address", output.GetResourceName(public_ip.GoogleComputeAddress{}), r.ResourceId)
 }
