@@ -25,41 +25,20 @@ import (
 const DestroyAfter = true
 
 func getCtx(t *testing.T, cloud commonpb.CloudProvider, testName string) context.Context {
-	accessKeyId, exists := os.LookupEnv("AWS_ACCESS_KEY_ID")
-	if !exists {
-		t.Fatalf("AWS_ACCESS_KEY_ID not set")
-	}
-	accessKeySecret, exists := os.LookupEnv("AWS_SECRET_ACCESS_KEY")
-	if !exists {
-		t.Fatalf("AWS_SECRET_ACCESS_KEY not set")
-	}
-	azSubscriptionId, exists := os.LookupEnv("ARM_SUBSCRIPTION_ID")
-	if !exists {
-		t.Fatalf("ARM_SUBSCRIPTION_ID not set")
-	}
-	azClientId, exists := os.LookupEnv("ARM_CLIENT_ID")
-	if !exists {
-		t.Fatalf("ARM_CLIENT_ID not set")
-	}
-	azClientSecret, exists := os.LookupEnv("ARM_CLIENT_SECRET")
-	if !exists {
-		t.Fatalf("ARM_CLIENT_SECRET not set")
-	}
-	azTenantId, exists := os.LookupEnv("ARM_TENANT_ID")
-	if !exists {
-		t.Fatalf("ARM_TENANT_ID not set")
-	}
-
 	credentials := &credspb.CloudCredentials{
 		AwsCreds: &credspb.AwsCredentials{
-			AccessKey: accessKeyId,
-			SecretKey: accessKeySecret,
+			AccessKey: os.Getenv("AWS_ACCESS_KEY_ID"),
+			SecretKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
 		},
 		AzureCreds: &credspb.AzureCredentials{
-			SubscriptionId: azSubscriptionId,
-			TenantId:       azTenantId,
-			ClientId:       azClientId,
-			ClientSecret:   azClientSecret,
+			SubscriptionId: os.Getenv("ARM_SUBSCRIPTION_ID"),
+			TenantId:       os.Getenv("ARM_TENANT_ID"),
+			ClientId:       os.Getenv("ARM_CLIENT_ID"),
+			ClientSecret:   os.Getenv("ARM_CLIENT_SECRET"),
+		},
+		GcpCreds: &credspb.GCPCredentials{
+			Credentials: os.Getenv("GOOGLE_CREDENTIALS"),
+			Project:     "multy-project",
 		},
 	}
 	b, err := proto.Marshal(credentials)
