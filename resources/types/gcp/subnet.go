@@ -42,6 +42,10 @@ func (r GcpSubnet) Translate(_ resources.MultyContext) ([]output.TfBlock, error)
 	}}, nil
 }
 
+func (r GcpSubnet) getNetworkTag() string {
+	return fmt.Sprintf("subnet-%s", r.Args.Name)
+}
+
 func (r GcpSubnet) GetMainResourceName() (string, error) {
 	return output.GetResourceName(subnet.GoogleComputeSubnetwork{}), nil
 }

@@ -86,7 +86,7 @@ func NewVirtualMachine(vm *VirtualMachine, resourceId string, args *resourcespb.
 	if args.GetImageReference() == nil {
 		args.ImageReference = &resourcespb.ImageReference{
 			Os:      resourcespb.ImageReference_UBUNTU,
-			Version: "16.04",
+			Version: "18.04",
 		}
 	}
 

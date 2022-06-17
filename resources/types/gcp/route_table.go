@@ -55,7 +55,7 @@ func (r GcpRouteTable) getTags(rtas []*types.RouteTableAssociation) []string {
 	}
 	var out []string
 	for _, rta := range rtas {
-		out = append(out, fmt.Sprintf("subnet-%s", rta.Subnet.Args.Name))
+		out = append(out, GcpSubnet{rta.Subnet}.getNetworkTag())
 	}
 	slices.Sort(out)
 	return out

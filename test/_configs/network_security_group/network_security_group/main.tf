@@ -232,7 +232,7 @@ data "aws_ami" "vm2_aws" {
   most_recent = true
   filter {
     name   = "name"
-    values = ["ubuntu*-16.04-amd64-server-*"]
+    values = ["ubuntu*-18.04-amd64-server-*"]
   }
   filter {
     name   = "root-device-type"
@@ -300,7 +300,7 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   source_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
+    sku       = "18.04-LTS"
     version   = "latest"
   }
   disable_password_authentication = false
@@ -325,7 +325,7 @@ data "aws_ami" "vm_aws" {
   most_recent = true
   filter {
     name   = "name"
-    values = ["ubuntu*-16.04-amd64-server-*"]
+    values = ["ubuntu*-18.04-amd64-server-*"]
   }
   filter {
     name   = "root-device-type"
@@ -388,7 +388,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   source_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
+    sku       = "18.04-LTS"
     version   = "latest"
   }
   disable_password_authentication = false

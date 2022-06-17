@@ -184,6 +184,80 @@ resources:  {
     }
   }
 }
+
+resources:  {
+  resource_id:  "example_vn_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "example_gcp"
+        cidr_block:  "10.0.0.0/16"
+      }
+    }
+  }
+}
+
+resources:  {
+  resource_id:  "subnet_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
+        name:  "subnet"
+        cidr_block:  "10.0.2.0/24"
+        virtual_network_id:  "example_vn_gcp"
+        availability_zone:  2
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "vm_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualMachineArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "test-vm"
+        vm_size:  GENERAL_MEDIUM
+        user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
+        subnet_id:  "subnet_gcp"
+        image_reference:  {
+          os:  UBUNTU
+          version:  "18.04"
+        }
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "vm2_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualMachineArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "test-vm"
+        vm_size:  GENERAL_MICRO
+        subnet_id:  "subnet_gcp"
+        image_reference:  {
+          os:  DEBIAN
+          version:  "11"
+        }
+      }
+    }
+  }
+}
 resources:  {
   resource_id:  "rg1"
   resource_args:  {
