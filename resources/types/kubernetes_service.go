@@ -18,9 +18,8 @@ func (r *KubernetesCluster) Create(resourceId string, args *resourcespb.Kubernet
 	return CreateKubernetesCluster(r, resourceId, args, others)
 }
 
-func (r *KubernetesCluster) Update(args *resourcespb.KubernetesClusterArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *KubernetesCluster) Update(args *resourcespb.KubernetesClusterArgs, others *resources.Resources) error {
+	return NewKubernetesCluster(r, r.ResourceId, args, others)
 }
 
 func (r *KubernetesCluster) Import(resourceId string, args *resourcespb.KubernetesClusterArgs, others *resources.Resources) error {

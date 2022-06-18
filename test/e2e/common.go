@@ -7,6 +7,8 @@ import (
 	"context"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/api/services"
+	"google.golang.org/protobuf/proto"
 	"testing"
 )
 
@@ -30,15 +32,7 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create vn: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.VnService.Delete(ctx, &resourcespb.DeleteVirtualNetworkRequest{ResourceId: vn.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %s", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.VnService, vn)
 
 	createPublicSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
 		Name:             prefix + "-test-public-subnet",
@@ -51,15 +45,7 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create publicSubnet: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.SubnetService.Delete(ctx, &resourcespb.DeleteSubnetRequest{ResourceId: publicSubnet.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.SubnetService, publicSubnet)
 
 	createRtRequest := &resourcespb.CreateRouteTableRequest{Resource: &resourcespb.RouteTableArgs{
 		Name:             prefix + "-test-rt",
@@ -76,15 +62,7 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create route table: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.RouteTableService.Delete(ctx, &resourcespb.DeleteRouteTableRequest{ResourceId: rt.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.RouteTableService, rt)
 
 	createRtaRequest := &resourcespb.CreateRouteTableAssociationRequest{Resource: &resourcespb.RouteTableAssociationArgs{
 		SubnetId:     publicSubnet.CommonParameters.ResourceId,
@@ -95,15 +73,7 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create route table association: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.RouteTableAssociationService.Delete(ctx, &resourcespb.DeleteRouteTableAssociationRequest{ResourceId: rta.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.RouteTableAssociationService, rta)
 	createNsgRequest := &resourcespb.CreateNetworkSecurityGroupRequest{Resource: &resourcespb.NetworkSecurityGroupArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
 			Location:      location,
@@ -146,15 +116,23 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create network security group: %+v", err)
 	}
+	cleanup(t, ctx, server.NetworkSecurityGroupService, nsg)
+
+	return publicSubnet, nsg
+}
+
+func cleanup[Arg proto.Message, OutT proto.Message](t *testing.T, ctx context.Context, s services.Service[Arg, OutT], r OutT) {
+	desc := r.ProtoReflect().Descriptor().Fields().ByName("common_parameters")
+	resourceId := r.ProtoReflect().Get(desc).Message().Interface().(interface {
+		GetResourceId() string
+	}).GetResourceId()
 	t.Cleanup(func() {
 		if DestroyAfter {
-			_, err := server.NetworkSecurityGroupService.Delete(ctx, &resourcespb.DeleteNetworkSecurityGroupRequest{ResourceId: nsg.CommonParameters.ResourceId})
+			_, err := s.Delete(ctx, &resourcespb.DeleteVirtualNetworkRequest{ResourceId: resourceId})
 			if err != nil {
 				logGrpcErrorDetails(t, err)
 				t.Logf("unable to delete resource %+v", err)
 			}
 		}
 	})
-
-	return publicSubnet, nsg
 }

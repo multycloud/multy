@@ -55,16 +55,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create vn: %+v", err)
 	}
-
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.VnService.Delete(ctx, &resourcespb.DeleteVirtualNetworkRequest{ResourceId: vn.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %s", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.VnService, vn)
 
 	createSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
 		Name:             "k8-test-subnet",
@@ -76,16 +67,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create subnet: %+v", err)
 	}
-
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.SubnetService.Delete(ctx, &resourcespb.DeleteSubnetRequest{ResourceId: subnet.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.SubnetService, subnet)
 
 	createRtRequest := &resourcespb.CreateRouteTableRequest{Resource: &resourcespb.RouteTableArgs{
 		Name:             "k8-test-rt",
@@ -102,15 +84,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create route table: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.RouteTableService.Delete(ctx, &resourcespb.DeleteRouteTableRequest{ResourceId: rt.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.RouteTableService, rt)
 
 	createRtaRequest := &resourcespb.CreateRouteTableAssociationRequest{Resource: &resourcespb.RouteTableAssociationArgs{
 		SubnetId:     subnet.CommonParameters.ResourceId,
@@ -121,15 +95,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create route table association: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.RouteTableAssociationService.Delete(ctx, &resourcespb.DeleteRouteTableAssociationRequest{ResourceId: rta.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.RouteTableAssociationService, rta)
 
 	createK8sClusterRequest := &resourcespb.CreateKubernetesClusterRequest{Resource: &resourcespb.KubernetesClusterArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
@@ -156,15 +122,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create kubernetes cluster: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.KubernetesClusterService.Delete(ctx, &resourcespb.DeleteKubernetesClusterRequest{ResourceId: k8s.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.KubernetesClusterService, k8s)
 
 	home, err := os.UserHomeDir()
 	if err != nil {

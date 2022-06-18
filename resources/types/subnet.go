@@ -25,9 +25,8 @@ func (r *Subnet) Create(resourceId string, args *resourcespb.SubnetArgs, others 
 	return NewSubnet(r, resourceId, args, others)
 }
 
-func (r *Subnet) Update(args *resourcespb.SubnetArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *Subnet) Update(args *resourcespb.SubnetArgs, others *resources.Resources) error {
+	return NewSubnet(r, r.ResourceId, args, others)
 }
 
 func (r *Subnet) Import(resourceId string, args *resourcespb.SubnetArgs, others *resources.Resources) error {

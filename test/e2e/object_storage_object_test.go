@@ -34,15 +34,7 @@ func testObjectStorageObject(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create storage: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.VnService.Delete(ctx, &resourcespb.DeleteVirtualNetworkRequest{ResourceId: storage.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %s", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.ObjectStorageService, storage)
 
 	createObjStorageObjRequest := &resourcespb.CreateObjectStorageObjectRequest{Resource: &resourcespb.ObjectStorageObjectArgs{
 		Name:            "public-text.html",
@@ -56,15 +48,7 @@ func testObjectStorageObject(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create vn: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.VnService.Delete(ctx, &resourcespb.DeleteVirtualNetworkRequest{ResourceId: obj.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %s", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.ObjectStorageObjectService, obj)
 
 	resp, err := http.Get(obj.GetUrl())
 	if err != nil {

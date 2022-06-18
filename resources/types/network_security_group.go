@@ -37,9 +37,8 @@ func (r *NetworkSecurityGroup) Create(resourceId string, args *resourcespb.Netwo
 	return NewNetworkSecurityGroup(r, resourceId, args, others)
 }
 
-func (r *NetworkSecurityGroup) Update(args *resourcespb.NetworkSecurityGroupArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *NetworkSecurityGroup) Update(args *resourcespb.NetworkSecurityGroupArgs, others *resources.Resources) error {
+	return NewNetworkSecurityGroup(r, r.ResourceId, args, others)
 }
 
 func (r *NetworkSecurityGroup) Import(resourceId string, args *resourcespb.NetworkSecurityGroupArgs, others *resources.Resources) error {

@@ -18,9 +18,8 @@ func (r *NetworkInterfaceSecurityGroupAssociation) Create(resourceId string, arg
 	return NewNetworkInterfaceSecurityGroupAssociation(r, resourceId, args, others)
 }
 
-func (r *NetworkInterfaceSecurityGroupAssociation) Update(vn *resourcespb.NetworkInterfaceSecurityGroupAssociationArgs, others *resources.Resources) error {
-	r.Args = vn
-	return nil
+func (r *NetworkInterfaceSecurityGroupAssociation) Update(args *resourcespb.NetworkInterfaceSecurityGroupAssociationArgs, others *resources.Resources) error {
+	return NewNetworkInterfaceSecurityGroupAssociation(r, r.ResourceId, args, others)
 }
 
 func (r *NetworkInterfaceSecurityGroupAssociation) Import(resourceId string, args *resourcespb.NetworkInterfaceSecurityGroupAssociationArgs, others *resources.Resources) error {

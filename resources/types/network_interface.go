@@ -30,9 +30,8 @@ func (r *NetworkInterface) Create(resourceId string, args *resourcespb.NetworkIn
 	return NewNetworkInterface(r, resourceId, args, others)
 }
 
-func (r *NetworkInterface) Update(args *resourcespb.NetworkInterfaceArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *NetworkInterface) Update(args *resourcespb.NetworkInterfaceArgs, others *resources.Resources) error {
+	return NewNetworkInterface(r, r.ResourceId, args, others)
 }
 
 func (r *NetworkInterface) Import(resourceId string, args *resourcespb.NetworkInterfaceArgs, others *resources.Resources) error {

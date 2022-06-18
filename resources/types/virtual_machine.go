@@ -41,11 +41,9 @@ func (r *VirtualMachine) Create(resourceId string, args *resourcespb.VirtualMach
 	return NewVirtualMachine(r, resourceId, args, others)
 }
 
-func (r *VirtualMachine) Update(args *resourcespb.VirtualMachineArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *VirtualMachine) Update(args *resourcespb.VirtualMachineArgs, others *resources.Resources) error {
+	return NewVirtualMachine(r, r.ResourceId, args, others)
 }
-
 func (r *VirtualMachine) Import(resourceId string, args *resourcespb.VirtualMachineArgs, others *resources.Resources) error {
 	return NewVirtualMachine(r, resourceId, args, others)
 }

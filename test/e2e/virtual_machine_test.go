@@ -44,6 +44,10 @@ func testVirtualMachine(t *testing.T, cloud commonpb.CloudProvider) {
 	t.Run("nsg_traffic_block", func(t *testing.T) {
 		testNsgRules(t, ctx, nsg, vm.PublicIp, config)
 	})
+
+	t.Run("public_ip_id", func(t *testing.T) {
+		testPublicIp(t, ctx, vm, config)
+	})
 }
 
 func createSshConfig(t *testing.T, cloud commonpb.CloudProvider) (string, *ssh.ClientConfig) {

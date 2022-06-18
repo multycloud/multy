@@ -32,9 +32,8 @@ func (r *Database) Create(resourceId string, args *resourcespb.DatabaseArgs, oth
 	return NewDatabase(r, resourceId, args, others)
 }
 
-func (r *Database) Update(args *resourcespb.DatabaseArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *Database) Update(args *resourcespb.DatabaseArgs, others *resources.Resources) error {
+	return NewDatabase(r, r.ResourceId, args, others)
 }
 
 func (r *Database) Import(resourceId string, args *resourcespb.DatabaseArgs, others *resources.Resources) error {
