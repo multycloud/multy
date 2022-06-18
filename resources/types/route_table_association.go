@@ -19,9 +19,8 @@ func (r *RouteTableAssociation) Create(resourceId string, args *resourcespb.Rout
 	return NewRouteTableAssociation(r, resourceId, args, others)
 }
 
-func (r *RouteTableAssociation) Update(args *resourcespb.RouteTableAssociationArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *RouteTableAssociation) Update(args *resourcespb.RouteTableAssociationArgs, others *resources.Resources) error {
+	return NewRouteTableAssociation(r, r.ResourceId, args, others)
 }
 
 func (r *RouteTableAssociation) Import(resourceId string, args *resourcespb.RouteTableAssociationArgs, others *resources.Resources) error {

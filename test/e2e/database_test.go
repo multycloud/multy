@@ -28,16 +28,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create vn: %+v", err)
 	}
-
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.VnService.Delete(ctx, &resourcespb.DeleteVirtualNetworkRequest{ResourceId: vn.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %s", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.VnService, vn)
 
 	createPublicSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
 		Name:             "db-test-public-subnet1",
@@ -50,16 +41,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create publicSubnet: %+v", err)
 	}
-
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.SubnetService.Delete(ctx, &resourcespb.DeleteSubnetRequest{ResourceId: publicSubnet.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.SubnetService, publicSubnet)
 
 	createSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
 		Name:             "db-test-public-subnet2",
@@ -72,16 +54,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create subnet: %+v", err)
 	}
-
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.SubnetService.Delete(ctx, &resourcespb.DeleteSubnetRequest{ResourceId: subnet.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.SubnetService, subnet)
 
 	createRtRequest := &resourcespb.CreateRouteTableRequest{Resource: &resourcespb.RouteTableArgs{
 		Name:             "db-test-rt",
@@ -98,15 +71,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create route table: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.RouteTableService.Delete(ctx, &resourcespb.DeleteRouteTableRequest{ResourceId: rt.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.RouteTableService, rt)
 
 	subnetIds := []string{publicSubnet.CommonParameters.ResourceId, subnet.CommonParameters.ResourceId}
 	for _, id := range subnetIds {
@@ -119,15 +84,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 			logGrpcErrorDetails(t, err)
 			t.Fatalf("unable to create route table association: %+v", err)
 		}
-		t.Cleanup(func() {
-			if DestroyAfter {
-				_, err := server.RouteTableAssociationService.Delete(ctx, &resourcespb.DeleteRouteTableAssociationRequest{ResourceId: rta.CommonParameters.ResourceId})
-				if err != nil {
-					logGrpcErrorDetails(t, err)
-					t.Logf("unable to delete resource %+v", err)
-				}
-			}
-		})
+		cleanup(t, ctx, server.RouteTableAssociationService, rta)
 	}
 
 	createDbRequest := &resourcespb.CreateDatabaseRequest{Resource: &resourcespb.DatabaseArgs{
@@ -150,15 +107,7 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create route table association: %+v", err)
 	}
-	t.Cleanup(func() {
-		if DestroyAfter {
-			_, err := server.DatabaseService.Delete(ctx, &resourcespb.DeleteDatabaseRequest{ResourceId: db.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.DatabaseService, db)
 
 	out, err := exec.Command("mysql", "-h", db.Host, "-P", "3306", "-u", db.ConnectionUsername, "--password="+db.Password, "-e", "select 12+34;").CombinedOutput()
 	if err != nil {

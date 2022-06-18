@@ -17,9 +17,8 @@ func (r *VaultAccessPolicy) Create(resourceId string, args *resourcespb.VaultAcc
 	return NewVaultAccessPolicy(r, resourceId, args, others)
 }
 
-func (r *VaultAccessPolicy) Update(args *resourcespb.VaultAccessPolicyArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *VaultAccessPolicy) Update(args *resourcespb.VaultAccessPolicyArgs, others *resources.Resources) error {
+	return NewVaultAccessPolicy(r, r.ResourceId, args, others)
 }
 
 func (r *VaultAccessPolicy) Import(resourceId string, args *resourcespb.VaultAccessPolicyArgs, others *resources.Resources) error {

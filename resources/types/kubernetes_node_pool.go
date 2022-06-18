@@ -20,9 +20,8 @@ func (r *KubernetesNodePool) Create(resourceId string, args *resourcespb.Kuberne
 	return NewKubernetesNodePool(r, resourceId, args, others)
 }
 
-func (r *KubernetesNodePool) Update(args *resourcespb.KubernetesNodePoolArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *KubernetesNodePool) Update(args *resourcespb.KubernetesNodePoolArgs, others *resources.Resources) error {
+	return NewKubernetesNodePool(r, r.ResourceId, args, others)
 }
 
 func (r *KubernetesNodePool) Import(resourceId string, args *resourcespb.KubernetesNodePoolArgs, others *resources.Resources) error {

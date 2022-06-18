@@ -17,9 +17,8 @@ func (r *VaultSecret) Create(resourceId string, args *resourcespb.VaultSecretArg
 	return NewVaultSecret(r, resourceId, args, others)
 }
 
-func (r *VaultSecret) Update(args *resourcespb.VaultSecretArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *VaultSecret) Update(args *resourcespb.VaultSecretArgs, others *resources.Resources) error {
+	return NewVaultSecret(r, r.ResourceId, args, others)
 }
 
 func (r *VaultSecret) Import(resourceId string, args *resourcespb.VaultSecretArgs, others *resources.Resources) error {

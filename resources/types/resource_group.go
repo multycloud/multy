@@ -14,10 +14,9 @@ func (r *ResourceGroup) Create(_ string, args *resourcespb.ResourceGroupArgs, _ 
 	return ImportResourceGroup(r, args)
 }
 
-func (r *ResourceGroup) Update(args *resourcespb.ResourceGroupArgs, _ *resources.Resources) error {
-	return fmt.Errorf("updates to resource groups are not supported")
+func (r *ResourceGroup) Update(_ *resourcespb.ResourceGroupArgs, _ *resources.Resources) error {
+	return fmt.Errorf("resource groups can't be updated")
 }
-
 func (r *ResourceGroup) Import(_ string, args *resourcespb.ResourceGroupArgs, _ *resources.Resources) error {
 	return ImportResourceGroup(r, args)
 }

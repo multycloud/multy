@@ -25,9 +25,8 @@ func (r *RouteTable) Create(resourceId string, args *resourcespb.RouteTableArgs,
 	return NewRouteTable(r, resourceId, args, others)
 }
 
-func (r *RouteTable) Update(args *resourcespb.RouteTableArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *RouteTable) Update(args *resourcespb.RouteTableArgs, others *resources.Resources) error {
+	return NewRouteTable(r, r.ResourceId, args, others)
 }
 
 func (r *RouteTable) Import(resourceId string, args *resourcespb.RouteTableArgs, others *resources.Resources) error {

@@ -30,8 +30,7 @@ func (r *PublicIp) Create(resourceId string, args *resourcespb.PublicIpArgs, oth
 }
 
 func (r *PublicIp) Update(args *resourcespb.PublicIpArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+	return NewPublicIp(r, r.ResourceId, args)
 }
 
 func (r *PublicIp) Import(resourceId string, args *resourcespb.PublicIpArgs, _ *resources.Resources) error {

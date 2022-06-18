@@ -14,9 +14,8 @@ func (r *ObjectStorage) Create(resourceId string, args *resourcespb.ObjectStorag
 	return CreateObjectStorage(r, resourceId, args, others)
 }
 
-func (r *ObjectStorage) Update(args *resourcespb.ObjectStorageArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+func (r *ObjectStorage) Update(args *resourcespb.ObjectStorageArgs, others *resources.Resources) error {
+	return NewObjectStorage(r, r.ResourceId, args, others)
 }
 
 func (r *ObjectStorage) Import(resourceId string, args *resourcespb.ObjectStorageArgs, others *resources.Resources) error {

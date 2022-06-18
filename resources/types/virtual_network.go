@@ -32,8 +32,7 @@ func (r *VirtualNetwork) Create(resourceId string, args *resourcespb.VirtualNetw
 }
 
 func (r *VirtualNetwork) Update(args *resourcespb.VirtualNetworkArgs, _ *resources.Resources) error {
-	r.Args = args
-	return nil
+	return NewVirtualNetwork(r, r.ResourceId, args)
 }
 
 func (r *VirtualNetwork) Import(resourceId string, args *resourcespb.VirtualNetworkArgs, _ *resources.Resources) error {

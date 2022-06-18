@@ -26,7 +26,7 @@ func testNetworkInterface(t *testing.T, cloud commonpb.CloudProvider) {
 			Location:      location,
 			CloudProvider: cloud,
 		},
-		Name: "pip-test-ni",
+		Name: "ni-test-pip",
 	}}
 	pip, err := server.PublicIpService.Create(ctx, createPipRequest)
 	if err != nil {
@@ -47,7 +47,7 @@ func testNetworkInterface(t *testing.T, cloud commonpb.CloudProvider) {
 			Location:      location,
 			CloudProvider: cloud,
 		},
-		Name:       "nsg-test-ni",
+		Name:       "ni-test-nsg",
 		SubnetId:   subnet.CommonParameters.ResourceId,
 		PublicIpId: pip.CommonParameters.ResourceId,
 	}}
