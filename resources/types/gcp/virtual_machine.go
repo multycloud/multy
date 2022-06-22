@@ -108,7 +108,7 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 	}
 
 	vm := &virtual_machine.GoogleComputeInstance{
-		GcpResource: common.NewGcpResource(r.ResourceId, r.Args.Name),
+		GcpResource: common.NewGcpResource(r.ResourceId, r.Args.Name, r.Args.GetGcpOverride().GetProject()),
 		MachineType: size,
 		Zone:        zone,
 		Tags:        tags,

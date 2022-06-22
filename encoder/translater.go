@@ -7,39 +7,32 @@ import (
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/types"
-	"github.com/multycloud/multy/resources/types/metadata"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"golang.org/x/exp/maps"
 )
 
-func TranslateResources(decodedResources *DecodedResources, ctx resources.MultyContext) (map[resources.Resource][]output.TfBlock, []validate.ValidationError, error) {
+type cloudSpecificResources map[string]resources.CloudSpecificResourceTranslator
+
+func TranslateResources(decodedResources cloudSpecificResources, ctx resources.MultyContext) (map[string][]output.TfBlock, []validate.ValidationError, error) {
 	defaultTagProcessor := mhcl.DefaultTagProcessor{}
 
-	translationCache := map[resources.Resource][]output.TfBlock{}
+	translationCache := map[string][]output.TfBlock{}
 
 	errors := map[validate.ValidationError]bool{}
-	for _, r := range util.GetSortedMapValues(decodedResources.Resources.ResourceMap) {
+	for _, cr := range util.GetSortedMapValues(decodedResources) {
 		var err error
 		// we need to use a set here because errors are duplicated for multiple clouds
-		validationErrors := r.Validate(ctx)
+		validationErrors := cr.Validate(ctx)
 		for _, err := range validationErrors {
 			errors[err] = true
 		}
 		if len(validationErrors) == 0 {
-			m, err2 := r.GetMetadata(metadata.Metadatas)
-			if err2 != nil {
-				return nil, nil, err2
-			}
-			cr, err2 := m.GetCloudSpecificResource(r)
-			if err2 != nil {
-				return nil, nil, err2
-			}
-			translationCache[r], err = cr.Translate(ctx)
+			translationCache[cr.GetResourceId()], err = cr.Translate(ctx)
 			if err != nil {
 				return translationCache, nil, err
 			}
-			for _, translated := range translationCache[r] {
+			for _, translated := range translationCache[cr.GetResourceId()] {
 				defaultTagProcessor.Process(translated)
 			}
 		}
@@ -52,10 +45,10 @@ func getProvider(providers map[commonpb.CloudProvider]map[string]*types.Provider
 	return providers[r.GetCloud()][r.GetCloudSpecificLocation()]
 }
 
-func buildProviders(r *DecodedResources, credentials *credspb.CloudCredentials) map[commonpb.CloudProvider]map[string]*types.Provider {
-	providers := r.Providers
+type providersMap map[commonpb.CloudProvider]map[string]*types.Provider
 
-	for _, resource := range r.Resources.ResourceMap {
+func buildProviders(providers providersMap, r cloudSpecificResources, credentials *credspb.CloudCredentials) providersMap {
+	for _, resource := range r {
 		if _, ok := providers[resource.GetCloud()]; !ok {
 			providers[resource.GetCloud()] = map[string]*types.Provider{}
 		}

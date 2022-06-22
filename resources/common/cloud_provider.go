@@ -177,10 +177,11 @@ func NewAzResource(resourceId string, name string, rgName string, location strin
 	}
 }
 
-func NewGcpResource(resourceId string, name string) *GcpResource {
+func NewGcpResource(resourceId string, name string, project string) *GcpResource {
 	return &GcpResource{
 		TerraformResource: output.TerraformResource{ResourceId: resourceId},
 		Name:              name,
+		Project:           project,
 	}
 }
 
@@ -205,4 +206,5 @@ type AwsResource struct {
 type GcpResource struct {
 	output.TerraformResource `hcl:",squash"`
 	Name                     string `hcl:"name" hcle:"omitempty"`
+	Project                  string `hcl:"project"`
 }

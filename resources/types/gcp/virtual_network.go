@@ -26,14 +26,15 @@ func (r GcpVirtualNetwork) FromState(_ *output.TfState) (*resourcespb.VirtualNet
 			Location:        r.Args.CommonParameters.Location,
 			CloudProvider:   r.GetCloud(),
 		},
-		Name:      r.Args.Name,
-		CidrBlock: r.Args.CidrBlock,
+		Name:        r.Args.Name,
+		CidrBlock:   r.Args.CidrBlock,
+		GcpOverride: r.Args.GcpOverride,
 	}, nil
 }
 
 func (r GcpVirtualNetwork) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	return []output.TfBlock{&virtual_network.GoogleComputeNetwork{
-		GcpResource:                 common.NewGcpResource(r.ResourceId, r.Args.Name),
+		GcpResource:                 common.NewGcpResource(r.ResourceId, r.Args.Name, r.Args.GetGcpOverride().GetProject()),
 		RoutingMode:                 "REGIONAL",
 		Description:                 "Managed by Multy",
 		AutoCreateSubnetworks:       false,

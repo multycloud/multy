@@ -46,6 +46,10 @@ message VirtualMachineAzureOverride {
   string size = 1;
 }
 
+message VirtualMachineGcpOverride {
+  string project = 1;
+}
+
 message VirtualMachineArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
@@ -60,6 +64,7 @@ message VirtualMachineArgs {
   ImageReference image_reference = 12;
   VirtualMachineAwsOverride aws_override = 13;
   VirtualMachineAzureOverride azure_override = 14;
+  VirtualMachineGcpOverride gcp_override = 15;
 }
 
 message VirtualMachineResource {
@@ -76,6 +81,7 @@ message VirtualMachineResource {
   ImageReference image_reference = 14;
   VirtualMachineAwsOverride aws_override = 15;
   VirtualMachineAzureOverride azure_override = 16;
+  VirtualMachineGcpOverride gcp_override = 17;
 
   // outputs
   string public_ip = 12;

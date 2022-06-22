@@ -412,6 +412,7 @@ resource "google_compute_network" "example_vn_gcp" {
   auto_create_subnetworks         = false
   delete_default_routes_on_create = true
   provider                        = "google.europe-west1"
+  project                         = "multy-project"
 }
 resource "google_compute_subnetwork" "subnet1_gcp" {
   name                     = "subnet1"
@@ -419,6 +420,7 @@ resource "google_compute_subnetwork" "subnet1_gcp" {
   network                  = google_compute_network.example_vn_gcp.id
   private_ip_google_access = true
   provider                 = "google.europe-west1"
+  project                  = "multy-project"
 }
 
 resource "google_compute_route" "rt_gcp-0" {
@@ -429,6 +431,7 @@ resource "google_compute_route" "rt_gcp-0" {
   tags             = ["subnet-subnet1"]
   next_hop_gateway = "default-internet-gateway"
   provider         = "google.europe-west1"
+  project          = "multy-project"
 }
 
 resource "google_compute_firewall" "nsg_gcp-default-deny-egress" {
@@ -442,6 +445,7 @@ resource "google_compute_firewall" "nsg_gcp-default-deny-egress" {
   target_tags = ["nsg-test-nsg"]
   priority    = 65535
   provider    = "google.europe-west1"
+  project     = "multy-project"
 }
 resource "google_compute_firewall" "nsg_gcp-i-0" {
   name          = "test-nsg-i-0"
@@ -455,6 +459,7 @@ resource "google_compute_firewall" "nsg_gcp-i-0" {
   target_tags = ["nsg-test-nsg"]
   provider    = "google.europe-west1"
   priority    = 120
+  project     = "multy-project"
 }
 resource "google_compute_firewall" "nsg_gcp-e-0" {
   name               = "test-nsg-e-0"
@@ -468,6 +473,7 @@ resource "google_compute_firewall" "nsg_gcp-e-0" {
   target_tags = ["nsg-test-nsg"]
   provider    = "google.europe-west1"
   priority    = 120
+  project     = "multy-project"
 }
 resource "google_compute_firewall" "nsg_gcp-i-1" {
   name          = "test-nsg-i-1"
@@ -481,6 +487,7 @@ resource "google_compute_firewall" "nsg_gcp-i-1" {
   target_tags = ["nsg-test-nsg"]
   provider    = "google.europe-west1"
   priority    = 140
+  project     = "multy-project"
 }
 resource "google_compute_firewall" "nsg_gcp-e-1" {
   name               = "test-nsg-e-1"
@@ -494,6 +501,7 @@ resource "google_compute_firewall" "nsg_gcp-e-1" {
   target_tags = ["nsg-test-nsg"]
   provider    = "google.europe-west1"
   priority    = 140
+  project     = "multy-project"
 }
 resource "google_compute_firewall" "nsg_gcp-i-2" {
   name          = "test-nsg-i-2"
@@ -507,6 +515,7 @@ resource "google_compute_firewall" "nsg_gcp-i-2" {
   target_tags = ["nsg-test-nsg"]
   provider    = "google.europe-west1"
   priority    = 150
+  project     = "multy-project"
 }
 resource "google_compute_firewall" "nsg_gcp-e-3" {
   name               = "test-nsg-e-3"
@@ -520,6 +529,7 @@ resource "google_compute_firewall" "nsg_gcp-e-3" {
   target_tags = ["nsg-test-nsg"]
   provider    = "google.europe-west1"
   priority    = 160
+  project     = "multy-project"
 }
 
 provider "google" {

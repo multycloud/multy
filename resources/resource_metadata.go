@@ -100,7 +100,7 @@ type ResourceMetadataInterface interface {
 type MultyConfig struct {
 	Resources                  *Resources
 	c                          *configpb.Config
-	groupsByResourceId         map[Resource]*MultyResourceGroup
+	groupsByResourceId         map[string]*MultyResourceGroup
 	affectedResourcesById      map[string][]string
 	metadatas                  ResourceMetadatas
 	affectedResourcesByGroupId map[string][]string
@@ -218,7 +218,7 @@ func (c *MultyConfig) UpdateMultyResourceGroups() {
 	c.groupsByResourceId = c.Resources.GetMultyResourceGroups(groupIdsByResourceIds)
 }
 
-func (c *MultyConfig) UpdateDeployedResourceList(deployedResources map[Resource][]string) {
+func (c *MultyConfig) UpdateDeployedResourceList(deployedResources map[string][]string) {
 	affectedResources := map[string][]string{}
 
 	for r, deployedResource := range deployedResources {
@@ -234,7 +234,7 @@ func (c *MultyConfig) UpdateDeployedResourceList(deployedResources map[Resource]
 
 	affectedResourcesById := map[string][]string{}
 	for _, r := range c.Resources.GetAll() {
-		affectedResourcesById[r.GetResourceId()] = affectedResources[c.groupsByResourceId[r].GroupId]
+		affectedResourcesById[r.GetResourceId()] = affectedResources[c.groupsByResourceId[r.GetResourceId()].GroupId]
 	}
 	c.affectedResourcesById = affectedResourcesById
 }
@@ -276,7 +276,7 @@ func (c *MultyConfig) ExportConfig() (*configpb.Config, error) {
 		resource := configpb.Resource{
 			ResourceId:            r.GetResourceId(),
 			ResourceArgs:          &configpb.ResourceArgs{ResourceArgs: a},
-			DeployedResourceGroup: groups[c.groupsByResourceId[r].GroupId],
+			DeployedResourceGroup: groups[c.groupsByResourceId[r.GetResourceId()].GroupId],
 		}
 		result.Resources = append(result.Resources, &resource)
 	}

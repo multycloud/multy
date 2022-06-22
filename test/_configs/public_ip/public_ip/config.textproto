@@ -177,6 +177,9 @@ resources: {
           location: EU_WEST_1
           cloud_provider: GCP
         }
+        gcp_override: {
+          project: "multy-project"
+        }
         name: "test-ip"
       }
     }

@@ -96,18 +96,18 @@ func generateUniqueGroupId(existingGroups []string) (groupId string) {
 	return
 }
 
-func (r *Resources) GetMultyResourceGroups(existingGroupsByResource map[string]string) map[Resource]*MultyResourceGroup {
-	groups := map[Resource]*MultyResourceGroup{}
+func (r *Resources) GetMultyResourceGroups(existingGroupsByResource map[string]string) map[string]*MultyResourceGroup {
+	groups := map[string]*MultyResourceGroup{}
 	// creates 1 group per resource
 	for _, resource := range util.GetSortedMapValues(r.ResourceMap) {
-		if _, ok := groups[resource]; !ok {
+		if _, ok := groups[resource.GetResourceId()]; !ok {
 			var groupId string
 			if existingGroupId, ok := existingGroupsByResource[resource.GetResourceId()]; ok {
 				groupId = existingGroupId
 			} else {
 				groupId = generateUniqueGroupId(maps.Values(existingGroupsByResource))
 			}
-			groups[resource] = &MultyResourceGroup{
+			groups[resource.GetResourceId()] = &MultyResourceGroup{
 				GroupId:   groupId,
 				Resources: []Resource{resource},
 			}
@@ -128,15 +128,15 @@ func (r *Resources) GetMultyResourceGroups(existingGroupsByResource map[string]s
 	return groups
 }
 
-func mergeGroups(all map[Resource]*MultyResourceGroup, res1 Resource, res2 Resource) {
-	group := all[res1]
-	if group2, ok := all[res2]; !ok {
+func mergeGroups(all map[string]*MultyResourceGroup, res1 Resource, res2 Resource) {
+	group := all[res1.GetResourceId()]
+	if group2, ok := all[res2.GetResourceId()]; !ok {
 		group.Resources = append(group.Resources, res2)
-		all[res2] = group
+		all[res2.GetResourceId()] = group
 	} else if group != group2 {
 		for _, group2Resource := range group2.Resources {
 			group.Resources = append(group.Resources, group2Resource)
-			all[group2Resource] = group
+			all[group2Resource.GetResourceId()] = group
 		}
 	}
 }
@@ -161,6 +161,8 @@ type CloudSpecificResource[OutT proto.Message] interface {
 type CloudSpecificResourceTranslator interface {
 	GetMainResourceName() (string, error)
 	Translate(ctx MultyContext) ([]output.TfBlock, error)
+
+	Resource
 }
 
 type namedResource interface {

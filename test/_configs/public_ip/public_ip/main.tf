@@ -153,4 +153,5 @@ resource "google_compute_address" "ip_gcp" {
   name         = "test-ip"
   network_tier = "STANDARD"
   provider     = "google.europe-west1"
+  project      = "multy-project"
 }

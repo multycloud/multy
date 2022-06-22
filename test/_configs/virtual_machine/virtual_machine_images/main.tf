@@ -307,6 +307,7 @@ resource "google_compute_subnetwork" "subnet_gcp" {
   network                  = google_compute_network.example_vn_gcp.id
   private_ip_google_access = true
   provider                 = "google.europe-west1"
+  project                  = "multy-project"
 }
 
 resource "google_compute_instance" "vm_gcp" {
@@ -324,6 +325,7 @@ resource "google_compute_instance" "vm_gcp" {
   }
   metadata = { "user-data" = "echo 'Hello World'" }
   provider = "google.europe-west1"
+  project  = "multy-project"
 }
 resource "google_compute_network" "example_vn_gcp" {
   name                            = "example_gcp"
@@ -332,6 +334,7 @@ resource "google_compute_network" "example_vn_gcp" {
   auto_create_subnetworks         = false
   delete_default_routes_on_create = true
   provider                        = "google.europe-west1"
+  project                         = "multy-project"
 }
 resource "google_compute_instance" "vm2_gcp" {
   name         = "test-vm"
@@ -348,6 +351,7 @@ resource "google_compute_instance" "vm2_gcp" {
   }
   metadata = {}
   provider = "google.europe-west1"
+  project  = "multy-project"
 }
 provider "google" {
   region = "europe-west1"

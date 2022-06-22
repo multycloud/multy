@@ -26,14 +26,23 @@ message DeleteVirtualNetworkRequest {
   string resource_id = 1;
 }
 
+message VirtualNetworkGcpOverride {
+  string project = 1;
+}
+
 message VirtualNetworkArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   string cidr_block = 3;
+
+  VirtualNetworkGcpOverride gcp_override = 4;
 }
 
 message VirtualNetworkResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   string cidr_block = 3;
+
+  VirtualNetworkGcpOverride gcp_override = 4;
 }
+
