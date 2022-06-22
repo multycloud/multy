@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -47,13 +48,15 @@ func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		AzureOverride:           r.Args.AzureOverride,
 	}
 
-	vm, err := output.GetParsedById[virtual_machine.GoogleComputeInstance](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
+	if !flags.DryRun {
+		vm, err := output.GetParsedById[virtual_machine.GoogleComputeInstance](state, r.ResourceId)
+		if err != nil {
+			return nil, err
+		}
 
-	if r.Args.GeneratePublicIp {
-		out.PublicIp = vm.NetworkInterface[0].AccessConfig[0].NatIp
+		if r.Args.GeneratePublicIp {
+			out.PublicIp = vm.NetworkInterface[0].AccessConfig[0].NatIp
+		}
 	}
 
 	return out, nil
