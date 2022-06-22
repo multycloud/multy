@@ -319,6 +319,9 @@ resources:  {
         }
         name:  "example-vn"
         cidr_block:  "10.0.0.0/16"
+        gcp_override: {
+          project: "multy-project"
+        }
       }
     }
   }
@@ -412,6 +415,9 @@ resources:  {
           }
           cidr_block:  "0.0.0.0/0"
           direction:  EGRESS
+        }
+        gcp_override: {
+          project: "multy-project"
         }
       }
     }

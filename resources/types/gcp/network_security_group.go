@@ -44,7 +44,7 @@ func (r GcpNetworkSecurityGroup) Translate(_ resources.MultyContext) ([]output.T
 	ruleId := fmt.Sprintf("%s-%s", r.ResourceId, "default-deny-egress")
 	ruleName := fmt.Sprintf("%s-%s", r.Args.Name, "default-deny-egress")
 	firewalls = append(firewalls, &network_security_group.GoogleComputeFirewall{
-		GcpResource:       common.NewGcpResource(ruleId, ruleName),
+		GcpResource:       common.NewGcpResource(ruleId, ruleName, r.Args.GetGcpOverride().GetProject()),
 		Network:           fmt.Sprintf("%s.%s.id", output.GetResourceName(virtual_network.GoogleComputeNetwork{}), r.VirtualNetwork.ResourceId),
 		DestinationRanges: []string{"0.0.0.0/0"},
 		Direction:         resourcespb.Direction_EGRESS.String(),
@@ -72,7 +72,7 @@ func (r GcpNetworkSecurityGroup) buildRule(i int, rule *resourcespb.NetworkSecur
 	ruleId := fmt.Sprintf("%s-%s", r.ResourceId, suffix)
 	ruleName := fmt.Sprintf("%s-%s", r.Args.Name, suffix)
 	firewall := &network_security_group.GoogleComputeFirewall{
-		GcpResource: common.NewGcpResource(ruleId, ruleName),
+		GcpResource: common.NewGcpResource(ruleId, ruleName, r.Args.GetGcpOverride().GetProject()),
 		Direction:   direction.String(),
 		Network:     fmt.Sprintf("%s.%s.id", output.GetResourceName(virtual_network.GoogleComputeNetwork{}), r.VirtualNetwork.ResourceId),
 		AllowRules: []network_security_group.GoogleComputeFirewallRule{

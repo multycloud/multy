@@ -153,6 +153,9 @@ resources:  {
         }
         name:  "example-gcp"
         cidr_block:  "10.0.0.0/16"
+        gcp_override: {
+          project: "multy-project"
+        }
       }
     }
   }
@@ -186,6 +189,9 @@ resources:  {
         vm_size:  GENERAL_MICRO
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
         subnet_id:  "subnet_gcp"
+        gcp_override: {
+          project: "multy-project"
+        }
       }
     }
   }

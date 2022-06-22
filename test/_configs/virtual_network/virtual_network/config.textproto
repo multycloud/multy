@@ -43,6 +43,9 @@ resources: {
         }
         name: "example-vn"
         cidr_block: "10.0.0.0/16"
+        gcp_override: {
+          project: "multy-project"
+        }
       }
     }
   }

@@ -10,6 +10,7 @@ import (
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/types"
+	"github.com/multycloud/multy/resources/types/metadata"
 	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 	"github.com/zclconf/go-cty/cty"
@@ -50,22 +51,27 @@ type DecodedOutput struct {
 type EncodedResources struct {
 	HclString         string
 	ValidationErrs    []validate.ValidationError
-	DeployedResources map[resources.Resource][]string
+	DeployedResources map[string][]string
 }
 
 func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCredentials) (EncodedResources, error) {
 	ctx := resources.NewMultyContext(decodedResources.Resources)
 
-	translatedResources, errs, err := TranslateResources(decodedResources, ctx)
+	csr, err := getCloudSpecificResourceMap(decodedResources)
+	if err != nil {
+		return EncodedResources{}, err
+	}
+
+	translatedResources, errs, err := TranslateResources(csr, ctx)
 	if len(errs) > 0 || err != nil {
 		return EncodedResources{ValidationErrs: errs}, err
 	}
-	providers := buildProviders(decodedResources, credentials)
+	providers := buildProviders(decodedResources.Providers, csr, credentials)
 
 	var b bytes.Buffer
 	for _, r := range util.GetSortedMapValues(decodedResources.Resources.ResourceMap) {
 		providerAlias := getProvider(providers, r).GetResourceId()
-		for _, translated := range translatedResources[r] {
+		for _, translated := range translatedResources[r.GetResourceId()] {
 			var result output.TfBlock
 			result = WithProvider{
 				Resource:      translated,
@@ -121,7 +127,7 @@ func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCreden
 		b.Write(hclOutput)
 	}
 
-	res := map[resources.Resource][]string{}
+	res := map[string][]string{}
 	for key, blocks := range translatedResources {
 		res[key] = util.MapSliceValues(blocks, func(block output.TfBlock) string {
 			return block.GetFullResourceRef()
@@ -132,6 +138,23 @@ func Encode(decodedResources *DecodedResources, credentials *credspb.CloudCreden
 		HclString:         b.String(),
 		DeployedResources: res,
 	}, nil
+}
+
+func getCloudSpecificResourceMap(r *DecodedResources) (map[string]resources.CloudSpecificResourceTranslator, error) {
+	out := map[string]resources.CloudSpecificResourceTranslator{}
+	for resourceId, resource := range r.Resources.ResourceMap {
+		m, err := resource.GetMetadata(metadata.Metadatas)
+		if err != nil {
+			return nil, err
+		}
+		cr, err := m.GetCloudSpecificResource(resource)
+		if err != nil {
+			return nil, err
+		}
+		out[resourceId] = cr
+	}
+
+	return out, nil
 }
 
 type providerWrapper struct {

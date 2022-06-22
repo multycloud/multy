@@ -49,6 +49,7 @@ resource "google_compute_network" "example_vn_gcp" {
   auto_create_subnetworks         = false
   delete_default_routes_on_create = true
   provider                        = "google.europe-west1"
+  project                         = "multy-project"
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
@@ -77,6 +78,7 @@ resource "google_compute_subnetwork" "subnet_gcp" {
   network                  = google_compute_network.example_vn_gcp.id
   private_ip_google_access = true
   provider                 = "google.europe-west1"
+  project                  = "multy-project"
 }
 resource "aws_iam_instance_profile" "vm2_aws" {
   name     = "multy-vm-vm2_aws-role"
@@ -251,6 +253,7 @@ resource "google_compute_instance" "vm_gcp" {
   }
   metadata = { "user-data" = "echo 'Hello World'" }
   provider = "google.europe-west1"
+  project  = "multy-project"
 }
 provider "aws" {
   region = "eu-west-1"

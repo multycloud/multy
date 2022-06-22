@@ -47,7 +47,7 @@ func (r GcpPublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpReso
 func (r GcpPublicIp) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	return []output.TfBlock{
 		public_ip.GoogleComputeAddress{
-			GcpResource: common.NewGcpResource(r.ResourceId, r.Args.Name),
+			GcpResource: common.NewGcpResource(r.ResourceId, r.Args.Name, r.Args.GetGcpOverride().GetProject()),
 			NetworkTier: "STANDARD",
 		},
 	}, nil

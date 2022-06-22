@@ -13,6 +13,7 @@ type Provider struct {
 	IsDefaultProvider bool
 	NumResources      int
 	Credentials       *credspb.CloudCredentials
+	GcpProject        string
 }
 
 func (p *Provider) Translate() []any {
@@ -43,7 +44,6 @@ func (p *Provider) Translate() []any {
 			Region:       p.Location,
 			Alias:        p.getAlias(),
 			Credentials:  p.Credentials.GetGcpCreds().GetCredentials(),
-			Project:      p.Credentials.GetGcpCreds().GetProject(),
 		}}
 	}
 	return nil

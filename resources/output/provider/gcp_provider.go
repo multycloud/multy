@@ -7,5 +7,4 @@ type GcpProvider struct {
 	Region       string `hcl:"region"`
 	Alias        string `hcl:"alias"`
 	Credentials  string `hcl:"credentials" hcle:"omitempty"`
-	Project      string `hcl:"project" hcle:"omitempty"`
 }

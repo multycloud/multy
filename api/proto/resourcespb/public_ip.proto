@@ -26,9 +26,15 @@ message DeletePublicIpRequest {
   string resource_id = 1;
 }
 
+message PublicIpGcpOverride {
+  string project = 1;
+}
+
 message PublicIpArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
+
+  PublicIpGcpOverride gcp_override = 5;
 }
 
 message PublicIpResource {
@@ -37,4 +43,5 @@ message PublicIpResource {
 
   // outputs
   string ip = 4;
+  PublicIpGcpOverride gcp_override = 5;
 }

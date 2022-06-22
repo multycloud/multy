@@ -248,7 +248,7 @@ func TestResourceMetadataUpdateMultyResourceGroups(t *testing.T) {
 
 	config.UpdateMultyResourceGroups()
 
-	config.UpdateDeployedResourceList(map[resources.Resource][]string{})
+	config.UpdateDeployedResourceList(map[string][]string{})
 	affectedResourcesSubnet1 := config.GetAffectedResources(subnet1.GetResourceId())
 	affectedResourcesVn1 := config.GetAffectedResources(vn1.GetResourceId())
 	affectedResourcesSubnet2 := config.GetAffectedResources(subnet2.GetResourceId())

@@ -47,11 +47,18 @@ message NetworkSecurityRule {
 
 }
 
+
+message NetworkSecurityGroupGcpOverride {
+  string project = 1;
+}
+
 message NetworkSecurityGroupArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   string virtual_network_id = 3;
   repeated NetworkSecurityRule rules = 4;
+
+  NetworkSecurityGroupGcpOverride gcp_override = 5;
 }
 
 message NetworkSecurityGroupResource {
@@ -59,4 +66,6 @@ message NetworkSecurityGroupResource {
   string name = 2;
   string virtual_network_id = 3;
   repeated NetworkSecurityRule rules = 4;
+
+  NetworkSecurityGroupGcpOverride gcp_override = 5;
 }

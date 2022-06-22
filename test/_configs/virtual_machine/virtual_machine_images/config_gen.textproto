@@ -197,6 +197,9 @@ resources:  {
         }
         name:  "example_gcp"
         cidr_block:  "10.0.0.0/16"
+        gcp_override: {
+          project: "multy-project"
+        }
       }
     }
   }
@@ -233,6 +236,9 @@ resources:  {
           os:  UBUNTU
           version:  "18.04"
         }
+        gcp_override: {
+          project: "multy-project"
+        }
       }
     }
   }
@@ -253,6 +259,9 @@ resources:  {
         image_reference:  {
           os:  DEBIAN
           version:  "11"
+        }
+        gcp_override: {
+          project: "multy-project"
         }
       }
     }

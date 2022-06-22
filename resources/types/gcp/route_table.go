@@ -34,7 +34,7 @@ func (r GcpRouteTable) Translate(ctx resources.MultyContext) ([]output.TfBlock, 
 		routeName := fmt.Sprintf("%s-%d", r.Args.Name, i)
 		routeId := fmt.Sprintf("%s-%d", r.ResourceId, i)
 		outputRoute := &route_table.GoogleComputeRoute{
-			GcpResource: common.NewGcpResource(routeId, routeName),
+			GcpResource: common.NewGcpResource(routeId, routeName, r.VirtualNetwork.Args.GetGcpOverride().GetProject()),
 			DestRange:   route.CidrBlock,
 			Network:     fmt.Sprintf("%s.%s.id", output.GetResourceName(virtual_network.GoogleComputeNetwork{}), r.VirtualNetwork.ResourceId),
 			Priority:    1000,

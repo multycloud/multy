@@ -35,7 +35,7 @@ func (r GcpSubnet) FromState(_ *output.TfState) (*resourcespb.SubnetResource, er
 
 func (r GcpSubnet) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {
 	return []output.TfBlock{&subnet.GoogleComputeSubnetwork{
-		GcpResource:           common.NewGcpResource(r.ResourceId, r.Args.Name),
+		GcpResource:           common.NewGcpResource(r.ResourceId, r.Args.Name, r.VirtualNetwork.Args.GetGcpOverride().GetProject()),
 		IpCidrRange:           r.Args.CidrBlock,
 		PrivateIpGoogleAccess: true,
 		Network:               fmt.Sprintf("%s.%s.id", output.GetResourceName(virtual_network.GoogleComputeNetwork{}), r.VirtualNetwork.ResourceId),
