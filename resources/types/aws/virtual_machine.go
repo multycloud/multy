@@ -75,9 +75,9 @@ func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		ImageReference:          r.Args.ImageReference,
 		AwsOverride:             r.Args.AwsOverride,
 		AzureOverride:           r.Args.AzureOverride,
-
-		PublicIp:   ip,
-		IdentityId: identityId,
+		GcpOverride:             r.Args.GcpOverride,
+		PublicIp:                ip,
+		IdentityId:              identityId,
 	}, nil
 }
 

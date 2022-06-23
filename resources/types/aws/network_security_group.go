@@ -38,6 +38,7 @@ func (r AwsNetworkSecurityGroup) FromState(_ *output.TfState) (*resourcespb.Netw
 		Name:             r.Args.Name,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
 		Rules:            r.Args.Rules,
+		GcpOverride:      r.Args.GcpOverride,
 	}, nil
 }
 

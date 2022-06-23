@@ -73,6 +73,7 @@ var AVAILABILITY_ZONES = map[commonpb.Location]map[commonpb.CloudProvider][]stri
 	commonpb.Location_EU_WEST_2: {
 		AWS:   []string{"eu-west-2a", "eu-west-2b", "eu-west-2c"},
 		AZURE: []string{"1", "2", "3"},
+		GCP:   []string{"europe-west2-a", "europe-west2-b", "europe-west2-c"},
 	},
 	commonpb.Location_EU_WEST_3: {
 		AWS:   []string{"eu-west-3a", "eu-west-3b", "eu-west-3c"},
