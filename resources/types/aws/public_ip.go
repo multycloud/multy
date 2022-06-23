@@ -37,9 +37,9 @@ func (r AwsPublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpReso
 			CloudProvider:   r.Args.CommonParameters.CloudProvider,
 			NeedsUpdate:     false,
 		},
-		Name: r.Args.Name,
-
-		Ip: ip,
+		Name:        r.Args.Name,
+		Ip:          ip,
+		GcpOverride: r.Args.GcpOverride,
 	}, nil
 }
 

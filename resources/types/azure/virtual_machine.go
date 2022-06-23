@@ -49,14 +49,6 @@ func (r AzureVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virt
 		identityId = vmResource.Identities[0].PrincipalId
 	}
 
-	// TODO: handle default values on create
-	if r.Args.ImageReference == nil {
-		r.Args.ImageReference = &resourcespb.ImageReference{
-			Os:      resourcespb.ImageReference_UBUNTU,
-			Version: "16.04",
-		}
-	}
-
 	return &resourcespb.VirtualMachineResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -77,9 +69,9 @@ func (r AzureVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virt
 		ImageReference:          r.Args.ImageReference,
 		AwsOverride:             r.Args.AwsOverride,
 		AzureOverride:           r.Args.AzureOverride,
-
-		PublicIp:   ip,
-		IdentityId: identityId,
+		GcpOverride:             r.Args.GcpOverride,
+		PublicIp:                ip,
+		IdentityId:              identityId,
 	}, nil
 }
 

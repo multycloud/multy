@@ -33,6 +33,7 @@ func (r AzureNetworkSecurityGroup) FromState(_ *output.TfState) (*resourcespb.Ne
 		Name:             r.Args.Name,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
 		Rules:            r.Args.Rules,
+		GcpOverride:      r.Args.GcpOverride,
 	}, nil
 }
 

@@ -65,6 +65,10 @@ func GetLatestAzureSourceImageReference(ref *resourcespb.ImageReference) (AzureS
 		offer = "UbuntuServer"
 		publisher = "Canonical"
 		version = fmt.Sprintf("%s-LTS", version)
+		if ref.Version == "20.04" {
+			offer = "0001-com-ubuntu-server-focal"
+			version = "20_04-lts"
+		}
 	case resourcespb.ImageReference_DEBIAN:
 		offer = fmt.Sprintf("debian-%s", ref.Version)
 		publisher = "Debian"

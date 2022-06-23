@@ -46,6 +46,7 @@ func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		ImageReference:          r.Args.ImageReference,
 		AwsOverride:             r.Args.AwsOverride,
 		AzureOverride:           r.Args.AzureOverride,
+		GcpOverride:             r.Args.GcpOverride,
 	}
 
 	if !flags.DryRun {
@@ -63,7 +64,12 @@ func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 }
 
 func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, error) {
-	zone, err := common.GetAvailabilityZone(r.GetLocation(), int(r.Subnet.Args.AvailabilityZone), r.GetCloud())
+	az := r.Subnet.Args.AvailabilityZone
+	if az == 0 {
+		az = 1
+	}
+
+	zone, err := common.GetAvailabilityZone(r.GetLocation(), int(az), r.GetCloud())
 	if err != nil {
 		return nil, err
 	}
