@@ -78,26 +78,32 @@ var AVAILABILITY_ZONES = map[commonpb.Location]map[commonpb.CloudProvider][]stri
 	commonpb.Location_EU_WEST_3: {
 		AWS:   []string{"eu-west-3a", "eu-west-3b", "eu-west-3c"},
 		AZURE: []string{"1", "2", "3"},
+		GCP:   []string{"europe-west3-a", "europe-west3-b", "europe-west3-c"},
 	},
 	commonpb.Location_US_EAST_1: {
 		AWS:   []string{"us-east-1a", "us-east-1b", "us-east-1c"},
 		AZURE: []string{"1", "2", "3"},
+		GCP:   []string{"us-east4-a", "us-east4-b", "us-east4-c"},
 	},
 	commonpb.Location_US_EAST_2: {
 		AWS:   []string{"us-east-2a", "us-east-2b", "us-east-2c"},
 		AZURE: []string{"1", "2", "3"},
+		GCP:   []string{"us-east5-a", "us-east5-b", "us-east5-c"},
 	},
 	commonpb.Location_US_WEST_1: {
 		AWS:   []string{"us-west-1a", "us-west-1c"},
 		AZURE: []string{"1", "2"},
+		GCP:   []string{"us-west2-a", "us-west2-b", "us-west2-c"},
 	},
 	commonpb.Location_US_WEST_2: {
 		AWS:   []string{"us-west-2a", "us-west-2b", "us-west-2c", "us-west-2d"},
 		AZURE: []string{"1", "2", "3"},
+		GCP:   []string{"us-west1-a", "us-west1-b", "us-west1-c"},
 	},
 	commonpb.Location_EU_NORTH_1: {
 		AWS:   []string{"eu-north-1a", "eu-north-1b", "eu-north-1c"},
 		AZURE: []string{"1", "2", "3"},
+		GCP:   []string{"europe-north1-a", "europe-north1-b", "europe-north1-c"},
 	},
 }
 
