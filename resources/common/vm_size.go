@@ -33,10 +33,12 @@ var VMSIZE = map[commonpb.VmSize_Enum]map[commonpb.CloudProvider]string{
 	commonpb.VmSize_GENERAL_XLARGE: {
 		commonpb.CloudProvider_AWS:   "t2.xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_B4ms",
+        commonpb.CloudProvider_GCP:   "e2-standard-4",
 	},
 	commonpb.VmSize_GENERAL_2XLARGE: {
 		commonpb.CloudProvider_AWS:   "t2.2xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_B8ms",
+        commonpb.CloudProvider_GCP:   "e2-standard-8",
 	},
 	commonpb.VmSize_COMPUTE_LARGE: {
 		commonpb.CloudProvider_AWS:   "c4.large",
