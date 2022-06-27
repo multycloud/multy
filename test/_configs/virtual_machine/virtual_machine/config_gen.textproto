@@ -38,7 +38,6 @@ resources:  {
         name:  "subnet"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_aws"
-        availability_zone:  2
       }
     }
   }
@@ -51,7 +50,6 @@ resources:  {
         name:  "subnet"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_azure"
-        availability_zone:  2
       }
     }
   }
@@ -70,6 +68,7 @@ resources:  {
         vm_size:  GENERAL_NANO
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
         subnet_id:  "subnet_aws"
+        availability_zone: 1
       }
     }
   }
@@ -88,6 +87,7 @@ resources:  {
         vm_size:  GENERAL_NANO
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
         subnet_id:  "subnet_azure"
+        availability_zone: 1
       }
     }
   }
@@ -105,6 +105,7 @@ resources:  {
         name:  "test-vm"
         vm_size:  GENERAL_NANO
         subnet_id:  "subnet_aws"
+        availability_zone: 1
       }
     }
   }
@@ -122,6 +123,7 @@ resources:  {
         name:  "test-vm"
         vm_size:  GENERAL_NANO
         subnet_id:  "subnet_azure"
+        availability_zone: 1
       }
     }
   }
@@ -168,7 +170,6 @@ resources:  {
         name:  "subnet"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_gcp"
-        availability_zone:  2
       }
     }
   }
@@ -192,6 +193,7 @@ resources:  {
         gcp_override: {
           project: "multy-project"
         }
+        availability_zone: 1
       }
     }
   }
@@ -200,7 +202,6 @@ resources:  {
 # proto-import: api/proto/resourcespb/database.proto
 # proto-import: api/proto/resourcespb/kubernetes_cluster.proto
 # proto-import: api/proto/resourcespb/kubernetes_node_pool.proto
-# proto-import: api/proto/resourcespb/lambda.proto
 # proto-import: api/proto/resourcespb/network_interface.proto
 # proto-import: api/proto/resourcespb/network_security_group.proto
 # proto-import: api/proto/resourcespb/public_ip.proto

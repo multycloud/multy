@@ -15,7 +15,6 @@ import (
 	"github.com/multycloud/multy/resources/output/virtual_machine"
 	"github.com/multycloud/multy/resources/types"
 	"github.com/multycloud/multy/util"
-	"log"
 	"regexp"
 )
 
@@ -70,6 +69,7 @@ func (r AzureVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virt
 		AwsOverride:             r.Args.AwsOverride,
 		AzureOverride:           r.Args.AzureOverride,
 		GcpOverride:             r.Args.GcpOverride,
+		AvailabilityZone:        r.Args.AvailabilityZone,
 		PublicIp:                ip,
 		IdentityId:              identityId,
 	}, nil
@@ -110,7 +110,9 @@ func (r AzureVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock
 					r.ResourceId, r.Args.Name, rgName,
 					r.GetCloudSpecificLocation(),
 				),
+				// TODO: this should be Dynamic, and then use the data source to get the public IP
 				AllocationMethod: "Static",
+				Sku:              "Standard",
 			}
 			nic.IpConfigurations = []network_interface.AzureIpConfiguration{{
 				Name:                       "external", // this name shouldn't be r.name
@@ -176,11 +178,7 @@ func (r AzureVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock
 		azResources = append(azResources, randomPassword)
 	}
 
-	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
-	if err != nil {
-		log.Fatal(err)
-	}
-	computerName := reg.ReplaceAllString(r.Args.Name, "")
+	computerName := regexp.MustCompile("[^a-zA-Z0-9]+").ReplaceAllString(r.Args.Name, "")
 
 	sourceImg, err := virtual_machine.GetLatestAzureSourceImageReference(r.Args.ImageReference)
 	if err != nil {
@@ -192,6 +190,14 @@ func (r AzureVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock
 		vmSize = r.Args.AzureOverride.GetSize()
 	} else {
 		vmSize = common.VMSIZE[r.Args.VmSize][r.GetCloud()]
+	}
+
+	var zone string
+	if r.Args.AvailabilityZone != 0 {
+		zone, err = common.GetAvailabilityZone(r.GetLocation(), int(r.Args.AvailabilityZone), r.GetCloud())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	azResources = append(
@@ -216,6 +222,7 @@ func (r AzureVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock
 			DisablePasswordAuthentication: disablePassAuth,
 			Identity:                      virtual_machine.AzureIdentity{Type: "SystemAssigned"},
 			ComputerName:                  computerName,
+			Zone:                          zone,
 		},
 	)
 

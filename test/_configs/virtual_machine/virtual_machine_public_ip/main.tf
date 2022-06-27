@@ -50,20 +50,52 @@ resource "aws_route_table" "rt_aws" {
     gateway_id = aws_internet_gateway.example_vn_aws.id
   }
 }
-resource "aws_route_table_association" "subnet_aws" {
+resource "aws_route_table_association" "rta_aws-1" {
   provider       = "aws.eu-west-1"
-  subnet_id      = aws_subnet.subnet_aws.id
+  subnet_id      = aws_subnet.subnet_aws-1.id
   route_table_id = aws_route_table.rt_aws.id
 }
-resource "aws_subnet" "subnet_aws" {
+resource "aws_route_table_association" "rta_aws-2" {
+  provider       = "aws.eu-west-1"
+  subnet_id      = aws_subnet.subnet_aws-2.id
+  route_table_id = aws_route_table.rt_aws.id
+}
+resource "aws_route_table_association" "rta_aws-3" {
+  provider       = "aws.eu-west-1"
+  subnet_id      = aws_subnet.subnet_aws-3.id
+  route_table_id = aws_route_table.rt_aws.id
+}
+resource "aws_subnet" "subnet_aws-1" {
   provider = "aws.eu-west-1"
   tags     = {
-    "Name" = "subnet"
+    "Name" = "subnet-1"
   }
 
-  cidr_block        = "10.0.2.0/24"
+  cidr_block        = "10.0.2.0/25"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1a"
+}
+
+resource "aws_subnet" "subnet_aws-2" {
+  provider = "aws.eu-west-1"
+  tags     = {
+    "Name" = "subnet-2"
+  }
+
+  cidr_block        = "10.0.2.128/26"
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "eu-west-1b"
+}
+
+resource "aws_subnet" "subnet_aws-3" {
+  provider = "aws.eu-west-1"
+  tags     = {
+    "Name" = "subnet-3"
+  }
+
+  cidr_block        = "10.0.2.192/26"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1c"
 }
 resource "aws_key_pair" "vm_aws" {
   provider = "aws.eu-west-1"
@@ -94,7 +126,7 @@ resource "aws_instance" "vm_aws" {
   ami                         = data.aws_ami.vm_aws.id
   instance_type               = "t2.nano"
   associate_public_ip_address = true
-  subnet_id                   = aws_subnet.subnet_aws.id
+  subnet_id                   = aws_subnet.subnet_aws-1.id
   #  user_data_base64            = "#!/bin/bash -xe\\nsudo su; yum update -y; yum install -y httpd.x86_64; systemctl start httpd.service; systemctl enable httpd.service; touch /var/www/html/index.html; echo \\\"<h1>Hello from Multy on AWS</h1>\\\" > /var/www/html/index.html"
   user_data_base64            = "ZWNobyAnSGVsbG8gV29ybGQn"
   key_name                    = aws_key_pair.vm_aws.key_name
@@ -156,8 +188,10 @@ resource "azurerm_public_ip" "vm_azure" {
   name                = "test-vm"
   location            = "northeurope"
   allocation_method   = "Static"
+  sku                 = "Standard"
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
+  zone                  = "1"
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   computer_name         = "testvm"

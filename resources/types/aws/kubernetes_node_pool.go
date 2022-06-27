@@ -41,10 +41,7 @@ func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 }
 
 func (r AwsKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {
-	subnetId, err := resources.GetMainOutputId(AwsSubnet{r.Subnet})
-	if err != nil {
-		return nil, err
-	}
+	subnetIds := AwsSubnet{r.Subnet}.GetSubnetIds()
 
 	var instanceTypes []string
 	if r.Args.AwsOverride.GetInstanceTypes() != nil {
@@ -85,7 +82,7 @@ func (r AwsKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 			ClusterName:   clusterId,
 			NodeGroupName: r.Args.Name,
 			NodeRoleArn:   fmt.Sprintf("aws_iam_role.%s.arn", r.ResourceId),
-			SubnetIds:     []string{subnetId},
+			SubnetIds:     subnetIds,
 			ScalingConfig: kubernetes_node_pool.ScalingConfig{
 				DesiredSize: int(r.Args.StartingNodeCount),
 				MaxSize:     int(r.Args.MaxNodeCount),

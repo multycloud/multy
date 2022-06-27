@@ -74,6 +74,7 @@ resources:  {
           os:  UBUNTU
           version:  "18.04"
         }
+        availability_zone: 1
       }
     }
   }
@@ -96,6 +97,7 @@ resources:  {
           os:  UBUNTU
           version:  "18.04"
         }
+        availability_zone: 1
       }
     }
   }
@@ -117,6 +119,7 @@ resources:  {
           os:  DEBIAN
           version:  "10"
         }
+        availability_zone: 3
       }
     }
   }
@@ -138,6 +141,7 @@ resources:  {
           os:  DEBIAN
           version:  "10"
         }
+        availability_zone: 3
       }
     }
   }
@@ -159,6 +163,7 @@ resources:  {
           os:  CENT_OS
           version:  "8.2"
         }
+        availability_zone: 2
       }
     }
   }
@@ -180,6 +185,7 @@ resources:  {
           os:  CENT_OS
           version:  "8.2"
         }
+        availability_zone: 2
       }
     }
   }

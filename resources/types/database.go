@@ -5,19 +5,18 @@ import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
-	"github.com/multycloud/multy/util"
 	"github.com/multycloud/multy/validate"
 )
 
 type Database struct {
 	resources.ResourceWithId[*resourcespb.DatabaseArgs]
 
-	Subnets []*Subnet
+	Subnet *Subnet
 }
 
 func (r *Database) Create(resourceId string, args *resourcespb.DatabaseArgs, others *resources.Resources) error {
 	if args.CommonParameters.ResourceGroupId == "" {
-		subnet, err := resources.Get[*Subnet](resourceId, others, args.SubnetIds[0])
+		subnet, err := resources.Get[*Subnet](resourceId, others, args.SubnetId)
 		if err != nil {
 			return err
 		}
@@ -45,13 +44,12 @@ func (r *Database) Export(_ *resources.Resources) (*resourcespb.DatabaseArgs, bo
 }
 
 func NewDatabase(r *Database, resourceId string, db *resourcespb.DatabaseArgs, others *resources.Resources) error {
-	subnets, err := util.MapSliceValuesErr(db.SubnetIds, func(subnetId string) (*Subnet, error) {
-		return resources.Get[*Subnet](resourceId, others, subnetId)
-	})
+	subnet, err := resources.Get[*Subnet](resourceId, others, db.SubnetId)
 	if err != nil {
 		return err
 	}
-	r.Subnets = subnets
+	r.Subnet = subnet
+
 	r.ResourceWithId = resources.ResourceWithId[*resourcespb.DatabaseArgs]{
 		ResourceId: resourceId,
 		Args:       db,

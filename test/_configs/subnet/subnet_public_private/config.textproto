@@ -31,63 +31,35 @@ resources:  {
   }
 }
 resources:  {
-  resource_id:  "subnet2_aws"
+  resource_id:  "private_subnet_aws"
   resource_args:  {
     resource_args:  {
       [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
-        name:  "private-subnet2"
+        name:  "private-subnet"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_aws"
-        availability_zone:  2
       }
     }
   }
 }
 resources:  {
-  resource_id:  "subnet2_azure"
+  resource_id:  "private_subnet_azure"
   resource_args:  {
     resource_args:  {
       [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
-        name:  "private-subnet2"
+        name:  "private-subnet"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_azure"
-        availability_zone:  2
       }
     }
   }
 }
 resources:  {
-  resource_id:  "subnet1_aws"
+  resource_id:  "public_subnet_aws"
   resource_args:  {
     resource_args:  {
       [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
-        name:  "private-subnet1"
-        cidr_block:  "10.0.1.0/24"
-        virtual_network_id:  "example_vn_aws"
-        availability_zone:  1
-      }
-    }
-  }
-}
-resources:  {
-  resource_id:  "subnet1_azure"
-  resource_args:  {
-    resource_args:  {
-      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
-        name:  "private-subnet1"
-        cidr_block:  "10.0.1.0/24"
-        virtual_network_id:  "example_vn_azure"
-        availability_zone:  1
-      }
-    }
-  }
-}
-resources:  {
-  resource_id:  "subnet3_aws"
-  resource_args:  {
-    resource_args:  {
-      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
-        name:  "public-subnet3"
+        name:  "public-subnet"
         cidr_block:  "10.0.3.0/24"
         virtual_network_id:  "example_vn_aws"
       }
@@ -95,11 +67,11 @@ resources:  {
   }
 }
 resources:  {
-  resource_id:  "subnet3_azure"
+  resource_id:  "public_subnet_azure"
   resource_args:  {
     resource_args:  {
       [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
-        name:  "public-subnet3"
+        name:  "public-subnet"
         cidr_block:  "10.0.3.0/24"
         virtual_network_id:  "example_vn_azure"
       }
@@ -153,8 +125,7 @@ resources:  {
         size:  MICRO
         username:  "multyadmin"
         password:  "multy$Admin123!"
-        subnet_ids:  "subnet1_azure"
-        subnet_ids:  "subnet2_azure"
+        subnet_id:  "private_subnet_azure"
       }
     }
   }
@@ -172,8 +143,9 @@ resources:  {
         name:  "test-vm"
         vm_size:  GENERAL_NANO
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
-        subnet_id:  "subnet3_azure"
+        subnet_id:  "public_subnet_azure"
         generate_public_ip:  true
+        availability_zone: 1
       }
     }
   }
@@ -234,8 +206,9 @@ resources:  {
         name:  "test-vm"
         vm_size:  GENERAL_NANO
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
-        subnet_id:  "subnet3_aws"
+        subnet_id:  "public_subnet_aws"
         generate_public_ip:  true
+        availability_zone: 1
       }
     }
   }
@@ -245,7 +218,7 @@ resources:  {
   resource_args:  {
     resource_args:  {
       [type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs]:  {
-        subnet_id:  "subnet3_aws"
+        subnet_id:  "public_subnet_aws"
         route_table_id:  "rt_aws"
       }
     }
@@ -256,7 +229,7 @@ resources:  {
   resource_args:  {
     resource_args:  {
       [type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs]:  {
-        subnet_id:  "subnet3_azure"
+        subnet_id:  "public_subnet_azure"
         route_table_id:  "rt_azure"
       }
     }
@@ -279,8 +252,7 @@ resources:  {
         size:  MICRO
         username:  "multyadmin"
         password:  "multy$Admin123!"
-        subnet_ids:  "subnet1_aws"
-        subnet_ids:  "subnet2_aws"
+        subnet_id:  "private_subnet_aws"
       }
     }
   }

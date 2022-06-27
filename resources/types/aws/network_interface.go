@@ -28,15 +28,16 @@ func (r AwsNetworkInterface) FromState(_ *output.TfState) (*resourcespb.NetworkI
 			CloudProvider:   r.Args.CommonParameters.CloudProvider,
 			NeedsUpdate:     false,
 		},
-		Name:       r.Args.Name,
-		SubnetId:   r.Args.SubnetId,
-		PublicIpId: r.Args.PublicIpId,
+		Name:             r.Args.Name,
+		SubnetId:         r.Args.SubnetId,
+		PublicIpId:       r.Args.PublicIpId,
+		AvailabilityZone: r.Args.AvailabilityZone,
 	}, nil
 }
 
 func (r AwsNetworkInterface) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
 	var pIpId string
-	subnetId, err := resources.GetMainOutputId(AwsSubnet{r.Subnet})
+	subnetId, err := AwsSubnet{r.Subnet}.GetSubnetId(r.Args.AvailabilityZone)
 	if err != nil {
 		return nil, err
 	}

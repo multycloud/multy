@@ -42,7 +42,15 @@ resource "azurerm_route_table" "example_vn_azure" {
     next_hop_type  = "VnetLocal"
   }
 }
-
+resource "google_compute_network" "example_vn_gcp" {
+  name                            = "example-vn"
+  project                         = "multy-project"
+  routing_mode                    = "REGIONAL"
+  description                     = "Managed by Multy"
+  auto_create_subnetworks         = false
+  delete_default_routes_on_create = true
+  provider                        = "google.europe-west1"
+}
 resource "aws_security_group" "nsg2_aws" {
   tags        = { "Name" = "test-nsg2" }
   vpc_id      = aws_vpc.example_vn_aws.id
@@ -169,7 +177,103 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     direction                  = "Outbound"
   }
 }
-
+resource "google_compute_firewall" "nsg_gcp-default-deny-egress" {
+  name               = "test-nsg-default-deny-egress"
+  project            = "multy-project"
+  network            = google_compute_network.example_vn_gcp.id
+  direction          = "EGRESS"
+  destination_ranges = ["0.0.0.0/0"]
+  priority           = 65535
+  deny {
+    protocol = "all"
+  }
+  target_tags = ["nsg-test-nsg"]
+  provider    = "google.europe-west1"
+}
+resource "google_compute_firewall" "nsg_gcp-i-0" {
+  name          = "test-nsg-i-0"
+  project       = "multy-project"
+  network       = google_compute_network.example_vn_gcp.id
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
+  priority      = 120
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+  target_tags = ["nsg-test-nsg"]
+  provider    = "google.europe-west1"
+}
+resource "google_compute_firewall" "nsg_gcp-e-0" {
+  name               = "test-nsg-e-0"
+  project            = "multy-project"
+  network            = google_compute_network.example_vn_gcp.id
+  direction          = "EGRESS"
+  destination_ranges = ["0.0.0.0/0"]
+  priority           = 120
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+  target_tags = ["nsg-test-nsg"]
+  provider    = "google.europe-west1"
+}
+resource "google_compute_firewall" "nsg_gcp-i-1" {
+  name          = "test-nsg-i-1"
+  project       = "multy-project"
+  network       = google_compute_network.example_vn_gcp.id
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
+  priority      = 140
+  allow {
+    protocol = "tcp"
+    ports    = ["443"]
+  }
+  target_tags = ["nsg-test-nsg"]
+  provider    = "google.europe-west1"
+}
+resource "google_compute_firewall" "nsg_gcp-e-1" {
+  name               = "test-nsg-e-1"
+  project            = "multy-project"
+  network            = google_compute_network.example_vn_gcp.id
+  direction          = "EGRESS"
+  destination_ranges = ["0.0.0.0/0"]
+  priority           = 140
+  allow {
+    protocol = "tcp"
+    ports    = ["443"]
+  }
+  target_tags = ["nsg-test-nsg"]
+  provider    = "google.europe-west1"
+}
+resource "google_compute_firewall" "nsg_gcp-i-2" {
+  name          = "test-nsg-i-2"
+  project       = "multy-project"
+  network       = google_compute_network.example_vn_gcp.id
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
+  priority      = 150
+  allow {
+    protocol = "tcp"
+    ports    = ["8000"]
+  }
+  target_tags = ["nsg-test-nsg"]
+  provider    = "google.europe-west1"
+}
+resource "google_compute_firewall" "nsg_gcp-e-3" {
+  name               = "test-nsg-e-3"
+  project            = "multy-project"
+  network            = google_compute_network.example_vn_gcp.id
+  direction          = "EGRESS"
+  destination_ranges = ["0.0.0.0/0"]
+  priority           = 160
+  allow {
+    protocol = "tcp"
+    ports    = ["8001-8002"]
+  }
+  target_tags = ["nsg-test-nsg"]
+  provider    = "google.europe-west1"
+}
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
   location = "northeurope"
@@ -193,9 +297,28 @@ resource "azurerm_route_table" "rt_azure" {
     next_hop_type  = "Internet"
   }
 }
-
-resource "aws_route_table_association" "subnet1_aws" {
-  subnet_id      = aws_subnet.subnet1_aws.id
+resource "google_compute_route" "rt_gcp-0" {
+  name             = "test-rt-0"
+  project          = "multy-project"
+  dest_range       = "0.0.0.0/0"
+  network          = google_compute_network.example_vn_gcp.id
+  priority         = 1000
+  tags             = ["subnet-subnet1"]
+  next_hop_gateway = "default-internet-gateway"
+  provider         = "google.europe-west1"
+}
+resource "aws_route_table_association" "rta_aws-1" {
+  subnet_id      = aws_subnet.subnet1_aws-1.id
+  route_table_id = aws_route_table.rt_aws.id
+  provider       = "aws.eu-west-1"
+}
+resource "aws_route_table_association" "rta_aws-2" {
+  subnet_id      = aws_subnet.subnet1_aws-2.id
+  route_table_id = aws_route_table.rt_aws.id
+  provider       = "aws.eu-west-1"
+}
+resource "aws_route_table_association" "rta_aws-3" {
+  subnet_id      = aws_subnet.subnet1_aws-3.id
   route_table_id = aws_route_table.rt_aws.id
   provider       = "aws.eu-west-1"
 }
@@ -203,11 +326,26 @@ resource "azurerm_subnet_route_table_association" "subnet1_azure" {
   subnet_id      = azurerm_subnet.subnet1_azure.id
   route_table_id = azurerm_route_table.rt_azure.id
 }
-resource "aws_subnet" "subnet1_aws" {
-  tags       = { "Name" = "subnet1" }
-  cidr_block = "10.0.1.0/24"
-  vpc_id     = aws_vpc.example_vn_aws.id
-  provider   = "aws.eu-west-1"
+resource "aws_subnet" "subnet1_aws-1" {
+  tags              = { "Name" = "subnet1-1" }
+  cidr_block        = "10.0.1.0/25"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1a"
+  provider          = "aws.eu-west-1"
+}
+resource "aws_subnet" "subnet1_aws-2" {
+  tags              = { "Name" = "subnet1-2" }
+  cidr_block        = "10.0.1.128/26"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1b"
+  provider          = "aws.eu-west-1"
+}
+resource "aws_subnet" "subnet1_aws-3" {
+  tags              = { "Name" = "subnet1-3" }
+  cidr_block        = "10.0.1.192/26"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1c"
+  provider          = "aws.eu-west-1"
 }
 resource "azurerm_subnet" "subnet1_azure" {
   resource_group_name  = azurerm_resource_group.rg1.name
@@ -215,7 +353,14 @@ resource "azurerm_subnet" "subnet1_azure" {
   address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
-
+resource "google_compute_subnetwork" "subnet1_gcp" {
+  name                     = "subnet1"
+  project                  = "multy-project"
+  ip_cidr_range            = "10.0.1.0/24"
+  network                  = google_compute_network.example_vn_gcp.id
+  private_ip_google_access = true
+  provider                 = "google.europe-west1"
+}
 resource "aws_iam_instance_profile" "vm2_aws" {
   name     = "multy-vm-vm2_aws-role"
   role     = aws_iam_role.vm2_aws.name
@@ -249,7 +394,7 @@ resource "aws_instance" "vm2_aws" {
   ami                         = data.aws_ami.vm2_aws.id
   instance_type               = "t2.nano"
   associate_public_ip_address = true
-  subnet_id                   = aws_subnet.subnet1_aws.id
+  subnet_id                   = aws_subnet.subnet1_aws-2.id
   user_data_base64            = "ZWNobyAnSGVsbG8gV29ybGQn"
   vpc_security_group_ids      = [aws_security_group.nsg2_aws.id]
   iam_instance_profile        = aws_iam_instance_profile.vm2_aws.id
@@ -260,6 +405,7 @@ resource "azurerm_public_ip" "vm2_azure" {
   name                = "test-vm2"
   location            = "northeurope"
   allocation_method   = "Static"
+  sku                 = "Standard"
 }
 resource "azurerm_network_interface" "vm2_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
@@ -285,6 +431,7 @@ resource "random_password" "vm2_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm2_azure" {
+  zone                  = "2"
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm2"
   location              = "northeurope"
@@ -342,7 +489,7 @@ resource "aws_instance" "vm_aws" {
   ami                         = data.aws_ami.vm_aws.id
   instance_type               = "t2.nano"
   associate_public_ip_address = true
-  subnet_id                   = aws_subnet.subnet1_aws.id
+  subnet_id                   = aws_subnet.subnet1_aws-1.id
   user_data_base64            = "ZWNobyAnSGVsbG8gV29ybGQn"
   iam_instance_profile        = aws_iam_instance_profile.vm_aws.id
   provider                    = "aws.eu-west-1"
@@ -352,6 +499,7 @@ resource "azurerm_public_ip" "vm_azure" {
   name                = "test-vm"
   location            = "northeurope"
   allocation_method   = "Static"
+  sku                 = "Standard"
 }
 resource "azurerm_network_interface" "vm_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
@@ -373,6 +521,7 @@ resource "random_password" "vm_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
+  zone                  = "1"
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   location              = "northeurope"
@@ -405,135 +554,7 @@ provider "azurerm" {
   features {
   }
 }
-resource "google_compute_network" "example_vn_gcp" {
-  name                            = "example-vn"
-  routing_mode                    = "REGIONAL"
-  description                     = "Managed by Multy"
-  auto_create_subnetworks         = false
-  delete_default_routes_on_create = true
-  provider                        = "google.europe-west1"
-  project                         = "multy-project"
-}
-resource "google_compute_subnetwork" "subnet1_gcp" {
-  name                     = "subnet1"
-  ip_cidr_range            = "10.0.1.0/24"
-  network                  = google_compute_network.example_vn_gcp.id
-  private_ip_google_access = true
-  provider                 = "google.europe-west1"
-  project                  = "multy-project"
-}
-
-resource "google_compute_route" "rt_gcp-0" {
-  name             = "test-rt-0"
-  dest_range       = "0.0.0.0/0"
-  network          = google_compute_network.example_vn_gcp.id
-  priority         = 1000
-  tags             = ["subnet-subnet1"]
-  next_hop_gateway = "default-internet-gateway"
-  provider         = "google.europe-west1"
-  project          = "multy-project"
-}
-
-resource "google_compute_firewall" "nsg_gcp-default-deny-egress" {
-  name               = "test-nsg-default-deny-egress"
-  network            = google_compute_network.example_vn_gcp.id
-  direction          = "EGRESS"
-  destination_ranges = ["0.0.0.0/0"]
-  deny {
-    protocol = "all"
-  }
-  target_tags = ["nsg-test-nsg"]
-  priority    = 65535
-  provider    = "google.europe-west1"
-  project     = "multy-project"
-}
-resource "google_compute_firewall" "nsg_gcp-i-0" {
-  name          = "test-nsg-i-0"
-  network       = google_compute_network.example_vn_gcp.id
-  direction     = "INGRESS"
-  source_ranges = ["0.0.0.0/0"]
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-  target_tags = ["nsg-test-nsg"]
-  provider    = "google.europe-west1"
-  priority    = 120
-  project     = "multy-project"
-}
-resource "google_compute_firewall" "nsg_gcp-e-0" {
-  name               = "test-nsg-e-0"
-  network            = google_compute_network.example_vn_gcp.id
-  direction          = "EGRESS"
-  destination_ranges = ["0.0.0.0/0"]
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-  target_tags = ["nsg-test-nsg"]
-  provider    = "google.europe-west1"
-  priority    = 120
-  project     = "multy-project"
-}
-resource "google_compute_firewall" "nsg_gcp-i-1" {
-  name          = "test-nsg-i-1"
-  network       = google_compute_network.example_vn_gcp.id
-  direction     = "INGRESS"
-  source_ranges = ["0.0.0.0/0"]
-  allow {
-    protocol = "tcp"
-    ports    = ["443"]
-  }
-  target_tags = ["nsg-test-nsg"]
-  provider    = "google.europe-west1"
-  priority    = 140
-  project     = "multy-project"
-}
-resource "google_compute_firewall" "nsg_gcp-e-1" {
-  name               = "test-nsg-e-1"
-  network            = google_compute_network.example_vn_gcp.id
-  direction          = "EGRESS"
-  destination_ranges = ["0.0.0.0/0"]
-  allow {
-    protocol = "tcp"
-    ports    = ["443"]
-  }
-  target_tags = ["nsg-test-nsg"]
-  provider    = "google.europe-west1"
-  priority    = 140
-  project     = "multy-project"
-}
-resource "google_compute_firewall" "nsg_gcp-i-2" {
-  name          = "test-nsg-i-2"
-  network       = google_compute_network.example_vn_gcp.id
-  direction     = "INGRESS"
-  source_ranges = ["0.0.0.0/0"]
-  allow {
-    protocol = "tcp"
-    ports    = ["8000"]
-  }
-  target_tags = ["nsg-test-nsg"]
-  provider    = "google.europe-west1"
-  priority    = 150
-  project     = "multy-project"
-}
-resource "google_compute_firewall" "nsg_gcp-e-3" {
-  name               = "test-nsg-e-3"
-  network            = google_compute_network.example_vn_gcp.id
-  direction          = "EGRESS"
-  destination_ranges = ["0.0.0.0/0"]
-  allow {
-    protocol = "tcp"
-    ports    = ["8001-8002"]
-  }
-  target_tags = ["nsg-test-nsg"]
-  provider    = "google.europe-west1"
-  priority    = 160
-  project     = "multy-project"
-}
-
 provider "google" {
   region = "europe-west1"
   alias  = "europe-west1"
 }
-

@@ -10,6 +10,7 @@ const AzureResourceName = "azurerm_public_ip"
 type AzurePublicIp struct {
 	*common.AzResource `hcl:",squash" default:"name=azurerm_public_ip"`
 	AllocationMethod   string `hcl:"allocation_method"`
+	Sku                string `hcl:"sku" hcle:"omitempty"`
 
 	IpAddress string `json:"ip_address" hcle:"omitempty"`
 }

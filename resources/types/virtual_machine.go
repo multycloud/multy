@@ -38,6 +38,16 @@ func (r *VirtualMachine) Create(resourceId string, args *resourcespb.VirtualMach
 		}
 		args.CommonParameters.ResourceGroupId = rgId
 	}
+
+	if args.AvailabilityZone == 0 {
+		args.AvailabilityZone = 1
+		// if there's a network interface attached, place vm in same zone
+		if len(args.NetworkInterfaceIds) > 0 {
+			if ni, err := resources.Get[*NetworkInterface](resourceId, others, args.NetworkInterfaceIds[0]); err == nil {
+				args.AvailabilityZone = ni.Args.AvailabilityZone
+			}
+		}
+	}
 	return NewVirtualMachine(r, resourceId, args, others)
 }
 

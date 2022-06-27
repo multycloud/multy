@@ -134,6 +134,7 @@ resource "azurerm_public_ip" "vm_azure" {
   name                = "test-vm"
   location            = "northeurope"
   allocation_method   = "Static"
+  sku                 = "Standard"
 }
 resource "azurerm_network_interface" "vm_azure" {
   resource_group_name = azurerm_resource_group.vm-rg.name
@@ -155,6 +156,7 @@ resource "random_password" "vm_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
+  zone                  = "1"
   resource_group_name   = azurerm_resource_group.vm-rg.name
   name                  = "test-vm"
   computer_name         = "testvm"

@@ -23,7 +23,9 @@ resource "aws_eks_node_group" "cluster_aws_default_pool" {
   cluster_name    = aws_eks_cluster.cluster_aws.id
   node_group_name = "node_pool_aws"
   node_role_arn   = aws_iam_role.cluster_aws_default_pool.arn
-  subnet_ids      = [aws_subnet.public_subnet_aws.id]
+  subnet_ids      = [
+    aws_subnet.public_subnet_aws-1.id, aws_subnet.public_subnet_aws-2.id, aws_subnet.public_subnet_aws-3.id
+  ]
   scaling_config {
     desired_size = 1
     max_size     = 1
@@ -36,15 +38,15 @@ resource "aws_subnet" "cluster_aws_public_subnet" {
   tags              = { "Name" = "cluster_aws_public_subnet" }
   cidr_block        = "10.0.255.240/28"
   vpc_id            = aws_vpc.example_vn_aws.id
-  provider          = "aws.eu-west-1"
   availability_zone = "eu-west-1a"
+  provider          = "aws.eu-west-1"
 }
 resource "aws_subnet" "cluster_aws_private_subnet" {
   tags              = { "Name" = "cluster_aws_private_subnet" }
   cidr_block        = "10.0.255.224/28"
   vpc_id            = aws_vpc.example_vn_aws.id
-  provider          = "aws.eu-west-1"
   availability_zone = "eu-west-1b"
+  provider          = "aws.eu-west-1"
 }
 resource "aws_route_table" "cluster_aws_public_rt" {
   tags   = { "Name" = "cluster_aws_public_rt" }
@@ -77,6 +79,12 @@ resource "aws_iam_role_policy_attachment" "cluster_aws_AmazonEKSVPCResourceContr
   provider   = "aws.eu-west-1"
 }
 resource "aws_eks_cluster" "cluster_aws" {
+  depends_on = [
+    aws_subnet.cluster_aws_public_subnet, aws_subnet.cluster_aws_private_subnet, aws_route_table.cluster_aws_public_rt,
+    aws_route_table_association.cluster_aws_public_rta,
+    aws_iam_role_policy_attachment.cluster_aws_AmazonEKSClusterPolicy,
+    aws_iam_role_policy_attachment.cluster_aws_AmazonEKSVPCResourceController
+  ]
   tags     = { "Name" = "cluster_aws" }
   role_arn = aws_iam_role.cluster_aws.arn
   vpc_config {
@@ -86,14 +94,8 @@ resource "aws_eks_cluster" "cluster_aws" {
   kubernetes_network_config {
     service_ipv4_cidr = "10.100.0.0/16"
   }
-  name       = "cluster_aws"
-  provider   = "aws.eu-west-1"
-  depends_on = [
-    aws_subnet.cluster_aws_public_subnet, aws_subnet.cluster_aws_private_subnet,
-    aws_route_table.cluster_aws_public_rt, aws_route_table_association.cluster_aws_public_rta,
-    aws_iam_role_policy_attachment.cluster_aws_AmazonEKSClusterPolicy,
-    aws_iam_role_policy_attachment.cluster_aws_AmazonEKSVPCResourceController
-  ]
+  name     = "cluster_aws"
+  provider = "aws.eu-west-1"
 }
 resource "azurerm_kubernetes_cluster" "cluster_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
@@ -112,7 +114,6 @@ resource "azurerm_kubernetes_cluster" "cluster_azure" {
   identity {
     type = "SystemAssigned"
   }
-
   network_profile {
     network_plugin     = "azure"
     dns_service_ip     = "10.100.0.10"
@@ -164,11 +165,27 @@ resource "azurerm_route_table" "example_vn_azure" {
     next_hop_type  = "VnetLocal"
   }
 }
-resource "aws_subnet" "public_subnet_aws" {
-  tags                    = { "Name" = "public-subnet" }
-  cidr_block              = "10.0.0.0/24"
+resource "aws_subnet" "public_subnet_aws-1" {
+  tags                    = { "Name" = "public-subnet-1" }
+  cidr_block              = "10.0.0.0/25"
+  vpc_id                  = aws_vpc.example_vn_aws.id
+  availability_zone       = "eu-west-1a"
+  map_public_ip_on_launch = true
+  provider                = "aws.eu-west-1"
+}
+resource "aws_subnet" "public_subnet_aws-2" {
+  tags                    = { "Name" = "public-subnet-2" }
+  cidr_block              = "10.0.0.128/26"
   vpc_id                  = aws_vpc.example_vn_aws.id
   availability_zone       = "eu-west-1b"
+  map_public_ip_on_launch = true
+  provider                = "aws.eu-west-1"
+}
+resource "aws_subnet" "public_subnet_aws-3" {
+  tags                    = { "Name" = "public-subnet-3" }
+  cidr_block              = "10.0.0.192/26"
+  vpc_id                  = aws_vpc.example_vn_aws.id
+  availability_zone       = "eu-west-1c"
   map_public_ip_on_launch = true
   provider                = "aws.eu-west-1"
 }
@@ -201,8 +218,18 @@ resource "azurerm_route_table" "rt_azure" {
     next_hop_type  = "Internet"
   }
 }
-resource "aws_route_table_association" "public_subnet_aws" {
-  subnet_id      = aws_subnet.public_subnet_aws.id
+resource "aws_route_table_association" "rta_aws-1" {
+  subnet_id      = aws_subnet.public_subnet_aws-1.id
+  route_table_id = aws_route_table.rt_aws.id
+  provider       = "aws.eu-west-1"
+}
+resource "aws_route_table_association" "rta_aws-2" {
+  subnet_id      = aws_subnet.public_subnet_aws-2.id
+  route_table_id = aws_route_table.rt_aws.id
+  provider       = "aws.eu-west-1"
+}
+resource "aws_route_table_association" "rta_aws-3" {
+  subnet_id      = aws_subnet.public_subnet_aws-3.id
   route_table_id = aws_route_table.rt_aws.id
   provider       = "aws.eu-west-1"
 }
@@ -218,4 +245,3 @@ provider "azurerm" {
   features {
   }
 }
-

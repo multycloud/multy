@@ -145,6 +145,7 @@
               "location": "EU_WEST_1"
             },
             "identity": azurerm_linux_virtual_machine.vm_azure.identity[0].principal_id,
+  zone        = "1"
             "vault_id": "example"
           }
         ]

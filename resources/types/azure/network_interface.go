@@ -28,9 +28,10 @@ func (r AzureNetworkInterface) FromState(_ *output.TfState) (*resourcespb.Networ
 			CloudProvider:   r.Args.CommonParameters.CloudProvider,
 			NeedsUpdate:     false,
 		},
-		Name:       r.Args.Name,
-		SubnetId:   r.Args.SubnetId,
-		PublicIpId: r.Args.PublicIpId,
+		Name:             r.Args.Name,
+		SubnetId:         r.Args.SubnetId,
+		PublicIpId:       r.Args.PublicIpId,
+		AvailabilityZone: r.Args.AvailabilityZone,
 	}, nil
 }
 

@@ -38,7 +38,6 @@ resources:  {
         name:  "subnet"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_aws"
-        availability_zone:  2
       }
     }
   }
@@ -51,7 +50,6 @@ resources:  {
         name:  "subnet"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_azure"
-        availability_zone:  2
       }
     }
   }
@@ -73,6 +71,7 @@ resources:  {
         aws_override:  {
           instance_type:  "t3.nano"
         }
+        availability_zone: 1
       }
     }
   }
@@ -94,6 +93,7 @@ resources:  {
         azure_override:  {
           size:  "Standard_F1"
         }
+        availability_zone: 1
       }
     }
   }
@@ -111,6 +111,7 @@ resources:  {
         name:  "test-vm"
         vm_size:  GENERAL_NANO
         subnet_id:  "subnet_aws"
+        availability_zone: 1
       }
     }
   }
@@ -128,6 +129,7 @@ resources:  {
         name:  "test-vm"
         vm_size:  GENERAL_NANO
         subnet_id:  "subnet_azure"
+        availability_zone: 1
       }
     }
   }
