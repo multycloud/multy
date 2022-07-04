@@ -47,6 +47,7 @@ func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		AwsOverride:             r.Args.AwsOverride,
 		AzureOverride:           r.Args.AzureOverride,
 		GcpOverride:             r.Args.GcpOverride,
+		AvailabilityZone:        r.Args.AvailabilityZone,
 	}
 
 	if !flags.DryRun {

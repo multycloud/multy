@@ -1,6 +1,7 @@
 package test
 
 import (
+	"flag"
 	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -15,10 +16,12 @@ import (
 	"github.com/zclconf/go-cty/cty"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/prototext"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -30,6 +33,8 @@ type TestConfigFiles struct {
 	OutputFile string
 	Dir        string
 }
+
+var writeGeneratedOnFailure = flag.Bool("write_generated", false, "If true and tests fail, main.tf will be overwritten with the actual generated content")
 
 func TestConfigTranslate(t *testing.T) {
 	log.SetFlags(log.Lshortfile)
@@ -96,7 +101,15 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 
 	mconfig, err := resources.LoadConfig(&c, metadata.Metadatas)
 	if err != nil {
-		t.Fatalf("error loading config: %v", err)
+		detailsStr := ""
+		if s, ok := status.FromError(err); ok {
+			for _, details := range s.Details() {
+				if d, ok := details.(interface{ GetErrorMessage() string }); ok {
+					detailsStr = detailsStr + d.GetErrorMessage() + "\n"
+				}
+			}
+		}
+		t.Fatalf("error loading config: %v\n%s", err, detailsStr)
 	}
 
 	encoded, err := deploy.EncodeTfFile(nil, mconfig, nil, nil)
@@ -107,7 +120,20 @@ func testConfig(testFiles TestConfigFiles, t *testing.T) {
 		t.Fatalf("unable to translate: %v", err)
 	}
 
-	assertEqualHcl(t, []byte(encoded.HclString), testFiles.OutputFile)
+	out := []byte(encoded.HclString)
+
+	if *writeGeneratedOnFailure {
+		t.Cleanup(func() {
+			if t.Failed() {
+				writeErr := os.WriteFile(path.Join(path.Dir(testFiles.OutputFile), "generated.tf"), out, fs.ModePerm)
+				if writeErr != nil {
+					t.Logf("unable to write file: %s", writeErr)
+				}
+			}
+		})
+	}
+
+	assertEqualHcl(t, out, testFiles.OutputFile)
 }
 
 var tfConfigFileSchema = &hcl.BodySchema{
@@ -156,7 +182,7 @@ func assertEqualHcl(t *testing.T, hclOutput []byte, expectedFilePath string) {
 	t.Logf("output:\n%s", strings.Join(lines, "\n"))
 
 	hclP := hclparse.NewParser()
-	f, diags := hclP.ParseHCL(hclOutput, "generated_file")
+	f, diags := hclP.ParseHCL(hclOutput, "generated")
 	if diags != nil {
 		t.Fatal(diags)
 	}
@@ -179,11 +205,11 @@ func assertEqualHcl(t *testing.T, hclOutput []byte, expectedFilePath string) {
 		t.Fatal(diags)
 	}
 
-	actualContentBlockPrinter := NewBlockPrinter(actualContent, []byte(hclOutput))
+	actualContentBlockPrinter := NewBlockPrinter(actualContent, hclOutput)
 	actualBlocks, errRange, err := groupByTypeAndId(actualContent)
 	if err != nil {
 		errorMessage := "found error in generated file\n" + err.Error()
-		actualLines, err := validate.ReadLines(*errRange, []byte(hclOutput))
+		actualLines, err := validate.ReadLines(*errRange, hclOutput)
 		if err != nil {
 			panic(err)
 		}

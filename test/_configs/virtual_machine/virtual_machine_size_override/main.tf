@@ -37,15 +37,37 @@ resource "aws_default_security_group" "example_vn_aws" {
     self      = true
   }
 }
-resource "aws_subnet" "subnet_aws" {
+resource "aws_subnet" "subnet_aws-1" {
   provider = "aws.eu-west-1"
   tags     = {
-    "Name" = "subnet"
+    "Name" = "subnet-1"
   }
 
-  cidr_block        = "10.0.2.0/24"
+  cidr_block        = "10.0.2.0/25"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1a"
+}
+
+resource "aws_subnet" "subnet_aws-2" {
+  provider = "aws.eu-west-1"
+  tags     = {
+    "Name" = "subnet-2"
+  }
+
+  cidr_block        = "10.0.2.128/26"
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "eu-west-1b"
+}
+
+resource "aws_subnet" "subnet_aws-3" {
+  provider = "aws.eu-west-1"
+  tags     = {
+    "Name" = "subnet-3"
+  }
+
+  cidr_block        = "10.0.2.192/26"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1c"
 }
 resource "aws_iam_role" "vm_aws" {
   provider           = "aws.eu-west-1"
@@ -66,7 +88,7 @@ resource "aws_instance" "vm_aws" {
 
   ami                  = data.aws_ami.vm_aws.id
   instance_type        = "t3.nano"
-  subnet_id            = aws_subnet.subnet_aws.id
+  subnet_id            = aws_subnet.subnet_aws-1.id
   user_data_base64     = "ZWNobyAnSGVsbG8gV29ybGQn"
   iam_instance_profile = aws_iam_instance_profile.vm_aws.id
 }
@@ -89,7 +111,7 @@ resource "aws_instance" "vm2_aws" {
 
   ami                  = data.aws_ami.vm2_aws.id
   instance_type        = "t2.nano"
-  subnet_id            = aws_subnet.subnet_aws.id
+  subnet_id            = aws_subnet.subnet_aws-1.id
   iam_instance_profile = aws_iam_instance_profile.vm2_aws.id
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
@@ -139,6 +161,7 @@ resource "random_password" "vm_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
+  zone                  = "1"
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   computer_name         = "testvm"
@@ -185,6 +208,7 @@ resource "random_password" "vm2_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm2_azure" {
+  zone                  = "1"
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   computer_name         = "testvm"

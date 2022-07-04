@@ -55,13 +55,30 @@ resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
   location = "northeurope"
 }
-resource "aws_subnet" "subnet_aws" {
-  tags              = { "Name" = "subnet" }
-  cidr_block        = "10.0.2.0/24"
+
+resource "aws_subnet" "subnet_aws-1" {
+  tags              = { "Name" = "subnet-1" }
+  cidr_block        = "10.0.2.0/25"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1a"
+  provider          = "aws.eu-west-1"
+}
+resource "aws_subnet" "subnet_aws-2" {
+  tags              = { "Name" = "subnet-2" }
+  cidr_block        = "10.0.2.128/26"
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "eu-west-1b"
   provider          = "aws.eu-west-1"
 }
+
+resource "aws_subnet" "subnet_aws-3" {
+  tags              = { "Name" = "subnet-3" }
+  cidr_block        = "10.0.2.192/26"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1c"
+  provider          = "aws.eu-west-1"
+}
+
 resource "azurerm_subnet" "subnet_azure" {
   resource_group_name  = azurerm_resource_group.rg1.name
   name                 = "subnet"
@@ -112,7 +129,7 @@ resource "aws_instance" "vm2_aws" {
   tags                 = { "Name" = "test-vm" }
   ami                  = data.aws_ami.vm2_aws.id
   instance_type        = "t2.nano"
-  subnet_id            = aws_subnet.subnet_aws.id
+  subnet_id            = aws_subnet.subnet_aws-1.id
   iam_instance_profile = aws_iam_instance_profile.vm2_aws.id
   provider             = "aws.eu-west-1"
 }
@@ -135,6 +152,7 @@ resource "random_password" "vm2_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm2_azure" {
+  zone                  = "1"
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   location              = "northeurope"
@@ -190,7 +208,7 @@ resource "aws_instance" "vm_aws" {
   tags                 = { "Name" = "test-vm" }
   ami                  = data.aws_ami.vm_aws.id
   instance_type        = "t2.nano"
-  subnet_id            = aws_subnet.subnet_aws.id
+  subnet_id            = aws_subnet.subnet_aws-1.id
   user_data_base64     = "ZWNobyAnSGVsbG8gV29ybGQn"
   iam_instance_profile = aws_iam_instance_profile.vm_aws.id
   provider             = "aws.eu-west-1"
@@ -214,6 +232,7 @@ resource "random_password" "vm_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
+  zone                  = "1"
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   location              = "northeurope"
@@ -241,7 +260,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
 resource "google_compute_instance" "vm_gcp" {
   name         = "test-vm"
   machine_type = "e2-micro"
-  zone         = "europe-west1-c"
+  zone         = "europe-west1-b"
   tags         = ["subnet-subnet"]
   boot_disk {
     initialize_params {

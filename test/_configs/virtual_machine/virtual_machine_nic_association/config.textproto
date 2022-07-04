@@ -38,7 +38,6 @@ resources:  {
         name:  "subnet"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_aws"
-        availability_zone:  2
       }
     }
   }
@@ -51,7 +50,6 @@ resources:  {
         name:  "subnet"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_azure"
-        availability_zone:  2
       }
     }
   }
@@ -68,6 +66,7 @@ resources:  {
         }
         name:  "test-nic"
         subnet_id:  "subnet_azure"
+        availability_zone: 2
       }
     }
   }
@@ -87,6 +86,7 @@ resources:  {
         vm_size:  GENERAL_NANO
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
         subnet_id:  "subnet_azure"
+        availability_zone: 2
       }
     }
   }
@@ -103,6 +103,7 @@ resources:  {
         }
         name:  "test-nic"
         subnet_id:  "subnet_aws"
+        availability_zone: 2
       }
     }
   }
@@ -122,6 +123,7 @@ resources:  {
         vm_size:  GENERAL_NANO
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
         subnet_id:  "subnet_aws"
+        availability_zone: 2
       }
     }
   }

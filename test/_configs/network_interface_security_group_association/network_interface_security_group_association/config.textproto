@@ -99,6 +99,7 @@ resources: {
         name: "test-nic"
         subnet_id: "subnet_azure"
         public_ip_id: "ip_azure"
+        availability_zone: 1
       }
     }
   }
@@ -116,6 +117,7 @@ resources: {
         name: "test-nic"
         subnet_id: "subnet_aws"
         public_ip_id: "ip_aws"
+        availability_zone: 1
       }
     }
   }

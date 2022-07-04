@@ -10,7 +10,6 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/database"
 	"github.com/multycloud/multy/resources/types"
-	"github.com/multycloud/multy/util"
 	"strings"
 )
 
@@ -60,15 +59,15 @@ func (r AzureDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseRe
 		Username:           r.Args.Username,
 		Password:           r.Args.Password,
 		SubnetIds:          r.Args.SubnetIds,
+		Port:               r.Args.Port,
+		SubnetId:           r.Args.SubnetId,
 		Host:               host,
 		ConnectionUsername: fmt.Sprintf("%s@%s", r.Args.Username, host),
 	}, nil
 }
 
 func (r AzureDatabase) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
-	subnetIds, err := util.MapSliceValuesErr(r.Subnets, func(v *types.Subnet) (string, error) {
-		return resources.GetMainOutputId(AzureSubnet{v})
-	})
+	subnetId, err := resources.GetMainOutputId(AzureSubnet{r.Subnet})
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +85,7 @@ func (r AzureDatabase) Translate(ctx resources.MultyContext) ([]output.TfBlock, 
 			AdministratorLogin:         r.Args.Username,
 			AdministratorLoginPassword: r.Args.Password,
 			SkuName:                    common.DBSIZE[r.Args.Size][r.GetCloud()],
-			SubnetIds:                  subnetIds,
+			SubnetId:                   subnetId,
 		},
 	), nil
 }

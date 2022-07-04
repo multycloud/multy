@@ -44,12 +44,12 @@ resource "azurerm_route_table" "example_vn_azure" {
 }
 resource "google_compute_network" "example_vn_gcp" {
   name                            = "example_vn"
+  project                         = "multy-project"
   routing_mode                    = "REGIONAL"
   description                     = "Managed by Multy"
   auto_create_subnetworks         = false
   delete_default_routes_on_create = true
   provider                        = "google.europe-west1"
-  project                         = "multy-project"
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
@@ -76,19 +76,34 @@ resource "azurerm_route_table" "rt_azure" {
 }
 resource "google_compute_route" "rt_gcp-0" {
   name             = "test-rt-0"
+  project          = "multy-project"
   dest_range       = "0.0.0.0/0"
   network          = google_compute_network.example_vn_gcp.id
   priority         = 1000
   tags             = ["subnet-subnet1", "subnet-subnet2"]
   next_hop_gateway = "default-internet-gateway"
   provider         = "google.europe-west1"
-  project          = "multy-project"
 }
-resource "aws_subnet" "subnet1_aws" {
-  tags       = { "Name" = "subnet1" }
-  cidr_block = "10.0.1.0/24"
-  vpc_id     = aws_vpc.example_vn_aws.id
-  provider   = "aws.eu-west-1"
+resource "aws_subnet" "subnet1_aws-1" {
+  tags              = { "Name" = "subnet1-1" }
+  cidr_block        = "10.0.1.0/25"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1a"
+  provider          = "aws.eu-west-1"
+}
+resource "aws_subnet" "subnet1_aws-2" {
+  tags              = { "Name" = "subnet1-2" }
+  cidr_block        = "10.0.1.128/26"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1b"
+  provider          = "aws.eu-west-1"
+}
+resource "aws_subnet" "subnet1_aws-3" {
+  tags              = { "Name" = "subnet1-3" }
+  cidr_block        = "10.0.1.192/26"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1c"
+  provider          = "aws.eu-west-1"
 }
 resource "azurerm_subnet" "subnet1_azure" {
   resource_group_name  = azurerm_resource_group.rg1.name
@@ -102,17 +117,31 @@ resource "azurerm_subnet_route_table_association" "subnet1_azure" {
 }
 resource "google_compute_subnetwork" "subnet1_gcp" {
   name                     = "subnet1"
+  project                  = "multy-project"
   ip_cidr_range            = "10.0.1.0/24"
   network                  = google_compute_network.example_vn_gcp.id
   private_ip_google_access = true
   provider                 = "google.europe-west1"
-  project                  = "multy-project"
 }
-resource "aws_subnet" "subnet2_aws" {
-  tags              = { "Name" = "subnet2" }
-  cidr_block        = "10.0.2.0/24"
+resource "aws_subnet" "subnet2_aws-1" {
+  tags              = { "Name" = "subnet2-1" }
+  cidr_block        = "10.0.2.0/25"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1a"
+  provider          = "aws.eu-west-1"
+}
+resource "aws_subnet" "subnet2_aws-2" {
+  tags              = { "Name" = "subnet2-2" }
+  cidr_block        = "10.0.2.128/26"
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "eu-west-1b"
+  provider          = "aws.eu-west-1"
+}
+resource "aws_subnet" "subnet2_aws-3" {
+  tags              = { "Name" = "subnet2-3" }
+  cidr_block        = "10.0.2.192/26"
+  vpc_id            = aws_vpc.example_vn_aws.id
+  availability_zone = "eu-west-1c"
   provider          = "aws.eu-west-1"
 }
 resource "azurerm_subnet" "subnet2_azure" {
@@ -127,11 +156,11 @@ resource "azurerm_subnet_route_table_association" "subnet2_azure" {
 }
 resource "google_compute_subnetwork" "subnet2_gcp" {
   name                     = "subnet2"
+  project                  = "multy-project"
   ip_cidr_range            = "10.0.2.0/24"
   network                  = google_compute_network.example_vn_gcp.id
   private_ip_google_access = true
   provider                 = "google.europe-west1"
-  project                  = "multy-project"
 }
 provider "aws" {
   region = "eu-west-1"
@@ -145,4 +174,3 @@ provider "google" {
   region = "europe-west1"
   alias  = "europe-west1"
 }
-

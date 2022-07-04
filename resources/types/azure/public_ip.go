@@ -51,6 +51,7 @@ func (r AzurePublicIp) Translate(ctx resources.MultyContext) ([]output.TfBlock, 
 				r.GetCloudSpecificLocation(),
 			),
 			AllocationMethod: "Static",
+			Sku:              "Standard",
 		},
 	}, nil
 }

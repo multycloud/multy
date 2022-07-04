@@ -31,10 +31,9 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 	cleanup(t, ctx, server.VnService, vn)
 
 	createPublicSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
-		Name:             "db-test-public-subnet1",
+		Name:             "db-test-public-subnet",
 		CidrBlock:        "10.0.0.0/24",
 		VirtualNetworkId: vn.CommonParameters.ResourceId,
-		AvailabilityZone: 1,
 	}}
 	publicSubnet, err := server.SubnetService.Create(ctx, createPublicSubnetRequest)
 	if err != nil {
@@ -42,19 +41,6 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("unable to create publicSubnet: %+v", err)
 	}
 	cleanup(t, ctx, server.SubnetService, publicSubnet)
-
-	createSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
-		Name:             "db-test-public-subnet2",
-		CidrBlock:        "10.0.1.0/24",
-		VirtualNetworkId: vn.CommonParameters.ResourceId,
-		AvailabilityZone: 2,
-	}}
-	subnet, err := server.SubnetService.Create(ctx, createSubnetRequest)
-	if err != nil {
-		logGrpcErrorDetails(t, err)
-		t.Fatalf("unable to create subnet: %+v", err)
-	}
-	cleanup(t, ctx, server.SubnetService, subnet)
 
 	createRtRequest := &resourcespb.CreateRouteTableRequest{Resource: &resourcespb.RouteTableArgs{
 		Name:             "db-test-rt",
@@ -73,19 +59,16 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 	cleanup(t, ctx, server.RouteTableService, rt)
 
-	subnetIds := []string{publicSubnet.CommonParameters.ResourceId, subnet.CommonParameters.ResourceId}
-	for _, id := range subnetIds {
-		createRtaRequest := &resourcespb.CreateRouteTableAssociationRequest{Resource: &resourcespb.RouteTableAssociationArgs{
-			SubnetId:     id,
-			RouteTableId: rt.CommonParameters.ResourceId,
-		}}
-		rta, err := server.RouteTableAssociationService.Create(ctx, createRtaRequest)
-		if err != nil {
-			logGrpcErrorDetails(t, err)
-			t.Fatalf("unable to create route table association: %+v", err)
-		}
-		cleanup(t, ctx, server.RouteTableAssociationService, rta)
+	createRtaRequest := &resourcespb.CreateRouteTableAssociationRequest{Resource: &resourcespb.RouteTableAssociationArgs{
+		SubnetId:     publicSubnet.CommonParameters.ResourceId,
+		RouteTableId: rt.CommonParameters.ResourceId,
+	}}
+	rta, err := server.RouteTableAssociationService.Create(ctx, createRtaRequest)
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create route table association: %+v", err)
 	}
+	cleanup(t, ctx, server.RouteTableAssociationService, rta)
 
 	createDbRequest := &resourcespb.CreateDatabaseRequest{Resource: &resourcespb.DatabaseArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
@@ -99,8 +82,8 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 		Size:          commonpb.DatabaseSize_MICRO,
 		Username:      "multyuser",
 		// azure requires complex stuff
-		Password:  common.RandomString(8) + "-2Ab",
-		SubnetIds: subnetIds,
+		Password: common.RandomString(8) + "-2Ab",
+		SubnetId: publicSubnet.CommonParameters.ResourceId,
 	}}
 	db, err := server.DatabaseService.Create(ctx, createDbRequest)
 	if err != nil {

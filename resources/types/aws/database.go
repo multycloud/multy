@@ -11,7 +11,6 @@ import (
 	"github.com/multycloud/multy/resources/output/database"
 	"github.com/multycloud/multy/resources/output/network_security_group"
 	"github.com/multycloud/multy/resources/types"
-	"github.com/multycloud/multy/util"
 	"strings"
 )
 
@@ -49,19 +48,16 @@ func (r AwsDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 		Username:           r.Args.Username,
 		Password:           r.Args.Password,
 		SubnetIds:          r.Args.SubnetIds,
+		Port:               r.Args.Port,
+		SubnetId:           r.Args.SubnetId,
 		Host:               host,
 		ConnectionUsername: r.Args.Username,
 	}, nil
 }
 
 func (r AwsDatabase) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {
-	subnetIds, err := util.MapSliceValuesErr(r.Subnets, func(v *types.Subnet) (string, error) {
-		return resources.GetMainOutputId(AwsSubnet{v})
-	})
-	if err != nil {
-		return nil, err
-	}
-	vpcId, err := resources.GetMainOutputId(AwsVirtualNetwork{r.Subnets[0].VirtualNetwork})
+	subnetIds := AwsSubnet{r.Subnet}.GetSubnetIds()
+	vpcId, err := resources.GetMainOutputId(AwsVirtualNetwork{r.Subnet.VirtualNetwork})
 	if err != nil {
 		return nil, err
 	}

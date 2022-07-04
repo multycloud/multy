@@ -25,6 +25,7 @@ type AzureVirtualMachine struct {
 	Identity                      AzureIdentity             `hcl:"identity"`
 	Identities                    []AzureGeneratedIdentity  `json:"identity"`
 	ComputerName                  string                    `hcl:"computer_name"`
+	Zone                          string                    `hcl:"zone" hcle:"omitempty"`
 }
 
 type AzureGeneratedIdentity struct {

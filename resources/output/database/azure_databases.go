@@ -1,7 +1,6 @@
 package database
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/multycloud/multy/resources/common"
@@ -20,11 +19,12 @@ type AzureDbServer struct {
 	StorageMb                  int
 	Version                    string
 	Engine                     string
-	SubnetIds                  []string
+	SubnetId                   string
 }
 
 func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 	switch strings.ToLower(server.Engine) {
+	// TODO: move to flexible mysql server
 	case "mysql":
 		mysqlServer := AzureMySqlServer{
 			AzResource: &common.AzResource{
@@ -43,19 +43,17 @@ func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 		}
 
 		resources := []output.TfBlock{mysqlServer}
-		for i, subnetId := range server.SubnetIds {
-			resources = append(
-				resources, AzureMySqlVirtualNetworkRule{
-					AzResource: &common.AzResource{
-						TerraformResource: output.TerraformResource{ResourceId: server.ResourceId + strconv.Itoa(i)},
-						ResourceGroupName: server.ResourceGroupName,
-						Name:              server.Name + strconv.Itoa(i),
-					},
-					ServerName: mysqlServer.GetServerName(),
-					SubnetId:   subnetId,
+		resources = append(
+			resources, AzureMySqlVirtualNetworkRule{
+				AzResource: &common.AzResource{
+					TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
+					ResourceGroupName: server.ResourceGroupName,
+					Name:              server.Name,
 				},
-			)
-		}
+				ServerName: mysqlServer.GetServerName(),
+				SubnetId:   server.SubnetId,
+			},
+		)
 
 		resources = append(resources, AzureDbFirewallRule{
 			AzResource: &common.AzResource{
@@ -88,19 +86,17 @@ func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 		}
 
 		resources := []output.TfBlock{postgresqlServer}
-		for i, subnetId := range server.SubnetIds {
-			resources = append(
-				resources, AzurePostgreSqlVirtualNetworkRule{
-					AzResource: &common.AzResource{
-						TerraformResource: output.TerraformResource{ResourceId: server.ResourceId + strconv.Itoa(i)},
-						ResourceGroupName: server.ResourceGroupName,
-						Name:              server.Name + strconv.Itoa(i),
-					},
-					ServerName: postgresqlServer.GetServerName(),
-					SubnetId:   subnetId,
+		resources = append(
+			resources, AzurePostgreSqlVirtualNetworkRule{
+				AzResource: &common.AzResource{
+					TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
+					ResourceGroupName: server.ResourceGroupName,
+					Name:              server.Name,
 				},
-			)
-		}
+				ServerName: postgresqlServer.GetServerName(),
+				SubnetId:   server.SubnetId,
+			},
+		)
 
 		resources = append(resources, AzurePostgreSqlFirewallRule{
 			AzResource: &common.AzResource{
@@ -132,19 +128,17 @@ func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 		}
 
 		resources := []output.TfBlock{mariaDbServer}
-		for i, subnetId := range server.SubnetIds {
-			resources = append(
-				resources, AzureMariaDbVirtualNetworkRule{
-					AzResource: &common.AzResource{
-						TerraformResource: output.TerraformResource{ResourceId: server.ResourceId + strconv.Itoa(i)},
-						ResourceGroupName: server.ResourceGroupName,
-						Name:              server.Name + strconv.Itoa(i),
-					},
-					ServerName: mariaDbServer.GetServerName(),
-					SubnetId:   subnetId,
+		resources = append(
+			resources, AzureMariaDbVirtualNetworkRule{
+				AzResource: &common.AzResource{
+					TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
+					ResourceGroupName: server.ResourceGroupName,
+					Name:              server.Name,
 				},
-			)
-		}
+				ServerName: mariaDbServer.GetServerName(),
+				SubnetId:   server.SubnetId,
+			},
+		)
 
 		resources = append(resources, AzureMariaDbFirewallRule{
 			AzResource: &common.AzResource{

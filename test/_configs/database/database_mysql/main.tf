@@ -6,10 +6,7 @@ resource "aws_db_subnet_group" "example_db_aws" {
 
   name        = "example-db"
   description = "Managed by Multy"
-  subnet_ids  = [
-    aws_subnet.subnet1_aws.id,
-    aws_subnet.subnet2_aws.id,
-  ]
+  subnet_ids  = [aws_subnet.subnet_aws-1.id, aws_subnet.subnet_aws-2.id, aws_subnet.subnet_aws-3.id]
 }
 resource "aws_db_instance" "example_db_aws" {
   provider = "aws.us-east-1"
@@ -48,25 +45,28 @@ resource "aws_security_group" "example_db_aws" {
   }
   provider = "aws.us-east-1"
 }
-resource "aws_subnet" "subnet1_aws" {
-  provider = "aws.us-east-1"
-  tags     = {
-    "Name" = "subnet1"
-  }
 
-  cidr_block        = "10.0.0.0/24"
+resource "aws_subnet" "subnet_aws-1" {
+  tags              = { "Name" = "subnet-1" }
+  cidr_block        = "10.0.0.0/25"
   vpc_id            = aws_vpc.vn_aws.id
   availability_zone = "us-east-1a"
+  provider          = "aws.us-east-1"
 }
-resource "aws_subnet" "subnet2_aws" {
-  provider = "aws.us-east-1"
-  tags     = {
-    "Name" = "subnet2"
-  }
-
-  cidr_block        = "10.0.1.0/24"
+resource "aws_subnet" "subnet_aws-2" {
+  tags              = { "Name" = "subnet-2" }
+  cidr_block        = "10.0.0.128/26"
   vpc_id            = aws_vpc.vn_aws.id
   availability_zone = "us-east-1b"
+  provider          = "aws.us-east-1"
+}
+
+resource "aws_subnet" "subnet_aws-3" {
+  tags              = { "Name" = "subnet-3" }
+  cidr_block        = "10.0.0.192/26"
+  vpc_id            = aws_vpc.vn_aws.id
+  availability_zone = "us-east-1c"
+  provider          = "aws.us-east-1"
 }
 resource "aws_route_table" "rt_aws" {
   provider = "aws.us-east-1"
@@ -81,14 +81,19 @@ resource "aws_route_table" "rt_aws" {
     gateway_id = aws_internet_gateway.vn_aws.id
   }
 }
-resource "aws_route_table_association" "subnet1_aws" {
+resource "aws_route_table_association" "rta_aws-1" {
   provider       = "aws.us-east-1"
-  subnet_id      = aws_subnet.subnet1_aws.id
+  subnet_id      = aws_subnet.subnet_aws-1.id
   route_table_id = aws_route_table.rt_aws.id
 }
-resource "aws_route_table_association" "subnet2_aws" {
+resource "aws_route_table_association" "rta_aws-2" {
   provider       = "aws.us-east-1"
-  subnet_id      = aws_subnet.subnet2_aws.id
+  subnet_id      = aws_subnet.subnet_aws-2.id
+  route_table_id = aws_route_table.rt_aws.id
+}
+resource "aws_route_table_association" "rta_aws-3" {
+  provider       = "aws.us-east-1"
+  subnet_id      = aws_subnet.subnet_aws-3.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_vpc" "vn_aws" {
@@ -142,17 +147,11 @@ resource "azurerm_mysql_server" "example_db_azure" {
   ssl_enforcement_enabled          = false
   ssl_minimal_tls_version_enforced = "TLSEnforcementDisabled"
 }
-resource "azurerm_mysql_virtual_network_rule" "example_db_azure0" {
+resource "azurerm_mysql_virtual_network_rule" "example_db_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
-  name                = "example-db0"
+  name                = "example-db"
   server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = azurerm_subnet.subnet1_azure.id
-}
-resource "azurerm_mysql_virtual_network_rule" "example_db_azure1" {
-  resource_group_name = azurerm_resource_group.rg1.name
-  name                = "example-db1"
-  server_name         = azurerm_mysql_server.example_db_azure.name
-  subnet_id           = azurerm_subnet.subnet2_azure.id
+  subnet_id           = azurerm_subnet.subnet_azure.id
 }
 resource "azurerm_mysql_firewall_rule" "example_db_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
@@ -161,17 +160,10 @@ resource "azurerm_mysql_firewall_rule" "example_db_azure" {
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "255.255.255.255"
 }
-resource "azurerm_subnet" "subnet1_azure" {
+resource "azurerm_subnet" "subnet_azure" {
   resource_group_name  = azurerm_resource_group.rg1.name
-  name                 = "subnet1"
+  name                 = "subnet"
   address_prefixes     = ["10.0.0.0/24"]
-  virtual_network_name = azurerm_virtual_network.vn_azure.name
-  service_endpoints    = ["Microsoft.Sql"]
-}
-resource "azurerm_subnet" "subnet2_azure" {
-  resource_group_name  = azurerm_resource_group.rg1.name
-  name                 = "subnet2"
-  address_prefixes     = ["10.0.1.0/24"]
   virtual_network_name = azurerm_virtual_network.vn_azure.name
   service_endpoints    = ["Microsoft.Sql"]
 }
@@ -192,12 +184,8 @@ resource "azurerm_route_table" "rt_azure" {
     next_hop_type  = "Internet"
   }
 }
-resource "azurerm_subnet_route_table_association" "subnet1_azure" {
-  subnet_id      = azurerm_subnet.subnet1_azure.id
-  route_table_id = azurerm_route_table.rt_azure.id
-}
-resource "azurerm_subnet_route_table_association" "subnet2_azure" {
-  subnet_id      = azurerm_subnet.subnet2_azure.id
+resource "azurerm_subnet_route_table_association" "subnet_azure" {
+  subnet_id      = azurerm_subnet.subnet_azure.id
   route_table_id = azurerm_route_table.rt_azure.id
 }
 resource "azurerm_route_table" "vn_azure" {

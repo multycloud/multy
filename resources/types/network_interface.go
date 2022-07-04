@@ -27,6 +27,10 @@ func (r *NetworkInterface) Create(resourceId string, args *resourcespb.NetworkIn
 		args.CommonParameters.ResourceGroupId = rgId
 	}
 
+	if args.AvailabilityZone == 0 {
+		args.AvailabilityZone = 1
+	}
+
 	return NewNetworkInterface(r, resourceId, args, others)
 }
 

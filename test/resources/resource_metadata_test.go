@@ -350,8 +350,8 @@ func TestResourceMetadataCreate_shouldNotCreateDuplicateRg(t *testing.T) {
 			Location:      commonpb.Location_EU_WEST_1,
 			CloudProvider: commonpb.CloudProvider_AZURE,
 		},
-		Name:      "db1",
-		SubnetIds: []string{"resource2"},
+		Name:     "db1",
+		SubnetId: "resource2",
 	})
 	if err != nil {
 		t.Fatalf("unable to create db1: %s", err)
@@ -362,8 +362,8 @@ func TestResourceMetadataCreate_shouldNotCreateDuplicateRg(t *testing.T) {
 			Location:      commonpb.Location_EU_WEST_1,
 			CloudProvider: commonpb.CloudProvider_AZURE,
 		},
-		Name:      "db2",
-		SubnetIds: []string{"resource2"},
+		Name:     "db2",
+		SubnetId: "resource2",
 	})
 	if err != nil {
 		t.Fatalf("unable to create db2: %s", err)

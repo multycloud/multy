@@ -97,7 +97,7 @@ func getServiceEndpointSubnetReferences(ctx resources.MultyContext, r *types.Sub
 	)
 
 	serviceEndpoints := map[string]bool{}
-	if len(resources.GetAllResourcesWithListRef(ctx, func(db *types.Database) []*types.Subnet { return db.Subnets }, r)) > 0 {
+	if len(resources.GetAllResourcesWithRef(ctx, func(db *types.Database) *types.Subnet { return db.Subnet }, r)) > 0 {
 		serviceEndpoints[DATABASE] = true
 	}
 	return util.SortedKeys(serviceEndpoints)

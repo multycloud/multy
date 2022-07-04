@@ -1,6 +1,7 @@
 package aws_resources
 
 import (
+	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
@@ -35,19 +36,18 @@ func (r AwsRouteTableAssociation) Translate(resources.MultyContext) ([]output.Tf
 	if err != nil {
 		return nil, err
 	}
-	subnetId, err := resources.GetMainOutputId(AwsSubnet{r.Subnet})
-	if err != nil {
-		return nil, err
-	}
-	return []output.TfBlock{
-		route_table_association.AwsRouteTableAssociation{
+	var result []output.TfBlock
+	for i, subnetId := range (AwsSubnet{r.Subnet}.GetSubnetIds()) {
+		resourceId := fmt.Sprintf("%s-%d", r.ResourceId, i+1)
+		result = append(result, route_table_association.AwsRouteTableAssociation{
 			AwsResource: &common.AwsResource{
-				TerraformResource: output.TerraformResource{ResourceId: r.Subnet.ResourceId},
+				TerraformResource: output.TerraformResource{ResourceId: resourceId},
 			},
 			RouteTableId: rtId,
 			SubnetId:     subnetId,
-		},
-	}, nil
+		})
+	}
+	return result, nil
 }
 
 func (r AwsRouteTableAssociation) GetMainResourceName() (string, error) {

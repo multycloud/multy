@@ -230,6 +230,7 @@ resources:  {
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
         subnet_id:  "subnet1_aws"
         generate_public_ip:  true
+        availability_zone: 2
       }
     }
   }
@@ -249,6 +250,7 @@ resources:  {
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
         subnet_id:  "subnet1_aws"
         generate_public_ip:  true
+        availability_zone: 1
       }
     }
   }
@@ -268,6 +270,7 @@ resources:  {
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
         subnet_id:  "subnet1_azure"
         generate_public_ip:  true
+        availability_zone: 1
       }
     }
   }
@@ -288,6 +291,7 @@ resources:  {
         user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
         subnet_id:  "subnet1_azure"
         generate_public_ip:  true
+        availability_zone: 2
       }
     }
   }

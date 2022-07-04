@@ -78,6 +78,7 @@ func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		GcpOverride:             r.Args.GcpOverride,
 		PublicIp:                ip,
 		IdentityId:              identityId,
+		AvailabilityZone:        r.Args.AvailabilityZone,
 	}, nil
 }
 
@@ -94,7 +95,7 @@ func (r AwsVirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlo
 		r.Args.UserDataBase64 = fmt.Sprintf(hclencoder.EscapeString(r.Args.UserDataBase64))
 	}
 
-	subnetId, err := resources.GetMainOutputId(AwsSubnet{r.Subnet})
+	subnetId, err := AwsSubnet{r.Subnet}.GetSubnetId(r.Args.AvailabilityZone)
 	if err != nil {
 		return nil, err
 	}

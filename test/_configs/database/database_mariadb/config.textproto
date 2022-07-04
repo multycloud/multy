@@ -31,40 +31,25 @@ resources:  {
   }
 }
 resources:  {
-  resource_id:  "subnet1_aws"
+  resource_id:  "subnet_aws"
   resource_args:  {
     resource_args:  {
       [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
-        name:  "subnet1"
+        name:  "subnet"
         cidr_block:  "10.0.0.0/24"
         virtual_network_id:  "vn_aws"
-        availability_zone:  1
       }
     }
   }
 }
 resources:  {
-  resource_id:  "subnet2_aws"
+  resource_id:  "subnet_azure"
   resource_args:  {
     resource_args:  {
       [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
-        name:  "subnet2"
-        cidr_block:  "10.0.1.0/24"
-        virtual_network_id:  "vn_aws"
-        availability_zone:  2
-      }
-    }
-  }
-}
-resources:  {
-  resource_id:  "subnet1_azure"
-  resource_args:  {
-    resource_args:  {
-      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
-        name:  "subnet1"
+        name:  "subnet"
         cidr_block:  "10.0.0.0/24"
         virtual_network_id:  "vn_azure"
-        availability_zone:  1
       }
     }
   }
@@ -80,19 +65,6 @@ resources:  {
           cidr_block:  "0.0.0.0/0"
           destination:  INTERNET
         }
-      }
-    }
-  }
-}
-resources:  {
-  resource_id:  "subnet2_azure"
-  resource_args:  {
-    resource_args:  {
-      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
-        name:  "subnet2"
-        cidr_block:  "10.0.1.0/24"
-        virtual_network_id:  "vn_azure"
-        availability_zone:  2
       }
     }
   }
@@ -117,7 +89,7 @@ resources:  {
   resource_args:  {
     resource_args:  {
       [type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs]:  {
-        subnet_id:  "subnet1_aws"
+        subnet_id:  "subnet_aws"
         route_table_id:  "rt_aws"
       }
     }
@@ -128,19 +100,8 @@ resources:  {
   resource_args:  {
     resource_args:  {
       [type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs]:  {
-        subnet_id:  "subnet1_azure"
+        subnet_id:  "subnet_azure"
         route_table_id:  "rt_azure"
-      }
-    }
-  }
-}
-resources:  {
-  resource_id:  "rta2_aws"
-  resource_args:  {
-    resource_args:  {
-      [type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs]:  {
-        subnet_id:  "subnet2_aws"
-        route_table_id:  "rt_aws"
       }
     }
   }
@@ -162,19 +123,7 @@ resources:  {
         size:  MICRO
         username:  "multyadmin"
         password:  "multy$Admin123!"
-        subnet_ids:  "subnet1_azure"
-        subnet_ids:  "subnet2_azure"
-      }
-    }
-  }
-}
-resources:  {
-  resource_id:  "rta2_azure"
-  resource_args:  {
-    resource_args:  {
-      [type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs]:  {
-        subnet_id:  "subnet2_azure"
-        route_table_id:  "rt_azure"
+        subnet_id:  "subnet_azure"
       }
     }
   }
@@ -196,8 +145,7 @@ resources:  {
         size:  MICRO
         username:  "multyadmin"
         password:  "multy$Admin123!"
-        subnet_ids:  "subnet1_aws"
-        subnet_ids:  "subnet2_aws"
+        subnet_id:  "subnet_aws"
       }
     }
   }
@@ -222,7 +170,6 @@ resources:  {
 # proto-import: api/proto/resourcespb/database.proto
 # proto-import: api/proto/resourcespb/kubernetes_cluster.proto
 # proto-import: api/proto/resourcespb/kubernetes_node_pool.proto
-# proto-import: api/proto/resourcespb/lambda.proto
 # proto-import: api/proto/resourcespb/network_interface.proto
 # proto-import: api/proto/resourcespb/network_security_group.proto
 # proto-import: api/proto/resourcespb/public_ip.proto
