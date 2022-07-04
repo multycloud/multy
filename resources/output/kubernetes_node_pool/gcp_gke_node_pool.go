@@ -8,7 +8,7 @@ type GoogleContainerNodePool struct {
 	InitialNodeCount    int                                `hcl:"initial_node_count"`
 	Autoscaling         GoogleContainerNodePoolAutoScaling `hcl:"autoscaling"`
 	NodeConfig          GoogleContainerNodeConfig          `hcl:"node_config"`
-	NetworkConfig       GoogleContainerNetworkConfig       `hcl:"network_config"`
+	NetworkConfig       GoogleContainerNetworkConfig       `hcl:"network_config" hcle:"omitempty"`
 }
 
 type GoogleContainerNodePoolAutoScaling struct {
@@ -17,13 +17,16 @@ type GoogleContainerNodePoolAutoScaling struct {
 }
 
 type GoogleContainerNodeConfig struct {
-	DiskSizeGb  int               `hcl:"disk_size_gb"`
+	DiskSizeGb  int               `hcl:"disk_size_gb" hcle:"omitempty"`
 	DiskType    string            `hcl:"disk_type" hcle:"omitempty"`
-	ImageType   string            `hcl:"image_type"`
+	ImageType   string            `hcl:"image_type" hcle:"omitempty"`
 	Labels      map[string]string `hcl:"labels" hcle:"omitempty"`
 	MachineType string            `hcl:"machine_type"`
 	Metadata    map[string]string `hcl:"metadata" hcle:"omitempty"`
 	Tags        []string          `hcl:"tags" hcle:"omitempty"`
+
+	ServiceAccount string   `hcl:"service_account,expr"`
+	OAuthScopes    []string `hcl:"oauth_scopes"`
 }
 
 type GoogleContainerNetworkConfig struct {

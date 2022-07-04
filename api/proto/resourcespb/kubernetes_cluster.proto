@@ -27,6 +27,10 @@ message DeleteKubernetesClusterRequest {
   string resource_id = 1;
 }
 
+message KubernetesClusterOverrides {
+  string project = 1;
+}
+
 message KubernetesClusterArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
@@ -34,6 +38,7 @@ message KubernetesClusterArgs {
   string virtual_network_id = 4;
 
   KubernetesNodePoolArgs default_node_pool = 5;
+  KubernetesClusterOverrides gcp_override = 6;
 }
 
 message KubernetesClusterResource {
@@ -42,6 +47,7 @@ message KubernetesClusterResource {
   string service_cidr = 3;
   KubernetesNodePoolResource default_node_pool = 4;
   string virtual_network_id = 5;
+  KubernetesClusterOverrides gcp_override = 9;
 
   // outputs
   string endpoint = 6;

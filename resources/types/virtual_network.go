@@ -72,7 +72,7 @@ func (r *VirtualNetwork) Validate(ctx resources.MultyContext) (errs []validate.V
 }
 
 /*
-Virtual Network is a private address space when resources can be placed.
+Virtual Subnetwork is a private address space when resources can be placed.
 
 By default, resources inside `virtual_network` cannot access the internet. To enable internet access look at`route_table`
 

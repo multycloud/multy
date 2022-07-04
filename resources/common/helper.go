@@ -39,13 +39,14 @@ func RandomString(n int) string {
 // Prefix can be any size but will be sliced if bigger than 16 chars. Suffix can have 4 chars at most.
 // Returns a string with at most 24 chars.
 func UniqueId(prefix string, suffix string, formatFunc FormatFunc) string {
-	if len(suffix) > 4 {
-		validate.LogInternalError("suffix must be shorter than 4 chars")
+	if len(suffix) > 10 {
+		validate.LogInternalError("suffix must be shorter than 10 chars")
 	}
 	result := ""
 	formattedPrefix := formatFunc(prefix)
-	if len(formattedPrefix) > 16 {
-		result += formattedPrefix[:12] + generateHash(prefix)
+	maxPrefixLen := 20 - len(suffix)
+	if len(formattedPrefix) > maxPrefixLen {
+		result += formattedPrefix[:maxPrefixLen] + generateHash(prefix)
 	} else {
 		result += formattedPrefix
 	}

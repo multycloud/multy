@@ -1,4 +1,89 @@
 resources:  {
+  resource_id:  "example_vn_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "k8svn"
+        cidr_block:  "10.0.0.0/16"
+        gcp_override: {
+          project: "multy-project"
+        }
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "public_subnet_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
+        name:  "public-subnet"
+        cidr_block:  "10.0.0.0/24"
+        virtual_network_id:  "example_vn_gcp"
+        availability_zone:  2
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "rt_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.RouteTableArgs]:  {
+        name:  "test-rt"
+        virtual_network_id:  "example_vn_gcp"
+        routes:  {
+          cidr_block:  "0.0.0.0/0"
+          destination:  INTERNET
+        }
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "rta_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.RouteTableAssociationArgs]:  {
+        subnet_id:  "public_subnet_gcp"
+        route_table_id:  "rt_gcp"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "cluster_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.KubernetesClusterArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "cluster"
+        service_cidr:  "10.100.0.0/16"
+        virtual_network_id:  "example_vn_gcp"
+        default_node_pool:  {
+          name:  "node-pool-gcp"
+          subnet_id:  "public_subnet_gcp"
+          min_node_count:  1
+          max_node_count:  1
+          vm_size:  GENERAL_MEDIUM
+        }
+        gcp_override: {
+          project: "multy-project"
+        }
+      }
+    }
+  }
+}
+resources:  {
   resource_id:  "example_vn_aws"
   resource_args:  {
     resource_args:  {

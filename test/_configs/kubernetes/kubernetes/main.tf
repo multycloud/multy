@@ -23,9 +23,7 @@ resource "aws_eks_node_group" "cluster_aws_default_pool" {
   cluster_name    = aws_eks_cluster.cluster_aws.id
   node_group_name = "node_pool_aws"
   node_role_arn   = aws_iam_role.cluster_aws_default_pool.arn
-  subnet_ids      = [
-    aws_subnet.public_subnet_aws-1.id, aws_subnet.public_subnet_aws-2.id, aws_subnet.public_subnet_aws-3.id
-  ]
+  subnet_ids      = [aws_subnet.public_subnet_aws-1.id, aws_subnet.public_subnet_aws-2.id, aws_subnet.public_subnet_aws-3.id]
   scaling_config {
     desired_size = 1
     max_size     = 1
@@ -79,14 +77,9 @@ resource "aws_iam_role_policy_attachment" "cluster_aws_AmazonEKSVPCResourceContr
   provider   = "aws.eu-west-1"
 }
 resource "aws_eks_cluster" "cluster_aws" {
-  depends_on = [
-    aws_subnet.cluster_aws_public_subnet, aws_subnet.cluster_aws_private_subnet, aws_route_table.cluster_aws_public_rt,
-    aws_route_table_association.cluster_aws_public_rta,
-    aws_iam_role_policy_attachment.cluster_aws_AmazonEKSClusterPolicy,
-    aws_iam_role_policy_attachment.cluster_aws_AmazonEKSVPCResourceController
-  ]
-  tags     = { "Name" = "cluster_aws" }
-  role_arn = aws_iam_role.cluster_aws.arn
+  depends_on = [aws_subnet.cluster_aws_public_subnet, aws_subnet.cluster_aws_private_subnet, aws_route_table.cluster_aws_public_rt, aws_route_table_association.cluster_aws_public_rta, aws_iam_role_policy_attachment.cluster_aws_AmazonEKSClusterPolicy, aws_iam_role_policy_attachment.cluster_aws_AmazonEKSVPCResourceController]
+  tags       = { "Name" = "cluster_aws" }
+  role_arn   = aws_iam_role.cluster_aws.arn
   vpc_config {
     subnet_ids              = [aws_subnet.cluster_aws_public_subnet.id, aws_subnet.cluster_aws_private_subnet.id]
     endpoint_private_access = true
@@ -120,6 +113,48 @@ resource "azurerm_kubernetes_cluster" "cluster_azure" {
     docker_bridge_cidr = "172.17.0.1/16"
     service_cidr       = "10.100.0.0/16"
   }
+}
+resource "google_service_account" "cluster-sa-avg8" {
+  project      = "multy-project"
+  account_id   = "cluster-sa-avg8"
+  display_name = "Service Account for cluster cluster - created by Multy"
+  provider     = "google.europe-west1"
+}
+resource "google_container_node_pool" "cluster_gcp_default_pool" {
+  name               = "node-pool-gcp"
+  project            = "multy-project"
+  cluster            = google_container_cluster.cluster_gcp.id
+  initial_node_count = 1
+  autoscaling {
+    min_node_count = 1
+    max_node_count = 1
+  }
+  node_config {
+    machine_type    = "e2-medium"
+    tags            = ["subnet-public-subnet"]
+    service_account = google_service_account.cluster-sa-avg8.email
+    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+  }
+  provider = "google.europe-west1"
+}
+resource "google_container_cluster" "cluster_gcp" {
+  name                     = "cluster"
+  project                  = "multy-project"
+  remove_default_node_pool = true
+  initial_node_count       = 1
+  subnetwork               = google_compute_subnetwork.public_subnet_gcp.id
+  network                  = google_compute_network.example_vn_gcp.id
+  ip_allocation_policy {
+    services_ipv4_cidr_block = "10.100.0.0/16"
+  }
+  location = "europe-west1"
+  node_config {
+    machine_type    = "e2-micro"
+    tags            = ["subnet-public-subnet"]
+    service_account = google_service_account.cluster-sa-avg8.email
+    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+  }
+  provider = "google.europe-west1"
 }
 resource "aws_vpc" "example_vn_aws" {
   tags                 = { "Name" = "example_vn" }
@@ -165,6 +200,15 @@ resource "azurerm_route_table" "example_vn_azure" {
     next_hop_type  = "VnetLocal"
   }
 }
+resource "google_compute_network" "example_vn_gcp" {
+  name                            = "k8svn"
+  project                         = "multy-project"
+  routing_mode                    = "REGIONAL"
+  description                     = "Managed by Multy"
+  auto_create_subnetworks         = false
+  delete_default_routes_on_create = true
+  provider                        = "google.europe-west1"
+}
 resource "aws_subnet" "public_subnet_aws-1" {
   tags                    = { "Name" = "public-subnet-1" }
   cidr_block              = "10.0.0.0/25"
@@ -195,6 +239,14 @@ resource "azurerm_subnet" "public_subnet_azure" {
   address_prefixes     = ["10.0.0.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
 }
+resource "google_compute_subnetwork" "public_subnet_gcp" {
+  name                     = "public-subnet"
+  project                  = "multy-project"
+  ip_cidr_range            = "10.0.0.0/24"
+  network                  = google_compute_network.example_vn_gcp.id
+  private_ip_google_access = true
+  provider                 = "google.europe-west1"
+}
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
   location = "northeurope"
@@ -217,6 +269,16 @@ resource "azurerm_route_table" "rt_azure" {
     address_prefix = "0.0.0.0/0"
     next_hop_type  = "Internet"
   }
+}
+resource "google_compute_route" "rt_gcp-0" {
+  name             = "test-rt-0"
+  project          = "multy-project"
+  dest_range       = "0.0.0.0/0"
+  network          = google_compute_network.example_vn_gcp.id
+  priority         = 1000
+  tags             = ["subnet-public-subnet"]
+  next_hop_gateway = "default-internet-gateway"
+  provider         = "google.europe-west1"
 }
 resource "aws_route_table_association" "rta_aws-1" {
   subnet_id      = aws_subnet.public_subnet_aws-1.id
@@ -244,4 +306,8 @@ provider "aws" {
 provider "azurerm" {
   features {
   }
+}
+provider "google" {
+  region = "europe-west1"
+  alias  = "europe-west1"
 }

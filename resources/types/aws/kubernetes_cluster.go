@@ -30,83 +30,41 @@ func InitKubernetesCluster(r *types.KubernetesCluster) resources.ResourceTransla
 	return AwsKubernetesCluster{r}
 }
 
-type KubeConfig struct {
-	ApiVersion     string                   `yaml:"apiVersion"`
-	Clusters       []NamedKubeConfigCluster `yaml:"clusters"`
-	Contexts       []NamedKubeConfigContext `yaml:"contexts"`
-	CurrentContext string                   `yaml:"current-context"`
-	Users          []KubeConfigUser         `yaml:"users"`
-	Kind           string                   `yaml:"kind"`
-}
-
-type NamedKubeConfigCluster struct {
-	Name    string            `yaml:"name"`
-	Cluster KubeConfigCluster `yaml:"cluster"`
-}
-
-type KubeConfigCluster struct {
-	CertificateAuthorityData string `yaml:"certificate-authority-data"`
-	Server                   string `yaml:"server"`
-}
-
-type NamedKubeConfigContext struct {
-	Name    string            `yaml:"name"`
-	Context KubeConfigContext `yaml:"context"`
-}
-
-type KubeConfigContext struct {
-	User    string `yaml:"user"`
-	Cluster string `yaml:"cluster"`
-}
-
-type KubeConfigUser struct {
-	Name string `yaml:"name"`
-	User struct {
-		Exec KubeConfigExec `yaml:"exec"`
-	} `yaml:"user"`
-}
-
-type KubeConfigExec struct {
-	ApiVersion      string   `yaml:"apiVersion"`
-	Command         string   `yaml:"command"`
-	Args            []string `yaml:"args"`
-	InteractiveMode string   `yaml:"interactiveMode"`
-}
-
 func createKubeConfig(clusterName string, certData string, endpoint string, awsRegion string) (string, error) {
 	username := fmt.Sprintf("clusterUser_%s", clusterName)
-	kubeConfig := &KubeConfig{
+	kubeConfig := &kubernetes_service.KubeConfig{
 		ApiVersion: "v1",
 		Kind:       "Config",
-		Clusters: []NamedKubeConfigCluster{
+		Clusters: []kubernetes_service.NamedKubeConfigCluster{
 			{
 				Name: clusterName,
-				Cluster: KubeConfigCluster{
+				Cluster: kubernetes_service.KubeConfigCluster{
 					CertificateAuthorityData: certData,
 					Server:                   endpoint,
 				},
 			},
 		},
-		Contexts: []NamedKubeConfigContext{
+		Contexts: []kubernetes_service.NamedKubeConfigContext{
 			{
 				Name: clusterName,
-				Context: KubeConfigContext{
+				Context: kubernetes_service.KubeConfigContext{
 					User:    username,
 					Cluster: clusterName,
 				},
 			},
 		},
-		Users: []KubeConfigUser{
+		Users: []kubernetes_service.KubeConfigUser{
 			{
 				Name: username,
 				User: struct {
-					Exec KubeConfigExec `yaml:"exec"`
+					Exec kubernetes_service.KubeConfigExec `yaml:"exec"`
 				}{
-					Exec: KubeConfigExec{
+					Exec: kubernetes_service.KubeConfigExec{
 						ApiVersion:      "client.authentication.k8s.io/v1beta1",
 						Command:         "aws",
 						Args:            []string{"--region", awsRegion, "eks", "get-token", "--cluster-name", clusterName},
 						InteractiveMode: "IfAvailable",
+						InstallHint:     "Install aws cli for use with kubectl by following\n\t\t\t\thttps://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html",
 					},
 				},
 			},
