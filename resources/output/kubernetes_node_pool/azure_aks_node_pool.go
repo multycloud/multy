@@ -13,4 +13,5 @@ type AzureKubernetesNodePool struct {
 	EnableAutoScaling      bool              `hcl:"enable_auto_scaling"`
 	VmSize                 string            `hcl:"vm_size"`
 	VirtualNetworkSubnetId string            `hcl:"vnet_subnet_id,expr"`
+	Zones                  []string          `hcl:"zones" hcle:"omitempty"`
 }

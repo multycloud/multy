@@ -44,6 +44,8 @@ message KubernetesNodePoolArgs {
   int32 max_node_count = 7;
   common.VmSize.Enum vm_size = 8;
   int64 disk_size_gb = 9;
+  repeated int32 availability_zone = 13;
+
   KubernetesNodePoolAwsOverride aws_override = 11;
   KubernetesNodePoolAzureOverride azure_override = 12;
 
@@ -61,6 +63,8 @@ message KubernetesNodePoolResource {
   int32 max_node_count = 7;
   common.VmSize.Enum vm_size = 8;
   int64 disk_size_gb = 9;
+  repeated int32 availability_zone = 13;
+
   KubernetesNodePoolAwsOverride aws_override = 11;
   KubernetesNodePoolAzureOverride azure_override = 12;
 

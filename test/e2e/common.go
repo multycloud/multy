@@ -127,7 +127,7 @@ func cleanup[Arg proto.Message, OutT proto.Message](t *testing.T, ctx context.Co
 		GetResourceId() string
 	}).GetResourceId()
 	t.Cleanup(func() {
-		if DestroyAfter {
+		if *destroyAfter {
 			_, err := s.Delete(ctx, &resourcespb.DeleteVirtualNetworkRequest{ResourceId: resourceId})
 			if err != nil {
 				logGrpcErrorDetails(t, err)

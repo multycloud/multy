@@ -71,6 +71,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.KubernetesNodePool) resources.ResourceTranslator[*resourcespb.KubernetesNodePoolResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitKubernetesNodePool,
 			commonpb.CloudProvider_AZURE: azure_resources.InitKubernetesNodePool,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitKubernetesNodePool,
 		},
 	},
 	&resourcespb.KubernetesClusterArgs{}: &resources.ResourceMetadata[*resourcespb.KubernetesClusterArgs, *types.KubernetesCluster, *resourcespb.KubernetesClusterResource]{
@@ -79,6 +80,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.KubernetesCluster) resources.ResourceTranslator[*resourcespb.KubernetesClusterResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitKubernetesCluster,
 			commonpb.CloudProvider_AZURE: azure_resources.InitKubernetesCluster,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitKubernetesCluster,
 		},
 	},
 	&resourcespb.NetworkInterfaceArgs{}: &resources.ResourceMetadata[*resourcespb.NetworkInterfaceArgs, *types.NetworkInterface, *resourcespb.NetworkInterfaceResource]{

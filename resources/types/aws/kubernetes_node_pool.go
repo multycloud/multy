@@ -34,14 +34,26 @@ func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 		MaxNodeCount:      r.Args.MaxNodeCount,
 		VmSize:            r.Args.VmSize,
 		DiskSizeGb:        r.Args.DiskSizeGb,
-		Labels:            r.Args.Labels,
+		AvailabilityZone:  r.Args.AvailabilityZone,
 		AwsOverride:       r.Args.AwsOverride,
 		AzureOverride:     r.Args.AzureOverride,
+		Labels:            r.Args.Labels,
 	}, nil
 }
 
 func (r AwsKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {
-	subnetIds := AwsSubnet{r.Subnet}.GetSubnetIds()
+	var subnetIds []string
+	if len(r.Args.AvailabilityZone) == 0 {
+		subnetIds = AwsSubnet{r.Subnet}.GetSubnetIds()
+	} else {
+		for _, zone := range r.Args.AvailabilityZone {
+			id, err := AwsSubnet{r.Subnet}.GetSubnetId(zone)
+			if err != nil {
+				return nil, err
+			}
+			subnetIds = append(subnetIds, id)
+		}
+	}
 
 	var instanceTypes []string
 	if r.Args.AwsOverride.GetInstanceTypes() != nil {

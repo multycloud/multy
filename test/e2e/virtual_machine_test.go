@@ -109,7 +109,7 @@ sudo echo "hello world" > /tmp/test.txt`)),
 		t.Fatalf("unable to create virtual machine: %+v", err)
 	}
 	t.Cleanup(func() {
-		if DestroyAfter {
+		if *destroyAfter {
 			_, err := server.VirtualMachineService.Delete(ctx, &resourcespb.DeleteVirtualMachineRequest{ResourceId: vm.CommonParameters.ResourceId})
 			if err != nil {
 				logGrpcErrorDetails(t, err)

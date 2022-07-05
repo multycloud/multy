@@ -23,7 +23,7 @@ resource "aws_eks_node_group" "cluster_aws_default_pool" {
   cluster_name    = aws_eks_cluster.cluster_aws.id
   node_group_name = "node_pool_aws"
   node_role_arn   = aws_iam_role.cluster_aws_default_pool.arn
-  subnet_ids      = [aws_subnet.public_subnet_aws-1.id, aws_subnet.public_subnet_aws-2.id, aws_subnet.public_subnet_aws-3.id]
+  subnet_ids      = [aws_subnet.public_subnet_aws-1.id]
   scaling_config {
     desired_size = 1
     max_size     = 1
@@ -102,6 +102,7 @@ resource "azurerm_kubernetes_cluster" "cluster_azure" {
     enable_auto_scaling = true
     vm_size             = "Standard_B2s"
     vnet_subnet_id      = azurerm_subnet.public_subnet_azure.id
+    zones               = ["1"]
   }
   dns_prefix = "clusterazureaks7hut"
   identity {
@@ -125,6 +126,7 @@ resource "google_container_node_pool" "cluster_gcp_default_pool" {
   project            = "multy-project"
   cluster            = google_container_cluster.cluster_gcp.id
   initial_node_count = 1
+  node_locations     = ["europe-west1-b"]
   autoscaling {
     min_node_count = 1
     max_node_count = 1

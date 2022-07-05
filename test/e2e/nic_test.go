@@ -34,7 +34,7 @@ func testNetworkInterface(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("unable to create public ip: %+v", err)
 	}
 	t.Cleanup(func() {
-		if DestroyAfter {
+		if *destroyAfter {
 			_, err := server.PublicIpService.Delete(ctx, &resourcespb.DeletePublicIpRequest{ResourceId: pip.CommonParameters.ResourceId})
 			if err != nil {
 				logGrpcErrorDetails(t, err)
@@ -57,7 +57,7 @@ func testNetworkInterface(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("unable to create network interface: %+v", err)
 	}
 	t.Cleanup(func() {
-		if DestroyAfter {
+		if *destroyAfter {
 			_, err := server.NetworkInterfaceService.Delete(ctx, &resourcespb.DeleteNetworkInterfaceRequest{ResourceId: nic.CommonParameters.ResourceId})
 			if err != nil {
 				logGrpcErrorDetails(t, err)
@@ -75,7 +75,7 @@ func testNetworkInterface(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("unable to create network interface nsg association: %+v", err)
 	}
 	t.Cleanup(func() {
-		if DestroyAfter {
+		if *destroyAfter {
 			_, err := server.NetworkInterfaceSecurityGroupAssociationService.Delete(ctx, &resourcespb.DeleteNetworkInterfaceSecurityGroupAssociationRequest{ResourceId: nicNsgAssociation.CommonParameters.ResourceId})
 			if err != nil {
 				logGrpcErrorDetails(t, err)
@@ -110,7 +110,7 @@ sudo echo "hello world" > /tmp/test.txt`)),
 		t.Fatalf("unable to create virtual machine: %+v", err)
 	}
 	t.Cleanup(func() {
-		if DestroyAfter {
+		if *destroyAfter {
 			_, err := server.VirtualMachineService.Delete(ctx, &resourcespb.DeleteVirtualMachineRequest{ResourceId: vm.CommonParameters.ResourceId})
 			if err != nil {
 				logGrpcErrorDetails(t, err)

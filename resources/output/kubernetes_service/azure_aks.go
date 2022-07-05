@@ -20,8 +20,8 @@ type AzureEksCluster struct {
 	NetworkProfile     NetworkProfile                                `hcl:"network_profile"`
 
 	// outputs
-	KubeConfigRaw string       `json:"kube_config_raw" hcle:"omitempty"`
-	KubeConfig    []KubeConfig `json:"kube_config" hcle:"omitempty"`
+	KubeConfigRaw string            `json:"kube_config_raw" hcle:"omitempty"`
+	KubeConfig    []AzureKubeConfig `json:"kube_config" hcle:"omitempty"`
 }
 
 type NetworkProfile struct {
@@ -31,7 +31,7 @@ type NetworkProfile struct {
 	ServiceCidr      string `hcl:"service_cidr"`
 }
 
-type KubeConfig struct {
+type AzureKubeConfig struct {
 	Host                 string `json:"host" hcle:"omitempty"`
 	ClusterCaCertificate string `json:"cluster_ca_certificate" hcle:"omitempty"`
 }

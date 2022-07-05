@@ -37,9 +37,9 @@ type Node struct {
 
 func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	ctx := getCtx(t, cloud, "k8s")
-	region := commonpb.Location_US_WEST_1
-	if cloud == commonpb.CloudProvider_AZURE {
-		region = commonpb.Location_EU_WEST_2
+	region := commonpb.Location_EU_WEST_2
+	if cloud == commonpb.CloudProvider_AWS {
+		region = commonpb.Location_US_WEST_1
 	}
 
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
@@ -112,6 +112,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 			MaxNodeCount:      3,
 			VmSize:            commonpb.VmSize_GENERAL_MEDIUM,
 			DiskSizeGb:        20,
+			AvailabilityZone:  []int32{2},
 			Labels: map[string]string{
 				"multy.dev/env": "test",
 			},
@@ -151,15 +152,17 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatal(fmt.Errorf("output cant be parsed: %s", err))
 	}
 
-	assert.Len(t, o.Items, 1)
-	assert.Contains(t, o.Items[0].Status.Conditions, NodeStatusCondition{
-		Type:   "Ready",
-		Status: "True",
-	})
+	assert.Greater(t, len(o.Items), 0)
+	for _, item := range o.Items {
+		assert.Contains(t, item.Status.Conditions, NodeStatusCondition{
+			Type:   "Ready",
+			Status: "True",
+		})
+		labels := item.Metadata.Labels
+		assert.Contains(t, maps.Keys(labels), "multy.dev/env")
+		assert.Equal(t, "test", labels["multy.dev/env"])
+	}
 
-	labels := o.Items[0].Metadata.Labels
-	assert.Contains(t, maps.Keys(labels), "multy.dev/env")
-	assert.Equal(t, labels["multy.dev/env"], "test")
 }
 
 func TestAwsKubernetes(t *testing.T) {
@@ -169,4 +172,9 @@ func TestAwsKubernetes(t *testing.T) {
 func TestAzureKubernetes(t *testing.T) {
 	t.Parallel()
 	testKubernetes(t, commonpb.CloudProvider_AZURE)
+}
+
+func TestGcpKubernetes(t *testing.T) {
+	t.Parallel()
+	testKubernetes(t, commonpb.CloudProvider_GCP)
 }
