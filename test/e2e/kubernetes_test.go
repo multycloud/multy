@@ -151,15 +151,17 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatal(fmt.Errorf("output cant be parsed: %s", err))
 	}
 
-	assert.Len(t, o.Items, 3)
-	assert.Contains(t, o.Items[0].Status.Conditions, NodeStatusCondition{
-		Type:   "Ready",
-		Status: "True",
-	})
+	assert.Greater(t, len(o.Items), 0)
+	for _, item := range o.Items {
+		assert.Contains(t, item.Status.Conditions, NodeStatusCondition{
+			Type:   "Ready",
+			Status: "True",
+		})
+		labels := item.Metadata.Labels
+		assert.Contains(t, maps.Keys(labels), "multy.dev/env")
+		assert.Equal(t, "test", labels["multy.dev/env"])
+	}
 
-	labels := o.Items[0].Metadata.Labels
-	assert.Contains(t, maps.Keys(labels), "multy.dev/env")
-	assert.Equal(t, labels["multy.dev/env"], "test")
 }
 
 func TestAwsKubernetes(t *testing.T) {
