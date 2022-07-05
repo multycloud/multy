@@ -50,6 +50,11 @@ func (r GcpKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 		return nil, err
 	}
 
+	numZones := 3
+	if len(r.Args.AvailabilityZone) > 0 {
+		numZones = len(r.Args.AvailabilityZone)
+	}
+
 	var zones []string
 	for _, zone := range r.Args.AvailabilityZone {
 		availabilityZone, err := common.GetAvailabilityZone(r.KubernetesCluster.GetLocation(), int(zone), r.GetCloud())
@@ -63,10 +68,10 @@ func (r GcpKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 		GcpResource:      common.NewGcpResource(r.ResourceId, r.Args.Name, r.KubernetesCluster.Args.GetGcpOverride().GetProject()),
 		Cluster:          clusterId,
 		NodeLocations:    zones,
-		InitialNodeCount: int(r.Args.StartingNodeCount),
+		InitialNodeCount: int(r.Args.StartingNodeCount) / numZones,
 		Autoscaling: kubernetes_node_pool.GoogleContainerNodePoolAutoScaling{
-			MinNodeCount: int(r.Args.MinNodeCount),
-			MaxNodeCount: int(r.Args.MaxNodeCount),
+			MinNodeCount: int(r.Args.MinNodeCount) / numZones,
+			MaxNodeCount: int(r.Args.MaxNodeCount) / numZones,
 		},
 		NodeConfig: kubernetes_node_pool.GoogleContainerNodeConfig{
 			DiskSizeGb:  int(r.Args.DiskSizeGb),

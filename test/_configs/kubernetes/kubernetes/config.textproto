@@ -72,8 +72,8 @@ resources:  {
         default_node_pool:  {
           name:  "node-pool-gcp"
           subnet_id:  "public_subnet_gcp"
-          min_node_count:  1
-          max_node_count:  1
+          min_node_count:  3
+          max_node_count:  3
           vm_size:  GENERAL_MEDIUM
         }
         gcp_override: {

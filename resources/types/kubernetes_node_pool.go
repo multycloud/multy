@@ -79,6 +79,30 @@ func (r *KubernetesNodePool) Validate(ctx resources.MultyContext) (errs []valida
 	if r.Subnet != r.KubernetesCluster.DefaultNodePool.Subnet {
 		errs = append(errs, r.NewValidationError(fmt.Errorf("different subnets for node pools within the same cluster are not yet supported"), "subnet_id"))
 	}
+	if r.GetCloud() == commonpb.CloudProvider_GCP {
+		numZones := 3
+		if len(r.Args.AvailabilityZone) > 0 {
+			numZones = len(r.Args.AvailabilityZone)
+		}
+
+		if int(r.Args.StartingNodeCount)%numZones != 0 {
+			errs = append(errs, r.NewValidationError(
+				fmt.Errorf("for gcp, starting node count must be a multiple of the number of availability zones (%d, %d, %d, etc)",
+					numZones, numZones*2, numZones*3), "starting_node_count"))
+		}
+
+		if int(r.Args.MinNodeCount)%numZones != 0 {
+			errs = append(errs, r.NewValidationError(
+				fmt.Errorf("for gcp, minimum number of nodes must be a multiple of the number of availability zones (%d, %d, %d, etc)",
+					numZones, numZones*2, numZones*3), "min_node_count"))
+		}
+
+		if int(r.Args.MaxNodeCount)%numZones != 0 {
+			errs = append(errs, r.NewValidationError(
+				fmt.Errorf("for gcp, maximum number of nodes must be a multiple of the number of availability zones (%d, %d, %d, etc)",
+					numZones, numZones*2, numZones*3), "max_node_count"))
+		}
+	}
 
 	return errs
 }
