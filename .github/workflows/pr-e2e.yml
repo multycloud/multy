@@ -46,6 +46,17 @@ jobs:
           go vet .
           golint .
 
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: Authenticate to Gcloud
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+      - name: Install gke-cloud-auth-plugin
+        run: gcloud components install gke-gcloud-auth-plugin
+
       - name: Test
         run: go test ./test/e2e -tags=e2e -timeout=180m -parallel 10
         env:
@@ -57,3 +68,4 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
