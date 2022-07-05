@@ -35,6 +35,7 @@ func (r AzureKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.
 		Labels:            r.Args.Labels,
 		AwsOverride:       r.Args.AwsOverride,
 		AzureOverride:     r.Args.AzureOverride,
+		AvailabilityZone:  r.Args.AvailabilityZone,
 	}, nil
 }
 
@@ -65,6 +66,15 @@ func (r AzureKubernetesNodePool) translateAzNodePool() (*kubernetes_node_pool.Az
 		vmSize = common.VMSIZE[r.Args.VmSize][r.GetCloud()]
 	}
 
+	var zones []string
+	for _, zone := range r.Args.AvailabilityZone {
+		availabilityZone, err := common.GetAvailabilityZone(r.KubernetesCluster.GetLocation(), int(zone), r.GetCloud())
+		if err != nil {
+			return nil, err
+		}
+		zones = append(zones, availabilityZone)
+	}
+
 	return &kubernetes_node_pool.AzureKubernetesNodePool{
 		AzResource: &common.AzResource{
 			TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
@@ -78,6 +88,7 @@ func (r AzureKubernetesNodePool) translateAzNodePool() (*kubernetes_node_pool.Az
 		EnableAutoScaling:      true,
 		VmSize:                 vmSize,
 		VirtualNetworkSubnetId: subnetId,
+		Zones:                  zones,
 	}, nil
 }
 

@@ -76,6 +76,9 @@ func (r *KubernetesNodePool) Validate(ctx resources.MultyContext) (errs []valida
 	if r.Subnet.VirtualNetwork.ResourceId != r.KubernetesCluster.VirtualNetwork.ResourceId {
 		errs = append(errs, r.NewValidationError(fmt.Errorf("subnet must be in the same virtual network as the cluster"), "subnet_id"))
 	}
+	if r.Subnet != r.KubernetesCluster.DefaultNodePool.Subnet {
+		errs = append(errs, r.NewValidationError(fmt.Errorf("different subnets for node pools within the same cluster are not yet supported"), "subnet_id"))
+	}
 
 	return errs
 }

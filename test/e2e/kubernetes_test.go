@@ -37,9 +37,9 @@ type Node struct {
 
 func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	ctx := getCtx(t, cloud, "k8s")
-	region := commonpb.Location_US_WEST_1
-	if cloud == commonpb.CloudProvider_AZURE {
-		region = commonpb.Location_EU_WEST_2
+	region := commonpb.Location_EU_WEST_2
+	if cloud == commonpb.CloudProvider_AWS {
+		region = commonpb.Location_US_WEST_1
 	}
 
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
@@ -151,7 +151,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatal(fmt.Errorf("output cant be parsed: %s", err))
 	}
 
-	assert.Len(t, o.Items, 1)
+	assert.Len(t, o.Items, 3)
 	assert.Contains(t, o.Items[0].Status.Conditions, NodeStatusCondition{
 		Type:   "Ready",
 		Status: "True",
@@ -169,4 +169,9 @@ func TestAwsKubernetes(t *testing.T) {
 func TestAzureKubernetes(t *testing.T) {
 	t.Parallel()
 	testKubernetes(t, commonpb.CloudProvider_AZURE)
+}
+
+func TestGcpKubernetes(t *testing.T) {
+	t.Parallel()
+	testKubernetes(t, commonpb.CloudProvider_GCP)
 }

@@ -5,6 +5,7 @@ package e2e
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"github.com/multycloud/multy/api"
 	aws_client "github.com/multycloud/multy/api/aws"
@@ -22,7 +23,7 @@ import (
 	"testing"
 )
 
-const DestroyAfter = true
+var destroyAfter = flag.Bool("destroy_after", true, "If false, resources won't be destroyed after tests complete.")
 
 func getCtx(t *testing.T, cloud commonpb.CloudProvider, testName string) context.Context {
 	credentials := &credspb.CloudCredentials{

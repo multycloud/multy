@@ -39,8 +39,8 @@ type KubeConfigUser struct {
 type KubeConfigExec struct {
 	ApiVersion         string   `yaml:"apiVersion"`
 	Command            string   `yaml:"command"`
-	Args               []string `yaml:"args"`
+	Args               []string `yaml:"args,omitempty"`
 	InteractiveMode    string   `yaml:"interactiveMode"`
-	ProvideClusterInfo bool     `yaml:"provideClusterInfo"`
-	InstallHint        string   `yaml:"installHint"`
+	ProvideClusterInfo bool     `yaml:"provideClusterInfo,omitempty"`
+	InstallHint        string   `yaml:"installHint,omitempty"`
 }

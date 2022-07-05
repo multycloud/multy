@@ -6,6 +6,7 @@ type GoogleContainerNodePool struct {
 	*common.GcpResource `hcl:",squash"  default:"name=google_container_node_pool"`
 	Cluster             string                             `hcl:"cluster,expr"` //expr
 	InitialNodeCount    int                                `hcl:"initial_node_count"`
+	NodeLocations       []string                           `hcl:"node_locations" hcle:"omitempty"`
 	Autoscaling         GoogleContainerNodePoolAutoScaling `hcl:"autoscaling"`
 	NodeConfig          GoogleContainerNodeConfig          `hcl:"node_config"`
 	NetworkConfig       GoogleContainerNetworkConfig       `hcl:"network_config" hcle:"omitempty"`

@@ -32,7 +32,7 @@ func TestRollbackResourceGroup(t *testing.T) {
 		t.Fatalf("unable to create vn: %+v", err)
 	}
 	t.Cleanup(func() {
-		if DestroyAfter && !rgDeleted {
+		if *destroyAfter && !rgDeleted {
 			_, _ = server.VnService.Delete(ctx, &resourcespb.DeleteVirtualNetworkRequest{ResourceId: vn.CommonParameters.ResourceId})
 		}
 	})
@@ -48,7 +48,7 @@ func TestRollbackResourceGroup(t *testing.T) {
 		t.Fatalf("unable to create subnet: %+v", err)
 	}
 	t.Cleanup(func() {
-		if DestroyAfter && !rgDeleted {
+		if *destroyAfter && !rgDeleted {
 			_, _ = server.SubnetService.Delete(ctx, &resourcespb.DeleteSubnetRequest{ResourceId: subnet.CommonParameters.ResourceId})
 		}
 	})
@@ -76,7 +76,7 @@ func TestRollbackResourceGroup(t *testing.T) {
 	ni, err := server.NetworkInterfaceService.Create(ctx, createNetworkInterfaceRequest)
 	if err == nil {
 		t.Cleanup(func() {
-			if DestroyAfter {
+			if *destroyAfter {
 				_, err := server.NetworkInterfaceService.Delete(ctx, &resourcespb.DeleteNetworkInterfaceRequest{ResourceId: ni.CommonParameters.ResourceId})
 				if err != nil {
 					logGrpcErrorDetails(t, err)

@@ -44,7 +44,7 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		if err != nil {
 			return nil, err
 		}
-		result.Endpoint = cluster.Endpoint
+		result.Endpoint = fmt.Sprintf("https://%s", cluster.Endpoint)
 		result.CaCertificate = cluster.MasterAuth[0].ClusterCaCertificate
 
 		rawConfig, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint)

@@ -36,6 +36,7 @@ func (r GcpKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 		DiskSizeGb:        r.Args.DiskSizeGb,
 		Labels:            r.Args.Labels,
 		AzureOverride:     r.Args.AzureOverride,
+		AvailabilityZone:  r.Args.AvailabilityZone,
 	}, nil
 }
 
@@ -48,9 +49,20 @@ func (r GcpKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 	if err != nil {
 		return nil, err
 	}
+
+	var zones []string
+	for _, zone := range r.Args.AvailabilityZone {
+		availabilityZone, err := common.GetAvailabilityZone(r.KubernetesCluster.GetLocation(), int(zone), r.GetCloud())
+		if err != nil {
+			return nil, err
+		}
+		zones = append(zones, availabilityZone)
+	}
+
 	nodePool := &kubernetes_node_pool.GoogleContainerNodePool{
 		GcpResource:      common.NewGcpResource(r.ResourceId, r.Args.Name, r.KubernetesCluster.Args.GetGcpOverride().GetProject()),
 		Cluster:          clusterId,
+		NodeLocations:    zones,
 		InitialNodeCount: int(r.Args.StartingNodeCount),
 		Autoscaling: kubernetes_node_pool.GoogleContainerNodePoolAutoScaling{
 			MinNodeCount: int(r.Args.MinNodeCount),
