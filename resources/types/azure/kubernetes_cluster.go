@@ -31,6 +31,7 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState) (*resourcespb.K
 		Name:             r.Args.Name,
 		ServiceCidr:      r.Args.ServiceCidr,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
+		GcpOverride:      r.Args.GcpOverride,
 	}
 	result.Endpoint = "dryrun"
 	if !flags.DryRun {
