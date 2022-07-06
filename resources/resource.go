@@ -96,7 +96,7 @@ func generateUniqueGroupId(existingGroups []string) (groupId string) {
 	return
 }
 
-func (r *Resources) GetMultyResourceGroups(existingGroupsByResource map[string]string) map[string]*MultyResourceGroup {
+func (r *Resources) GetMultyResourceGroups(existingGroupsByResource map[string]string) (map[string]*MultyResourceGroup, error) {
 	groups := map[string]*MultyResourceGroup{}
 	// creates 1 group per resource
 	for _, resource := range util.GetSortedMapValues(r.ResourceMap) {
@@ -116,6 +116,9 @@ func (r *Resources) GetMultyResourceGroups(existingGroupsByResource map[string]s
 	// merge all groups
 	for _, resource := range util.GetSortedMapValues(r.ResourceMap) {
 		for _, dep := range r.dependencies[resource.GetResourceId()] {
+			if _, ok := r.ResourceMap[dep]; !ok {
+				return nil, fmt.Errorf("Dependency with name %s (from %s) does not exist. Was %s deleted before updating %s?", dep, resource.GetResourceId(), dep, resource.GetResourceId())
+			}
 			// prefer to keep existing groups
 			if _, hasGroup := existingGroupsByResource[resource.GetResourceId()]; hasGroup {
 				mergeGroups(groups, resource, r.ResourceMap[dep])
@@ -125,7 +128,7 @@ func (r *Resources) GetMultyResourceGroups(existingGroupsByResource map[string]s
 		}
 	}
 
-	return groups
+	return groups, nil
 }
 
 func mergeGroups(all map[string]*MultyResourceGroup, res1 Resource, res2 Resource) {

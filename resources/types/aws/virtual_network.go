@@ -31,8 +31,9 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 				CloudProvider:   r.Args.CommonParameters.CloudProvider,
 				NeedsUpdate:     false,
 			},
-			Name:      r.Args.Name,
-			CidrBlock: r.Args.CidrBlock,
+			Name:        r.Args.Name,
+			CidrBlock:   r.Args.CidrBlock,
+			GcpOverride: r.Args.GcpOverride,
 		}, nil
 	}
 	out := new(resourcespb.VirtualNetworkResource)
@@ -50,7 +51,7 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 	}
 	out.Name = stateResource.AwsResource.Tags["Name"]
 	out.CidrBlock = stateResource.CidrBlock
-
+	out.GcpOverride = r.Args.GcpOverride
 	return out, nil
 }
 

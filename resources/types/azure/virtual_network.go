@@ -31,8 +31,9 @@ func (r AzureVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virt
 				CloudProvider:   r.Args.CommonParameters.CloudProvider,
 				NeedsUpdate:     false,
 			},
-			Name:      r.Args.Name,
-			CidrBlock: r.Args.CidrBlock,
+			Name:        r.Args.Name,
+			CidrBlock:   r.Args.CidrBlock,
+			GcpOverride: r.Args.GcpOverride,
 		}, nil
 	}
 	out := new(resourcespb.VirtualNetworkResource)
@@ -50,6 +51,7 @@ func (r AzureVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virt
 	}
 	out.Name = stateResource.Name
 	out.CidrBlock = stateResource.AddressSpace[0]
+	out.GcpOverride = r.Args.GcpOverride
 
 	return out, nil
 }

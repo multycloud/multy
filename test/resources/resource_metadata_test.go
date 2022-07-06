@@ -192,7 +192,10 @@ func TestResourceMetadataExport(t *testing.T) {
 	numResources := len(config.Resources.GetAll())
 	assert.Greater(t, numResources, 0)
 
-	config.UpdateMultyResourceGroups()
+	err = config.UpdateMultyResourceGroups()
+	if err != nil {
+		t.Fatalf("unable to update groups, %s", err)
+	}
 	exportedConfig, err := config.ExportConfig()
 	if err != nil {
 		t.Fatalf("unable to export resources: %s", err)
@@ -246,7 +249,10 @@ func TestResourceMetadataUpdateMultyResourceGroups(t *testing.T) {
 		t.Fatalf("unable to create resource: %s", err)
 	}
 
-	config.UpdateMultyResourceGroups()
+	err = config.UpdateMultyResourceGroups()
+	if err != nil {
+		t.Fatalf("unable to update groups, %s", err)
+	}
 
 	config.UpdateDeployedResourceList(map[string][]string{})
 	affectedResourcesSubnet1 := config.GetAffectedResources(subnet1.GetResourceId())
