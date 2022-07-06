@@ -92,6 +92,7 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		Name:             r.Args.Name,
 		ServiceCidr:      r.Args.ServiceCidr,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
+		GcpOverride:      r.Args.GcpOverride,
 	}
 	result.Endpoint = "dryrun"
 	if !flags.DryRun {

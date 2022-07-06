@@ -34,9 +34,10 @@ func (r GcpKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 		MaxNodeCount:      r.Args.MaxNodeCount,
 		VmSize:            r.Args.VmSize,
 		DiskSizeGb:        r.Args.DiskSizeGb,
-		Labels:            r.Args.Labels,
-		AzureOverride:     r.Args.AzureOverride,
 		AvailabilityZone:  r.Args.AvailabilityZone,
+		AwsOverride:       r.Args.AwsOverride,
+		AzureOverride:     r.Args.AzureOverride,
+		Labels:            r.Args.Labels,
 	}, nil
 }
 
