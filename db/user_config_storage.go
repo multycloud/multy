@@ -39,18 +39,22 @@ func (d *userConfigStorage) LoadUserConfig(userId string, lock *ConfigLock) (*co
 		UserId: userId,
 	}
 
-	tfFileStr, err := d.AwsClient.ReadFile(userId, configFile)
+	configFileStr, err := d.AwsClient.ReadFile(userId, configFile)
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error reading configuration", err)
 	}
 
-	if tfFileStr != "" {
-
-		err := protojson.Unmarshal([]byte(tfFileStr), &result)
+	if configFileStr != "" {
+		err := protojson.Unmarshal([]byte(configFileStr), &result)
 		if err != nil {
 			return nil, errors.InternalServerErrorWithMessage("error parsing configuration", err)
 		}
 	}
+
+	if result.UserId != userId {
+		return nil, fmt.Errorf("config file is in unexpcted state. user should be %s but is %s", userId, result.UserId)
+	}
+
 	return &result, nil
 }
 

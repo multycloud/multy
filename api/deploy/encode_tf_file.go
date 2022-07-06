@@ -52,7 +52,10 @@ func EncodeTfFile(credentials *credspb.CloudCredentials, c *resources.MultyConfi
 		}
 	}
 
-	c.UpdateMultyResourceGroups()
+	err = c.UpdateMultyResourceGroups()
+	if err != nil {
+		return EncodedResources{}, err
+	}
 	c.UpdateDeployedResourceList(encoded.DeployedResources)
 
 	if curr != nil {

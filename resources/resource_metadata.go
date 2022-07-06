@@ -208,14 +208,15 @@ func (c *MultyConfig) DeleteResource(resourceId string) (Resource, error) {
 
 }
 
-func (c *MultyConfig) UpdateMultyResourceGroups() {
+func (c *MultyConfig) UpdateMultyResourceGroups() (err error) {
 	groupIdsByResourceIds := map[string]string{}
 	for _, r := range c.c.Resources {
 		if r.DeployedResourceGroup != nil {
 			groupIdsByResourceIds[r.ResourceId] = r.DeployedResourceGroup.GroupId
 		}
 	}
-	c.groupsByResourceId = c.Resources.GetMultyResourceGroups(groupIdsByResourceIds)
+	c.groupsByResourceId, err = c.Resources.GetMultyResourceGroups(groupIdsByResourceIds)
+	return
 }
 
 func (c *MultyConfig) UpdateDeployedResourceList(deployedResources map[string][]string) {
