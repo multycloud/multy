@@ -15,6 +15,7 @@ import (
 	"path"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 type GetNodesOutput struct {
@@ -29,8 +30,11 @@ type NodeStatusCondition struct {
 type Node struct {
 	Status struct {
 		Conditions []NodeStatusCondition `json:"conditions,omitempty"`
+		PodIp      string                `json:"podIp,omitempty"`
+		Phase      string                `json:"phase,omitempty"`
 	} `json:"status"`
 	Metadata struct {
+		Name   string            `json:"name"`
 		Labels map[string]string `json:"labels"`
 	} `json:"metadata"`
 }
@@ -146,7 +150,6 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 
 	o := GetNodesOutput{}
-
 	err = json.Unmarshal(out, &o)
 	if err != nil {
 		t.Fatal(fmt.Errorf("output cant be parsed: %s", err))
@@ -163,6 +166,54 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		assert.Equal(t, "test", labels["multy.dev/env"])
 	}
 
+	testKubernetesDeployment(t, kubecfg)
+
+}
+
+func testKubernetesDeployment(t *testing.T, kubecfg string) {
+	// kubectl create deployment test-deployment --image=nginx --replicas=2
+	out, err := exec.Command("/usr/local/bin/kubectl", "--kubeconfig", kubecfg, "create", "deployment", "test-deployment", "--image", "nginx", "--replicas", "2").CombinedOutput()
+	if err != nil {
+		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
+	}
+
+	allRunning := false
+	for i := 0; i < 10 && !allRunning; i++ {
+		t.Logf("waiting 5 seconds to check if pods are running")
+		time.Sleep(5 * time.Second)
+		// kubectl get pods -o json
+		out, err = exec.Command("/usr/local/bin/kubectl", "--kubeconfig", kubecfg, "get", "pods", "-o", "json").CombinedOutput()
+		if err != nil {
+			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
+		}
+
+		o := GetNodesOutput{}
+		err = json.Unmarshal(out, &o)
+		if err != nil {
+			t.Fatal(fmt.Errorf("output cant be parsed: %s", err))
+		}
+
+		assert.Len(t, o.Items, 2)
+		runningNodes := 0
+		for _, item := range o.Items {
+			if item.Status.Phase != "Running" {
+				break
+			}
+			runningNodes += 1
+		}
+		allRunning = runningNodes == len(o.Items)
+	}
+
+	if !allRunning {
+		t.Fatal("pods are not running after 30 seconds")
+	}
+
+	// kubectl exec test-deployment-76cdbc6456-6mdv2 -- curl 10.0.0.171
+	out, err = exec.Command("/usr/local/bin/kubectl", "--kubeconfig", kubecfg, "exec", o.Items[0].Metadata.Name, "--", "curl", o.Items[1].Status.PodIp).CombinedOutput()
+	if err != nil {
+		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
+	}
+	assert.Contains(t, string(out), "<h1>Welcome to nginx!</h1>")
 }
 
 func TestAwsKubernetes(t *testing.T) {
