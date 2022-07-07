@@ -177,6 +177,7 @@ func testKubernetesDeployment(t *testing.T, kubecfg string) {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
 
+	var o GetNodesOutput
 	allRunning := false
 	for i := 0; i < 10 && !allRunning; i++ {
 		t.Logf("waiting 5 seconds to check if pods are running")
@@ -187,7 +188,7 @@ func testKubernetesDeployment(t *testing.T, kubecfg string) {
 			t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 		}
 
-		o := GetNodesOutput{}
+		o = GetNodesOutput{}
 		err = json.Unmarshal(out, &o)
 		if err != nil {
 			t.Fatal(fmt.Errorf("output cant be parsed: %s", err))
