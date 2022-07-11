@@ -44,3 +44,17 @@ provider "azurerm" {
   features {
   }
 }
+resource "google_storage_bucket" "object_storage_gcp" {
+  name                        = "test-storage-12384761234"
+  project                     = "multy-project"
+  uniform_bucket_level_access = false
+  versioning {
+    enabled = true
+  }
+  location = "europe-west1"
+  provider = "google.europe-west1"
+}
+provider "google" {
+  region = "europe-west1"
+  alias  = "europe-west1"
+}

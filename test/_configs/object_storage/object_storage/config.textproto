@@ -31,6 +31,25 @@ resources:  {
   }
 }
 resources:  {
+  resource_id:  "object_storage_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.ObjectStorageArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "test-storage-12384761234"
+        versioning:  true
+        gcp_override: {
+          project: "multy-project"
+        }
+      }
+    }
+  }
+}
+resources:  {
   resource_id:  "rg1"
   resource_args:  {
     resource_args:  {

@@ -192,6 +192,13 @@ func NewGcpResource(resourceId string, name string, project string) *GcpResource
 	}
 }
 
+func NewGcpResourceWithNoProject(resourceId string, name string) *GcpResource {
+	return &GcpResource{
+		TerraformResource: output.TerraformResource{ResourceId: resourceId},
+		Name:              name,
+	}
+}
+
 func (r *AwsResource) SetName(name string) {
 	//r.ResourceName = name
 	r.TerraformResource.ResourceName = name
@@ -213,5 +220,5 @@ type AwsResource struct {
 type GcpResource struct {
 	output.TerraformResource `hcl:",squash"`
 	Name                     string `hcl:"name" hcle:"omitempty"`
-	Project                  string `hcl:"project"`
+	Project                  string `hcl:"project"  hcle:"omitempty"`
 }

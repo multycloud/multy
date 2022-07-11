@@ -26,14 +26,22 @@ message DeleteObjectStorageRequest {
   string resource_id = 1;
 }
 
+message ObjectStorageGcpOverride {
+  string project = 1;
+}
+
 message ObjectStorageArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
   bool versioning = 3;
+
+  ObjectStorageGcpOverride gcp_override = 4;
 }
 
 message ObjectStorageResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   bool versioning = 3;
+
+  ObjectStorageGcpOverride gcp_override = 4;
 }
