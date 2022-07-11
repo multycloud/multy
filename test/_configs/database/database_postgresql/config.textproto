@@ -164,6 +164,63 @@ resources:  {
     }
   }
 }
+resources:  {
+  resource_id:  "vn_GCP"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  US_EAST_1
+          cloud_provider:  GCP
+        }
+        name:  "db-vn"
+        cidr_block:  "10.0.0.0/16"
+        gcp_override: {
+          project: "multy-project"
+        }
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "subnet_GCP"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
+        name:  "subnet"
+        cidr_block:  "10.0.0.0/24"
+        virtual_network_id:  "vn_GCP"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "example_db_GCP"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.DatabaseArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  US_EAST_1
+          cloud_provider:  GCP
+        }
+        name:  "example-db"
+        engine:  POSTGRES
+        engine_version:  "11"
+        storage_gb:  10
+        size:  MICRO
+        username:  "multyadmin"
+        password:  "multy$Admin123!"
+        subnet_id:  "subnet_GCP"
+        gcp_override: {
+          project: "multy-project"
+        }
+      }
+    }
+  }
+}
+
 
 
 # proto-file: api/proto/configpb/config.proto

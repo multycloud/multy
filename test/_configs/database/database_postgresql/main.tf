@@ -1,3 +1,45 @@
+resource "google_sql_database_instance" "example_db_GCP" {
+  name                = "example-db"
+  project             = "multy-project"
+  database_version    = "POSTGRES_11"
+  deletion_protection = false
+  settings {
+    tier              = "db-f1-micro"
+    availability_type = "ZONAL"
+    disk_autoresize   = false
+    disk_size         = 10
+    ip_configuration {
+      authorized_networks {
+        value = "0.0.0.0/0"
+      }
+    }
+  }
+  provider = "google.us-east4"
+}
+resource "google_sql_user" "example_db_GCP" {
+  name     = "multyadmin"
+  instance = google_sql_database_instance.example_db_GCP.name
+  password = "multy$Admin123!"
+  provider = "google.us-east4"
+  project  = "multy-project"
+}
+resource "google_compute_subnetwork" "subnet_GCP" {
+  name                     = "subnet"
+  project                  = "multy-project"
+  ip_cidr_range            = "10.0.0.0/24"
+  network                  = google_compute_network.vn_GCP.id
+  private_ip_google_access = true
+  provider                 = "google.us-east4"
+}
+resource "google_compute_network" "vn_GCP" {
+  name                            = "db-vn"
+  project                         = "multy-project"
+  routing_mode                    = "REGIONAL"
+  description                     = "Managed by Multy"
+  auto_create_subnetworks         = false
+  delete_default_routes_on_create = true
+  provider                        = "google.us-east4"
+}
 resource "aws_db_subnet_group" "example_db_aws" {
   provider = "aws.us-east-1"
   tags     = {
@@ -212,4 +254,8 @@ provider "aws" {
 }
 provider "azurerm" {
   features {}
+}
+provider "google" {
+  region = "us-east4"
+  alias  = "us-east4"
 }
