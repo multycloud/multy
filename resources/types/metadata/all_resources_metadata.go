@@ -114,6 +114,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.ObjectStorage) resources.ResourceTranslator[*resourcespb.ObjectStorageResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitObjectStorage,
 			commonpb.CloudProvider_AZURE: azure_resources.InitObjectStorage,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitObjectStorage,
 		},
 	},
 	&resourcespb.ObjectStorageObjectArgs{}: &resources.ResourceMetadata[*resourcespb.ObjectStorageObjectArgs, *types.ObjectStorageObject, *resourcespb.ObjectStorageObjectResource]{
@@ -122,6 +123,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.ObjectStorageObject) resources.ResourceTranslator[*resourcespb.ObjectStorageObjectResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitObjectStorageObject,
 			commonpb.CloudProvider_AZURE: azure_resources.InitObjectStorageObject,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitObjectStorageObject,
 		},
 	},
 	&resourcespb.VaultArgs{}: &resources.ResourceMetadata[*resourcespb.VaultArgs, *types.Vault, *resourcespb.VaultResource]{

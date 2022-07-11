@@ -27,8 +27,9 @@ func (r AwsObjectStorage) FromState(state *output.TfState) (*resourcespb.ObjectS
 			CloudProvider:   r.Args.CommonParameters.CloudProvider,
 			NeedsUpdate:     false,
 		},
-		Name:       r.Args.Name,
-		Versioning: r.Args.Versioning,
+		Name:        r.Args.Name,
+		Versioning:  r.Args.Versioning,
+		GcpOverride: r.Args.GcpOverride,
 	}, nil
 }
 

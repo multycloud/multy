@@ -70,3 +70,7 @@ func TestAzureObjectStorageObject(t *testing.T) {
 	t.Parallel()
 	testObjectStorageObject(t, commonpb.CloudProvider_AZURE)
 }
+func TestGcpObjectStorageObject(t *testing.T) {
+	t.Parallel()
+	testObjectStorageObject(t, commonpb.CloudProvider_GCP)
+}

@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/resourcespb"
@@ -46,7 +47,10 @@ func NewObjectStorageObject(r *ObjectStorageObject, resourceId string, args *res
 
 func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	if len(r.Args.ContentBase64) == 0 {
-		errs = append(errs, r.NewValidationError(fmt.Errorf("content_base64 must be set"), ""))
+		errs = append(errs, r.NewValidationError(fmt.Errorf("content_base64 must be set"), "content_base64"))
+	}
+	if _, err := base64.StdEncoding.DecodeString(r.Args.ContentBase64); err != nil {
+		errs = append(errs, r.NewValidationError(fmt.Errorf("content_base64 is not a valid base64 string: %s", err), "content_base64"))
 	}
 	return errs
 }
