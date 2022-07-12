@@ -28,3 +28,7 @@ provider "aws" {
 provider "azurerm" {
   features {}
 }
+provider "google" {
+  region = "europe-west1"
+  alias  = "europe-west1"
+}

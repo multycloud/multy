@@ -25,9 +25,10 @@ func (r AwsVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSecr
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
 		},
-		Name:    r.Args.Name,
-		Value:   r.Args.Value,
-		VaultId: r.Args.VaultId,
+		Name:        r.Args.Name,
+		Value:       r.Args.Value,
+		VaultId:     r.Args.VaultId,
+		GcpOverride: r.Args.GcpOverride,
 	}, nil
 }
 

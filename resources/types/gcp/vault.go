@@ -1,4 +1,4 @@
-package aws_resources
+package gcp_resources
 
 import (
 	"fmt"
@@ -9,15 +9,15 @@ import (
 	"github.com/multycloud/multy/resources/types"
 )
 
-type AwsVault struct {
+type GcpVault struct {
 	*types.Vault
 }
 
 func InitVault(vn *types.Vault) resources.ResourceTranslator[*resourcespb.VaultResource] {
-	return AwsVault{vn}
+	return GcpVault{vn}
 }
 
-func (r AwsVault) FromState(state *output.TfState) (*resourcespb.VaultResource, error) {
+func (r GcpVault) FromState(state *output.TfState) (*resourcespb.VaultResource, error) {
 	return &resourcespb.VaultResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -31,10 +31,10 @@ func (r AwsVault) FromState(state *output.TfState) (*resourcespb.VaultResource, 
 	}, nil
 }
 
-func (r AwsVault) Translate(resources.MultyContext) ([]output.TfBlock, error) {
+func (r GcpVault) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	return nil, nil
 }
 
-func (r AwsVault) GetMainResourceName() (string, error) {
-	return "", fmt.Errorf("vaults doesn't output any resources in AWS")
+func (r GcpVault) GetMainResourceName() (string, error) {
+	return "", fmt.Errorf("vaults doesn't output any resources in gcp")
 }

@@ -29,6 +29,21 @@ resources:  {
   }
 }
 resources:  {
+  resource_id:  "example_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VaultArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "dev-test-multy"
+      }
+    }
+  }
+}
+resources:  {
   resource_id:  "rg1"
   resource_args:  {
     resource_args:  {

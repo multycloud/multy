@@ -133,6 +133,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.Vault) resources.ResourceTranslator[*resourcespb.VaultResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitVault,
 			commonpb.CloudProvider_AZURE: azure_resources.InitVault,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitVault,
 		},
 	},
 	&resourcespb.VaultAccessPolicyArgs{}: &resources.ResourceMetadata[*resourcespb.VaultAccessPolicyArgs, *types.VaultAccessPolicy, *resourcespb.VaultAccessPolicyResource]{
@@ -149,6 +150,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(secret *types.VaultSecret) resources.ResourceTranslator[*resourcespb.VaultSecretResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitVaultSecret,
 			commonpb.CloudProvider_AZURE: azure_resources.InitVaultSecret,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitVaultSecret,
 		},
 	},
 	&resourcespb.VirtualMachineArgs{}: &resources.ResourceMetadata[*resourcespb.VirtualMachineArgs, *types.VirtualMachine, *resourcespb.VirtualMachineResource]{
