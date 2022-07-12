@@ -6,4 +6,7 @@ type GoogleServiceAccount struct {
 	*common.GcpResource `hcl:",squash"  default:"name=google_service_account"`
 	AccountId           string `hcl:"account_id"`
 	DisplayName         string `hcl:"display_name"`
+
+	// outputs
+	Email string `json:"email" hcle:"omitempty"`
 }
