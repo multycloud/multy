@@ -11,13 +11,14 @@ import (
 type GoogleComputeInstance struct {
 	*common.GcpResource `hcl:",squash"  default:"name=google_compute_instance"`
 
-	MachineType           string                   `hcl:"machine_type"`
-	BootDisk              GoogleBootDisk           `hcl:"boot_disk"`
-	Zone                  string                   `hcl:"zone" hcle:"omitempty"`
-	Tags                  []string                 `hcl:"tags" hcle:"omitempty"`
-	MetadataStartupScript string                   `hcl:"metadata_startup_script" hcle:"omitempty"`
-	NetworkInterface      []GoogleNetworkInterface `hcl:"network_interface,blocks" json:"network_interface"`
-	Metadata              map[string]string        `hcl:"metadata" hcle:"omitempty"`
+	MachineType           string                              `hcl:"machine_type"`
+	BootDisk              GoogleBootDisk                      `hcl:"boot_disk"`
+	Zone                  string                              `hcl:"zone" hcle:"omitempty"`
+	Tags                  []string                            `hcl:"tags" hcle:"omitempty"`
+	MetadataStartupScript string                              `hcl:"metadata_startup_script" hcle:"omitempty"`
+	NetworkInterface      []GoogleNetworkInterface            `hcl:"network_interface,blocks" json:"network_interface"`
+	Metadata              map[string]string                   `hcl:"metadata" hcle:"omitempty"`
+	ServiceAccount        GoogleComputeInstanceServiceAccount `hcl:"service_account"`
 }
 
 type GoogleBootDisk struct {
@@ -39,6 +40,11 @@ type GoogleNetworkInterfaceAccessConfig struct {
 
 	// outputs
 	NatIp string `hcl:"nat_ip,expr" hcle:"omitempty" json:"nat_ip"`
+}
+
+type GoogleComputeInstanceServiceAccount struct {
+	Email  string   `hcl:"email,expr"`
+	Scopes []string `hcl:"scopes"`
 }
 
 func GetLatestGcpImage(ref *resourcespb.ImageReference) (string, error) {

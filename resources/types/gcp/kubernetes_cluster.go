@@ -153,7 +153,7 @@ func (r GcpKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.Tf
 }
 
 func (r GcpKubernetesCluster) getServiceAccountId() string {
-	return common.UniqueId(r.Args.Name, "-sa-", common.AlphanumericFormatFunc)
+	return common.UniqueId(r.Args.Name, "-sa-", common.LowercaseAlphanumericAndDashFormatFunc)
 }
 
 func (r GcpKubernetesCluster) GetMainResourceName() (string, error) {

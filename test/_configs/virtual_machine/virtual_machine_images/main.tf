@@ -326,7 +326,12 @@ resource "google_compute_subnetwork" "subnet_gcp" {
   provider                 = "google.europe-west1"
   project                  = "multy-project"
 }
-
+resource "google_service_account" "test-vm-vm2gcp-sa-w48h" {
+  project      = "multy-project"
+  account_id   = "test-vm-vm2gcp-sa-w48h"
+  display_name = "Service Account for VM test-vm"
+  provider     = "google.europe-west1"
+}
 resource "google_compute_instance" "vm_gcp" {
   name         = "test-vm"
   machine_type = "e2-medium"
@@ -343,6 +348,10 @@ resource "google_compute_instance" "vm_gcp" {
   metadata = { "user-data" = "echo 'Hello World'" }
   provider = "google.europe-west1"
   project  = "multy-project"
+  service_account {
+    email  = google_service_account.test-vm-vmgcp-sa-dvl7.email
+    scopes = ["cloud-platform"]
+  }
 }
 resource "google_compute_network" "example_vn_gcp" {
   name                            = "example_gcp"
@@ -352,6 +361,12 @@ resource "google_compute_network" "example_vn_gcp" {
   delete_default_routes_on_create = true
   provider                        = "google.europe-west1"
   project                         = "multy-project"
+}
+resource "google_service_account" "test-vm-vmgcp-sa-dvl7" {
+  project      = "multy-project"
+  account_id   = "test-vm-vmgcp-sa-dvl7"
+  display_name = "Service Account for VM test-vm"
+  provider     = "google.europe-west1"
 }
 resource "google_compute_instance" "vm2_gcp" {
   name         = "test-vm"
@@ -369,6 +384,10 @@ resource "google_compute_instance" "vm2_gcp" {
   metadata = {}
   provider = "google.europe-west1"
   project  = "multy-project"
+  service_account {
+    email  = google_service_account.test-vm-vm2gcp-sa-w48h.email
+    scopes = ["cloud-platform"]
+  }
 }
 provider "google" {
   region = "europe-west1"
