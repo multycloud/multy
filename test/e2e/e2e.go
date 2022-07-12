@@ -19,8 +19,10 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"log"
+	"math/rand"
 	"os"
 	"testing"
+	"time"
 )
 
 var destroyAfter = flag.Bool("destroy_after", true, "If false, resources won't be destroyed after tests complete.")
@@ -65,6 +67,7 @@ func logGrpcErrorDetails(t *testing.T, err error) {
 var server *api.Server
 
 func init() {
+	rand.Seed(time.Now().UnixMilli())
 	if server != nil {
 		return
 	}

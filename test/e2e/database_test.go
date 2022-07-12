@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os/exec"
 	"testing"
+	"time"
 )
 
 func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
@@ -88,9 +89,11 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 	db, err := server.DatabaseService.Create(ctx, createDbRequest)
 	if err != nil {
 		logGrpcErrorDetails(t, err)
-		t.Fatalf("unable to create route table association: %+v", err)
+		t.Fatalf("unable to create database: %+v", err)
 	}
 	cleanup(t, ctx, server.DatabaseService, db)
+
+	time.Sleep(5 * time.Second)
 
 	out, err := exec.Command("mysql", "-h", db.Host, "-P", "3306", "-u", db.ConnectionUsername, "--password="+db.Password, "-e", "select 12+34;").CombinedOutput()
 	if err != nil {
@@ -106,4 +109,9 @@ func TestAwsDatabase(t *testing.T) {
 func TestAzureDatabase(t *testing.T) {
 	t.Parallel()
 	testDatabase(t, commonpb.CloudProvider_AZURE)
+}
+
+func TestGcpDatabase(t *testing.T) {
+	t.Parallel()
+	testDatabase(t, commonpb.CloudProvider_GCP)
 }

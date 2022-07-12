@@ -6,6 +6,7 @@ import (
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/validate"
+	"golang.org/x/exp/slices"
 )
 
 type Database struct {
@@ -58,6 +59,9 @@ func NewDatabase(r *Database, resourceId string, db *resourcespb.DatabaseArgs, o
 	return nil
 }
 
+var MysqlVersions = []string{"5.6", "5.7", "8.0"}
+var PostgresVersions = []string{"10", "11", "12", "13", "14"}
+
 func (r *Database) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
 	if r.Args.Engine == resourcespb.DatabaseEngine_UNKNOWN_ENGINE {
@@ -68,6 +72,19 @@ func (r *Database) Validate(ctx resources.MultyContext) (errs []validate.Validat
 	}
 	if r.GetCloud() == commonpb.CloudProvider_AZURE && r.Args.Port != 0 {
 		errs = append(errs, r.NewValidationError(fmt.Errorf("azure doesn't support custom ports"), "port"))
+	}
+	if r.Args.Engine == resourcespb.DatabaseEngine_MYSQL {
+		if !slices.Contains(MysqlVersions, r.Args.EngineVersion) {
+			errs = append(errs, r.NewValidationError(fmt.Errorf("'%s' is an unsupported engine version for mysql, must be one of %+q", r.Args.EngineVersion, MysqlVersions), "engine_version"))
+		}
+	}
+	if r.Args.Engine == resourcespb.DatabaseEngine_POSTGRES {
+		if !slices.Contains(PostgresVersions, r.Args.EngineVersion) {
+			errs = append(errs, r.NewValidationError(fmt.Errorf("'%s' is an unsupported engine version for postgres, must be one of %+q", r.Args.EngineVersion, PostgresVersions), "engine_version"))
+		}
+	}
+	if r.Args.Engine == resourcespb.DatabaseEngine_MARIADB && r.GetCloud() == commonpb.CloudProvider_GCP {
+		errs = append(errs, r.NewValidationError(fmt.Errorf("mariadb is not supported in gcp"), "engine"))
 	}
 	// TODO regex validate r username && password
 	// TODO validate DB Size

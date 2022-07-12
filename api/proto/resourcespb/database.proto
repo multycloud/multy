@@ -33,6 +33,12 @@ enum DatabaseEngine {
   MARIADB = 3;
 }
 
+
+message DatabaseGcpOverride {
+  string project = 1;
+}
+
+
 message DatabaseArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
@@ -45,6 +51,8 @@ message DatabaseArgs {
   repeated string subnet_ids = 9;
   int32 port = 10;
   string subnet_id = 11;
+
+  DatabaseGcpOverride gcp_override = 12;
 }
 
 message DatabaseResource {
@@ -59,6 +67,7 @@ message DatabaseResource {
   repeated string subnet_ids = 9;
   int32 port = 12;
   string subnet_id = 13;
+  DatabaseGcpOverride gcp_override = 14;
 
   //outputs
   string host = 10;
