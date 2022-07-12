@@ -32,7 +32,8 @@ func (r AzureVault) FromState(state *output.TfState) (*resourcespb.VaultResource
 			CloudProvider:   r.Args.CommonParameters.CloudProvider,
 			NeedsUpdate:     false,
 		},
-		Name: r.Args.Name,
+		Name:        r.Args.Name,
+		GcpOverride: r.Args.GcpOverride,
 	}, nil
 }
 

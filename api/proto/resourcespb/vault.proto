@@ -26,12 +26,20 @@ message DeleteVaultRequest {
   string resource_id = 1;
 }
 
+message VaultGcpOverride {
+  string project = 1;
+}
+
 message VaultArgs {
   common.ResourceCommonArgs common_parameters = 1;
   string name = 2;
+
+  VaultGcpOverride gcp_override = 3;
 }
 
 message VaultResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
+
+  VaultGcpOverride gcp_override = 3;
 }

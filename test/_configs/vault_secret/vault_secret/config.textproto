@@ -29,6 +29,24 @@ resources:  {
   }
 }
 resources:  {
+  resource_id:  "example_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VaultArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "dev-test-secret-multy"
+        gcp_override: {
+          project: "multy-project"
+        }
+      }
+    }
+  }
+}
+resources:  {
   resource_id:  "api_key_aws"
   resource_args:  {
     resource_args:  {
@@ -48,6 +66,18 @@ resources:  {
         name:  "api-key"
         value:  "xxx"
         vault_id:  "example_azure"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "api_key_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VaultSecretArgs]:  {
+        name:  "api-key"
+        value:  "xxx"
+        vault_id:  "example_gcp"
       }
     }
   }
