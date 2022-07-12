@@ -9,6 +9,7 @@ import (
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/iam"
 	"github.com/multycloud/multy/resources/output/subnet"
 	"github.com/multycloud/multy/resources/output/virtual_machine"
 	"github.com/multycloud/multy/resources/types"
@@ -117,6 +118,13 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 		}
 	}
 
+	serviceAccountId := r.getServiceAccountId()
+	serviceAccount := &iam.GoogleServiceAccount{
+		GcpResource: common.NewGcpResource(serviceAccountId, "", r.Args.GetGcpOverride().GetProject()),
+		AccountId:   serviceAccountId,
+		DisplayName: fmt.Sprintf("Service Account for VM %s", r.Args.Name),
+	}
+
 	vm := &virtual_machine.GoogleComputeInstance{
 		GcpResource: common.NewGcpResource(r.ResourceId, r.Args.Name, r.Args.GetGcpOverride().GetProject()),
 		MachineType: size,
@@ -129,10 +137,18 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 		},
 		Metadata:         m,
 		NetworkInterface: []virtual_machine.GoogleNetworkInterface{networkInterface},
+		ServiceAccount: virtual_machine.GoogleComputeInstanceServiceAccount{
+			Email:  fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), serviceAccountId),
+			Scopes: []string{"cloud-platform"},
+		},
 	}
-	return []output.TfBlock{vm}, nil
+	return []output.TfBlock{serviceAccount, vm}, nil
 }
 
 func (r GcpVirtualMachine) GetMainResourceName() (string, error) {
 	return output.GetResourceName(virtual_machine.GoogleComputeInstance{}), nil
+}
+
+func (r GcpVirtualMachine) getServiceAccountId() string {
+	return common.UniqueId(fmt.Sprintf("%s-%s", r.Args.Name, r.ResourceId), "-sa-", common.LowercaseAlphanumericAndDashFormatFunc)
 }

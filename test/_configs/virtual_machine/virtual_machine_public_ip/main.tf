@@ -265,6 +265,13 @@ resource "google_compute_subnetwork" "subnet_gcp" {
   project                  = "multy-project"
 }
 
+resource "google_service_account" "test-vm-vmgcp-sa-dvl7" {
+  project      = "multy-project"
+  account_id   = "test-vm-vmgcp-sa-dvl7"
+  display_name = "Service Account for VM test-vm"
+  provider     = "google.europe-west1"
+}
+
 resource "google_compute_instance" "vm_gcp" {
   name         = "test-vm"
   machine_type = "e2-standard-2"
@@ -287,6 +294,10 @@ resource "google_compute_instance" "vm_gcp" {
   }
   provider = "google.europe-west1"
   project  = "multy-project"
+  service_account {
+    email  = google_service_account.test-vm-vmgcp-sa-dvl7.email
+    scopes = ["cloud-platform"]
+  }
 }
 
 resource "google_compute_network" "example_vn_gcp" {

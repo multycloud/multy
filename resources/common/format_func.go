@@ -22,3 +22,14 @@ func AlphanumericFormatFunc(s string) string {
 	}
 	return reg.ReplaceAllString(s, "")
 }
+
+func LowercaseAlphanumericAndDashFormatFunc(s string) string {
+	s = strings.ToLower(s)
+	// remove all illegal chars
+	s = regexp.MustCompile("[^-a-z\\d]+").ReplaceAllString(s, "")
+	// remove dashes and numbers in the beginning of the string
+	s = regexp.MustCompile("^[-0-9]+").ReplaceAllString(s, "")
+	// remove dashes from the end of the string
+	s = regexp.MustCompile("-+$").ReplaceAllString(s, "")
+	return s
+}
