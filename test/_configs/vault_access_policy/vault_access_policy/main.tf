@@ -155,6 +155,9 @@ resource "google_secret_manager_secret_iam_member" "vault_access_policy_gcp-api_
   member    = "serviceAccount:test@multy-project.iam.gserviceaccount.com"
   provider  = "google.europe-west1"
 }
+data "aws_caller_identity" "vm_aws" {
+  provider = "aws.eu-west-1"
+}
 resource "aws_iam_instance_profile" "vm_aws" {
   name     = "multy-vm-vm_aws-role"
   role     = aws_iam_role.vm_aws.name
@@ -164,7 +167,11 @@ resource "aws_iam_role" "vm_aws" {
   tags               = { "Name" = "test-vm" }
   name               = "multy-vm-vm_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
-  provider           = "aws.eu-west-1"
+  inline_policy {
+    name   = "vault_policy"
+    policy = "{\"Statement\":[{\"Action\":[\"ssm:GetParameter*\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:ssm:eu-west-1:${data.aws_caller_identity.vm_aws.account_id}:parameter/dev-test-secret-multy/*\"},{\"Action\":[\"ssm:DescribeParameters\"],\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}"
+  }
+  provider = "aws.eu-west-1"
 }
 data "aws_ami" "vm_aws" {
   owners      = ["099720109477"]

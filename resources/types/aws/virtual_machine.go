@@ -86,10 +86,6 @@ type AwsCallerIdentityData struct {
 	*output.TerraformDataSource `hcl:",squash" default:"name=aws_caller_identity"`
 }
 
-type AwsRegionData struct {
-	*output.TerraformDataSource `hcl:",squash" default:"name=aws_region"`
-}
-
 func (r AwsVirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
 	if r.Args.UserDataBase64 != "" {
 		r.Args.UserDataBase64 = fmt.Sprintf(hclencoder.EscapeString(r.Args.UserDataBase64))
@@ -152,14 +148,13 @@ func (r AwsVirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlo
 
 	if vault := getVaultAssociatedIdentity(ctx, r.GetIdentity()); vault != nil {
 		awsResources = append(awsResources,
-			AwsCallerIdentityData{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.ResourceId}},
-			AwsRegionData{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.ResourceId}})
+			AwsCallerIdentityData{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.ResourceId}})
 
 		policy, err := json.Marshal(iam.AwsIamPolicy{
 			Statement: []iam.AwsIamPolicyStatement{{
 				Action:   []string{"ssm:GetParameter*"},
 				Effect:   "Allow",
-				Resource: fmt.Sprintf("arn:aws:ssm:${data.aws_region.%s.name}:${data.aws_caller_identity.%s.account_id}:parameter/%s/*", r.ResourceId, r.ResourceId, vault.Args.Name),
+				Resource: fmt.Sprintf("arn:aws:ssm:%s:${data.aws_caller_identity.%s.account_id}:parameter/%s/*", vault.GetCloudSpecificLocation(), r.ResourceId, vault.Args.Name),
 			}, {
 				Action:   []string{"ssm:DescribeParameters"},
 				Effect:   "Allow",

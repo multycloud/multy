@@ -56,6 +56,8 @@ func createSshConfig(t *testing.T, cloud commonpb.CloudProvider) (string, *ssh.C
 		t.Fatalf("unable to create ssh key: %+v", err)
 	}
 
+	//os.WriteFile("key", []byte(privKey), 600)
+
 	username := "adminuser"
 	if cloud == commonpb.CloudProvider_AWS {
 		username = "ubuntu"
@@ -108,15 +110,7 @@ sudo echo "hello world" > /tmp/test.txt`)),
 		logGrpcErrorDetails(t, err)
 		t.Fatalf("unable to create virtual machine: %+v", err)
 	}
-	t.Cleanup(func() {
-		if *destroyAfter {
-			_, err := server.VirtualMachineService.Delete(ctx, &resourcespb.DeleteVirtualMachineRequest{ResourceId: vm.CommonParameters.ResourceId})
-			if err != nil {
-				logGrpcErrorDetails(t, err)
-				t.Logf("unable to delete resource %+v", err)
-			}
-		}
-	})
+	cleanup(t, ctx, server.VirtualMachineService, vm)
 	return vm, nsg
 }
 
