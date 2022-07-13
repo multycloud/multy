@@ -52,6 +52,7 @@ func (r AwsDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 		SubnetId:           r.Args.SubnetId,
 		Host:               host,
 		ConnectionUsername: r.Args.Username,
+		GcpOverride:        r.Args.GcpOverride,
 	}, nil
 }
 

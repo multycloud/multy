@@ -238,7 +238,7 @@ resources:  {
       [type.googleapis.com/dev.multy.resources.VaultAccessPolicyArgs]:  {
         vault_id:  "example_aws"
         access: READ
-        identity: "arn:aws:iam::account:role/role-name-with-path"
+        identity: "multy-vm-vm_aws-role"
       }
     }
   }

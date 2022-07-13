@@ -115,9 +115,9 @@ resource "azurerm_kubernetes_cluster" "cluster_azure" {
     service_cidr       = "10.100.0.0/16"
   }
 }
-resource "google_service_account" "cluster-sa-avg8" {
+resource "google_service_account" "cluster-clusterg9tb6-sa-8cxb" {
   project      = "multy-project"
-  account_id   = "cluster-sa-avg8"
+  account_id   = "cluster-clusterg9tb6-sa-8cxb"
   display_name = "Service Account for cluster cluster - created by Multy"
   provider     = "google.europe-west1"
 }
@@ -134,7 +134,7 @@ resource "google_container_node_pool" "cluster_gcp_default_pool" {
   node_config {
     machine_type    = "e2-medium"
     tags            = ["subnet-public-subnet"]
-    service_account = google_service_account.cluster-sa-avg8.email
+    service_account = google_service_account.cluster-clusterg9tb6-sa-8cxb.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
   }
   provider = "google.europe-west1"
@@ -153,7 +153,7 @@ resource "google_container_cluster" "cluster_gcp" {
   node_config {
     machine_type    = "e2-micro"
     tags            = ["subnet-public-subnet"]
-    service_account = google_service_account.cluster-sa-avg8.email
+    service_account = google_service_account.cluster-clusterg9tb6-sa-8cxb.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
   }
   provider = "google.europe-west1"
