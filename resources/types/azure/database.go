@@ -63,6 +63,7 @@ func (r AzureDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseRe
 		SubnetId:           r.Args.SubnetId,
 		Host:               host,
 		ConnectionUsername: fmt.Sprintf("%s@%s", r.Args.Username, host),
+		GcpOverride:        r.Args.GcpOverride,
 	}, nil
 }
 

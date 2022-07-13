@@ -97,7 +97,7 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 }
 
 func setupVmForVaultTest(t *testing.T, ctx context.Context, location commonpb.Location, cloud commonpb.CloudProvider, pubKey string) *resourcespb.VirtualMachineResource {
-	subnet, nsg := createNetworkWithInternetAccess(t, ctx, location, cloud, "vm")
+	subnet, nsg := createNetworkWithInternetAccess(t, ctx, location, cloud, "vault")
 	createVmRequest := &resourcespb.CreateVirtualMachineRequest{Resource: &resourcespb.VirtualMachineArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
 			Location:      location,
