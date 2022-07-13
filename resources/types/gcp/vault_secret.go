@@ -45,11 +45,15 @@ func (r GcpVaultSecret) Translate(resources.MultyContext) ([]output.TfBlock, err
 
 	version := vault_secret.GoogleSecretManagerSecretVersion{
 		GcpResource: common.NewGcpResourceWithNoProject(r.ResourceId, ""),
-		SecretId:    fmt.Sprintf("%s.%s.id", output.GetResourceName(secret), r.ResourceId),
+		SecretId:    r.getSecretId(),
 		SecretData:  r.Args.Value,
 	}
 
 	return []output.TfBlock{&secret, &version}, nil
+}
+
+func (r GcpVaultSecret) getSecretId() string {
+	return fmt.Sprintf("%s.%s.id", output.GetResourceName(vault_secret.GoogleSecretManagerSecret{}), r.ResourceId)
 }
 
 func (r GcpVaultSecret) GetMainResourceName() (string, error) {

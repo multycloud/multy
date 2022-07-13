@@ -142,6 +142,7 @@ var Metadatas = map[proto.Message]resources.ResourceMetadataInterface{
 		Translators: map[commonpb.CloudProvider]func(*types.VaultAccessPolicy) resources.ResourceTranslator[*resourcespb.VaultAccessPolicyResource]{
 			commonpb.CloudProvider_AWS:   aws_resources.InitVaultAccessPolicy,
 			commonpb.CloudProvider_AZURE: azure_resources.InitVaultAccessPolicy,
+			commonpb.CloudProvider_GCP:   gcp_resources.InitVaultAccessPolicy,
 		},
 	},
 	&resourcespb.VaultSecretArgs{}: &resources.ResourceMetadata[*resourcespb.VaultSecretArgs, *types.VaultSecret, *resourcespb.VaultSecretResource]{

@@ -60,6 +60,12 @@ func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		if r.Args.GeneratePublicIp {
 			out.PublicIp = vm.NetworkInterface[0].AccessConfig[0].NatIp
 		}
+
+		sa, err := output.GetParsedById[iam.GoogleServiceAccount](state, r.getServiceAccountId())
+		if err != nil {
+			return nil, err
+		}
+		out.IdentityId = sa.Email
 	}
 
 	return out, nil
