@@ -209,11 +209,21 @@ func testKubernetesDeployment(t *testing.T, kubecfg string) {
 		t.Fatal("pods are not running after 30 seconds")
 	}
 
-	// kubectl exec test-deployment-76cdbc6456-6mdv2 -- curl 10.0.0.171
-	out, err = exec.Command("/usr/local/bin/kubectl", "--kubeconfig", kubecfg, "exec", o.Items[0].Metadata.Name, "--", "curl", o.Items[1].Status.PodIp).CombinedOutput()
+	err = fmt.Errorf("")
+	for i := 0; i < 5 && err != nil; i++ {
+		// kubectl exec test-deployment-76cdbc6456-6mdv2 -- curl 10.0.0.171
+		out, err = exec.Command("/usr/local/bin/kubectl", "--kubeconfig", kubecfg, "exec", o.Items[0].Metadata.Name, "--", "curl", o.Items[1].Status.PodIp).CombinedOutput()
+		if err != nil {
+			t.Logf(string(out))
+			t.Logf("waiting 5 seconds to check if error goes away")
+			time.Sleep(5 * time.Second)
+		}
+	}
+
 	if err != nil {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
+
 	assert.Contains(t, string(out), "<h1>Welcome to nginx!</h1>")
 }
 

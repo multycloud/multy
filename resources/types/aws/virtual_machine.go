@@ -196,7 +196,7 @@ func (r AwsVirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlo
 	if r.Args.PublicSshKey != "" {
 		keyPair := virtual_machine.AwsKeyPair{
 			AwsResource: common.NewAwsResource(r.ResourceId, r.Args.Name),
-			KeyName:     fmt.Sprintf("%s_multy", r.ResourceId),
+			KeyName:     common.UniqueId(fmt.Sprintf("%s-%s", r.Args.Name, r.ResourceId), "-key-", common.LowercaseAlphanumericAndDashFormatFunc),
 			PublicKey:   r.Args.PublicSshKey,
 		}
 		ec2.KeyName = fmt.Sprintf("%s.%s.key_name", virtual_machine.AwsKeyPairResourceName, r.ResourceId)

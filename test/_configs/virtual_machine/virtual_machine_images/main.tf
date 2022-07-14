@@ -1,18 +1,17 @@
 resource "aws_vpc" "example_vn_aws" {
-  provider             = "aws.eu-west-1"
   tags                 = { "Name" = "example_vn" }
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
+  provider             = "aws.eu-west-1"
 }
 resource "aws_internet_gateway" "example_vn_aws" {
-  provider = "aws.eu-west-1"
   tags     = { "Name" = "example_vn" }
   vpc_id   = aws_vpc.example_vn_aws.id
+  provider = "aws.eu-west-1"
 }
 resource "aws_default_security_group" "example_vn_aws" {
-  provider = "aws.eu-west-1"
-  tags     = { "Name" = "example_vn" }
-  vpc_id   = aws_vpc.example_vn_aws.id
+  tags   = { "Name" = "example_vn" }
+  vpc_id = aws_vpc.example_vn_aws.id
   ingress {
     protocol  = "-1"
     from_port = 0
@@ -25,6 +24,7 @@ resource "aws_default_security_group" "example_vn_aws" {
     to_port   = 0
     self      = true
   }
+  provider = "aws.eu-west-1"
 }
 resource "azurerm_virtual_network" "example_vn_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
@@ -42,30 +42,39 @@ resource "azurerm_route_table" "example_vn_azure" {
     next_hop_type  = "VnetLocal"
   }
 }
+resource "google_compute_network" "example_vn_gcp" {
+  name                            = "example_gcp"
+  project                         = "multy-project"
+  routing_mode                    = "REGIONAL"
+  description                     = "Managed by Multy"
+  auto_create_subnetworks         = false
+  delete_default_routes_on_create = true
+  provider                        = "google.europe-west1"
+}
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
   location = "northeurope"
 }
 resource "aws_subnet" "subnet_aws-1" {
-  provider          = "aws.eu-west-1"
   tags              = { "Name" = "subnet-1" }
   cidr_block        = "10.0.2.0/25"
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "eu-west-1a"
+  provider          = "aws.eu-west-1"
 }
 resource "aws_subnet" "subnet_aws-2" {
-  provider          = "aws.eu-west-1"
   tags              = { "Name" = "subnet-2" }
   cidr_block        = "10.0.2.128/26"
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "eu-west-1b"
+  provider          = "aws.eu-west-1"
 }
 resource "aws_subnet" "subnet_aws-3" {
-  provider          = "aws.eu-west-1"
   tags              = { "Name" = "subnet-3" }
   cidr_block        = "10.0.2.192/26"
   vpc_id            = aws_vpc.example_vn_aws.id
   availability_zone = "eu-west-1c"
+  provider          = "aws.eu-west-1"
 }
 resource "azurerm_subnet" "subnet_azure" {
   resource_group_name  = azurerm_resource_group.rg1.name
@@ -77,19 +86,26 @@ resource "azurerm_subnet_route_table_association" "subnet_azure" {
   subnet_id      = azurerm_subnet.subnet_azure.id
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
+resource "google_compute_subnetwork" "subnet_gcp" {
+  name                     = "subnet"
+  project                  = "multy-project"
+  ip_cidr_range            = "10.0.2.0/24"
+  network                  = google_compute_network.example_vn_gcp.id
+  private_ip_google_access = true
+  provider                 = "google.europe-west1"
+}
 resource "aws_iam_instance_profile" "vm2_aws" {
-  provider = "aws.eu-west-1"
-  name     = "multy-vm-vm2_aws-role"
+  name     = "test-vm-vm2_aws-role"
   role     = aws_iam_role.vm2_aws.name
+  provider = "aws.eu-west-1"
 }
 resource "aws_iam_role" "vm2_aws" {
-  provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
-  name               = "multy-vm-vm2_aws-role"
+  name               = "test-vm-vm2_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  provider           = "aws.eu-west-1"
 }
 data "aws_ami" "vm2_aws" {
-  provider    = "aws.eu-west-1"
   owners      = ["136693071363"]
   most_recent = true
   filter {
@@ -104,14 +120,15 @@ data "aws_ami" "vm2_aws" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
+  provider = "aws.eu-west-1"
 }
 resource "aws_instance" "vm2_aws" {
-  provider             = "aws.eu-west-1"
   tags                 = { "Name" = "test-vm" }
   ami                  = data.aws_ami.vm2_aws.id
   instance_type        = "t2.nano"
   subnet_id            = aws_subnet.subnet_aws-3.id
   iam_instance_profile = aws_iam_instance_profile.vm2_aws.id
+  provider             = "aws.eu-west-1"
 }
 resource "azurerm_network_interface" "vm2_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
@@ -132,7 +149,6 @@ resource "random_password" "vm2_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm2_azure" {
-  zone                  = "3"
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   location              = "northeurope"
@@ -155,20 +171,47 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
     type = "SystemAssigned"
   }
   computer_name = "testvm"
+  zone          = "3"
+}
+resource "google_service_account" "test-vm-vm2gcp-sa-w48h" {
+  project      = "multy-project"
+  account_id   = "test-vm-vm2gcp-sa-w48h"
+  display_name = "Service Account for VM test-vm"
+  provider     = "google.europe-west1"
+}
+resource "google_compute_instance" "vm2_gcp" {
+  name         = "test-vm"
+  project      = "multy-project"
+  machine_type = "e2-micro"
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+    }
+  }
+  zone = "europe-west1-c"
+  tags = ["subnet-subnet"]
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet_gcp.self_link
+  }
+  metadata = {}
+  service_account {
+    email  = google_service_account.test-vm-vm2gcp-sa-w48h.email
+    scopes = ["cloud-platform"]
+  }
+  provider = "google.europe-west1"
 }
 resource "aws_iam_instance_profile" "vm3_aws" {
-  provider = "aws.eu-west-1"
-  name     = "multy-vm-vm3_aws-role"
+  name     = "test-vm-vm3_aws-role"
   role     = aws_iam_role.vm3_aws.name
+  provider = "aws.eu-west-1"
 }
 resource "aws_iam_role" "vm3_aws" {
-  provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
-  name               = "multy-vm-vm3_aws-role"
+  name               = "test-vm-vm3_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  provider           = "aws.eu-west-1"
 }
 data "aws_ami" "vm3_aws" {
-  provider    = "aws.eu-west-1"
   owners      = ["125523088429"]
   most_recent = true
   filter {
@@ -183,14 +226,15 @@ data "aws_ami" "vm3_aws" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
+  provider = "aws.eu-west-1"
 }
 resource "aws_instance" "vm3_aws" {
-  provider             = "aws.eu-west-1"
   tags                 = { "Name" = "test-vm" }
   ami                  = data.aws_ami.vm3_aws.id
   instance_type        = "t2.nano"
   subnet_id            = aws_subnet.subnet_aws-2.id
   iam_instance_profile = aws_iam_instance_profile.vm3_aws.id
+  provider             = "aws.eu-west-1"
 }
 resource "azurerm_network_interface" "vm3_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
@@ -211,7 +255,6 @@ resource "random_password" "vm3_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm3_azure" {
-  zone                  = "2"
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   location              = "northeurope"
@@ -234,20 +277,20 @@ resource "azurerm_linux_virtual_machine" "vm3_azure" {
     type = "SystemAssigned"
   }
   computer_name = "testvm"
+  zone          = "2"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  provider = "aws.eu-west-1"
-  name     = "multy-vm-vm_aws-role"
+  name     = "test-vm-vm_aws-role"
   role     = aws_iam_role.vm_aws.name
+  provider = "aws.eu-west-1"
 }
 resource "aws_iam_role" "vm_aws" {
-  provider           = "aws.eu-west-1"
   tags               = { "Name" = "test-vm" }
-  name               = "multy-vm-vm_aws-role"
+  name               = "test-vm-vm_aws-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  provider           = "aws.eu-west-1"
 }
 data "aws_ami" "vm_aws" {
-  provider    = "aws.eu-west-1"
   owners      = ["099720109477"]
   most_recent = true
   filter {
@@ -262,15 +305,16 @@ data "aws_ami" "vm_aws" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
+  provider = "aws.eu-west-1"
 }
 resource "aws_instance" "vm_aws" {
-  provider             = "aws.eu-west-1"
   tags                 = { "Name" = "test-vm" }
   ami                  = data.aws_ami.vm_aws.id
   instance_type        = "t2.nano"
   subnet_id            = aws_subnet.subnet_aws-1.id
   user_data_base64     = "ZWNobyAnSGVsbG8gV29ybGQn"
   iam_instance_profile = aws_iam_instance_profile.vm_aws.id
+  provider             = "aws.eu-west-1"
 }
 resource "azurerm_network_interface" "vm_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
@@ -291,7 +335,6 @@ resource "random_password" "vm_azure" {
   number  = true
 }
 resource "azurerm_linux_virtual_machine" "vm_azure" {
-  zone                  = "1"
   resource_group_name   = azurerm_resource_group.rg1.name
   name                  = "test-vm"
   location              = "northeurope"
@@ -315,52 +358,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
     type = "SystemAssigned"
   }
   computer_name = "testvm"
-}
-
-
-resource "google_compute_subnetwork" "subnet_gcp" {
-  name                     = "subnet"
-  ip_cidr_range            = "10.0.2.0/24"
-  network                  = google_compute_network.example_vn_gcp.id
-  private_ip_google_access = true
-  provider                 = "google.europe-west1"
-  project                  = "multy-project"
-}
-resource "google_service_account" "test-vm-vm2gcp-sa-w48h" {
-  project      = "multy-project"
-  account_id   = "test-vm-vm2gcp-sa-w48h"
-  display_name = "Service Account for VM test-vm"
-  provider     = "google.europe-west1"
-}
-resource "google_compute_instance" "vm_gcp" {
-  name         = "test-vm"
-  machine_type = "e2-medium"
-  zone         = "europe-west1-c"
-  tags         = ["subnet-subnet"]
-  boot_disk {
-    initialize_params {
-      image = "ubuntu-os-cloud/ubuntu-1804-lts"
-    }
-  }
-  network_interface {
-    subnetwork = google_compute_subnetwork.subnet_gcp.self_link
-  }
-  metadata = { "user-data" = "echo 'Hello World'" }
-  provider = "google.europe-west1"
-  project  = "multy-project"
-  service_account {
-    email  = google_service_account.test-vm-vmgcp-sa-dvl7.email
-    scopes = ["cloud-platform"]
-  }
-}
-resource "google_compute_network" "example_vn_gcp" {
-  name                            = "example_gcp"
-  routing_mode                    = "REGIONAL"
-  description                     = "Managed by Multy"
-  auto_create_subnetworks         = false
-  delete_default_routes_on_create = true
-  provider                        = "google.europe-west1"
-  project                         = "multy-project"
+  zone          = "1"
 }
 resource "google_service_account" "test-vm-vmgcp-sa-dvl7" {
   project      = "multy-project"
@@ -368,40 +366,36 @@ resource "google_service_account" "test-vm-vmgcp-sa-dvl7" {
   display_name = "Service Account for VM test-vm"
   provider     = "google.europe-west1"
 }
-resource "google_compute_instance" "vm2_gcp" {
+resource "google_compute_instance" "vm_gcp" {
   name         = "test-vm"
-  machine_type = "e2-micro"
-  zone         = "europe-west1-c"
-  tags         = ["subnet-subnet"]
+  project      = "multy-project"
+  machine_type = "e2-medium"
   boot_disk {
     initialize_params {
-      image = "debian-cloud/debian-11"
+      image = "ubuntu-os-cloud/ubuntu-1804-lts"
     }
   }
+  zone = "europe-west1-c"
+  tags = ["subnet-subnet"]
   network_interface {
     subnetwork = google_compute_subnetwork.subnet_gcp.self_link
   }
-  metadata = {}
-  provider = "google.europe-west1"
-  project  = "multy-project"
+  metadata = { "user-data" = "echo 'Hello World'" }
   service_account {
-    email  = google_service_account.test-vm-vm2gcp-sa-w48h.email
+    email  = google_service_account.test-vm-vmgcp-sa-dvl7.email
     scopes = ["cloud-platform"]
+  }
+  provider = "google.europe-west1"
+}
+provider "aws" {
+  region = "eu-west-1"
+  alias  = "eu-west-1"
+}
+provider "azurerm" {
+  features {
   }
 }
 provider "google" {
   region = "europe-west1"
   alias  = "europe-west1"
 }
-
-provider "aws" {
-  region = "eu-west-1"
-  alias  = "eu-west-1"
-}
-
-
-provider "azurerm" {
-  features {
-  }
-}
-
