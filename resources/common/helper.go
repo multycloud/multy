@@ -46,18 +46,18 @@ func UniqueId(prefix string, suffix string, formatFunc FormatFunc) string {
 	formattedPrefix := formatFunc(prefix)
 	maxPrefixLen := 20 - len(suffix)
 	if len(formattedPrefix) > maxPrefixLen {
-		result += formattedPrefix[:maxPrefixLen] + generateHash(prefix)
+		result += formattedPrefix[:maxPrefixLen] + GenerateHash(prefix)
 	} else {
 		result += formattedPrefix
 	}
 
 	result += suffix
-	result += generateHash(prefix + suffix)
+	result += GenerateHash(prefix + suffix)
 
 	return result
 }
 
-func generateHash(s string) string {
+func GenerateHash(s string) string {
 	result := ""
 	h := fnv.New32a()
 	_, err := h.Write([]byte(s))

@@ -1,7 +1,6 @@
 package aws_resources
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/multy-dev/hclencoder"
 	"github.com/multycloud/multy/api/proto/commonpb"
@@ -146,34 +145,6 @@ func (r AwsVirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlo
 		AssumeRolePolicy: iam.NewAssumeRolePolicy("ec2.amazonaws.com"),
 	}
 
-	if vault := getVaultAssociatedIdentity(ctx, r.GetIdentity()); vault != nil {
-		awsResources = append(awsResources,
-			AwsCallerIdentityData{TerraformDataSource: &output.TerraformDataSource{ResourceId: r.ResourceId}})
-
-		policy, err := json.Marshal(iam.AwsIamPolicy{
-			Statement: []iam.AwsIamPolicyStatement{{
-				Action:   []string{"ssm:GetParameter*"},
-				Effect:   "Allow",
-				Resource: fmt.Sprintf("arn:aws:ssm:%s:${data.aws_caller_identity.%s.account_id}:parameter/%s/*", vault.GetCloudSpecificLocation(), r.ResourceId, vault.Args.Name),
-			}, {
-				Action:   []string{"ssm:DescribeParameters"},
-				Effect:   "Allow",
-				Resource: "*",
-			}},
-			Version: "2012-10-17",
-		})
-
-		if err != nil {
-			return nil, fmt.Errorf("unable to encode aws policy: %s", err)
-		}
-
-		iamRole.InlinePolicy = iam.AwsIamRoleInlinePolicy{
-			Name: "vault_policy",
-			// we need to have an expression here because we use template strings within the policy json
-			Policy: fmt.Sprintf("\"%s\"", hclencoder.EscapeString(string(policy))),
-		}
-	}
-
 	iamInstanceProfile := iam.AwsIamInstanceProfile{
 		AwsResource: &common.AwsResource{TerraformResource: output.TerraformResource{ResourceId: r.ResourceId}},
 		Name:        r.GetIdentity(),
@@ -218,16 +189,6 @@ func (r AwsVirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlo
 func (r AwsVirtualMachine) GetMainResourceName() (string, error) {
 	return virtual_machine.AwsResourceName, nil
 }
-
-func getVaultAssociatedIdentity(ctx resources.MultyContext, identity string) *types.Vault {
-	for _, resource := range resources.GetAllResources[*types.VaultAccessPolicy](ctx) {
-		if identity == resource.Args.Identity {
-			return resource.Vault
-		}
-	}
-	return nil
-}
-
 func (r AwsVirtualMachine) GetIdentity() string {
 	return r.GetAwsIdentity()
 }

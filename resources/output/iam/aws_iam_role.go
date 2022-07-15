@@ -11,22 +11,28 @@ import (
 
 type AwsIamRole struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_iam_role"`
-	Name                string                 `hcl:"name"`
-	AssumeRolePolicy    string                 `hcl:"assume_role_policy"`
-	InlinePolicy        AwsIamRoleInlinePolicy `hcl:"inline_policy,optional" hcle:"omitempty"`
+	Name                string `hcl:"name"`
+	AssumeRolePolicy    string `hcl:"assume_role_policy"`
 
 	Id string `json:"id" hcle:"omitempty"`
 }
 
-type AwsIamRoleInlinePolicy struct {
-	Name   string `hcl:"name"`
-	Policy string `hcl:"policy,expr"`
+type AwsIamRolePolicy struct {
+	*common.AwsResource `hcl:",squash" default:"name=aws_iam_policy"`
+	Name                string `hcl:"name"`
+	Policy              string `hcl:"policy,expr"`
 }
 
 type AwsIamRolePolicyAttachment struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_iam_role_policy_attachment"`
 	Role                string `hcl:"role,expr"`
 	PolicyArn           string `hcl:"policy_arn"`
+}
+
+type AwsIamRolePolicyAttachmentForVap struct {
+	*common.AwsResource `hcl:",squash" default:"name=aws_iam_role_policy_attachment"`
+	Role                string `hcl:"role"`
+	PolicyArn           string `hcl:"policy_arn,expr"`
 }
 
 type AwsIamPolicyStatementPrincipal struct {

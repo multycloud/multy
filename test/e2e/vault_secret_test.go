@@ -77,20 +77,18 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 
 	err = fmt.Errorf("")
 	var output []byte
-	for i := 0; i < 5 && err != nil; i++ {
+	for i := 0; i < 6 && err != nil; i++ {
 		var session *ssh.Session
 		session, err = conn.NewSession()
 		if err != nil {
 			t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
 		}
-		t.Cleanup(func() {
-			session.Close()
-		})
 		output, err = session.CombinedOutput(getSecretCommand(vault.Name, vaultSecret.Name, cloud))
 		if err != nil {
 			t.Logf("command outputted: %s. waiting 1 min and trying again", output)
 			time.Sleep(1 * time.Minute)
 		}
+		session.Close()
 	}
 
 	if err != nil {
@@ -99,7 +97,30 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 
 	assert.Equal(t, "test-value\n", string(output), config)
 
-	// TODO: add test to check if there's an error when no access policy is present
+	// remove the access policy and verify that eventually an error is returned when accessing the secret
+	_, err = server.VaultAccessPolicyService.Delete(ctx, &resourcespb.DeleteVaultAccessPolicyRequest{ResourceId: vap.CommonParameters.ResourceId})
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to delete vap: %+v", err)
+	}
+
+	err = nil
+	for i := 0; i < 6 && err == nil; i++ {
+		var session *ssh.Session
+		session, err = conn.NewSession()
+		if err != nil {
+			t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
+		}
+		output, err = session.CombinedOutput(getSecretCommand(vault.Name, vaultSecret.Name, cloud))
+		if err == nil {
+			t.Logf("command outputted: %s. waiting 1 min and trying again", output)
+			time.Sleep(1 * time.Minute)
+		}
+		session.Close()
+	}
+	assert.Error(t, err)
+	t.Logf("comamnd returned %s", output)
+
 	// TODO: add test for OWNER and WRITER policies
 }
 

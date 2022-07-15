@@ -5,6 +5,7 @@ import (
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/configpb"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/proto"
@@ -173,7 +174,9 @@ func (c *MultyConfig) CreateResource(args proto.Message) (Resource, error) {
 		return nil, err
 	}
 	c.c.ResourceCounter += 1
-	resourceId := fmt.Sprintf("multy_%s_r%d", conv.GetAbbreviatedName(), c.c.ResourceCounter)
+	resourceId := fmt.Sprintf("multy_%s_u%s_r%d", conv.GetAbbreviatedName(),
+		common.GenerateHash(c.c.UserId),
+		c.c.ResourceCounter)
 	r, err := conv.Create(resourceId, args, c.Resources)
 	if err != nil {
 		return nil, err
