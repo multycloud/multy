@@ -56,7 +56,10 @@ func createSshConfig(t *testing.T, cloud commonpb.CloudProvider) (string, *ssh.C
 		t.Fatalf("unable to create ssh key: %+v", err)
 	}
 
-	//os.WriteFile("key", []byte(privKey), 600)
+	//err = os.WriteFile("key", []byte(privKey), 0600)
+	//if err != nil {
+	//	t.Fatalf("unable to create ssh key: %+v", err)
+	//}
 
 	username := "adminuser"
 	if cloud == commonpb.CloudProvider_AWS {

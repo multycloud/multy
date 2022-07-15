@@ -94,13 +94,13 @@ resource "azurerm_subnet_route_table_association" "subnet_azure" {
   route_table_id = azurerm_route_table.example_vn_azure.id
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  name     = "test-vm-vm_aws-role"
+  name     = "vm_aws-vm-role"
   role     = aws_iam_role.vm_aws.name
   provider = "aws.eu-west-1"
 }
 resource "aws_iam_role" "vm_aws" {
   tags               = { "Name" = "test-vm" }
-  name               = "test-vm-vm_aws-role"
+  name               = "vm_aws-vm-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }

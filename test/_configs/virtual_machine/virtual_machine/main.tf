@@ -98,13 +98,13 @@ resource "google_compute_subnetwork" "subnet_gcp" {
   project                  = "multy-project"
 }
 resource "aws_iam_instance_profile" "vm2_aws" {
-  name     = "test-vm-vm2_aws-role"
+  name     = "vm2_aws-vm-role"
   role     = aws_iam_role.vm2_aws.name
   provider = "aws.eu-west-1"
 }
 resource "aws_iam_role" "vm2_aws" {
   tags               = { "Name" = "test-vm" }
-  name               = "test-vm-vm2_aws-role"
+  name               = "vm2_aws-vm-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }
@@ -177,13 +177,13 @@ resource "azurerm_linux_virtual_machine" "vm2_azure" {
   computer_name = "testvm"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  name     = "test-vm-vm_aws-role"
+  name     = "vm_aws-vm-role"
   role     = aws_iam_role.vm_aws.name
   provider = "aws.eu-west-1"
 }
 resource "aws_iam_role" "vm_aws" {
   tags               = { "Name" = "test-vm" }
-  name               = "test-vm-vm_aws-role"
+  name               = "vm_aws-vm-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }

@@ -64,7 +64,7 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 	cleanup(t, ctx, server.VaultAccessPolicyService, vap)
 
-	// wait a bit so that the vm is reachable
+	// wait a bit so that the vm is reachable and policy has propagated
 	time.Sleep(3 * time.Minute)
 
 	conn, err := ssh.Dial("tcp", vm.PublicIp+":22", config)
@@ -75,18 +75,25 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 		conn.Close()
 	})
 
-	session, err := conn.NewSession()
-	if err != nil {
-		t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
+	err = fmt.Errorf("")
+	var output []byte
+	for i := 0; i < 5 && err != nil; i++ {
+		var session *ssh.Session
+		session, err = conn.NewSession()
+		if err != nil {
+			t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
+		}
+		t.Cleanup(func() {
+			session.Close()
+		})
+		output, err = session.CombinedOutput(getSecretCommand(vault.Name, vaultSecret.Name, cloud))
+		if err != nil {
+			t.Logf("command outputted: %s. waiting 1 min and trying again", output)
+			time.Sleep(1 * time.Minute)
+		}
 	}
-	t.Cleanup(func() {
-		session.Close()
-	})
 
-	// run command and capture stdout/stderr
-	output, err := session.CombinedOutput(getSecretCommand(vault.Name, vaultSecret.Name, cloud))
 	if err != nil {
-		t.Logf("command outputted: %s", output)
 		t.Fatal(fmt.Errorf("error running command: %+v", err))
 	}
 
