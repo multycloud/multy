@@ -121,5 +121,5 @@ func (r *VirtualMachine) Validate(ctx resources.MultyContext) (errs []validate.V
 }
 
 func (r *VirtualMachine) GetAwsIdentity() string {
-	return fmt.Sprintf("%s-%s-role", r.Args.Name, r.ResourceId)
+	return fmt.Sprintf("%s-vm-role", r.ResourceId)
 }

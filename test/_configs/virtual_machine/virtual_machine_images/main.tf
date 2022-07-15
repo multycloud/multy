@@ -95,13 +95,13 @@ resource "google_compute_subnetwork" "subnet_gcp" {
   provider                 = "google.europe-west1"
 }
 resource "aws_iam_instance_profile" "vm2_aws" {
-  name     = "test-vm-vm2_aws-role"
+  name     = "vm2_aws-vm-role"
   role     = aws_iam_role.vm2_aws.name
   provider = "aws.eu-west-1"
 }
 resource "aws_iam_role" "vm2_aws" {
   tags               = { "Name" = "test-vm" }
-  name               = "test-vm-vm2_aws-role"
+  name               = "vm2_aws-vm-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }
@@ -201,13 +201,13 @@ resource "google_compute_instance" "vm2_gcp" {
   provider = "google.europe-west1"
 }
 resource "aws_iam_instance_profile" "vm3_aws" {
-  name     = "test-vm-vm3_aws-role"
+  name     = "vm3_aws-vm-role"
   role     = aws_iam_role.vm3_aws.name
   provider = "aws.eu-west-1"
 }
 resource "aws_iam_role" "vm3_aws" {
   tags               = { "Name" = "test-vm" }
-  name               = "test-vm-vm3_aws-role"
+  name               = "vm3_aws-vm-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }
@@ -280,13 +280,13 @@ resource "azurerm_linux_virtual_machine" "vm3_azure" {
   zone          = "2"
 }
 resource "aws_iam_instance_profile" "vm_aws" {
-  name     = "test-vm-vm_aws-role"
+  name     = "vm_aws-vm-role"
   role     = aws_iam_role.vm_aws.name
   provider = "aws.eu-west-1"
 }
 resource "aws_iam_role" "vm_aws" {
   tags               = { "Name" = "test-vm" }
-  name               = "test-vm-vm_aws-role"
+  name               = "vm_aws-vm-role"
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }
