@@ -166,6 +166,20 @@ resource "aws_iam_role" "vm_aws" {
   assume_role_policy = "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   provider           = "aws.eu-west-1"
 }
+data "aws_caller_identity" "vault_access_policy_aws" {
+  provider = "aws.eu-west-1"
+}
+resource "aws_iam_policy" "vault_access_policy_aws" {
+  tags     = { "Name" = "vault_access_policy_aws" }
+  name     = "vault_access_policy_aws"
+  policy   = "{\"Statement\":[{\"Action\":[\"ssm:GetParameter*\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:ssm:eu-west-1:${data.aws_caller_identity.vault_access_policy_aws.account_id}:parameter/dev-test-secret-multy/*\"},{\"Action\":[\"ssm:DescribeParameters\"],\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}"
+  provider = "aws.eu-west-1"
+}
+resource "aws_iam_role_policy_attachment" "vault_access_policy_aws" {
+  role       = "multy-vm-vm_aws-role"
+  policy_arn = aws_iam_policy.vault_access_policy_aws.arn
+  provider   = "aws.eu-west-1"
+}
 data "aws_ami" "vm_aws" {
   owners      = ["099720109477"]
   most_recent = true
