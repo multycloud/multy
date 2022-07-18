@@ -84,7 +84,7 @@ func (r GcpKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 			DiskSizeGb:  int(r.Args.DiskSizeGb),
 			Labels:      r.Args.Labels,
 			MachineType: size,
-			Tags:        []string{GcpSubnet{r.Subnet}.getNetworkTag()},
+			Tags:        GcpSubnet{r.Subnet}.getNetworkTags(),
 			// Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
 			ServiceAccount: fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), r.KubernetesCluster.ResourceId),
 			OAuthScopes:    []string{"https://www.googleapis.com/auth/cloud-platform"},

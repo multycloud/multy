@@ -43,12 +43,26 @@ resource "azurerm_route_table" "example_vn_azure" {
   }
 }
 resource "google_compute_network" "example_vn_gcp" {
-  name                            = "example_vn"
+  name                            = "example-vn"
   routing_mode                    = "REGIONAL"
   description                     = "Managed by Multy"
   auto_create_subnetworks         = false
   delete_default_routes_on_create = true
   provider                        = "google.europe-west1"
+  project                         = "multy-project"
+}
+resource "google_compute_firewall" "example_vn_gcp" {
+  name               = "example-vn-default-deny-egress"
+  project            = "multy-project"
+  network            = google_compute_network.example_vn_gcp.id
+  direction          = "EGRESS"
+  destination_ranges = ["0.0.0.0/0"]
+  priority           = 65535
+  deny {
+    protocol = "all"
+  }
+  target_tags = ["vn-example-vn"]
+  provider    = "google.europe-west1"
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
@@ -91,6 +105,7 @@ resource "google_compute_subnetwork" "subnet_gcp" {
   network                  = google_compute_network.example_vn_gcp.id
   private_ip_google_access = true
   provider                 = "google.europe-west1"
+  project                  = "multy-project"
 }
 resource "aws_iam_instance_profile" "vm2_aws" {
   name     = "vm2_aws-vm-role"
@@ -266,7 +281,7 @@ resource "google_compute_instance" "vm_gcp" {
     }
   }
   zone = "europe-west1-b"
-  tags = ["subnet-subnet"]
+  tags = ["vn-example-vn", "subnet-subnet"]
   network_interface {
     subnetwork = google_compute_subnetwork.subnet_gcp.self_link
   }

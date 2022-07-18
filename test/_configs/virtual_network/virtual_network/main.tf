@@ -82,3 +82,17 @@ resource "google_compute_network" "example_vn_gcp" {
   provider                        = "google.europe-west1"
   project                         = "multy-project"
 }
+
+resource "google_compute_firewall" "example_vn_gcp" {
+  name               = "example-vn-default-deny-egress"
+  project            = "multy-project"
+  network            = google_compute_network.example_vn_gcp.id
+  direction          = "EGRESS"
+  destination_ranges = ["0.0.0.0/0"]
+  priority           = 65535
+  deny {
+    protocol = "all"
+  }
+  target_tags = ["vn-example-vn"]
+  provider    = "google.europe-west1"
+}

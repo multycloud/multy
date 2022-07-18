@@ -137,7 +137,7 @@ resource "google_container_node_pool" "cluster_gcp_default_pool" {
   }
   node_config {
     machine_type    = "t2d-standard-2"
-    tags            = ["subnet-public-subnet"]
+    tags            = ["vn-example-vn", "subnet-public-subnet"]
     service_account = google_service_account.cluster_gcp.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
   }
@@ -155,7 +155,7 @@ resource "google_container_cluster" "cluster_gcp" {
   location = "europe-west1"
   node_config {
     machine_type    = "e2-micro"
-    tags            = ["subnet-public-subnet"]
+    tags            = ["vn-example-vn", "subnet-public-subnet"]
     service_account = google_service_account.cluster_gcp.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
   }
@@ -212,6 +212,20 @@ resource "google_compute_network" "example_vn_gcp" {
   auto_create_subnetworks         = false
   delete_default_routes_on_create = true
   provider                        = "google.europe-west1"
+  project                         = "multy-project"
+}
+resource "google_compute_firewall" "example_vn_gcp" {
+  name               = "example-vn-default-deny-egress"
+  project            = "multy-project"
+  network            = google_compute_network.example_vn_gcp.id
+  direction          = "EGRESS"
+  destination_ranges = ["0.0.0.0/0"]
+  priority           = 65535
+  deny {
+    protocol = "all"
+  }
+  target_tags = ["vn-example-vn"]
+  provider    = "google.europe-west1"
 }
 resource "aws_subnet" "public_subnet_aws-1" {
   tags                    = { "Name" = "public-subnet-1" }
@@ -249,6 +263,7 @@ resource "google_compute_subnetwork" "public_subnet_gcp" {
   network                  = google_compute_network.example_vn_gcp.id
   private_ip_google_access = true
   provider                 = "google.europe-west1"
+  project                  = "multy-project"
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
