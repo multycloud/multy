@@ -1,4 +1,54 @@
 resources:  {
+  resource_id:  "example_vn_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualNetworkArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "example_vn"
+        cidr_block:  "10.0.0.0/16"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "subnet_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.SubnetArgs]:  {
+        name:  "subnet"
+        cidr_block:  "10.0.2.0/24"
+        virtual_network_id:  "example_vn_gcp"
+      }
+    }
+  }
+}
+resources:  {
+  resource_id:  "vm_gcp"
+  resource_args:  {
+    resource_args:  {
+      [type.googleapis.com/dev.multy.resources.VirtualMachineArgs]:  {
+        common_parameters:  {
+          resource_group_id:  "rg1"
+          location:  EU_WEST_1
+          cloud_provider:  GCP
+        }
+        name:  "test-vm"
+        vm_size:  GENERAL_NANO
+        user_data_base64:  "ZWNobyAnSGVsbG8gV29ybGQn"
+        subnet_id:  "subnet_gcp"
+        gcp_override:  {
+          machine_type:  "n2d-standard-16"
+        }
+        availability_zone: 1
+      }
+    }
+  }
+}
+resources:  {
   resource_id:  "example_vn_aws"
   resource_args:  {
     resource_args:  {

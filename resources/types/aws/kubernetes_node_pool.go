@@ -37,6 +37,7 @@ func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 		AvailabilityZone:  r.Args.AvailabilityZone,
 		AwsOverride:       r.Args.AwsOverride,
 		AzureOverride:     r.Args.AzureOverride,
+		GcpOverride:       r.Args.GcpOverride,
 		Labels:            r.Args.Labels,
 	}, nil
 }

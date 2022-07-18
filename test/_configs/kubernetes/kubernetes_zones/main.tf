@@ -77,9 +77,14 @@ resource "aws_iam_role_policy_attachment" "cluster_aws_AmazonEKSVPCResourceContr
   provider   = "aws.eu-west-1"
 }
 resource "aws_eks_cluster" "cluster_aws" {
-  depends_on = [aws_subnet.cluster_aws_public_subnet, aws_subnet.cluster_aws_private_subnet, aws_route_table.cluster_aws_public_rt, aws_route_table_association.cluster_aws_public_rta, aws_iam_role_policy_attachment.cluster_aws_AmazonEKSClusterPolicy, aws_iam_role_policy_attachment.cluster_aws_AmazonEKSVPCResourceController]
-  tags       = { "Name" = "cluster_aws" }
-  role_arn   = aws_iam_role.cluster_aws.arn
+  depends_on = [
+    aws_subnet.cluster_aws_public_subnet, aws_subnet.cluster_aws_private_subnet, aws_route_table.cluster_aws_public_rt,
+    aws_route_table_association.cluster_aws_public_rta,
+    aws_iam_role_policy_attachment.cluster_aws_AmazonEKSClusterPolicy,
+    aws_iam_role_policy_attachment.cluster_aws_AmazonEKSVPCResourceController
+  ]
+  tags     = { "Name" = "cluster_aws" }
+  role_arn = aws_iam_role.cluster_aws.arn
   vpc_config {
     subnet_ids              = [aws_subnet.cluster_aws_public_subnet.id, aws_subnet.cluster_aws_private_subnet.id]
     endpoint_private_access = true
@@ -115,7 +120,7 @@ resource "azurerm_kubernetes_cluster" "cluster_azure" {
     service_cidr       = "10.100.0.0/16"
   }
 }
-resource "google_service_account" "cluster-clusterg9tb6-sa-8cxb" {
+resource "google_service_account" "cluster_gcp" {
   project      = "multy-project"
   account_id   = "cluster-clusterg9tb6-sa-8cxb"
   display_name = "Service Account for cluster cluster - created by Multy"
@@ -134,7 +139,7 @@ resource "google_container_node_pool" "cluster_gcp_default_pool" {
   node_config {
     machine_type    = "e2-medium"
     tags            = ["subnet-public-subnet"]
-    service_account = google_service_account.cluster-clusterg9tb6-sa-8cxb.email
+    service_account = google_service_account.cluster_gcp.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
   }
   provider = "google.europe-west1"
@@ -153,7 +158,7 @@ resource "google_container_cluster" "cluster_gcp" {
   node_config {
     machine_type    = "e2-micro"
     tags            = ["subnet-public-subnet"]
-    service_account = google_service_account.cluster-clusterg9tb6-sa-8cxb.email
+    service_account = google_service_account.cluster_gcp.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
   }
   provider = "google.europe-west1"

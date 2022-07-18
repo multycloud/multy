@@ -250,7 +250,7 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   computer_name = "testvm"
   zone          = "1"
 }
-resource "google_service_account" "test-vm-vmgcp-sa-dvl7" {
+resource "google_service_account" "vm_gcp" {
   project      = "multy-project"
   account_id   = "test-vm-vmgcp-sa-dvl7"
   display_name = "Service Account for VM test-vm"
@@ -272,7 +272,7 @@ resource "google_compute_instance" "vm_gcp" {
   }
   metadata = { "user-data" = "echo 'Hello World'" }
   service_account {
-    email  = google_service_account.test-vm-vmgcp-sa-dvl7.email
+    email  = google_service_account.vm_gcp.email
     scopes = ["cloud-platform"]
   }
   provider = "google.europe-west1"

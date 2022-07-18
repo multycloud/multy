@@ -35,6 +35,7 @@ func (r AzureKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.
 		Labels:            r.Args.Labels,
 		AwsOverride:       r.Args.AwsOverride,
 		AzureOverride:     r.Args.AzureOverride,
+		GcpOverride:       r.Args.GcpOverride,
 		AvailabilityZone:  r.Args.AvailabilityZone,
 	}, nil
 }

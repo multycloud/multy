@@ -42,6 +42,14 @@ resource "azurerm_route_table" "example_vn_azure" {
     next_hop_type  = "VnetLocal"
   }
 }
+resource "google_compute_network" "example_vn_gcp" {
+  name                            = "example_vn"
+  routing_mode                    = "REGIONAL"
+  description                     = "Managed by Multy"
+  auto_create_subnetworks         = false
+  delete_default_routes_on_create = true
+  provider                        = "google.europe-west1"
+}
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
   location = "northeurope"
@@ -76,6 +84,13 @@ resource "azurerm_subnet" "subnet_azure" {
 resource "azurerm_subnet_route_table_association" "subnet_azure" {
   subnet_id      = azurerm_subnet.subnet_azure.id
   route_table_id = azurerm_route_table.example_vn_azure.id
+}
+resource "google_compute_subnetwork" "subnet_gcp" {
+  name                     = "subnet"
+  ip_cidr_range            = "10.0.2.0/24"
+  network                  = google_compute_network.example_vn_gcp.id
+  private_ip_google_access = true
+  provider                 = "google.europe-west1"
 }
 resource "aws_iam_instance_profile" "vm2_aws" {
   name     = "vm2_aws-vm-role"
@@ -237,6 +252,31 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   computer_name = "testvm"
   zone          = "1"
 }
+resource "google_service_account" "vm_gcp" {
+  account_id   = "test-vm-vmgcp-sa-dvl7"
+  display_name = "Service Account for VM test-vm"
+  provider     = "google.europe-west1"
+}
+resource "google_compute_instance" "vm_gcp" {
+  name         = "test-vm"
+  machine_type = "n2d-standard-16"
+  boot_disk {
+    initialize_params {
+      image = "ubuntu-os-cloud/ubuntu-1804-lts"
+    }
+  }
+  zone = "europe-west1-b"
+  tags = ["subnet-subnet"]
+  network_interface {
+    subnetwork = google_compute_subnetwork.subnet_gcp.self_link
+  }
+  metadata = { "user-data" = "echo 'Hello World'" }
+  service_account {
+    email  = google_service_account.vm_gcp.email
+    scopes = ["cloud-platform"]
+  }
+  provider = "google.europe-west1"
+}
 provider "aws" {
   region = "eu-west-1"
   alias  = "eu-west-1"
@@ -244,4 +284,8 @@ provider "aws" {
 provider "azurerm" {
   features {
   }
+}
+provider "google" {
+  region = "europe-west1"
+  alias  = "europe-west1"
 }
