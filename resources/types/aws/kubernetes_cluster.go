@@ -137,7 +137,6 @@ func (r AwsKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.Tf
 	outputs = append(outputs, subnetResources...)
 	var deps []string
 	for _, s := range subnetResources {
-		// todo: get the id without casting
 		deps = append(deps, fmt.Sprintf("%s.%s", output.GetResourceName(s), s.GetResourceId()))
 	}
 

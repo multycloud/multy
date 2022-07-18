@@ -46,14 +46,6 @@ func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		identityId = iamRoleResource.Id
 	}
 
-	// TODO: handle default values on create
-	if r.Args.ImageReference == nil {
-		r.Args.ImageReference = &resourcespb.ImageReference{
-			Os:      resourcespb.ImageReference_UBUNTU,
-			Version: "16.04",
-		}
-	}
-
 	return &resourcespb.VirtualMachineResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
