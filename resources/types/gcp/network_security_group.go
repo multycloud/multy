@@ -63,7 +63,6 @@ func (r GcpNetworkSecurityGroup) Translate(_ resources.MultyContext) ([]output.T
 		}
 	}
 
-	// TODO: add target_tags to vms that are associated with this network security group
 	return firewalls, nil
 }
 

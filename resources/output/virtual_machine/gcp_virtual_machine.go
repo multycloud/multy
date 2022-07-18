@@ -63,7 +63,14 @@ func GetLatestGcpImage(ref *resourcespb.ImageReference) (string, error) {
 		}
 		return fmt.Sprintf("debian-cloud/debian-%s", ref.Version), nil
 	case resourcespb.ImageReference_CENT_OS:
-		return "", fmt.Errorf("centOS is not supported")
+		if ref.Version == "7" {
+			return "centos-cloud/centos-7", nil
+		}
+		centosVersions := []string{"8", "9"}
+		if !slices.Contains(centosVersions, ref.Version) {
+			return "", fmt.Errorf("centos version %s is not supported in GCP", ref.Version)
+		}
+		return fmt.Sprintf("centos-cloud/centos-stream-%s", ref.Version), nil
 	default:
 		return "", fmt.Errorf("unknown operating system distibution %s", ref.Os)
 	}
