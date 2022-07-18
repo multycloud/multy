@@ -61,7 +61,7 @@ func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 			out.PublicIp = vm.NetworkInterface[0].AccessConfig[0].NatIp
 		}
 
-		sa, err := output.GetParsedById[iam.GoogleServiceAccount](state, r.getServiceAccountId())
+		sa, err := output.GetParsedById[iam.GoogleServiceAccount](state, r.ResourceId)
 		if err != nil {
 			return nil, err
 		}
@@ -86,9 +86,14 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 		tags = append(tags, GcpNetworkSecurityGroup{nsg}.getNsgTag()...)
 	}
 	tags = append(tags, GcpSubnet{r.Subnet}.getNetworkTag())
-	size, err := common.GetVmSize(r.Args.VmSize, r.GetCloud())
-	if err != nil {
-		return nil, err
+	var size string
+	if r.Args.GetGcpOverride().GetMachineType() != "" {
+		size = r.Args.GetGcpOverride().GetMachineType()
+	} else {
+		size, err = common.GetVmSize(r.Args.VmSize, r.GetCloud())
+		if err != nil {
+			return nil, err
+		}
 	}
 	image, err := virtual_machine.GetLatestGcpImage(r.Args.ImageReference)
 	if err != nil {
@@ -126,7 +131,7 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 
 	serviceAccountId := r.getServiceAccountId()
 	serviceAccount := &iam.GoogleServiceAccount{
-		GcpResource: common.NewGcpResource(serviceAccountId, "", r.Args.GetGcpOverride().GetProject()),
+		GcpResource: common.NewGcpResource(r.ResourceId, "", r.Args.GetGcpOverride().GetProject()),
 		AccountId:   serviceAccountId,
 		DisplayName: fmt.Sprintf("Service Account for VM %s", r.Args.Name),
 	}
@@ -144,7 +149,7 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 		Metadata:         m,
 		NetworkInterface: []virtual_machine.GoogleNetworkInterface{networkInterface},
 		ServiceAccount: virtual_machine.GoogleComputeInstanceServiceAccount{
-			Email:  fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), serviceAccountId),
+			Email:  fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), r.ResourceId),
 			Scopes: []string{"cloud-platform"},
 		},
 	}

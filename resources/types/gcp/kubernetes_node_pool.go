@@ -37,6 +37,7 @@ func (r GcpKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 		AvailabilityZone:  r.Args.AvailabilityZone,
 		AwsOverride:       r.Args.AwsOverride,
 		AzureOverride:     r.Args.AzureOverride,
+		GcpOverride:       r.Args.GcpOverride,
 		Labels:            r.Args.Labels,
 	}, nil
 }
@@ -46,9 +47,14 @@ func (r GcpKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 	if err != nil {
 		return nil, err
 	}
-	size, err := common.GetVmSize(r.Args.VmSize, r.GetCloud())
-	if err != nil {
-		return nil, err
+	var size string
+	if r.Args.GetGcpOverride().GetMachineType() != "" {
+		size = r.Args.GetGcpOverride().GetMachineType()
+	} else {
+		size, err = common.GetVmSize(r.Args.VmSize, r.GetCloud())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	numZones := 3
@@ -80,7 +86,7 @@ func (r GcpKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 			MachineType: size,
 			Tags:        []string{GcpSubnet{r.Subnet}.getNetworkTag()},
 			// Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-			ServiceAccount: fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), GcpKubernetesCluster{r.KubernetesCluster}.getServiceAccountId()),
+			ServiceAccount: fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), r.KubernetesCluster.ResourceId),
 			OAuthScopes:    []string{"https://www.googleapis.com/auth/cloud-platform"},
 		},
 	}

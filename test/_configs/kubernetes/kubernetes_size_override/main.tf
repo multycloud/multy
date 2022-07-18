@@ -121,6 +121,46 @@ resource "azurerm_kubernetes_cluster" "cluster_azure" {
     service_cidr       = "10.100.0.0/16"
   }
 }
+resource "google_service_account" "cluster_gcp" {
+  account_id   = "cluster-gcp-clus5a4y-sa-mgby"
+  display_name = "Service Account for cluster cluster-gcp - created by Multy"
+  provider     = "google.europe-west1"
+}
+resource "google_container_node_pool" "cluster_gcp_default_pool" {
+  name               = "node-pool-gcp"
+  cluster            = google_container_cluster.cluster_gcp.id
+  initial_node_count = 1
+  node_locations     = ["europe-west1-d"]
+  autoscaling {
+    min_node_count = 1
+    max_node_count = 1
+  }
+  node_config {
+    machine_type    = "t2d-standard-2"
+    tags            = ["subnet-public-subnet"]
+    service_account = google_service_account.cluster_gcp.email
+    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+  }
+  provider = "google.europe-west1"
+}
+resource "google_container_cluster" "cluster_gcp" {
+  name                     = "cluster-gcp"
+  remove_default_node_pool = true
+  initial_node_count       = 1
+  subnetwork               = google_compute_subnetwork.public_subnet_gcp.id
+  network                  = google_compute_network.example_vn_gcp.id
+  ip_allocation_policy {
+    services_ipv4_cidr_block = "10.100.0.0/16"
+  }
+  location = "europe-west1"
+  node_config {
+    machine_type    = "e2-micro"
+    tags            = ["subnet-public-subnet"]
+    service_account = google_service_account.cluster_gcp.email
+    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+  }
+  provider = "google.europe-west1"
+}
 resource "aws_vpc" "example_vn_aws" {
   tags                 = { "Name" = "example_vn" }
   cidr_block           = "10.0.0.0/16"
@@ -165,6 +205,14 @@ resource "azurerm_route_table" "example_vn_azure" {
     next_hop_type  = "VnetLocal"
   }
 }
+resource "google_compute_network" "example_vn_gcp" {
+  name                            = "example-vn"
+  routing_mode                    = "REGIONAL"
+  description                     = "Managed by Multy"
+  auto_create_subnetworks         = false
+  delete_default_routes_on_create = true
+  provider                        = "google.europe-west1"
+}
 resource "aws_subnet" "public_subnet_aws-1" {
   tags                    = { "Name" = "public-subnet-1" }
   cidr_block              = "10.0.0.0/25"
@@ -194,6 +242,13 @@ resource "azurerm_subnet" "public_subnet_azure" {
   name                 = "public-subnet"
   address_prefixes     = ["10.0.0.0/24"]
   virtual_network_name = azurerm_virtual_network.example_vn_azure.name
+}
+resource "google_compute_subnetwork" "public_subnet_gcp" {
+  name                     = "public-subnet"
+  ip_cidr_range            = "10.0.0.0/24"
+  network                  = google_compute_network.example_vn_gcp.id
+  private_ip_google_access = true
+  provider                 = "google.europe-west1"
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
@@ -244,4 +299,8 @@ provider "aws" {
 provider "azurerm" {
   features {
   }
+}
+provider "google" {
+  region = "europe-west1"
+  alias  = "europe-west1"
 }

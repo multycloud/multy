@@ -120,7 +120,7 @@ func (r GcpKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.Tf
 
 	serviceAccountId := r.getServiceAccountId()
 	serviceAccount := &iam.GoogleServiceAccount{
-		GcpResource: common.NewGcpResource(serviceAccountId, "", r.Args.GetGcpOverride().GetProject()),
+		GcpResource: common.NewGcpResource(r.ResourceId, "", r.Args.GetGcpOverride().GetProject()),
 		AccountId:   serviceAccountId,
 		DisplayName: fmt.Sprintf("Service Account for cluster %s - created by Multy", r.Args.Name),
 	}
@@ -145,7 +145,7 @@ func (r GcpKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.Tf
 			MachineType: "e2-micro",
 			Tags:        []string{GcpSubnet{r.DefaultNodePool.Subnet}.getNetworkTag()},
 			// Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-			ServiceAccount: fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), serviceAccountId),
+			ServiceAccount: fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), r.ResourceId),
 			OAuthScopes:    []string{"https://www.googleapis.com/auth/cloud-platform"},
 		},
 	})

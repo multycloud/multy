@@ -34,6 +34,10 @@ message KubernetesNodePoolAzureOverride {
   string vm_size = 1;
 }
 
+message KubernetesNodePoolGcpOverride {
+  string machine_type = 1;
+}
+
 message KubernetesNodePoolArgs {
   common.ChildResourceCommonArgs common_parameters = 1;
   string name = 2;
@@ -48,6 +52,7 @@ message KubernetesNodePoolArgs {
 
   KubernetesNodePoolAwsOverride aws_override = 11;
   KubernetesNodePoolAzureOverride azure_override = 12;
+  KubernetesNodePoolGcpOverride gcp_override = 14;
 
   map<string, string> labels = 10;
 
@@ -67,6 +72,7 @@ message KubernetesNodePoolResource {
 
   KubernetesNodePoolAwsOverride aws_override = 11;
   KubernetesNodePoolAzureOverride azure_override = 12;
+  KubernetesNodePoolGcpOverride gcp_override = 14;
 
   map<string, string> labels = 10;
 }
