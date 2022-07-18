@@ -95,6 +95,19 @@ resource "google_compute_network" "example_vn_gcp" {
   delete_default_routes_on_create = true
   provider                        = "google.europe-west1"
 }
+resource "google_compute_firewall" "example_vn_gcp" {
+  name               = "example-gcp-default-deny-egress"
+  project            = "multy-project"
+  network            = google_compute_network.example_vn_gcp.id
+  direction          = "EGRESS"
+  destination_ranges = ["0.0.0.0/0"]
+  priority           = 65535
+  deny {
+    protocol = "all"
+  }
+  target_tags = ["vn-example-gcp"]
+  provider    = "google.europe-west1"
+}
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
   location = "northeurope"
@@ -266,7 +279,7 @@ resource "google_compute_instance" "vm_gcp" {
     }
   }
   zone = "europe-west1-b"
-  tags = ["subnet-subnet"]
+  tags = ["vn-example-gcp", "subnet-subnet"]
   network_interface {
     subnetwork = google_compute_subnetwork.subnet_gcp.self_link
   }

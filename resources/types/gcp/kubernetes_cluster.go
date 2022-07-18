@@ -143,7 +143,7 @@ func (r GcpKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.Tf
 		},
 		NodeConfig: kubernetes_node_pool.GoogleContainerNodeConfig{
 			MachineType: "e2-micro",
-			Tags:        []string{GcpSubnet{r.DefaultNodePool.Subnet}.getNetworkTag()},
+			Tags:        GcpSubnet{r.DefaultNodePool.Subnet}.getNetworkTags(),
 			// Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
 			ServiceAccount: fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), r.ResourceId),
 			OAuthScopes:    []string{"https://www.googleapis.com/auth/cloud-platform"},

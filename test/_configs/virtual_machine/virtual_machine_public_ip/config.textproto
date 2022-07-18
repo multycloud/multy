@@ -172,7 +172,7 @@ resources:  {
           location:  EU_WEST_1
           cloud_provider:  GCP
         }
-        name:  "example_gcp"
+        name:  "example-gcp"
         cidr_block:  "10.0.0.0/16"
         gcp_override: {
           project: "multy-project"

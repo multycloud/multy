@@ -177,8 +177,8 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     direction                  = "Outbound"
   }
 }
-resource "google_compute_firewall" "nsg_gcp-default-deny-egress" {
-  name               = "test-nsg-default-deny-egress"
+resource "google_compute_firewall" "example_vn_gcp" {
+  name               = "example-vn-default-deny-egress"
   project            = "multy-project"
   network            = google_compute_network.example_vn_gcp.id
   direction          = "EGRESS"
@@ -187,7 +187,7 @@ resource "google_compute_firewall" "nsg_gcp-default-deny-egress" {
   deny {
     protocol = "all"
   }
-  target_tags = ["nsg-test-nsg"]
+  target_tags = ["vn-example-vn"]
   provider    = "google.europe-west1"
 }
 resource "google_compute_firewall" "nsg_gcp-i-0" {

@@ -39,21 +39,6 @@ func (r GcpNetworkSecurityGroup) FromState(_ *output.TfState) (*resourcespb.Netw
 
 func (r GcpNetworkSecurityGroup) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {
 	var firewalls []output.TfBlock
-
-	// gcp allows egress traffic by default: https://cloud.google.com/vpc/docs/firewalls
-	// so we add default deny rule to egress
-	ruleId := fmt.Sprintf("%s-%s", r.ResourceId, "default-deny-egress")
-	ruleName := fmt.Sprintf("%s-%s", r.Args.Name, "default-deny-egress")
-	firewalls = append(firewalls, &network_security_group.GoogleComputeFirewall{
-		GcpResource:       common.NewGcpResource(ruleId, ruleName, r.Args.GetGcpOverride().GetProject()),
-		Network:           fmt.Sprintf("%s.%s.id", output.GetResourceName(virtual_network.GoogleComputeNetwork{}), r.VirtualNetwork.ResourceId),
-		DestinationRanges: []string{"0.0.0.0/0"},
-		Direction:         resourcespb.Direction_EGRESS.String(),
-		DenyRules:         []network_security_group.GoogleComputeFirewallRule{{Protocol: "all"}},
-		TargetTags:        r.getNsgTag(),
-		Priority:          65535,
-	})
-
 	for i, rule := range r.NetworkSecurityGroup.Args.Rules {
 		if rule.Direction == resourcespb.Direction_BOTH_DIRECTIONS {
 			firewalls = append(firewalls, r.buildRule(i, rule, resourcespb.Direction_INGRESS))

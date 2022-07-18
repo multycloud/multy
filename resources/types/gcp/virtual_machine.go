@@ -85,7 +85,7 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 	for _, nsg := range r.NetworkSecurityGroups {
 		tags = append(tags, GcpNetworkSecurityGroup{nsg}.getNsgTag()...)
 	}
-	tags = append(tags, GcpSubnet{r.Subnet}.getNetworkTag())
+	tags = append(tags, GcpSubnet{r.Subnet}.getNetworkTags()...)
 	var size string
 	if r.Args.GetGcpOverride().GetMachineType() != "" {
 		size = r.Args.GetGcpOverride().GetMachineType()

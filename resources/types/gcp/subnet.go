@@ -42,6 +42,10 @@ func (r GcpSubnet) Translate(_ resources.MultyContext) ([]output.TfBlock, error)
 	}}, nil
 }
 
+func (r GcpSubnet) getNetworkTags() []string {
+	return []string{GcpVirtualNetwork{r.VirtualNetwork}.getVnTag(), r.getNetworkTag()}
+}
+
 func (r GcpSubnet) getNetworkTag() string {
 	return fmt.Sprintf("subnet-%s", r.Args.Name)
 }
