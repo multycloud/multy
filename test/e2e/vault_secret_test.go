@@ -52,6 +52,20 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 	cleanup(t, ctx, server.VaultSecretService, vaultSecret)
 
+	t.Run("vault-access-policy-reader", func(t *testing.T) {
+		testReaderAccess(t, ctx, cloud, vm, config, vault, vaultSecret)
+	})
+
+	t.Run("vault-access-policy-writer", func(t *testing.T) {
+		testWriterAccess(t, ctx, cloud, vm, config, vault, vaultSecret)
+	})
+
+	// TODO: add test for OWNER policy
+}
+
+func testReaderAccess(t *testing.T, ctx context.Context, cloud commonpb.CloudProvider,
+	vm *resourcespb.VirtualMachineResource, config *ssh.ClientConfig, vault *resourcespb.VaultResource,
+	vaultSecret *resourcespb.VaultSecretResource) {
 	createVaultAccessRequest := &resourcespb.CreateVaultAccessPolicyRequest{Resource: &resourcespb.VaultAccessPolicyArgs{
 		VaultId:  vault.CommonParameters.ResourceId,
 		Identity: vm.IdentityId,
@@ -83,7 +97,7 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 		if err != nil {
 			t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
 		}
-		output, err = session.CombinedOutput(getSecretCommand(vault.Name, vaultSecret.Name, cloud))
+		output, err = session.CombinedOutput(getSecretReadCommand(vault.Name, vaultSecret.Name, cloud))
 		if err != nil {
 			t.Logf("command outputted: %s. waiting 1 min and trying again", output)
 			time.Sleep(1 * time.Minute)
@@ -95,7 +109,14 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatal(fmt.Errorf("error running command: %+v", err))
 	}
 
-	assert.Equal(t, "test-value\n", string(output), config)
+	assert.Equal(t, "test-value\n", string(output))
+
+	session, err := conn.NewSession()
+	if err != nil {
+		t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
+	}
+	_, err = session.CombinedOutput(getSecretWriteCommand(vault.Name, vaultSecret.Name, cloud))
+	assert.Error(t, err, "should not be able to write with read only perms")
 
 	// remove the access policy and verify that eventually an error is returned when accessing the secret
 	_, err = server.VaultAccessPolicyService.Delete(ctx, &resourcespb.DeleteVaultAccessPolicyRequest{ResourceId: vap.CommonParameters.ResourceId})
@@ -111,7 +132,7 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 		if err != nil {
 			t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
 		}
-		output, err = session.CombinedOutput(getSecretCommand(vault.Name, vaultSecret.Name, cloud))
+		output, err = session.CombinedOutput(getSecretReadCommand(vault.Name, vaultSecret.Name, cloud))
 		if err == nil {
 			t.Logf("command outputted: %s. waiting 1 min and trying again", output)
 			time.Sleep(1 * time.Minute)
@@ -120,8 +141,84 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 	assert.Error(t, err)
 	t.Logf("comamnd returned %s", output)
+}
 
-	// TODO: add test for OWNER and WRITER policies
+func testWriterAccess(t *testing.T, ctx context.Context, cloud commonpb.CloudProvider,
+	vm *resourcespb.VirtualMachineResource, config *ssh.ClientConfig, vault *resourcespb.VaultResource,
+	vaultSecret *resourcespb.VaultSecretResource) {
+	createVaultAccessRequest := &resourcespb.CreateVaultAccessPolicyRequest{Resource: &resourcespb.VaultAccessPolicyArgs{
+		VaultId:  vault.CommonParameters.ResourceId,
+		Identity: vm.IdentityId,
+		Access:   resourcespb.VaultAccess_WRITE,
+	}}
+	vap, err := server.VaultAccessPolicyService.Create(ctx, createVaultAccessRequest)
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to create vap: %+v", err)
+	}
+	cleanup(t, ctx, server.VaultAccessPolicyService, vap)
+
+	// wait a bit so that the vm is reachable and policy has propagated
+	time.Sleep(3 * time.Minute)
+
+	conn, err := ssh.Dial("tcp", vm.PublicIp+":22", config)
+	if err != nil {
+		t.Fatal(fmt.Errorf("error in ssh connection: %+v", err))
+	}
+	t.Cleanup(func() {
+		conn.Close()
+	})
+
+	err = fmt.Errorf("")
+	var output []byte
+	for i := 0; i < 6 && err != nil; i++ {
+		var session *ssh.Session
+		session, err = conn.NewSession()
+		if err != nil {
+			t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
+		}
+		output, err = session.CombinedOutput(getSecretWriteCommand(vault.Name, vaultSecret.Name, cloud))
+		if err != nil {
+			t.Logf("command outputted: %s. waiting 1 min and trying again", output)
+			time.Sleep(1 * time.Minute)
+		}
+		session.Close()
+	}
+
+	if err != nil {
+		t.Fatal(fmt.Errorf("error running command: %+v", err))
+	}
+
+	session, err := conn.NewSession()
+	if err != nil {
+		t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
+	}
+	_, err = session.CombinedOutput(getSecretReadCommand(vault.Name, vaultSecret.Name, cloud))
+	assert.Error(t, err, "should not be able to read with write only perms")
+
+	// remove the access policy and verify that eventually an error is returned when accessing the secret
+	_, err = server.VaultAccessPolicyService.Delete(ctx, &resourcespb.DeleteVaultAccessPolicyRequest{ResourceId: vap.CommonParameters.ResourceId})
+	if err != nil {
+		logGrpcErrorDetails(t, err)
+		t.Fatalf("unable to delete vap: %+v", err)
+	}
+
+	err = nil
+	for i := 0; i < 6 && err == nil; i++ {
+		var session *ssh.Session
+		session, err = conn.NewSession()
+		if err != nil {
+			t.Fatal(fmt.Errorf("error creating ssh session: %+v", err))
+		}
+		output, err = session.CombinedOutput(getSecretWriteCommand(vault.Name, vaultSecret.Name, cloud))
+		if err == nil {
+			t.Logf("command outputted: %s. waiting 1 min and trying again", output)
+			time.Sleep(1 * time.Minute)
+		}
+		session.Close()
+	}
+	assert.Error(t, err)
+	t.Logf("comamnd returned %s", output)
 }
 
 func setupVmForVaultTest(t *testing.T, ctx context.Context, location commonpb.Location, cloud commonpb.CloudProvider, pubKey string) *resourcespb.VirtualMachineResource {
@@ -178,7 +275,7 @@ sudo snap install google-cloud-cli --classic
 	return ""
 }
 
-func getSecretCommand(vaultName string, secretId string, cloud commonpb.CloudProvider) string {
+func getSecretReadCommand(vaultName string, secretId string, cloud commonpb.CloudProvider) string {
 	switch cloud {
 	case commonpb.CloudProvider_GCP:
 		return fmt.Sprintf("gcloud secrets versions access latest --secret=%s && echo", secretId)
@@ -186,6 +283,18 @@ func getSecretCommand(vaultName string, secretId string, cloud commonpb.CloudPro
 		return fmt.Sprintf("az keyvault secret show --vault-name '%s' -n '%s' --query value -o tsv", vaultName, secretId)
 	case commonpb.CloudProvider_AWS:
 		return fmt.Sprintf("aws --region=eu-west-1 ssm get-parameter --name \"/%s/%s\" --with-decryption --output text --query Parameter.Value", vaultName, secretId)
+	}
+	return "exit 1"
+}
+
+func getSecretWriteCommand(vaultName string, secretId string, cloud commonpb.CloudProvider) string {
+	switch cloud {
+	case commonpb.CloudProvider_GCP:
+		return fmt.Sprintf("printf \"new-secret\" | gcloud secrets versions add %s --data-file=-", secretId)
+	case commonpb.CloudProvider_AZURE:
+		return fmt.Sprintf("az keyvault secret set --vault-name '%s' -n '%s' --value new-secret", vaultName, secretId)
+	case commonpb.CloudProvider_AWS:
+		return fmt.Sprintf("aws --region=eu-west-1 ssm put-parameter --name \"/%s/%s\" --value new-value --overwrite", vaultName, secretId)
 	}
 	return "exit 1"
 }

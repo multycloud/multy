@@ -39,7 +39,7 @@ func (r AwsVaultAccessPolicy) Translate(resources.MultyContext) ([]output.TfBloc
 
 	policy, err := json.Marshal(iam.AwsIamPolicy{
 		Statement: []iam.AwsIamPolicyStatement{{
-			Action:   []string{"ssm:GetParameter*"},
+			Action:   r.getAccessPolicyRules(),
 			Effect:   "Allow",
 			Resource: fmt.Sprintf("arn:aws:ssm:%s:${data.aws_caller_identity.%s.account_id}:parameter/%s/*", r.Vault.GetCloudSpecificLocation(), r.ResourceId, r.Vault.Args.Name),
 		}, {
@@ -68,6 +68,19 @@ func (r AwsVaultAccessPolicy) Translate(resources.MultyContext) ([]output.TfBloc
 	})
 
 	return result, nil
+}
+
+func (r AwsVaultAccessPolicy) getAccessPolicyRules() []string {
+	switch r.Args.Access {
+	case resourcespb.VaultAccess_READ:
+		return []string{"ssm:GetParameter*"}
+	case resourcespb.VaultAccess_WRITE:
+		return []string{"ssm:PutParameter", "ssm:DeleteParameter"}
+	case resourcespb.VaultAccess_OWNER:
+		return []string{"ssm:*"}
+	default:
+		return nil
+	}
 }
 
 func (r AwsVaultAccessPolicy) GetMainResourceName() (string, error) {
