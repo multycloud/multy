@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -19,8 +20,8 @@ func InitNetworkInterface(r *types.NetworkInterface) resources.ResourceTranslato
 	return AzureNetworkInterface{r}
 }
 
-func (r AzureNetworkInterface) FromState(_ *output.TfState) (*resourcespb.NetworkInterfaceResource, error) {
-	return &resourcespb.NetworkInterfaceResource{
+func (r AzureNetworkInterface) FromState(state *output.TfState) (*resourcespb.NetworkInterfaceResource, error) {
+	out := &resourcespb.NetworkInterfaceResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -32,7 +33,20 @@ func (r AzureNetworkInterface) FromState(_ *output.TfState) (*resourcespb.Networ
 		SubnetId:         r.Args.SubnetId,
 		PublicIpId:       r.Args.PublicIpId,
 		AvailabilityZone: r.Args.AvailabilityZone,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	out.AzureOutputs = &resourcespb.NetworkInterfaceAzureOutputs{}
+
+	stateResource, err := output.GetParsedById[network_interface.AzureNetworkInterface](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	out.AzureOutputs.NetworkInterfaceId = stateResource.ResourceId
+	return out, nil
 }
 
 func (r AzureNetworkInterface) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
