@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -20,17 +21,27 @@ func InitSubnet(r *types.Subnet) resources.ResourceTranslator[*resourcespb.Subne
 	return GcpSubnet{r}
 }
 
-func (r GcpSubnet) FromState(_ *output.TfState) (*resourcespb.SubnetResource, error) {
-	return &resourcespb.SubnetResource{
+func (r GcpSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource, error) {
+	out := &resourcespb.SubnetResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
 		},
 		Name:             r.Args.Name,
 		CidrBlock:        r.Args.CidrBlock,
-		AvailabilityZone: r.Args.AvailabilityZone,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
-	}, nil
+	}
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[subnet.GoogleComputeSubnetwork](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.GcpOutputs = &resourcespb.SubnetGcpOutputs{ComputeSubnetworkId: stateResource.SelfLink}
+	return out, nil
 }
 
 func (r GcpSubnet) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {

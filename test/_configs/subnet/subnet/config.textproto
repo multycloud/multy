@@ -81,7 +81,6 @@ resources:  {
         name:  "subnet2"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_aws"
-        availability_zone:  2
       }
     }
   }
@@ -94,7 +93,6 @@ resources:  {
         name:  "subnet2"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_azure"
-        availability_zone:  2
       }
     }
   }
@@ -119,7 +117,6 @@ resources:  {
         name:  "subnet2"
         cidr_block:  "10.0.2.0/24"
         virtual_network_id:  "example_vn_gcp"
-        availability_zone:  2
       }
     }
   }

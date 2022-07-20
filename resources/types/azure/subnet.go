@@ -32,7 +32,6 @@ func (r AzureSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResour
 			},
 			Name:             r.Args.Name,
 			CidrBlock:        r.Args.CidrBlock,
-			AvailabilityZone: r.Args.AvailabilityZone,
 			VirtualNetworkId: r.Args.VirtualNetworkId,
 		}, nil
 	}
@@ -41,7 +40,6 @@ func (r AzureSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResour
 		ResourceId:  r.ResourceId,
 		NeedsUpdate: false,
 	}
-	out.AvailabilityZone = r.Args.AvailabilityZone
 	out.VirtualNetworkId = r.Args.GetVirtualNetworkId()
 
 	stateResource, err := output.GetParsedById[subnet.AzureSubnet](state, r.ResourceId)
@@ -50,6 +48,9 @@ func (r AzureSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResour
 	}
 	out.Name = stateResource.Name
 	out.CidrBlock = stateResource.AddressPrefixes[0]
+	out.AzureOutputs = &resourcespb.SubnetAzureOutputs{
+		SubnetId: stateResource.ResourceId,
+	}
 
 	return out, nil
 }

@@ -34,7 +34,6 @@ func (r AwsSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource
 			},
 			Name:             r.Args.Name,
 			CidrBlock:        r.Args.CidrBlock,
-			AvailabilityZone: r.Args.AvailabilityZone,
 			VirtualNetworkId: r.Args.VirtualNetworkId,
 		}, nil
 	}
@@ -43,12 +42,12 @@ func (r AwsSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource
 		ResourceId:  r.ResourceId,
 		NeedsUpdate: false,
 	}
-	out.AvailabilityZone = r.Args.AvailabilityZone
 	out.VirtualNetworkId = r.Args.GetVirtualNetworkId()
 	out.Name = r.Args.Name
 	out.CidrBlock = r.Args.CidrBlock
-
-	r.GetSubnetIds()
+	out.AwsOutputs = &resourcespb.SubnetAwsOutputs{
+		SubnetIdByAvailabilityZone: map[string]string{},
+	}
 
 	if azArray, ok := common.AVAILABILITY_ZONES[r.VirtualNetwork.GetLocation()][r.GetCloud()]; ok {
 		for i, zone := range azArray {
@@ -57,6 +56,7 @@ func (r AwsSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource
 				out.CommonParameters.NeedsUpdate = true
 				continue
 			}
+			out.AwsOutputs.SubnetIdByAvailabilityZone[stateResource.AvailabilityZone] = stateResource.ResourceId
 			name := stateResource.Tags["Name"]
 			if name != r.getSubnetResourceName(i) {
 				suffix := fmt.Sprintf("-%d", i+1)
