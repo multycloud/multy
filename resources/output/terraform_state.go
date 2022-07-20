@@ -23,13 +23,21 @@ func (t *TfState) GetValues(resourceType any, resourceId string) (map[string]int
 	return t.Get(address)
 }
 func (t *TfState) Get(resourceRef string) (map[string]interface{}, error) {
-	for _, r := range t.Values.RootModule.Resources {
-		if r.Address == resourceRef {
-			return r.Values, nil
-		}
+	if o, exists := t.MaybeGet(resourceRef); exists {
+		return o, nil
 	}
 
 	return nil, fmt.Errorf("unable to parse resource %s as it doesn't exist on state", resourceRef)
+}
+
+func (t *TfState) MaybeGet(resourceRef string) (map[string]interface{}, bool) {
+	for _, r := range t.Values.RootModule.Resources {
+		if r.Address == resourceRef {
+			return r.Values, true
+		}
+	}
+
+	return nil, false
 }
 
 func GetParsed[T any](state *TfState, resourceRef string) (*T, error) {
@@ -52,7 +60,32 @@ func GetParsed[T any](state *TfState, resourceRef string) (*T, error) {
 	return stateResource, nil
 }
 
+func MaybeGetParsed[T any](state *TfState, resourceRef string) (*T, bool, error) {
+	rawResourceState, exists := state.MaybeGet(resourceRef)
+	if !exists {
+		return nil, exists, nil
+	}
+
+	jsonResourceState, err := json.Marshal(rawResourceState)
+	if err != nil {
+		return nil, exists, err
+	}
+
+	stateResource := new(T)
+	err = json.Unmarshal(jsonResourceState, stateResource)
+	if err != nil {
+		return nil, exists, err
+	}
+
+	return stateResource, exists, nil
+}
+
 func GetParsedById[T any](state *TfState, resourceId string) (*T, error) {
 	resourceRef := fmt.Sprintf("%s.%s", GetResourceName(*new(T)), resourceId)
 	return GetParsed[T](state, resourceRef)
+}
+
+func MaybeGetParsedById[T any](state *TfState, resourceId string) (*T, bool, error) {
+	resourceRef := fmt.Sprintf("%s.%s", GetResourceName(*new(T)), resourceId)
+	return MaybeGetParsed[T](state, resourceRef)
 }

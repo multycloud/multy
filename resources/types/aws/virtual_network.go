@@ -52,6 +52,24 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 	out.Name = stateResource.AwsResource.Tags["Name"]
 	out.CidrBlock = stateResource.CidrBlock
 	out.GcpOverride = r.Args.GcpOverride
+	out.AwsOutputs = &resourcespb.VirtualNetworkAwsOutputs{
+		VpcId: stateResource.AwsResource.ResourceId,
+	}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[virtual_network.AwsInternetGateway](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AwsOutputs.InternetGatewayId = stateResource.ResourceId
+	}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[network_security_group.AwsDefaultSecurityGroup](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AwsOutputs.DefaultSecurityGroupId = stateResource.ResourceId
+	}
+
 	return out, nil
 }
 

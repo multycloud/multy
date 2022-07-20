@@ -52,6 +52,16 @@ func (r AzureVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virt
 	out.Name = stateResource.Name
 	out.CidrBlock = stateResource.AddressSpace[0]
 	out.GcpOverride = r.Args.GcpOverride
+	out.AzureOutputs = &resourcespb.VirtualNetworkAzureOutputs{
+		VirtualNetworkId: stateResource.AzResource.ResourceId,
+	}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[route_table.AzureRouteTable](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AzureOutputs.LocalRouteTableId = stateResource.ResourceId
+	}
 
 	return out, nil
 }
