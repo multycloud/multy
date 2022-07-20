@@ -12,4 +12,6 @@ type AwsElasticIp struct {
 	InstanceId          string `hcl:"instance" hcle:"omitempty"`
 	Vpc                 bool   `hcl:"vpc,optional" hcle:"omitempty"`
 	NetworkInterfaceId  string `hcl:"network_interface,expr" hcle:"omitempty"`
+
+	PublicIp string `json:"public_ip" hcle:"omitempty"`
 }

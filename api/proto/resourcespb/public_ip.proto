@@ -37,6 +37,20 @@ message PublicIpArgs {
   PublicIpGcpOverride gcp_override = 5;
 }
 
+
+message PublicIpAwsOutputs {
+  string public_ip_id = 1;
+}
+
+message PublicIpAzureOutputs {
+  string public_ip_id = 1;
+}
+
+
+message PublicIpGcpOutputs {
+  string compute_address_id = 1;
+}
+
 message PublicIpResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
@@ -44,4 +58,7 @@ message PublicIpResource {
   // outputs
   string ip = 4;
   PublicIpGcpOverride gcp_override = 5;
+  PublicIpAwsOutputs aws_outputs = 6;
+  PublicIpAzureOutputs azure_outputs = 7;
+  PublicIpGcpOutputs gcp_outputs = 8;
 }

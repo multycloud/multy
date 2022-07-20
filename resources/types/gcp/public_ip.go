@@ -21,16 +21,7 @@ func InitPublicIp(vn *types.PublicIp) resources.ResourceTranslator[*resourcespb.
 }
 
 func (r GcpPublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpResource, error) {
-	ip := "dryrun"
-	if !flags.DryRun {
-		address, err := output.GetParsedById[public_ip.GoogleComputeAddress](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		ip = address.Address
-	}
-
-	return &resourcespb.PublicIpResource{
+	out := &resourcespb.PublicIpResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -39,9 +30,24 @@ func (r GcpPublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpReso
 			NeedsUpdate:     false,
 		},
 		Name:        r.Args.Name,
-		Ip:          ip,
+		Ip:          "dryrun",
 		GcpOverride: r.Args.GcpOverride,
-	}, nil
+	}
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[public_ip.GoogleComputeAddress](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.Ip = stateResource.Address
+	out.GcpOutputs = &resourcespb.PublicIpGcpOutputs{
+		ComputeAddressId: stateResource.SelfLink,
+	}
+
+	return out, nil
 }
 
 func (r GcpPublicIp) Translate(resources.MultyContext) ([]output.TfBlock, error) {
