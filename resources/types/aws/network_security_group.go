@@ -3,6 +3,7 @@ package aws_resources
 import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -26,8 +27,8 @@ const (
 	DENY    = "deny"
 )
 
-func (r AwsNetworkSecurityGroup) FromState(_ *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {
-	return &resourcespb.NetworkSecurityGroupResource{
+func (r AwsNetworkSecurityGroup) FromState(state *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {
+	out := &resourcespb.NetworkSecurityGroupResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -39,7 +40,19 @@ func (r AwsNetworkSecurityGroup) FromState(_ *output.TfState) (*resourcespb.Netw
 		VirtualNetworkId: r.Args.VirtualNetworkId,
 		Rules:            r.Args.Rules,
 		GcpOverride:      r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[network_security_group.AwsSecurityGroup](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.AwsOutputs = &resourcespb.NetworkSecurityGroupAwsOutputs{SecurityGroupId: stateResource.ResourceId}
+	return out, nil
 }
 
 func (r AwsNetworkSecurityGroup) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {

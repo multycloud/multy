@@ -61,6 +61,20 @@ message NetworkSecurityGroupArgs {
   NetworkSecurityGroupGcpOverride gcp_override = 5;
 }
 
+
+message NetworkSecurityGroupAwsOutputs {
+  string security_group_id = 1;
+}
+
+message NetworkSecurityGroupAzureOutputs {
+  string network_security_group_id = 1;
+}
+
+
+message NetworkSecurityGroupGcpOutputs {
+  repeated string compute_firewall_id = 1;
+}
+
 message NetworkSecurityGroupResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
@@ -68,4 +82,8 @@ message NetworkSecurityGroupResource {
   repeated NetworkSecurityRule rules = 4;
 
   NetworkSecurityGroupGcpOverride gcp_override = 5;
+
+  NetworkSecurityGroupAwsOutputs aws_outputs = 6;
+  NetworkSecurityGroupAzureOutputs azure_outputs = 7;
+  NetworkSecurityGroupGcpOutputs gcp_outputs = 8;
 }
