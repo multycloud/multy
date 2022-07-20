@@ -25,16 +25,16 @@ resource "google_sql_user" "example_db_GCP" {
 }
 
 resource "google_compute_firewall" "vn_GCP" {
-  name               = "db-vn-default-deny-egress"
-  project            = "multy-project"
-  network            = google_compute_network.vn_GCP.id
-  direction          = "EGRESS"
-  destination_ranges = ["0.0.0.0/0"]
-  priority           = 65535
-  deny {
+  name          = "db-vn-default-allow-ingress"
+  project       = "multy-project"
+  network       = google_compute_network.vn_GCP.id
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
+  priority      = 65534
+  allow {
     protocol = "all"
   }
-  target_tags = ["vn-db-vn"]
+  target_tags = ["vn-db-vn-default-nsg"]
   provider    = "google.us-east4"
 }
 resource "aws_db_subnet_group" "example_db_aws" {

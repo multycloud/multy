@@ -138,7 +138,7 @@ resource "google_container_node_pool" "cluster_gcp_default_pool" {
   }
   node_config {
     machine_type    = "e2-medium"
-    tags            = ["vn-k8svn", "subnet-public-subnet"]
+    tags            = ["vn-k8svn-default-nsg", "subnet-public-subnet"]
     service_account = google_service_account.cluster_gcp.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
   }
@@ -157,7 +157,7 @@ resource "google_container_cluster" "cluster_gcp" {
   location = "europe-west1"
   node_config {
     machine_type    = "e2-micro"
-    tags            = ["vn-k8svn", "subnet-public-subnet"]
+    tags            = ["vn-k8svn-default-nsg", "subnet-public-subnet"]
     service_account = google_service_account.cluster_gcp.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
   }
@@ -217,16 +217,16 @@ resource "google_compute_network" "example_vn_gcp" {
   provider                        = "google.europe-west1"
 }
 resource "google_compute_firewall" "example_vn_gcp" {
-  name               = "k8svn-default-deny-egress"
-  project            = "multy-project"
-  network            = google_compute_network.example_vn_gcp.id
-  direction          = "EGRESS"
-  destination_ranges = ["0.0.0.0/0"]
-  priority           = 65535
-  deny {
+  name          = "k8svn-default-allow-ingress"
+  project       = "multy-project"
+  network       = google_compute_network.example_vn_gcp.id
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
+  priority      = 65534
+  allow {
     protocol = "all"
   }
-  target_tags = ["vn-k8svn"]
+  target_tags = ["vn-k8svn-default-nsg"]
   provider    = "google.europe-west1"
 }
 resource "aws_subnet" "public_subnet_aws-1" {

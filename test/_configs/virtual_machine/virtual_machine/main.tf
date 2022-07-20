@@ -52,16 +52,16 @@ resource "google_compute_network" "example_vn_gcp" {
   project                         = "multy-project"
 }
 resource "google_compute_firewall" "example_vn_gcp" {
-  name               = "example-gcp-default-deny-egress"
-  project            = "multy-project"
-  network            = google_compute_network.example_vn_gcp.id
-  direction          = "EGRESS"
-  destination_ranges = ["0.0.0.0/0"]
-  priority           = 65535
-  deny {
+  name          = "example-gcp-default-allow-ingress"
+  project       = "multy-project"
+  network       = google_compute_network.example_vn_gcp.id
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
+  priority      = 65534
+  allow {
     protocol = "all"
   }
-  target_tags = ["vn-example-gcp"]
+  target_tags = ["vn-example-gcp-default-nsg"]
   provider    = "google.europe-west1"
 }
 resource "azurerm_resource_group" "rg1" {
@@ -280,7 +280,7 @@ resource "google_compute_instance" "vm_gcp" {
   name         = "test-vm"
   machine_type = "e2-micro"
   zone         = "europe-west1-b"
-  tags         = ["vn-example-gcp", "subnet-subnet"]
+  tags         = ["vn-example-gcp-default-nsg", "subnet-subnet"]
   boot_disk {
     initialize_params {
       image = "ubuntu-os-cloud/ubuntu-1804-lts"
