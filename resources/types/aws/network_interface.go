@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -19,8 +20,8 @@ func InitNetworkInterface(r *types.NetworkInterface) resources.ResourceTranslato
 	return AwsNetworkInterface{r}
 }
 
-func (r AwsNetworkInterface) FromState(_ *output.TfState) (*resourcespb.NetworkInterfaceResource, error) {
-	return &resourcespb.NetworkInterfaceResource{
+func (r AwsNetworkInterface) FromState(state *output.TfState) (*resourcespb.NetworkInterfaceResource, error) {
+	out := &resourcespb.NetworkInterfaceResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -32,7 +33,28 @@ func (r AwsNetworkInterface) FromState(_ *output.TfState) (*resourcespb.NetworkI
 		SubnetId:         r.Args.SubnetId,
 		PublicIpId:       r.Args.PublicIpId,
 		AvailabilityZone: r.Args.AvailabilityZone,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	out.AwsOutputs = &resourcespb.NetworkInterfaceAwsOutputs{}
+
+	stateResource, err := output.GetParsedById[network_interface.AwsNetworkInterface](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.AwsOutputs.NetworkInterfaceId = stateResource.ResourceId
+	if stateResource, exists, err := output.MaybeGetParsedById[network_interface.AwsEipAssociation](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AwsOutputs.EipAssociationId = stateResource.ResourceId
+	}
+
+	return out, nil
 }
 
 func (r AwsNetworkInterface) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {

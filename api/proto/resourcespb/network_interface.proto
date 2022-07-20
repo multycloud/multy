@@ -34,10 +34,23 @@ message NetworkInterfaceArgs {
   int32 availability_zone = 5;
 }
 
+message NetworkInterfaceAwsOutputs {
+  string network_interface_id = 1;
+  string eip_association_id = 2;
+}
+
+message NetworkInterfaceAzureOutputs {
+  string network_interface_id = 1;
+}
+
+
 message NetworkInterfaceResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   string subnet_id = 3;
   string public_ip_id = 4;
   int32 availability_zone = 5;
+
+  NetworkInterfaceAwsOutputs aws_outputs = 6;
+  NetworkInterfaceAzureOutputs azure_outputs = 7;
 }
