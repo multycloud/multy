@@ -33,7 +33,7 @@ type TfBlock interface {
 
 type TerraformResource struct {
 	ResourceName string   `hcl:",key"`
-	ResourceId   string   `hcl:",key"`
+	ResourceId   string   `hcl:",key" json:"id"`
 	DependsOn    []string `hcl:"depends_on,expr" hcle:"omitempty"`
 }
 

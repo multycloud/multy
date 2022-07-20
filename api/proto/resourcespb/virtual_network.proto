@@ -38,11 +38,33 @@ message VirtualNetworkArgs {
   VirtualNetworkGcpOverride gcp_override = 4;
 }
 
+message VirtualNetworkAwsOutputs {
+  string vpc_id = 1;
+  string internet_gateway_id = 2;
+  string default_security_group_id = 3;
+}
+
+message VirtualNetworkAzureOutputs {
+  string virtual_network_id = 1;
+  string local_route_table_id = 2;
+}
+
+
+message VirtualNetworkGcpOutputs {
+  string compute_network_id = 1;
+  string default_compute_firewall_id = 2;
+}
+
 message VirtualNetworkResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   string cidr_block = 3;
 
   VirtualNetworkGcpOverride gcp_override = 4;
+
+  // outputs
+  VirtualNetworkAwsOutputs aws_outputs = 5;
+  VirtualNetworkAzureOutputs azure_outputs = 6;
+  VirtualNetworkGcpOutputs gcp_outputs = 7;
 }
 

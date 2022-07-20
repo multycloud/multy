@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -20,8 +21,8 @@ func InitVirtualNetwork(vn *types.VirtualNetwork) resources.ResourceTranslator[*
 	return GcpVirtualNetwork{vn}
 }
 
-func (r GcpVirtualNetwork) FromState(_ *output.TfState) (*resourcespb.VirtualNetworkResource, error) {
-	return &resourcespb.VirtualNetworkResource{
+func (r GcpVirtualNetwork) FromState(state *output.TfState) (*resourcespb.VirtualNetworkResource, error) {
+	out := &resourcespb.VirtualNetworkResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -31,7 +32,29 @@ func (r GcpVirtualNetwork) FromState(_ *output.TfState) (*resourcespb.VirtualNet
 		Name:        r.Args.Name,
 		CidrBlock:   r.Args.CidrBlock,
 		GcpOverride: r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[virtual_network.GoogleComputeNetwork](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.GcpOutputs = &resourcespb.VirtualNetworkGcpOutputs{
+		ComputeNetworkId: stateResource.SelfLink,
+	}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[network_security_group.GoogleComputeFirewall](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.GcpOutputs.DefaultComputeFirewallId = stateResource.SelfLink
+	}
+
+	return out, nil
 }
 
 func (r GcpVirtualNetwork) Translate(resources.MultyContext) ([]output.TfBlock, error) {
