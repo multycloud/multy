@@ -32,8 +32,15 @@ message RouteTableAssociationArgs {
   string route_table_id = 3;
 }
 
+
+message RouteTableAssociationAwsOutputs {
+  map<string, string> route_table_association_id_by_availability_zone = 1;
+}
+
 message RouteTableAssociationResource {
   common.CommonChildResourceParameters common_parameters = 1;
   string subnet_id = 2;
   string route_table_id = 3;
+
+  RouteTableAssociationAwsOutputs aws_outputs = 4;
 }

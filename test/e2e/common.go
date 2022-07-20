@@ -73,6 +73,7 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 		t.Fatalf("unable to create route table association: %+v", err)
 	}
 	cleanup(t, ctx, server.RouteTableAssociationService, rta)
+
 	createNsgRequest := &resourcespb.CreateNetworkSecurityGroupRequest{Resource: &resourcespb.NetworkSecurityGroupArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
 			Location:      location,
