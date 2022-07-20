@@ -43,9 +43,27 @@ message RouteTableArgs {
   repeated Route routes = 4;
 }
 
+message RouteTableAwsOutputs {
+  string route_table_id = 1;
+}
+
+message RouteTableAzureOutputs {
+  string route_table_id = 1;
+}
+
+
+message RouteTableGcpOutputs {
+  repeated string compute_route_id = 1;
+}
+
+
 message RouteTableResource {
   common.CommonChildResourceParameters common_parameters = 1;
   string name = 2;
   string virtual_network_id = 3;
   repeated Route routes = 4;
+
+  RouteTableAwsOutputs aws_outputs = 5;
+  RouteTableAzureOutputs azure_outputs = 6;
+  RouteTableGcpOutputs gcp_outputs = 7;
 }

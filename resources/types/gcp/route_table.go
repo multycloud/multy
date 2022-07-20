@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -30,9 +31,9 @@ func (r GcpRouteTable) Translate(ctx resources.MultyContext) ([]output.TfBlock, 
 	)
 
 	var routes []output.TfBlock
-	for i, route := range r.Args.Routes {
+	for i, routeId := range r.getRouteIds() {
 		routeName := fmt.Sprintf("%s-%d", r.Args.Name, i)
-		routeId := fmt.Sprintf("%s-%d", r.ResourceId, i)
+		route := r.Args.Routes[i]
 		outputRoute := &route_table.GoogleComputeRoute{
 			GcpResource: common.NewGcpResource(routeId, routeName, r.VirtualNetwork.Args.GetGcpOverride().GetProject()),
 			DestRange:   route.CidrBlock,
@@ -61,8 +62,15 @@ func (r GcpRouteTable) getTags(rtas []*types.RouteTableAssociation) []string {
 	return out
 }
 
-func (r GcpRouteTable) FromState(_ *output.TfState) (*resourcespb.RouteTableResource, error) {
-	return &resourcespb.RouteTableResource{
+func (r GcpRouteTable) getRouteIds() (out []string) {
+	for i := range r.Args.Routes {
+		out = append(out, fmt.Sprintf("%s-%d", r.ResourceId, i))
+	}
+	return
+}
+
+func (r GcpRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTableResource, error) {
+	out := &resourcespb.RouteTableResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
@@ -70,7 +78,23 @@ func (r GcpRouteTable) FromState(_ *output.TfState) (*resourcespb.RouteTableReso
 		Name:             r.Args.Name,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
 		Routes:           r.Args.Routes,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	out.GcpOutputs = &resourcespb.RouteTableGcpOutputs{}
+
+	for _, routeId := range r.getRouteIds() {
+		stateResource, err := output.GetParsedById[route_table.GoogleComputeRoute](state, routeId)
+		if err != nil {
+			return nil, err
+		}
+		out.GcpOutputs.ComputeRouteId = append(out.GcpOutputs.ComputeRouteId, stateResource.SelfLink)
+	}
+
+	return out, nil
 }
 
 func (r GcpRouteTable) GetMainResourceName() (string, error) {

@@ -36,41 +36,22 @@ func (r AwsRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTable
 		ResourceId:  r.ResourceId,
 		NeedsUpdate: false,
 	}
-
-	switch r.GetCloud() {
-	case common.AWS:
-		stateResource, err := output.GetParsedById[route_table.AwsRouteTable](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		out.Name = stateResource.AwsResource.Tags["Name"]
-		out.VirtualNetworkId = r.Args.VirtualNetworkId
-		var routes []*resourcespb.Route
-		for _, r := range stateResource.Routes {
-			route := &resourcespb.Route{
-				CidrBlock:   r.CidrBlock,
-				Destination: resourcespb.RouteDestination_INTERNET,
-			}
-			routes = append(routes, route)
-		}
-		out.Routes = routes
-	case common.AZURE:
-		stateResource, err := output.GetParsedById[route_table.AzureRouteTable](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		out.Name = stateResource.Name
-		out.VirtualNetworkId = r.Args.VirtualNetworkId
-		var routes []*resourcespb.Route
-		for _, r := range stateResource.Routes {
-			route := &resourcespb.Route{
-				CidrBlock:   r.AddressPrefix,
-				Destination: resourcespb.RouteDestination_INTERNET,
-			}
-			routes = append(routes, route)
-		}
-		out.Routes = routes
+	stateResource, err := output.GetParsedById[route_table.AwsRouteTable](state, r.ResourceId)
+	if err != nil {
+		return nil, err
 	}
+	out.Name = stateResource.AwsResource.Tags["Name"]
+	out.VirtualNetworkId = r.Args.VirtualNetworkId
+	var routes []*resourcespb.Route
+	for _, r := range stateResource.Routes {
+		route := &resourcespb.Route{
+			CidrBlock:   r.CidrBlock,
+			Destination: resourcespb.RouteDestination_INTERNET,
+		}
+		routes = append(routes, route)
+	}
+	out.Routes = routes
+	out.AwsOutputs = &resourcespb.RouteTableAwsOutputs{RouteTableId: stateResource.ResourceId}
 
 	return out, nil
 }

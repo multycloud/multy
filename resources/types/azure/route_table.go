@@ -51,6 +51,7 @@ func (r AzureRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTab
 		routes = append(routes, route)
 	}
 	out.Routes = routes
+	out.AzureOutputs = &resourcespb.RouteTableAzureOutputs{RouteTableId: stateResource.ResourceId}
 	return out, nil
 }
 

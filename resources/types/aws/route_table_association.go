@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -21,14 +22,32 @@ func InitRouteTableAssociation(vn *types.RouteTableAssociation) resources.Resour
 }
 
 func (r AwsRouteTableAssociation) FromState(state *output.TfState) (*resourcespb.RouteTableAssociationResource, error) {
-	return &resourcespb.RouteTableAssociationResource{
+	out := &resourcespb.RouteTableAssociationResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
 		},
 		SubnetId:     r.Args.SubnetId,
 		RouteTableId: r.Args.RouteTableId,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	out.AwsOutputs = &resourcespb.RouteTableAssociationAwsOutputs{RouteTableAssociationIdByAvailabilityZone: map[string]string{}}
+
+	azArray := common.AVAILABILITY_ZONES[r.Subnet.VirtualNetwork.GetLocation()][r.GetCloud()]
+	for i, zone := range azArray {
+		resourceId := fmt.Sprintf("%s-%d", r.ResourceId, i+1)
+		stateResource, err := output.GetParsedById[route_table_association.AwsRouteTableAssociation](state, resourceId)
+		if err != nil {
+			return nil, err
+		}
+		out.AwsOutputs.RouteTableAssociationIdByAvailabilityZone[zone] = stateResource.ResourceId
+	}
+
+	return out, nil
 }
 
 func (r AwsRouteTableAssociation) Translate(resources.MultyContext) ([]output.TfBlock, error) {
