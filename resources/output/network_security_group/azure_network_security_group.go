@@ -6,11 +6,6 @@ import (
 
 const AzureNetworkSecurityGroupResourceName = "azurerm_network_security_group"
 
-type AzureNetworkSecurityGroup struct {
-	Nsg                  AzureNsg                  `hcl:"resource"`
-	SubnetNsgAssociation AzureSubnetNsgAssociation `hcl:"resource"`
-}
-
 type AzureNsg struct {
 	*common.AzResource `hcl:",squash" default:"name=azurerm_network_security_group"`
 	Rules              []AzureRule `hcl:"security_rule,blocks"`

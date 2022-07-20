@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -21,8 +22,8 @@ func InitNetworkSecurityGroup(r *types.NetworkSecurityGroup) resources.ResourceT
 	return AzureNetworkSecurityGroup{r}
 }
 
-func (r AzureNetworkSecurityGroup) FromState(_ *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {
-	return &resourcespb.NetworkSecurityGroupResource{
+func (r AzureNetworkSecurityGroup) FromState(state *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {
+	out := &resourcespb.NetworkSecurityGroupResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -34,7 +35,19 @@ func (r AzureNetworkSecurityGroup) FromState(_ *output.TfState) (*resourcespb.Ne
 		VirtualNetworkId: r.Args.VirtualNetworkId,
 		Rules:            r.Args.Rules,
 		GcpOverride:      r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[network_security_group.AzureNsg](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.AzureOutputs = &resourcespb.NetworkSecurityGroupAzureOutputs{NetworkSecurityGroupId: stateResource.ResourceId}
+	return out, nil
 }
 
 func (r AzureNetworkSecurityGroup) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -21,8 +22,8 @@ func InitNetworkSecurityGroup(r *types.NetworkSecurityGroup) resources.ResourceT
 	return GcpNetworkSecurityGroup{r}
 }
 
-func (r GcpNetworkSecurityGroup) FromState(_ *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {
-	return &resourcespb.NetworkSecurityGroupResource{
+func (r GcpNetworkSecurityGroup) FromState(state *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {
+	out := &resourcespb.NetworkSecurityGroupResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -34,10 +35,29 @@ func (r GcpNetworkSecurityGroup) FromState(_ *output.TfState) (*resourcespb.Netw
 		VirtualNetworkId: r.Args.VirtualNetworkId,
 		Rules:            r.Args.Rules,
 		GcpOverride:      r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	out.GcpOutputs = &resourcespb.NetworkSecurityGroupGcpOutputs{}
+
+	for _, firewall := range r.getFirewalls() {
+		stateResource, err := output.GetParsedById[network_security_group.GoogleComputeFirewall](state, firewall.GetResourceId())
+		if err != nil {
+			return nil, err
+		}
+		out.GcpOutputs.ComputeFirewallId = append(out.GcpOutputs.ComputeFirewallId, stateResource.SelfLink)
+	}
+	return out, nil
 }
 
 func (r GcpNetworkSecurityGroup) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {
+	return r.getFirewalls(), nil
+}
+
+func (r GcpNetworkSecurityGroup) getFirewalls() []output.TfBlock {
 	var firewalls []output.TfBlock
 	// gcp allows egress traffic by default: https://cloud.google.com/vpc/docs/firewalls
 	// so we add default deny rule to egress
@@ -59,8 +79,7 @@ func (r GcpNetworkSecurityGroup) Translate(_ resources.MultyContext) ([]output.T
 			firewalls = append(firewalls, r.buildRule(i, rule, rule.Direction))
 		}
 	}
-
-	return firewalls, nil
+	return firewalls
 }
 
 func (r GcpNetworkSecurityGroup) buildRule(i int, rule *resourcespb.NetworkSecurityRule, direction resourcespb.Direction) *network_security_group.GoogleComputeFirewall {
