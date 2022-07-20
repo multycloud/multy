@@ -60,17 +60,17 @@ func (r GcpVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 func (r GcpVirtualNetwork) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	var result []output.TfBlock
 
-	// gcp allows egress traffic by default: https://cloud.google.com/vpc/docs/firewalls
-	// so we add default deny rule to egress
-	ruleName := fmt.Sprintf("%s-%s", r.Args.Name, "default-deny-egress")
+	// gcp denies ingress traffic by default: https://cloud.google.com/vpc/docs/firewalls
+	// so we add default allow rule to ingress
+	ruleName := fmt.Sprintf("%s-%s", r.Args.Name, "default-allow-ingress")
 	result = append(result, &network_security_group.GoogleComputeFirewall{
-		GcpResource:       common.NewGcpResource(r.ResourceId, ruleName, r.Args.GetGcpOverride().GetProject()),
-		Network:           fmt.Sprintf("%s.%s.id", output.GetResourceName(virtual_network.GoogleComputeNetwork{}), r.VirtualNetwork.ResourceId),
-		DestinationRanges: []string{"0.0.0.0/0"},
-		Direction:         resourcespb.Direction_EGRESS.String(),
-		DenyRules:         []network_security_group.GoogleComputeFirewallRule{{Protocol: "all"}},
-		TargetTags:        []string{r.getVnTag()},
-		Priority:          65535,
+		GcpResource:  common.NewGcpResource(r.ResourceId, ruleName, r.Args.GetGcpOverride().GetProject()),
+		Network:      fmt.Sprintf("%s.%s.id", output.GetResourceName(virtual_network.GoogleComputeNetwork{}), r.VirtualNetwork.ResourceId),
+		SourceRanges: []string{"0.0.0.0/0"},
+		Direction:    resourcespb.Direction_INGRESS.String(),
+		AllowRules:   []network_security_group.GoogleComputeFirewallRule{{Protocol: "all"}},
+		TargetTags:   []string{r.getVnTag()},
+		Priority:     65534,
 	})
 
 	result = append(result, &virtual_network.GoogleComputeNetwork{
@@ -85,7 +85,7 @@ func (r GcpVirtualNetwork) Translate(resources.MultyContext) ([]output.TfBlock, 
 }
 
 func (r GcpVirtualNetwork) getVnTag() string {
-	return fmt.Sprintf("vn-%s", r.Args.Name)
+	return fmt.Sprintf("vn-%s-default-nsg", r.Args.Name)
 }
 
 func (r GcpVirtualNetwork) GetMainResourceName() (string, error) {

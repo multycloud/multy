@@ -84,15 +84,15 @@ resource "google_compute_network" "example_vn_gcp" {
 }
 
 resource "google_compute_firewall" "example_vn_gcp" {
-  name               = "example-vn-default-deny-egress"
-  project            = "multy-project"
-  network            = google_compute_network.example_vn_gcp.id
-  direction          = "EGRESS"
-  destination_ranges = ["0.0.0.0/0"]
-  priority           = 65535
-  deny {
+  name          = "example-vn-default-allow-ingress"
+  project       = "multy-project"
+  network       = google_compute_network.example_vn_gcp.id
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
+  priority      = 65534
+  allow {
     protocol = "all"
   }
-  target_tags = ["vn-example-vn"]
+  target_tags = ["vn-example-vn-default-nsg"]
   provider    = "google.europe-west1"
 }

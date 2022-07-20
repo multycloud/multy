@@ -71,6 +71,10 @@ func (r GcpKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 		zones = append(zones, availabilityZone)
 	}
 
+	var tags []string
+	tags = append(tags, GcpVirtualNetwork{r.Subnet.VirtualNetwork}.getVnTag())
+	tags = append(tags, GcpSubnet{r.Subnet}.getNetworkTags()...)
+
 	nodePool := &kubernetes_node_pool.GoogleContainerNodePool{
 		GcpResource:      common.NewGcpResource(r.ResourceId, r.Args.Name, r.KubernetesCluster.Args.GetGcpOverride().GetProject()),
 		Cluster:          clusterId,
@@ -84,7 +88,7 @@ func (r GcpKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 			DiskSizeGb:  int(r.Args.DiskSizeGb),
 			Labels:      r.Args.Labels,
 			MachineType: size,
-			Tags:        GcpSubnet{r.Subnet}.getNetworkTags(),
+			Tags:        tags,
 			// Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
 			ServiceAccount: fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), r.KubernetesCluster.ResourceId),
 			OAuthScopes:    []string{"https://www.googleapis.com/auth/cloud-platform"},

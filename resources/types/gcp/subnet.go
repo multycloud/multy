@@ -54,7 +54,7 @@ func (r GcpSubnet) Translate(_ resources.MultyContext) ([]output.TfBlock, error)
 }
 
 func (r GcpSubnet) getNetworkTags() []string {
-	return []string{GcpVirtualNetwork{r.VirtualNetwork}.getVnTag(), r.getNetworkTag()}
+	return []string{r.getNetworkTag()}
 }
 
 func (r GcpSubnet) getNetworkTag() string {

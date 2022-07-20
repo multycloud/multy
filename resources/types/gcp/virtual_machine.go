@@ -82,8 +82,13 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 		return nil, err
 	}
 	var tags []string
-	for _, nsg := range r.NetworkSecurityGroups {
-		tags = append(tags, GcpNetworkSecurityGroup{nsg}.getNsgTag()...)
+	if len(r.NetworkSecurityGroups) > 0 {
+		for _, nsg := range r.NetworkSecurityGroups {
+			tags = append(tags, GcpNetworkSecurityGroup{nsg}.getNsgTag()...)
+		}
+	} else {
+		// default network sg
+		tags = append(tags, GcpVirtualNetwork{r.Subnet.VirtualNetwork}.getVnTag())
 	}
 	tags = append(tags, GcpSubnet{r.Subnet}.getNetworkTags()...)
 	var size string

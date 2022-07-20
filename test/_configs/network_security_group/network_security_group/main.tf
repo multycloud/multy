@@ -178,7 +178,20 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   }
 }
 resource "google_compute_firewall" "example_vn_gcp" {
-  name               = "example-vn-default-deny-egress"
+  name          = "example-vn-default-allow-ingress"
+  project       = "multy-project"
+  network       = google_compute_network.example_vn_gcp.id
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"]
+  priority      = 65534
+  allow {
+    protocol = "all"
+  }
+  target_tags = ["vn-example-vn-default-nsg"]
+  provider    = "google.europe-west1"
+}
+resource "google_compute_firewall" "nsg_gcp" {
+  name               = "test-nsg-default-deny-egress"
   project            = "multy-project"
   network            = google_compute_network.example_vn_gcp.id
   direction          = "EGRESS"
@@ -187,9 +200,10 @@ resource "google_compute_firewall" "example_vn_gcp" {
   deny {
     protocol = "all"
   }
-  target_tags = ["vn-example-vn"]
+  target_tags = ["nsg-test-nsg"]
   provider    = "google.europe-west1"
 }
+
 resource "google_compute_firewall" "nsg_gcp-i-0" {
   name          = "test-nsg-i-0"
   project       = "multy-project"
