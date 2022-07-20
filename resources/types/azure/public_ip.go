@@ -20,16 +20,7 @@ func InitPublicIp(r *types.PublicIp) resources.ResourceTranslator[*resourcespb.P
 }
 
 func (r AzurePublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpResource, error) {
-	ip := "dryrun"
-	if !flags.DryRun {
-		values, err := state.GetValues(public_ip.AzurePublicIp{}, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		ip = values["ip_address"].(string)
-	}
-
-	return &resourcespb.PublicIpResource{
+	out := &resourcespb.PublicIpResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -38,9 +29,24 @@ func (r AzurePublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpRe
 			NeedsUpdate:     false,
 		},
 		Name:        r.Args.Name,
-		Ip:          ip,
+		Ip:          "dryrun",
 		GcpOverride: r.Args.GcpOverride,
-	}, nil
+	}
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[public_ip.AzurePublicIp](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.Ip = stateResource.IpAddress
+	out.AzureOutputs = &resourcespb.PublicIpAzureOutputs{
+		PublicIpId: stateResource.ResourceId,
+	}
+
+	return out, nil
 }
 
 func (r AzurePublicIp) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
