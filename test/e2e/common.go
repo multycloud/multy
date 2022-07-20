@@ -38,7 +38,6 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 		Name:             prefix + "-test-public-subnet",
 		CidrBlock:        publicSubnetCidr,
 		VirtualNetworkId: vn.CommonParameters.ResourceId,
-		AvailabilityZone: 1,
 	}}
 	publicSubnet, err := server.SubnetService.Create(ctx, createPublicSubnetRequest)
 	if err != nil {

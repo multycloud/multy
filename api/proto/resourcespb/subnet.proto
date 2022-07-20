@@ -31,7 +31,20 @@ message SubnetArgs {
   string name = 2;
   string cidr_block = 3;
   string virtual_network_id = 4;
-  int32 availability_zone = 5;
+}
+
+
+message SubnetAwsOutputs {
+  map<string, string> subnet_id_by_availability_zone = 1;
+}
+
+message SubnetAzureOutputs {
+  string subnet_id = 1;
+}
+
+
+message SubnetGcpOutputs {
+  string compute_subnetwork_id = 1;
 }
 
 message SubnetResource {
@@ -39,5 +52,9 @@ message SubnetResource {
   string name = 2;
   string cidr_block = 3;
   string virtual_network_id = 4;
-  int32 availability_zone = 5;
+
+  // outputs
+  SubnetAwsOutputs aws_outputs = 6;
+  SubnetAzureOutputs azure_outputs = 7;
+  SubnetGcpOutputs gcp_outputs = 8;
 }

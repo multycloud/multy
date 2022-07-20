@@ -72,7 +72,7 @@ func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 }
 
 func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, error) {
-	az := r.Subnet.Args.AvailabilityZone
+	az := r.Args.AvailabilityZone
 	if az == 0 {
 		az = 1
 	}

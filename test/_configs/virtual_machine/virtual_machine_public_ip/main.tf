@@ -259,7 +259,7 @@ resource "google_compute_instance" "vm_gcp" {
       image = "ubuntu-os-cloud/ubuntu-1804-lts"
     }
   }
-  zone = "europe-west1-c"
+  zone = "europe-west1-b"
   tags = ["vn-example-gcp", "subnet-subnet"]
   network_interface {
     subnetwork = google_compute_subnetwork.subnet_gcp.self_link
