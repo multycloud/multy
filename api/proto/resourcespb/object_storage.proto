@@ -38,10 +38,28 @@ message ObjectStorageArgs {
   ObjectStorageGcpOverride gcp_override = 4;
 }
 
+message ObjectStorageAwsOutputs {
+  string s3_bucket_arn = 1;
+}
+
+message ObjectStorageAzureOutputs {
+  string storage_account_id = 1;
+  string public_storage_container_id = 2;
+  string private_storage_container_id = 3;
+}
+
+
+message ObjectStorageGcpOutputs {
+  string storage_bucket_id = 1;
+}
+
 message ObjectStorageResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
   bool versioning = 3;
 
   ObjectStorageGcpOverride gcp_override = 4;
+  ObjectStorageAwsOutputs aws_outputs = 5;
+  ObjectStorageAzureOutputs azure_outputs = 6;
+  ObjectStorageGcpOutputs gcp_outputs = 7;
 }

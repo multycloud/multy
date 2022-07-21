@@ -3,6 +3,7 @@ package aws_resources
 import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -19,7 +20,7 @@ func InitObjectStorage(vn *types.ObjectStorage) resources.ResourceTranslator[*re
 }
 
 func (r AwsObjectStorage) FromState(state *output.TfState) (*resourcespb.ObjectStorageResource, error) {
-	return &resourcespb.ObjectStorageResource{
+	out := &resourcespb.ObjectStorageResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -30,7 +31,20 @@ func (r AwsObjectStorage) FromState(state *output.TfState) (*resourcespb.ObjectS
 		Name:        r.Args.Name,
 		Versioning:  r.Args.Versioning,
 		GcpOverride: r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[object_storage.AwsS3Bucket](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.AwsOutputs = &resourcespb.ObjectStorageAwsOutputs{S3BucketArn: stateResource.Arn}
+
+	return out, nil
 }
 
 func (r AwsObjectStorage) Translate(resources.MultyContext) ([]output.TfBlock, error) {

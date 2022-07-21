@@ -46,6 +46,7 @@ func (r AwsObjectStorageObject) FromState(state *output.TfState) (*resourcespb.O
 			return nil, err
 		}
 		out.Url = fmt.Sprintf("https://%s.s3.amazonaws.com/%s", stateResource.Bucket, r.Args.Name)
+		out.AwsOutputs = &resourcespb.ObjectStorageObjectAwsOutputs{S3BucketObjectId: stateResource.ResourceId}
 	} else {
 		out.Url = "dryrun"
 	}

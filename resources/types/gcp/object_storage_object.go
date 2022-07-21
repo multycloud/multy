@@ -46,6 +46,13 @@ func (r GcpObjectStorageObject) FromState(state *output.TfState) (*resourcespb.O
 			return nil, err
 		}
 		out.Url = fmt.Sprintf("https://storage.googleapis.com/%s/%s", stateResource.Bucket, r.Args.Name)
+		out.GcpOutputs = &resourcespb.ObjectStorageObjectGcpOutputs{StorageBucketObjectId: stateResource.SelfLink}
+		if stateResource, exists, err := output.MaybeGetParsedById[object_storage_object.GoogleStorageObjectAccessControl](state, r.ResourceId); exists {
+			if err != nil {
+				return nil, err
+			}
+			out.GcpOutputs.StorageObjectAccessControl = stateResource.ResourceId
+		}
 	} else {
 		out.Url = "dryrun"
 	}
