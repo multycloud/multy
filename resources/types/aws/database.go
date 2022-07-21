@@ -23,16 +23,7 @@ func InitDatabase(r *types.Database) resources.ResourceTranslator[*resourcespb.D
 }
 
 func (r AwsDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseResource, error) {
-	host := "dyrun"
-	if !flags.DryRun {
-		db, err := output.GetParsedById[database.AwsDbInstance](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		host = db.Address
-	}
-
-	return &resourcespb.DatabaseResource{
+	out := &resourcespb.DatabaseResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -50,10 +41,41 @@ func (r AwsDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 		SubnetIds:          r.Args.SubnetIds,
 		Port:               r.Args.Port,
 		SubnetId:           r.Args.SubnetId,
-		Host:               host,
+		Host:               "dryrun",
 		ConnectionUsername: r.Args.Username,
 		GcpOverride:        r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	out.AwsOutputs = &resourcespb.DatabaseAwsOutputs{}
+
+	db, err := output.GetParsedById[database.AwsDbInstance](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	out.Host = db.Address
+
+	out.AwsOutputs.DbInstanceId = db.Arn
+
+	if stateResource, exists, err := output.MaybeGetParsedById[network_security_group.AwsSecurityGroup](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AwsOutputs.DefaultNetworkSecurityGroupId = stateResource.ResourceId
+	}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[database.AwsDbSubnetGroup](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AwsOutputs.DbSubnetGroupId = stateResource.Arn
+	}
+
+	return out, nil
+
 }
 
 func (r AwsDatabase) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {

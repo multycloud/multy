@@ -27,6 +27,7 @@ type AwsDbInstance struct {
 
 	// outputs
 	Address string `json:"address" hcle:"omitempty"`
+	Arn     string `json:"arn" hcle:"omitempty"`
 }
 
 // aws_db_subnet_group
@@ -35,6 +36,8 @@ type AwsDbSubnetGroup struct {
 	Name                string   `hcl:"name"`
 	Description         string   `hcl:"description"`
 	SubnetIds           []string `hcl:"subnet_ids,expr"`
+
+	Arn string `json:"arn" hcle:"omitempty"`
 }
 
 func (dbSubGroup AwsDbSubnetGroup) GetResourceName() string {

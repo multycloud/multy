@@ -55,6 +55,21 @@ message DatabaseArgs {
   DatabaseGcpOverride gcp_override = 12;
 }
 
+message DatabaseAwsOutputs {
+  string db_instance_id = 1;
+  string default_network_security_group_id = 2;
+  string db_subnet_group_id = 3;
+}
+
+message DatabaseAzureOutputs {
+  string database_server_id = 1;
+}
+
+
+message DatabaseGcpOutputs {
+  string sql_database_instance_id = 1;
+}
+
 message DatabaseResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
@@ -72,4 +87,7 @@ message DatabaseResource {
   //outputs
   string host = 10;
   string connection_username = 11;
+  DatabaseAwsOutputs aws_outputs = 15;
+  DatabaseAzureOutputs azure_outputs = 16;
+  DatabaseGcpOutputs gcp_outputs = 17;
 }
