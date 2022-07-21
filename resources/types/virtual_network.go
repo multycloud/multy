@@ -1,10 +1,12 @@
 package types
 
 import (
+	"fmt"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/validate"
 	"net"
+	"regexp"
 )
 
 /*
@@ -50,9 +52,12 @@ func NewVirtualNetwork(r *VirtualNetwork, resourceId string, vn *resourcespb.Vir
 
 func (r *VirtualNetwork) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
-	//if r.Name contains not letters,numbers,_,- { return false }
-	//if r.Name length? { return false }
-	//if r.CidrBlock valid CIDR { return false }
+	nameRestrictionRegex := regexp.MustCompile(validate.WordWithDotHyphenUnder80Pattern)
+	if !nameRestrictionRegex.MatchString(r.Args.Name) {
+		errs = append(errs, r.NewValidationError(fmt.Errorf("%s can contain only alphanumerics, underscores, periods, and hyphens;"+
+			" must start with alphanumeric and end with alphanumeric or underscore and have 1-80 lenght", r.ResourceId), "name"))
+	}
+
 	if len(r.Args.CidrBlock) == 0 { // max len?
 		errs = append(errs, validate.ValidationError{
 			ErrorMessage: "cidr_block length is invalid",

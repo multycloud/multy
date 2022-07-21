@@ -7,6 +7,11 @@ import (
 	"io/ioutil"
 )
 
+// WordWithDotHyphenUnder80Pattern is a regexp pattern that matches string that contain alphanumerics, underscores, periods,
+// and hyphens that start with alphanumeric and End alphanumeric or underscore. Limits size to 1-80.
+// Based on https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules
+const WordWithDotHyphenUnder80Pattern = string(`^[a-zA-Z\d]$|^[a-zA-Z\d][\w\-.]{0,78}\w$`)
+
 type ResourceValidationInfo struct {
 	SourceRanges  map[string]hcl.Range
 	BlockDefRange hcl.Range
