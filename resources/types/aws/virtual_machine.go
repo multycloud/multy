@@ -24,35 +24,12 @@ func InitVirtualMachine(vn *types.VirtualMachine) resources.ResourceTranslator[*
 }
 
 func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.VirtualMachineResource, error) {
-	var ip string
-	identityId := "dryrun"
-	if r.Args.GeneratePublicIp {
-		ip = "dryrun"
-	}
-
-	if !flags.DryRun {
-		if r.Args.GeneratePublicIp {
-			vmResource, err := output.GetParsedById[virtual_machine.AwsEC2](state, r.ResourceId)
-			if err != nil {
-				return nil, err
-			}
-			ip = vmResource.PublicIp
-		}
-
-		iamRoleResource, err := output.GetParsedById[iam.AwsIamRole](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		identityId = iamRoleResource.Id
-	}
-
-	return &resourcespb.VirtualMachineResource{
+	out := &resourcespb.VirtualMachineResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
 			Location:        r.Args.CommonParameters.Location,
 			CloudProvider:   r.Args.CommonParameters.CloudProvider,
-			NeedsUpdate:     false,
 		},
 		Name:                    r.Args.Name,
 		NetworkInterfaceIds:     r.Args.NetworkInterfaceIds,
@@ -67,10 +44,47 @@ func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		AwsOverride:             r.Args.AwsOverride,
 		AzureOverride:           r.Args.AzureOverride,
 		GcpOverride:             r.Args.GcpOverride,
-		PublicIp:                ip,
-		IdentityId:              identityId,
 		AvailabilityZone:        r.Args.AvailabilityZone,
-	}, nil
+		IdentityId:              "dryrun",
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	vmResource, err := output.GetParsedById[virtual_machine.AwsEC2](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	out.AwsOutputs = &resourcespb.VirtualMachineAwsOutputs{
+		Ec2InstanceId: vmResource.ResourceId,
+	}
+
+	if r.Args.GeneratePublicIp {
+		out.PublicIp = vmResource.PublicIp
+	}
+
+	iamRoleResource, err := output.GetParsedById[iam.AwsIamRole](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	out.IdentityId = iamRoleResource.Id
+	out.AwsOutputs.IamRoleArn = iamRoleResource.Arn
+
+	iamInstanceProfileResource, err := output.GetParsedById[iam.AwsIamInstanceProfile](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	out.AwsOutputs.IamInstanceProfileArn = iamInstanceProfileResource.Arn
+
+	if stateResource, exists, err := output.MaybeGetParsedById[virtual_machine.AwsKeyPair](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AwsOutputs.KeyPairArn = stateResource.Arn
+	}
+
+	return out, nil
 }
 
 type AwsCallerIdentityData struct {
