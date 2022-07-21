@@ -6,6 +6,7 @@ import (
 	"github.com/multy-dev/hclencoder"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -22,7 +23,7 @@ func InitVaultAccessPolicy(vn *types.VaultAccessPolicy) resources.ResourceTransl
 }
 
 func (r AwsVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.VaultAccessPolicyResource, error) {
-	return &resourcespb.VaultAccessPolicyResource{
+	out := &resourcespb.VaultAccessPolicyResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
@@ -30,7 +31,22 @@ func (r AwsVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.Vau
 		VaultId:  r.Args.VaultId,
 		Identity: r.Args.Identity,
 		Access:   r.Args.Access,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[iam.AwsIamRolePolicy](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.AwsOutputs = &resourcespb.VaultAccessPolicyAwsOutputs{
+		IamPolicyArn: stateResource.Arn,
+	}
+
+	return out, nil
 }
 
 func (r AwsVaultAccessPolicy) Translate(resources.MultyContext) ([]output.TfBlock, error) {

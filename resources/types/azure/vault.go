@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -24,7 +25,7 @@ type AzureClientConfig struct {
 }
 
 func (r AzureVault) FromState(state *output.TfState) (*resourcespb.VaultResource, error) {
-	return &resourcespb.VaultResource{
+	out := &resourcespb.VaultResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -34,7 +35,20 @@ func (r AzureVault) FromState(state *output.TfState) (*resourcespb.VaultResource
 		},
 		Name:        r.Args.Name,
 		GcpOverride: r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+	stateResource, err := output.GetParsedById[vault.AzureKeyVault](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.AzureOutputs = &resourcespb.VaultAzureOutputs{KeyVaultId: stateResource.ResourceId}
+
+	return out, nil
+
 }
 
 func (r AzureVault) Translate(resources.MultyContext) ([]output.TfBlock, error) {

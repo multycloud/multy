@@ -22,6 +22,8 @@ type AwsIamRolePolicy struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_iam_policy"`
 	Name                string `hcl:"name"`
 	Policy              string `hcl:"policy,expr"`
+
+	Arn string `json:"arn" hcle:"omitempty"`
 }
 
 type AwsIamRolePolicyAttachment struct {
