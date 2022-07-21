@@ -58,6 +58,8 @@ type AwsIamInstanceProfile struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_iam_instance_profile"`
 	Name                string `hcl:"name"`
 	Role                string `hcl:"role,expr"`
+
+	Arn string `json:"arn" hcle:"omitempty"`
 }
 
 func NewAssumeRolePolicy(services ...string) string {

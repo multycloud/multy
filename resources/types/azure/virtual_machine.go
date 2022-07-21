@@ -27,34 +27,12 @@ func InitVirtualMachine(vn *types.VirtualMachine) resources.ResourceTranslator[*
 }
 
 func (r AzureVirtualMachine) FromState(state *output.TfState) (*resourcespb.VirtualMachineResource, error) {
-	var ip string
-	identityId := "dryrun"
-	if r.Args.GeneratePublicIp {
-		ip = "dryrun"
-	}
-
-	if !flags.DryRun {
-		if r.Args.GeneratePublicIp {
-			ipResource, err := output.GetParsedById[public_ip.AzurePublicIp](state, r.ResourceId)
-			if err != nil {
-				return nil, err
-			}
-			ip = ipResource.IpAddress
-		}
-		vmResource, err := output.GetParsedById[virtual_machine.AzureVirtualMachine](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		identityId = vmResource.Identities[0].PrincipalId
-	}
-
-	return &resourcespb.VirtualMachineResource{
+	out := &resourcespb.VirtualMachineResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
 			Location:        r.Args.CommonParameters.Location,
 			CloudProvider:   r.Args.CommonParameters.CloudProvider,
-			NeedsUpdate:     false,
 		},
 		Name:                    r.Args.Name,
 		NetworkInterfaceIds:     r.Args.NetworkInterfaceIds,
@@ -70,9 +48,40 @@ func (r AzureVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virt
 		AzureOverride:           r.Args.AzureOverride,
 		GcpOverride:             r.Args.GcpOverride,
 		AvailabilityZone:        r.Args.AvailabilityZone,
-		PublicIp:                ip,
-		IdentityId:              identityId,
-	}, nil
+		IdentityId:              "dryrun",
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	vmResource, err := output.GetParsedById[virtual_machine.AzureVirtualMachine](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	out.IdentityId = vmResource.Identities[0].PrincipalId
+
+	out.AzureOutputs = &resourcespb.VirtualMachineAzureOutputs{
+		VirtualMachineId: vmResource.ResourceId,
+	}
+
+	if r.Args.GeneratePublicIp {
+		ipResource, err := output.GetParsedById[public_ip.AzurePublicIp](state, r.ResourceId)
+		if err != nil {
+			return nil, err
+		}
+		out.PublicIp = ipResource.IpAddress
+		out.AzureOutputs.PublicIpId = ipResource.ResourceId
+	}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[network_interface.AzureNetworkInterface](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AzureOutputs.NetworkInterfaceId = stateResource.ResourceId
+	}
+
+	return out, nil
 }
 
 func (r AzureVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, error) {

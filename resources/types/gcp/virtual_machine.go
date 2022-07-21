@@ -49,23 +49,31 @@ func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		AzureOverride:           r.Args.AzureOverride,
 		GcpOverride:             r.Args.GcpOverride,
 		AvailabilityZone:        r.Args.AvailabilityZone,
+		IdentityId:              "dryrun",
 	}
 
-	if !flags.DryRun {
-		vm, err := output.GetParsedById[virtual_machine.GoogleComputeInstance](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
+	if flags.DryRun {
+		return out, nil
+	}
 
-		if r.Args.GeneratePublicIp {
-			out.PublicIp = vm.NetworkInterface[0].AccessConfig[0].NatIp
-		}
+	vm, err := output.GetParsedById[virtual_machine.GoogleComputeInstance](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
 
-		sa, err := output.GetParsedById[iam.GoogleServiceAccount](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		out.IdentityId = sa.Email
+	if r.Args.GeneratePublicIp {
+		out.PublicIp = vm.NetworkInterface[0].AccessConfig[0].NatIp
+	}
+
+	sa, err := output.GetParsedById[iam.GoogleServiceAccount](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	out.IdentityId = sa.Email
+
+	out.GcpOutputs = &resourcespb.VirtualMachineGcpOutputs{
+		ComputeInstanceId:   vm.SelfLink,
+		ServiceAccountEmail: sa.Email,
 	}
 
 	return out, nil

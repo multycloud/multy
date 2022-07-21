@@ -69,6 +69,25 @@ message VirtualMachineArgs {
   int32 availability_zone = 16;
 }
 
+message VirtualMachineAwsOutputs {
+  string ec2_instance_id = 1;
+  string iam_instance_profile_arn = 2;
+  string iam_role_arn = 3;
+  string key_pair_arn = 4;
+}
+
+message VirtualMachineAzureOutputs {
+  string virtual_machine_id = 1;
+  string network_interface_id = 2;
+  string public_ip_id = 3;
+}
+
+
+message VirtualMachineGcpOutputs {
+  string compute_instance_id = 1;
+  string service_account_email = 2;
+}
+
 message VirtualMachineResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
@@ -89,4 +108,7 @@ message VirtualMachineResource {
   // outputs
   string public_ip = 12;
   string identity_id = 13;
+    VirtualMachineAwsOutputs aws_outputs = 19;
+    VirtualMachineAzureOutputs azure_outputs = 20;
+    VirtualMachineGcpOutputs gcp_outputs = 21;
 }
