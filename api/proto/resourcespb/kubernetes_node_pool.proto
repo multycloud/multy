@@ -58,6 +58,20 @@ message KubernetesNodePoolArgs {
 
 }
 
+message KubernetesNodePoolAwsOutputs {
+  string eks_node_pool_id = 1;
+  string iam_role_arn = 2;
+}
+
+message KubernetesNodePoolAzureOutputs {
+  string aks_node_pool_id = 1;
+}
+
+
+message KubernetesNodePoolGcpOutputs {
+  string gke_node_pool_id = 1;
+}
+
 message KubernetesNodePoolResource {
   common.CommonChildResourceParameters common_parameters = 1;
   string name = 2;
@@ -75,4 +89,8 @@ message KubernetesNodePoolResource {
   KubernetesNodePoolGcpOverride gcp_override = 14;
 
   map<string, string> labels = 10;
+
+  KubernetesNodePoolAwsOutputs aws_outputs = 15;
+  KubernetesNodePoolAzureOutputs azure_outputs = 16;
+  KubernetesNodePoolGcpOutputs gcp_outputs = 17;
 }

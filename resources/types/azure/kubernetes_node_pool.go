@@ -3,6 +3,7 @@ package azure_resources
 import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -19,6 +20,25 @@ func InitKubernetesNodePool(r *types.KubernetesNodePool) resources.ResourceTrans
 }
 
 func (r AzureKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.KubernetesNodePoolResource, error) {
+	out := r.translateToResource()
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[kubernetes_node_pool.AzureKubernetesNodePool](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.AzureOutputs = &resourcespb.KubernetesNodePoolAzureOutputs{
+		AksNodePoolId: stateResource.ResourceId,
+	}
+
+	return out, nil
+}
+
+func (r AzureKubernetesNodePool) translateToResource() *resourcespb.KubernetesNodePoolResource {
 	return &resourcespb.KubernetesNodePoolResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
@@ -32,12 +52,12 @@ func (r AzureKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.
 		MaxNodeCount:      r.Args.MaxNodeCount,
 		VmSize:            r.Args.VmSize,
 		DiskSizeGb:        r.Args.DiskSizeGb,
-		Labels:            r.Args.Labels,
+		AvailabilityZone:  r.Args.AvailabilityZone,
 		AwsOverride:       r.Args.AwsOverride,
 		AzureOverride:     r.Args.AzureOverride,
 		GcpOverride:       r.Args.GcpOverride,
-		AvailabilityZone:  r.Args.AvailabilityZone,
-	}, nil
+		Labels:            r.Args.Labels,
+	}
 }
 
 func (r AzureKubernetesNodePool) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
