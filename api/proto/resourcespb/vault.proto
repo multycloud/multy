@@ -37,9 +37,14 @@ message VaultArgs {
   VaultGcpOverride gcp_override = 3;
 }
 
+message VaultAzureOutputs {
+  string key_vault_id = 1;
+}
+
 message VaultResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
 
   VaultGcpOverride gcp_override = 3;
+  VaultAzureOutputs azure_outputs = 4;
 }

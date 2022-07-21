@@ -11,4 +11,6 @@ type AwsSsmParameter struct {
 	Name                string `hcl:"name"`
 	Type                string `hcl:"type"` // Valid types are String, StringList and SecureString.
 	Value               string `hcl:"value"`
+
+	Arn string `json:"arn" hcle:"omitempty"`
 }

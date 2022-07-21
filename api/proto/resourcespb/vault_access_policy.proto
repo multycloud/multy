@@ -42,9 +42,26 @@ message VaultAccessPolicyArgs {
   VaultAccess.Enum access = 4;
 }
 
+message VaultAccessPolicyAwsOutputs {
+  string iam_policy_arn = 1;
+}
+
+message VaultAccessPolicyAzureOutputs {
+  string key_vault_access_policy_id = 1;
+}
+
+
+message VaultAccessPolicyGcpOutputs {
+  repeated string secret_manager_secret_iam_membership_id = 1;
+}
+
 message VaultAccessPolicyResource {
   common.CommonChildResourceParameters common_parameters = 1;
   string vault_id = 2;
   string identity = 3;
   VaultAccess.Enum access = 4;
+
+  VaultAccessPolicyAwsOutputs aws_outputs = 5;
+  VaultAccessPolicyAzureOutputs azure_outputs = 6;
+  VaultAccessPolicyGcpOutputs gcp_outputs = 7;
 }

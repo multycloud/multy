@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -21,7 +22,7 @@ func InitVaultSecret(vn *types.VaultSecret) resources.ResourceTranslator[*resour
 }
 
 func (r AzureVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSecretResource, error) {
-	return &resourcespb.VaultSecretResource{
+	out := &resourcespb.VaultSecretResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
@@ -30,7 +31,19 @@ func (r AzureVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSe
 		Value:       r.Args.Value,
 		VaultId:     r.Args.VaultId,
 		GcpOverride: r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[vault_secret.AzureKeyVaultSecret](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.AzureOutputs = &resourcespb.VaultSecretAzureOutputs{KeyVaultSecretId: stateResource.ResourceId}
+	return out, nil
 }
 
 func (r AzureVaultSecret) Translate(resources.MultyContext) ([]output.TfBlock, error) {

@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/vault_access_policy"
 	"github.com/multycloud/multy/resources/types"
+	"strings"
 )
 
 type GcpVaultAccessPolicy struct {
@@ -20,7 +22,7 @@ func InitVaultAccessPolicy(vn *types.VaultAccessPolicy) resources.ResourceTransl
 }
 
 func (r GcpVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.VaultAccessPolicyResource, error) {
-	return &resourcespb.VaultAccessPolicyResource{
+	out := &resourcespb.VaultAccessPolicyResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
@@ -28,7 +30,33 @@ func (r GcpVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.Vau
 		VaultId:  r.Args.VaultId,
 		Identity: r.Args.Identity,
 		Access:   r.Args.Access,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	out.GcpOutputs = &resourcespb.VaultAccessPolicyGcpOutputs{}
+
+	var ids []string
+
+	prefix := output.GetResourceName(vault_access_policy.GoogleSecretManagerSecretIamMember{}) + "."
+	for _, resource := range state.Values.RootModule.Resources {
+		if strings.HasPrefix(resource.Address,
+			fmt.Sprintf("%s%s-", prefix, r.ResourceId)) {
+			ids = append(ids, strings.TrimPrefix(resource.Address, prefix))
+		}
+	}
+
+	for _, resourceId := range ids {
+		stateResource, err := output.GetParsedById[vault_access_policy.GoogleSecretManagerSecretIamMember](state, resourceId)
+		if err != nil {
+			return nil, err
+		}
+		out.GcpOutputs.SecretManagerSecretIamMembershipId = append(out.GcpOutputs.SecretManagerSecretIamMembershipId, stateResource.ResourceId)
+	}
+
+	return out, nil
 }
 
 func (r GcpVaultAccessPolicy) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {

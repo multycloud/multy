@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -21,7 +22,7 @@ func InitVaultAccessPolicy(vn *types.VaultAccessPolicy) resources.ResourceTransl
 }
 
 func (r AzureVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.VaultAccessPolicyResource, error) {
-	return &resourcespb.VaultAccessPolicyResource{
+	out := &resourcespb.VaultAccessPolicyResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
@@ -29,7 +30,20 @@ func (r AzureVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.V
 		VaultId:  r.Args.VaultId,
 		Identity: r.Args.Identity,
 		Access:   r.Args.Access,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[vault_access_policy.AzureKeyVaultAccessPolicy](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.AzureOutputs = &resourcespb.VaultAccessPolicyAzureOutputs{KeyVaultAccessPolicyId: stateResource.ResourceId}
+
+	return out, nil
 }
 
 func (r AzureVaultAccessPolicy) Translate(resources.MultyContext) ([]output.TfBlock, error) {
