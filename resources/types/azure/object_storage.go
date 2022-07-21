@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -21,7 +22,7 @@ func InitObjectStorage(vn *types.ObjectStorage) resources.ResourceTranslator[*re
 }
 
 func (r AzureObjectStorage) FromState(state *output.TfState) (*resourcespb.ObjectStorageResource, error) {
-	return &resourcespb.ObjectStorageResource{
+	out := &resourcespb.ObjectStorageResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -32,7 +33,31 @@ func (r AzureObjectStorage) FromState(state *output.TfState) (*resourcespb.Objec
 		Name:        r.Args.Name,
 		Versioning:  r.Args.Versioning,
 		GcpOverride: r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[object_storage.AzureStorageAccount](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	out.AzureOutputs = &resourcespb.ObjectStorageAzureOutputs{StorageAccountId: stateResource.ResourceId}
+
+	privContainer, err := output.GetParsedById[object_storage_object.AzureStorageContainer](state, r.getPrivateContainerId())
+	if err != nil {
+		return nil, err
+	}
+	out.AzureOutputs.PrivateStorageContainerId = privContainer.ResourceId
+
+	publicContainer, err := output.GetParsedById[object_storage_object.AzureStorageContainer](state, r.getPublicContainerId())
+	if err != nil {
+		return nil, err
+	}
+	out.AzureOutputs.PublicStorageContainerId = publicContainer.ResourceId
+
+	return out, nil
 }
 
 func (r AzureObjectStorage) Translate(resources.MultyContext) ([]output.TfBlock, error) {
@@ -56,7 +81,7 @@ func (r AzureObjectStorage) Translate(resources.MultyContext) ([]output.TfBlock,
 		object_storage_object.AzureStorageContainer{
 			AzResource: &common.AzResource{
 				TerraformResource: output.TerraformResource{
-					ResourceId: fmt.Sprintf("%s_%s", r.ResourceId, "public"),
+					ResourceId: r.getPublicContainerId(),
 				},
 				Name: "public",
 			},
@@ -65,13 +90,21 @@ func (r AzureObjectStorage) Translate(resources.MultyContext) ([]output.TfBlock,
 		}, object_storage_object.AzureStorageContainer{
 			AzResource: &common.AzResource{
 				TerraformResource: output.TerraformResource{
-					ResourceId: fmt.Sprintf("%s_%s", r.ResourceId, "private"),
+					ResourceId: r.getPrivateContainerId(),
 				},
 				Name: "private",
 			},
 			StorageAccountName:  storageAccount.GetResourceName(),
 			ContainerAccessType: "private",
 		}}, nil
+}
+
+func (r AzureObjectStorage) getPrivateContainerId() string {
+	return fmt.Sprintf("%s_%s", r.ResourceId, "private")
+}
+
+func (r AzureObjectStorage) getPublicContainerId() string {
+	return fmt.Sprintf("%s_%s", r.ResourceId, "public")
 }
 
 func (r AzureObjectStorage) GetMainResourceName() (string, error) {

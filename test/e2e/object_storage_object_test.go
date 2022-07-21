@@ -36,6 +36,8 @@ func testObjectStorageObject(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 	cleanup(t, ctx, server.ObjectStorageService, storage)
 
+	t.Logf("%+v", storage)
+
 	createObjStorageObjRequest := &resourcespb.CreateObjectStorageObjectRequest{Resource: &resourcespb.ObjectStorageObjectArgs{
 		Name:            "public-text.html",
 		Acl:             resourcespb.ObjectStorageObjectAcl_PUBLIC_READ,
@@ -49,6 +51,8 @@ func testObjectStorageObject(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("unable to create vn: %+v", err)
 	}
 	cleanup(t, ctx, server.ObjectStorageObjectService, obj)
+
+	t.Logf("%+v", obj)
 
 	resp, err := http.Get(obj.GetUrl())
 	if err != nil {

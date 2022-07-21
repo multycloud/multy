@@ -41,6 +41,20 @@ message ObjectStorageObjectArgs {
   string source = 7;
 }
 
+message ObjectStorageObjectAwsOutputs {
+  string s3_bucket_object_id = 1;
+}
+
+message ObjectStorageObjectAzureOutputs {
+  string storage_blob_id = 1;
+}
+
+
+message ObjectStorageObjectGcpOutputs {
+  string storage_bucket_object_id = 1;
+  string storage_object_access_control = 2;
+}
+
 message ObjectStorageObjectResource {
   common.CommonChildResourceParameters common_parameters = 1;
   string name = 2;
@@ -51,4 +65,7 @@ message ObjectStorageObjectResource {
   string source = 7;
   //outputs
   string url = 8;
+  ObjectStorageObjectAwsOutputs aws_outputs = 9;
+  ObjectStorageObjectAzureOutputs azure_outputs = 10;
+  ObjectStorageObjectGcpOutputs gcp_outputs = 11;
 }

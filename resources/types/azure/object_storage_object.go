@@ -47,7 +47,7 @@ func (r AzureObjectStorageObject) FromState(state *output.TfState) (*resourcespb
 			return nil, err
 		}
 		out.Url = fmt.Sprintf("https://%s.blob.core.windows.net/public/%s", stateResource.AzResource.Name, r.Args.Name)
-
+		out.AzureOutputs = &resourcespb.ObjectStorageObjectAzureOutputs{StorageBlobId: stateResource.ResourceId}
 	} else {
 		out.Url = "dryrun"
 	}

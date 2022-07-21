@@ -9,6 +9,8 @@ import (
 type AwsS3Bucket struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_s3_bucket"`
 	Bucket              string `hcl:"bucket"`
+
+	Arn string `json:"arn" hcle:"omitempty"`
 }
 
 type AwsS3BucketVersioning struct {
