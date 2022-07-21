@@ -38,30 +38,41 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		ServiceCidr:      r.Args.ServiceCidr,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
 		GcpOverride:      r.Args.GcpOverride,
+		Endpoint:         "dryrun",
 	}
-	result.Endpoint = "dryrun"
-	if !flags.DryRun {
-		cluster, err := output.GetParsedById[kubernetes_service.GoogleContainerCluster](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		result.Endpoint = fmt.Sprintf("https://%s", cluster.Endpoint)
-		result.CaCertificate = cluster.MasterAuth[0].ClusterCaCertificate
-
-		rawConfig, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint)
-		if err != nil {
-			return nil, err
-		}
-
-		result.KubeConfigRaw = rawConfig
+	if flags.DryRun {
+		return result, nil
 	}
 
-	var err error
+	cluster, err := output.GetParsedById[kubernetes_service.GoogleContainerCluster](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	result.Endpoint = fmt.Sprintf("https://%s", cluster.Endpoint)
+	result.CaCertificate = cluster.MasterAuth[0].ClusterCaCertificate
+
+	rawConfig, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	result.KubeConfigRaw = rawConfig
+
 	result.DefaultNodePool, err = GcpKubernetesNodePool{r.DefaultNodePool}.FromState(state)
 	if err != nil {
 		return nil, err
 	}
 
+	result.GcpOutputs = &resourcespb.KubernetesClusterGcpOutputs{
+		GkeClusterId: cluster.SelfLink,
+	}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[iam.GoogleServiceAccount](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		result.GcpOutputs.ServiceAccountEmail = stateResource.Email
+	}
 	return result, nil
 }
 

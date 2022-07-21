@@ -14,6 +14,7 @@ type AwsEksCluster struct {
 	// outputs
 	Endpoint             string                 `json:"endpoint" hcle:"omitempty"`
 	CertificateAuthority []CertificateAuthority `json:"certificate_authority"  hcle:"omitempty"`
+	Arn                  string                 `json:"arn" hcle:"omitempty"`
 }
 
 type VpcConfig struct {

@@ -22,4 +22,6 @@ type AwsKubernetesNodeGroup struct {
 	UpdateConfig        UpdateConfig      `hcl:"update_config" hcle:"omitempty"`
 	Labels              map[string]string `hcl:"labels" hcle:"omitempty"`
 	InstanceTypes       []string          `hcl:"instance_types"`
+
+	Arn string `json:"arn" hcle:"omitempty"`
 }

@@ -41,6 +41,21 @@ message KubernetesClusterArgs {
   KubernetesClusterOverrides gcp_override = 6;
 }
 
+message KubernetesClusterAwsOutputs {
+  string eks_cluster_id = 1;
+  string iam_role_arn = 2;
+}
+
+message KubernetesClusterAzureOutputs {
+  string aks_cluster_id = 1;
+}
+
+
+message KubernetesClusterGcpOutputs {
+  string gke_cluster_id = 1;
+  string service_account_email = 2;
+}
+
 message KubernetesClusterResource {
   common.CommonResourceParameters common_parameters = 1;
   string name = 2;
@@ -53,4 +68,7 @@ message KubernetesClusterResource {
   string endpoint = 6;
   string ca_certificate = 7;
   string kube_config_raw = 8;
+  KubernetesClusterAwsOutputs aws_outputs = 10;
+  KubernetesClusterAzureOutputs azure_outputs = 11;
+  KubernetesClusterGcpOutputs gcp_outputs = 12;
 }

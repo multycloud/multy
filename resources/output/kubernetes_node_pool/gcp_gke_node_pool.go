@@ -7,9 +7,9 @@ type GoogleContainerNodePool struct {
 	Cluster             string                             `hcl:"cluster,expr"` //expr
 	InitialNodeCount    int                                `hcl:"initial_node_count"`
 	NodeLocations       []string                           `hcl:"node_locations" hcle:"omitempty"`
-	Autoscaling         GoogleContainerNodePoolAutoScaling `hcl:"autoscaling"`
-	NodeConfig          GoogleContainerNodeConfig          `hcl:"node_config"`
-	NetworkConfig       GoogleContainerNetworkConfig       `hcl:"network_config" hcle:"omitempty"`
+	Autoscaling         GoogleContainerNodePoolAutoScaling `hcl:"autoscaling" json:"-"`
+	NodeConfig          GoogleContainerNodeConfig          `hcl:"node_config"  json:"-"`
+	NetworkConfig       GoogleContainerNetworkConfig       `hcl:"network_config" hcle:"omitempty"  json:"-"`
 }
 
 type GoogleContainerNodePoolAutoScaling struct {

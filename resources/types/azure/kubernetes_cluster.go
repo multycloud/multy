@@ -32,22 +32,25 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState) (*resourcespb.K
 		ServiceCidr:      r.Args.ServiceCidr,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
 		GcpOverride:      r.Args.GcpOverride,
-	}
-	result.Endpoint = "dryrun"
-	if !flags.DryRun {
-		cluster, err := output.GetParsedById[kubernetes_service.AzureEksCluster](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		result.Endpoint = cluster.KubeConfig[0].Host
-		result.CaCertificate = cluster.KubeConfig[0].ClusterCaCertificate
-		result.KubeConfigRaw = cluster.KubeConfigRaw
+		Endpoint:         "dryrun",
 	}
 
-	var err error
-	result.DefaultNodePool, err = AzureKubernetesNodePool{r.DefaultNodePool}.FromState(state)
+	if flags.DryRun {
+		return result, nil
+	}
+
+	cluster, err := output.GetParsedById[kubernetes_service.AzureEksCluster](state, r.ResourceId)
 	if err != nil {
 		return nil, err
+	}
+	result.Endpoint = cluster.KubeConfig[0].Host
+	result.CaCertificate = cluster.KubeConfig[0].ClusterCaCertificate
+	result.KubeConfigRaw = cluster.KubeConfigRaw
+
+	result.DefaultNodePool = AzureKubernetesNodePool{r.DefaultNodePool}.translateToResource()
+
+	result.AzureOutputs = &resourcespb.KubernetesClusterAzureOutputs{
+		AksClusterId: cluster.ResourceId,
 	}
 
 	return result, nil

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -21,7 +22,7 @@ func InitKubernetesNodePool(r *types.KubernetesNodePool) resources.ResourceTrans
 }
 
 func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.KubernetesNodePoolResource, error) {
-	return &resourcespb.KubernetesNodePoolResource{
+	out := &resourcespb.KubernetesNodePoolResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
@@ -39,7 +40,30 @@ func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 		AzureOverride:     r.Args.AzureOverride,
 		GcpOverride:       r.Args.GcpOverride,
 		Labels:            r.Args.Labels,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	stateResource, err := output.GetParsedById[kubernetes_node_pool.AwsKubernetesNodeGroup](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	out.AwsOutputs = &resourcespb.KubernetesNodePoolAwsOutputs{
+		EksNodePoolId: stateResource.Arn,
+	}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[iam.AwsIamRole](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AwsOutputs.IamRoleArn = stateResource.Arn
+	}
+
+	return out, nil
+
 }
 
 func (r AwsKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {

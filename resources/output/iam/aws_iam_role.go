@@ -14,7 +14,8 @@ type AwsIamRole struct {
 	Name                string `hcl:"name"`
 	AssumeRolePolicy    string `hcl:"assume_role_policy"`
 
-	Id string `json:"id" hcle:"omitempty"`
+	Id  string `json:"id" hcle:"omitempty"`
+	Arn string `json:"arn" hcle:"omitempty"`
 }
 
 type AwsIamRolePolicy struct {

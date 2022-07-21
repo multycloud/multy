@@ -93,26 +93,38 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		ServiceCidr:      r.Args.ServiceCidr,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
 		GcpOverride:      r.Args.GcpOverride,
+		Endpoint:         "dryrun",
 	}
-	result.Endpoint = "dryrun"
-	if !flags.DryRun {
-		cluster, err := output.GetParsedById[kubernetes_service.AwsEksCluster](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		result.Endpoint = cluster.Endpoint
-		result.CaCertificate = cluster.CertificateAuthority[0].Data
-		kubeCgfRaw, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint, r.GetCloudSpecificLocation())
-		if err != nil {
-			return nil, err
-		}
-		result.KubeConfigRaw = kubeCgfRaw
+	if flags.DryRun {
+		return result, nil
 	}
 
-	var err error
+	cluster, err := output.GetParsedById[kubernetes_service.AwsEksCluster](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	result.Endpoint = cluster.Endpoint
+	result.CaCertificate = cluster.CertificateAuthority[0].Data
+	kubeCgfRaw, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint, r.GetCloudSpecificLocation())
+	if err != nil {
+		return nil, err
+	}
+	result.KubeConfigRaw = kubeCgfRaw
+
 	result.DefaultNodePool, err = AwsKubernetesNodePool{r.DefaultNodePool}.FromState(state)
 	if err != nil {
 		return nil, err
+	}
+
+	result.AwsOutputs = &resourcespb.KubernetesClusterAwsOutputs{
+		EksClusterId: cluster.Arn,
+	}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[iam.AwsIamRole](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		result.AwsOutputs.IamRoleArn = stateResource.Arn
 	}
 
 	return result, nil
