@@ -22,28 +22,7 @@ func InitDatabase(r *types.Database) resources.ResourceTranslator[*resourcespb.D
 }
 
 func (r AzureDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseResource, error) {
-	host := "dyrun"
-	if !flags.DryRun {
-		var azureDatabaseEngine database.AzureDatabaseEngine
-
-		if r.Args.Engine == resourcespb.DatabaseEngine_MYSQL {
-			azureDatabaseEngine = database.AzureMySqlServer{}
-		} else if r.Args.Engine == resourcespb.DatabaseEngine_POSTGRES {
-			azureDatabaseEngine = database.AzurePostgreSqlServer{}
-		} else if r.Args.Engine == resourcespb.DatabaseEngine_MARIADB {
-			azureDatabaseEngine = database.AzureMariaDbServer{}
-		} else {
-			return nil, fmt.Errorf("unhandled engine %s", r.Args.Engine.String())
-		}
-
-		values, err := state.GetValues(azureDatabaseEngine, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		host = values["fqdn"].(string)
-	}
-
-	return &resourcespb.DatabaseResource{
+	out := &resourcespb.DatabaseResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -61,10 +40,36 @@ func (r AzureDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseRe
 		SubnetIds:          r.Args.SubnetIds,
 		Port:               r.Args.Port,
 		SubnetId:           r.Args.SubnetId,
-		Host:               host,
-		ConnectionUsername: fmt.Sprintf("%s@%s", r.Args.Username, host),
+		Host:               "dryrun",
+		ConnectionUsername: r.Args.Username,
 		GcpOverride:        r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	var azureDatabaseEngine database.AzureDatabaseEngine
+
+	if r.Args.Engine == resourcespb.DatabaseEngine_MYSQL {
+		azureDatabaseEngine = database.AzureMySqlServer{}
+	} else if r.Args.Engine == resourcespb.DatabaseEngine_POSTGRES {
+		azureDatabaseEngine = database.AzurePostgreSqlServer{}
+	} else if r.Args.Engine == resourcespb.DatabaseEngine_MARIADB {
+		azureDatabaseEngine = database.AzureMariaDbServer{}
+	} else {
+		return nil, fmt.Errorf("unhandled engine %s", r.Args.Engine.String())
+	}
+
+	values, err := state.GetValues(azureDatabaseEngine, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	out.Host = values["fqdn"].(string)
+	out.ConnectionUsername = fmt.Sprintf("%s@%s", r.Args.Username, out.Host)
+	out.AzureOutputs = &resourcespb.DatabaseAzureOutputs{DatabaseServerId: values["id"].(string)}
+
+	return out, nil
 }
 
 func (r AzureDatabase) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {

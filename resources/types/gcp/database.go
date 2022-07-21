@@ -22,16 +22,7 @@ func InitDatabase(r *types.Database) resources.ResourceTranslator[*resourcespb.D
 }
 
 func (r GcpDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseResource, error) {
-	host := "dyrun"
-	if !flags.DryRun {
-		db, err := output.GetParsedById[database.GoogleSqlDatabaseInstance](state, r.ResourceId)
-		if err != nil {
-			return nil, err
-		}
-		host = db.PublicIpAddress
-	}
-
-	return &resourcespb.DatabaseResource{
+	out := &resourcespb.DatabaseResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
 			ResourceGroupId: r.Args.CommonParameters.ResourceGroupId,
@@ -49,10 +40,23 @@ func (r GcpDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 		SubnetIds:          r.Args.SubnetIds,
 		Port:               r.Args.Port,
 		SubnetId:           r.Args.SubnetId,
-		Host:               host,
+		Host:               "dryrun",
 		ConnectionUsername: r.Args.Username,
 		GcpOverride:        r.Args.GcpOverride,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	db, err := output.GetParsedById[database.GoogleSqlDatabaseInstance](state, r.ResourceId)
+	if err != nil {
+		return nil, err
+	}
+	out.Host = db.PublicIpAddress
+	out.GcpOutputs = &resourcespb.DatabaseGcpOutputs{SqlDatabaseInstanceId: db.SelfLink}
+
+	return out, nil
 }
 
 func (r GcpDatabase) getDbVersion() (string, error) {
