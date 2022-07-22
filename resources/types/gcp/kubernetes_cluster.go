@@ -40,6 +40,11 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		GcpOverride:      r.Args.GcpOverride,
 		Endpoint:         "dryrun",
 	}
+	var err error
+	result.DefaultNodePool, err = GcpKubernetesNodePool{r.DefaultNodePool}.FromState(state)
+	if err != nil {
+		return nil, err
+	}
 	if flags.DryRun {
 		return result, nil
 	}
@@ -57,11 +62,6 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 	}
 
 	result.KubeConfigRaw = rawConfig
-
-	result.DefaultNodePool, err = GcpKubernetesNodePool{r.DefaultNodePool}.FromState(state)
-	if err != nil {
-		return nil, err
-	}
 
 	result.GcpOutputs = &resourcespb.KubernetesClusterGcpOutputs{
 		GkeClusterId: cluster.SelfLink,

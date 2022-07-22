@@ -35,6 +35,8 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState) (*resourcespb.K
 		Endpoint:         "dryrun",
 	}
 
+	result.DefaultNodePool = AzureKubernetesNodePool{r.DefaultNodePool}.translateToResource()
+
 	if flags.DryRun {
 		return result, nil
 	}
@@ -46,8 +48,6 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState) (*resourcespb.K
 	result.Endpoint = cluster.KubeConfig[0].Host
 	result.CaCertificate = cluster.KubeConfig[0].ClusterCaCertificate
 	result.KubeConfigRaw = cluster.KubeConfigRaw
-
-	result.DefaultNodePool = AzureKubernetesNodePool{r.DefaultNodePool}.translateToResource()
 
 	result.AzureOutputs = &resourcespb.KubernetesClusterAzureOutputs{
 		AksClusterId: cluster.ResourceId,
