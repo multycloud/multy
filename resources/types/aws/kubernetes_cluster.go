@@ -95,6 +95,11 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		GcpOverride:      r.Args.GcpOverride,
 		Endpoint:         "dryrun",
 	}
+	var err error
+	result.DefaultNodePool, err = AwsKubernetesNodePool{r.DefaultNodePool}.FromState(state)
+	if err != nil {
+		return nil, err
+	}
 	if flags.DryRun {
 		return result, nil
 	}
@@ -110,11 +115,6 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		return nil, err
 	}
 	result.KubeConfigRaw = kubeCgfRaw
-
-	result.DefaultNodePool, err = AwsKubernetesNodePool{r.DefaultNodePool}.FromState(state)
-	if err != nil {
-		return nil, err
-	}
 
 	result.AwsOutputs = &resourcespb.KubernetesClusterAwsOutputs{
 		EksClusterId: cluster.Arn,
