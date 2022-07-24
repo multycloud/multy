@@ -9,6 +9,7 @@ var VMSIZE = map[commonpb.VmSize_Enum]map[commonpb.CloudProvider]string{
 	commonpb.VmSize_GENERAL_NANO: {
 		commonpb.CloudProvider_AWS:   "t2.nano",
 		commonpb.CloudProvider_AZURE: "Standard_B1ls",
+		commonpb.CloudProvider_GCP:   "f1-micro",
 	},
 	commonpb.VmSize_GENERAL_MICRO: {
 		commonpb.CloudProvider_AWS:   "t2.micro",
@@ -43,50 +44,62 @@ var VMSIZE = map[commonpb.VmSize_Enum]map[commonpb.CloudProvider]string{
 	commonpb.VmSize_COMPUTE_LARGE: {
 		commonpb.CloudProvider_AWS:   "c4.large",
 		commonpb.CloudProvider_AZURE: "Standard_F2s_v2",
+		commonpb.CloudProvider_GCP:   "c2d-highcpu-2",
 	},
 	commonpb.VmSize_COMPUTE_XLARGE: {
 		commonpb.CloudProvider_AWS:   "c4.xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_F4s_v2",
+		commonpb.CloudProvider_GCP:   "c2d-highcpu-4",
 	},
 	commonpb.VmSize_COMPUTE_2XLARGE: {
 		commonpb.CloudProvider_AWS:   "c4.2xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_F8s_v2",
+		commonpb.CloudProvider_GCP:   "c2d-highcpu-8",
 	},
 	commonpb.VmSize_COMPUTE_4XLARGE: {
 		commonpb.CloudProvider_AWS:   "c4.4xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_F16s_v2",
+		commonpb.CloudProvider_GCP:   "c2d-highcpu-16",
 	},
 	commonpb.VmSize_COMPUTE_8XLARGE: {
 		commonpb.CloudProvider_AWS:   "c4.8xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_F48s_v2",
+		commonpb.CloudProvider_GCP:   "c2d-highcpu-32",
 	},
 	commonpb.VmSize_MEMORY_LARGE: {
 		commonpb.CloudProvider_AWS:   "r6g.large",
 		commonpb.CloudProvider_AZURE: "Standard_E2s_v3",
+		commonpb.CloudProvider_GCP:   "e2-highmem-2",
 	},
 	commonpb.VmSize_MEMORY_XLARGE: {
 		commonpb.CloudProvider_AWS:   "r6g.xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_E4s_v3",
+		commonpb.CloudProvider_GCP:   "e2-highmem-4",
 	},
 	commonpb.VmSize_MEMORY_2XLARGE: {
 		commonpb.CloudProvider_AWS:   "r6g.2xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_E8s_v3",
+		commonpb.CloudProvider_GCP:   "e2-highmem-8",
 	},
 	commonpb.VmSize_MEMORY_4XLARGE: {
 		commonpb.CloudProvider_AWS:   "r6g.4xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_E16s_v3",
+		commonpb.CloudProvider_GCP:   "e2-highmem-16",
 	},
 	commonpb.VmSize_MEMORY_8XLARGE: {
 		commonpb.CloudProvider_AWS:   "r6g.8xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_E32s_v3",
+		commonpb.CloudProvider_GCP:   "n2-highmem-32",
 	},
 	commonpb.VmSize_MEMORY_12XLARGE: {
 		commonpb.CloudProvider_AWS:   "r6g.12xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_E48s_v3",
+		commonpb.CloudProvider_GCP:   "n2-highmem-48",
 	},
 	commonpb.VmSize_MEMORY_16XLARGE: {
 		commonpb.CloudProvider_AWS:   "r6g.16xlarge",
 		commonpb.CloudProvider_AZURE: "Standard_E64a_v4",
+		commonpb.CloudProvider_GCP:   "n2-highmem-64",
 	},
 }
 
