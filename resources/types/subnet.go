@@ -1,14 +1,12 @@
 package types
 
 import (
-	"fmt"
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/validate"
 	"net"
-	"regexp"
 )
 
 /*
@@ -50,16 +48,12 @@ func NewSubnet(s *Subnet, resourceId string, subnet *resourcespb.SubnetArgs, oth
 }
 
 func (r *Subnet) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
-	nameRestrictionRegex := regexp.MustCompile(validate.WordWithDotHyphenUnder80Pattern)
-	if !nameRestrictionRegex.MatchString(r.Args.Name) {
-		errs = append(errs, r.NewValidationError(fmt.Errorf("%s can contain only alphanumerics, underscores, periods, and hyphens;"+
-			" must start with alphanumeric and end with alphanumeric or underscore and have 1-80 lenght", r.ResourceId), "name"))
+	if err := validate.NewWordWithDotHyphenUnder80Validator().Check(r.Args.Name, r.ResourceId); err != nil {
+		errs = append(errs, r.NewValidationError(err, "name"))
 	}
-
-	if len(r.Args.CidrBlock) == 0 { // max len?
-		errs = append(errs, r.NewValidationError(fmt.Errorf("%s cidr_block length is invalid", r.ResourceId), "cidr_block"))
+	if err := validate.NewCIDRIPv4Check().Check(r.Args.CidrBlock, r.ResourceId); err != nil {
+		errs = append(errs, r.NewValidationError(err, "cidr_block"))
 	}
-
 	if _, vNetBlock, err := net.ParseCIDR(r.Args.CidrBlock); err == nil {
 		if _, subnetBlock, err := net.ParseCIDR(r.Args.CidrBlock); err != nil {
 			errs = append(errs, validate.ValidationError{

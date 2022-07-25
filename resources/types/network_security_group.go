@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/validate"
@@ -70,21 +69,28 @@ func NewNetworkSecurityGroup(nsg *NetworkSecurityGroup, resourceId string, args 
 	}
 	return nil
 }
-func validatePort(port int32) bool {
-	return port >= 0 && port <= 65535
-}
 
 func (r *NetworkSecurityGroup) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
+	if err := validate.NewWordWithDotHyphenUnder80Validator().Check(r.Args.Name, r.ResourceId); err != nil {
+		errs = append(errs, r.NewValidationError(err, "name"))
+	}
+	cidrValidator := validate.NewCIDRIPv4Check()
+	portValidator := validate.NewPortCheck()
+	protoValidator := validate.NewProtocolCheck()
 	for _, rule := range r.Args.Rules {
-		if !validatePort(rule.PortRange.To) {
-			errs = append(errs, r.NewValidationError(fmt.Errorf("rule to_port \"%d\" is not valid", rule.PortRange.To), "rules"))
+		if err := portValidator.Check(rule.PortRange.To, "to_port"); err != nil {
+			errs = append(errs, r.NewValidationError(err, "rules"))
 		}
-		if !validatePort(rule.PortRange.From) {
-			errs = append(errs, r.NewValidationError(fmt.Errorf("rule from_port \"%d\" is not valid", rule.PortRange.From), "rules"))
+		if err := portValidator.Check(rule.PortRange.From, "from_port"); err != nil {
+			errs = append(errs, r.NewValidationError(err, "rules"))
 		}
-		// TODO validate CIDR
-		//		validate protocol
+		if err := cidrValidator.Check(rule.CidrBlock, "rule cidr"); err != nil {
+			errs = append(errs, r.NewValidationError(err, "rules"))
+		}
+		if err := protoValidator.Check(rule.Protocol, "rule protocol"); err != nil {
+			errs = append(errs, r.NewValidationError(err, "rules"))
+		}
 	}
 	// TODO validate location matches with VN location
 	return errs
