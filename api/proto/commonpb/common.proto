@@ -41,6 +41,8 @@ enum Location {
   AP_SOUTH_EAST_2 = 15;
   // India, Mumbai
   AP_SOUTH_1 = 16;
+  // Singapore
+  AP_SOUTH_EAST_1 = 17;
 }
 
 enum CloudProvider {

@@ -75,10 +75,10 @@ var LOCATION = map[commonpb.Location]map[commonpb.CloudProvider]string{
 		AZURE: "brazilsouth",
 		GCP:   "southamerica-east1",
 	},
-	// Canda, Quebec
+	// Canada, Quebec
 	commonpb.Location_CA_CENTRAL_1: {
 		AWS:   "ca-central-1",
-		AZURE: "canadaeast",
+		AZURE: "canadacentral", // Toronto
 		GCP:   "northamerica-northeast1",
 	},
 	// Japan, Tokyo area
@@ -102,7 +102,7 @@ var LOCATION = map[commonpb.Location]map[commonpb.CloudProvider]string{
 	// Australia, Sydney area
 	commonpb.Location_AP_SOUTH_EAST_2: {
 		AWS:   "ap-southeast-2",
-		AZURE: "australiasoutheast",
+		AZURE: "australiaeast", // New South Wales
 		GCP:   "australia-southeast1",
 	},
 	// India, Mumbai area
@@ -110,6 +110,12 @@ var LOCATION = map[commonpb.Location]map[commonpb.CloudProvider]string{
 		AWS:   "ap-south-1",
 		AZURE: "centralindia",
 		GCP:   "asia-south1",
+	},
+	// Singapore
+	commonpb.Location_AP_SOUTH_EAST_1: {
+		AWS:   "ap-southeast-1",
+		AZURE: "southeastasia",
+		GCP:   "asia-southeast1",
 	},
 }
 
@@ -166,7 +172,7 @@ var AVAILABILITY_ZONES = map[commonpb.Location]map[commonpb.CloudProvider][]stri
 	},
 	commonpb.Location_CA_CENTRAL_1: {
 		AWS:   []string{"ca-central-1a", "ca-central-1b", "ca-central-1d"},
-		AZURE: []string{},
+		AZURE: []string{"1", "2", "3"},
 		GCP:   []string{"northamerica-northeast1-a", "northamerica-northeast1-b", "northamerica-northeast1-c"},
 	},
 	commonpb.Location_AP_NORTH_EAST_1: {
@@ -186,7 +192,7 @@ var AVAILABILITY_ZONES = map[commonpb.Location]map[commonpb.CloudProvider][]stri
 	},
 	commonpb.Location_AP_SOUTH_EAST_2: {
 		AWS:   []string{"ap-southeast-2a", "ap-southeast-2b", "ap-southeast-2c"},
-		AZURE: []string{},
+		AZURE: []string{"1", "2", "3"},
 		GCP:   []string{"australia-southeast1-a", "australia-southeast1-b", "australia-southeast1-c"},
 	},
 	commonpb.Location_AP_SOUTH_1: {
@@ -194,28 +200,11 @@ var AVAILABILITY_ZONES = map[commonpb.Location]map[commonpb.CloudProvider][]stri
 		AZURE: []string{"1", "2", "3"},
 		GCP:   []string{"asia-south1-a", "asia-south1-b", "asia-south1-c"},
 	},
-}
-
-// eu-west-2 "ami-0fc15d50d39e4503c"
-// amzn2-ami-hvm-2.0.20211103.0-x86_64-gp2
-//https://cloud-images.ubuntu.com/locator/ec2/
-var AMIMAP = map[string]string{
-	"eu-west-1":      "ami-09d4a659cdd8677be",
-	"eu-west-2":      "ami-0fc15d50d39e4503c",
-	"eu-west-3":      "ami-0fc15d50d39e4503c",
-	"us-east-1":      "ami-04ad2567c9e3d7893",
-	"us-east-2":      "ami-04ad2567c9e3d7893",
-	"us-west-1":      "ami-04ad2567c9e3d7893",
-	"us-west-2":      "ami-04ad2567c9e3d7893",
-	"eu-north-1":     "ami-04ad2567c9e3d7893",
-	"eu-central-1":   "",
-	"sa-east-1":      "",
-	"ca-central-1":   "",
-	"ap-northeast-1": "",
-	"ap-northeast-2": "",
-	"ap-northeast-3": "",
-	"ap-southeast-2": "",
-	"ap-south-1":     "",
+	commonpb.Location_AP_SOUTH_EAST_1: {
+		AWS:   []string{"ap-southeast-1a", "ap-southeast-1b", "ap-southeast-1c"},
+		AZURE: []string{"1", "2", "3"},
+		GCP:   []string{"asia-southeast1-a", "asia-southeast1-b", "asia-southeast1-c"},
+	},
 }
 
 var AwsAmiOwners = map[resourcespb.ImageReference_OperatingSystemDistribution]string{
