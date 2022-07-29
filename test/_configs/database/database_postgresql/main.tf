@@ -14,13 +14,13 @@ resource "google_sql_database_instance" "example_db_GCP" {
       }
     }
   }
-  provider = "google.us-east4"
+  provider = "google.us-east5"
 }
 resource "google_sql_user" "example_db_GCP" {
   name     = "multyadmin"
   instance = google_sql_database_instance.example_db_GCP.name
   password = "multy$Admin123!"
-  provider = "google.us-east4"
+  provider = "google.us-east5"
   project  = "multy-project"
 }
 resource "google_compute_subnetwork" "subnet_GCP" {
@@ -29,7 +29,7 @@ resource "google_compute_subnetwork" "subnet_GCP" {
   ip_cidr_range            = "10.0.0.0/24"
   network                  = google_compute_network.vn_GCP.id
   private_ip_google_access = true
-  provider                 = "google.us-east4"
+  provider                 = "google.us-east5"
 }
 resource "google_compute_network" "vn_GCP" {
   name                            = "db-vn"
@@ -38,7 +38,7 @@ resource "google_compute_network" "vn_GCP" {
   description                     = "Managed by Multy"
   auto_create_subnetworks         = false
   delete_default_routes_on_create = true
-  provider                        = "google.us-east4"
+  provider                        = "google.us-east5"
 }
 resource "google_compute_firewall" "vn_GCP" {
   name          = "db-vn-default-allow-ingress"
@@ -51,11 +51,11 @@ resource "google_compute_firewall" "vn_GCP" {
     protocol = "all"
   }
   target_tags = ["vn-db-vn-default-nsg"]
-  provider    = "google.us-east4"
+  provider    = "google.us-east5"
 }
 
 resource "aws_db_subnet_group" "example_db_aws" {
-  provider = "aws.us-east-1"
+  provider = "aws.us-east-2"
   tags     = {
     "Name" = "example-db"
   }
@@ -69,7 +69,7 @@ resource "aws_db_subnet_group" "example_db_aws" {
   ]
 }
 resource "aws_db_instance" "example_db_aws" {
-  provider = "aws.us-east-1"
+  provider = "aws.us-east-2"
   tags     = {
     "Name" = "exampledb"
   }
@@ -103,32 +103,32 @@ resource "aws_security_group" "example_db_aws" {
     to_port     = 0
     cidr_blocks = ["0.0.0.0/0"]
   }
-  provider = "aws.us-east-1"
+  provider = "aws.us-east-2"
 }
 resource "aws_subnet" "subnet_aws-1" {
   tags              = { "Name" = "subnet-1" }
   cidr_block        = "10.0.0.0/25"
   vpc_id            = aws_vpc.vn_aws.id
-  availability_zone = "us-east-1a"
-  provider          = "aws.us-east-1"
+  availability_zone = "us-east-2a"
+  provider          = "aws.us-east-2"
 }
 resource "aws_subnet" "subnet_aws-2" {
   tags              = { "Name" = "subnet-2" }
   cidr_block        = "10.0.0.128/26"
   vpc_id            = aws_vpc.vn_aws.id
-  availability_zone = "us-east-1b"
-  provider          = "aws.us-east-1"
+  availability_zone = "us-east-2b"
+  provider          = "aws.us-east-2"
 }
 
 resource "aws_subnet" "subnet_aws-3" {
   tags              = { "Name" = "subnet-3" }
   cidr_block        = "10.0.0.192/26"
   vpc_id            = aws_vpc.vn_aws.id
-  availability_zone = "us-east-1c"
-  provider          = "aws.us-east-1"
+  availability_zone = "us-east-2c"
+  provider          = "aws.us-east-2"
 }
 resource "aws_route_table" "rt_aws" {
-  provider = "aws.us-east-1"
+  provider = "aws.us-east-2"
   tags     = {
     "Name" = "db-rt"
   }
@@ -141,22 +141,22 @@ resource "aws_route_table" "rt_aws" {
   }
 }
 resource "aws_route_table_association" "rta_aws-1" {
-  provider       = "aws.us-east-1"
+  provider       = "aws.us-east-2"
   subnet_id      = aws_subnet.subnet_aws-1.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_route_table_association" "rta_aws-2" {
-  provider       = "aws.us-east-1"
+  provider       = "aws.us-east-2"
   subnet_id      = aws_subnet.subnet_aws-2.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_route_table_association" "rta_aws-3" {
-  provider       = "aws.us-east-1"
+  provider       = "aws.us-east-2"
   subnet_id      = aws_subnet.subnet_aws-3.id
   route_table_id = aws_route_table.rt_aws.id
 }
 resource "aws_vpc" "vn_aws" {
-  provider = "aws.us-east-1"
+  provider = "aws.us-east-2"
   tags     = {
     "Name" = "db-vn"
   }
@@ -165,7 +165,7 @@ resource "aws_vpc" "vn_aws" {
   enable_dns_hostnames = true
 }
 resource "aws_internet_gateway" "vn_aws" {
-  provider = "aws.us-east-1"
+  provider = "aws.us-east-2"
   tags     = {
     "Name" = "db-vn"
   }
@@ -173,7 +173,7 @@ resource "aws_internet_gateway" "vn_aws" {
   vpc_id = aws_vpc.vn_aws.id
 }
 resource "aws_default_security_group" "vn_aws" {
-  provider = "aws.us-east-1"
+  provider = "aws.us-east-2"
   tags     = {
     "Name" = "db-vn"
   }
@@ -197,7 +197,7 @@ resource "aws_default_security_group" "vn_aws" {
 resource "azurerm_postgresql_server" "example_db_azure" {
   resource_group_name              = azurerm_resource_group.rg1.name
   name                             = "example-db"
-  location                         = "eastus"
+  location                         = "eastus2"
   administrator_login              = "multyadmin"
   administrator_login_password     = "multy$Admin123!"
   sku_name                         = "GP_Gen5_2"
@@ -229,13 +229,13 @@ resource "azurerm_subnet" "subnet_azure" {
 resource "azurerm_virtual_network" "vn_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
   name                = "db-vn"
-  location            = "eastus"
+  location            = "eastus2"
   address_space       = ["10.0.0.0/16"]
 }
 resource "azurerm_route_table" "rt_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
   name                = "db-rt"
-  location            = "eastus"
+  location            = "eastus2"
 
   route {
     name           = "internet"
@@ -250,7 +250,7 @@ resource "azurerm_subnet_route_table_association" "subnet_azure" {
 resource "azurerm_route_table" "vn_azure" {
   resource_group_name = azurerm_resource_group.rg1.name
   name                = "db-vn"
-  location            = "eastus"
+  location            = "eastus2"
 
   route {
     name           = "local"
@@ -260,16 +260,16 @@ resource "azurerm_route_table" "vn_azure" {
 }
 resource "azurerm_resource_group" "rg1" {
   name     = "rg1"
-  location = "eastus"
+  location = "eastus2"
 }
 provider "aws" {
-  region = "us-east-1"
-  alias  = "us-east-1"
+  region = "us-east-2"
+  alias  = "us-east-2"
 }
 provider "azurerm" {
   features {}
 }
 provider "google" {
-  region = "us-east4"
-  alias  = "us-east4"
+  region = "us-east5"
+  alias  = "us-east5"
 }
