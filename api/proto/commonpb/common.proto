@@ -25,6 +25,24 @@ enum Location {
   EU_WEST_3 = 7;
   // Sweden
   EU_NORTH_1 = 8;
+  // Germany
+  EU_CENTRAL_1 = 9;
+  // Brazil
+  SA_EAST_1 = 10;
+  // Canda, Quebec
+  CA_CENTRAL_1 = 11;
+  // Japan, Tokyo area
+  AP_NORTH_EAST_1 = 12;
+  // Korea, Seoul
+  AP_NORTH_EAST_2 = 13;
+  // Japan, Osaka
+  AP_NORTH_EAST_3 = 14;
+  // Australia, Sydney area
+  AP_SOUTH_EAST_2 = 15;
+  // India, Mumbai
+  AP_SOUTH_1 = 16;
+  // Singapore
+  AP_SOUTH_EAST_1 = 17;
 }
 
 enum CloudProvider {
