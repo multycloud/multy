@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func testRegexp(validator *validate.RegexpValidator, shouldMatch, shouldntMatch []string, t *testing.T) {
+func testRegexp(validator validate.Validator, shouldMatch, shouldntMatch []string, t *testing.T) {
 	for _, name := range shouldMatch {
 		if err := validator.Check(name, "some_val"); err != nil {
 			t.Errorf("%v should match %s, but didn't", validator, name)
