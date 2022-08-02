@@ -61,6 +61,7 @@ func NewDatabase(r *Database, resourceId string, db *resourcespb.DatabaseArgs, o
 
 var MysqlVersions = []string{"5.6", "5.7", "8.0"}
 var PostgresVersions = []string{"10", "11", "12", "13", "14"}
+var MariaDBVersions = []string{"10.2", "10.3"} // https://docs.microsoft.com/bs-latn-ba/azure/mariadb/concepts-supported-versions
 
 func (r *Database) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	errs = append(errs, r.ResourceWithId.Validate()...)
@@ -83,10 +84,24 @@ func (r *Database) Validate(ctx resources.MultyContext) (errs []validate.Validat
 			errs = append(errs, r.NewValidationError(fmt.Errorf("'%s' is an unsupported engine version for postgres, must be one of %+q", r.Args.EngineVersion, PostgresVersions), "engine_version"))
 		}
 	}
-	if r.Args.Engine == resourcespb.DatabaseEngine_MARIADB && r.GetCloud() == commonpb.CloudProvider_GCP {
-		errs = append(errs, r.NewValidationError(fmt.Errorf("mariadb is not supported in gcp"), "engine"))
+	if r.Args.Engine == resourcespb.DatabaseEngine_MARIADB {
+		if r.GetCloud() == commonpb.CloudProvider_GCP {
+			errs = append(errs, r.NewValidationError(fmt.Errorf("mariadb is not supported in gcp"), "engine"))
+		}
+		if !slices.Contains(MariaDBVersions, r.Args.EngineVersion) {
+			errs = append(errs, r.NewValidationError(fmt.Errorf("'%s' is an unsupported engine version for mariadb, must be one of %+q", r.Args.EngineVersion, MariaDBVersions), "engine_version"))
+		}
 	}
-	// TODO regex validate r username && password
-	// TODO validate DB Size
+	if r.Args.Size == commonpb.DatabaseSize_UNKNOWN_VM_SIZE {
+		errs = append(errs, r.NewValidationError(fmt.Errorf("unknown database size"), "size"))
+	}
+	usernameValidator := validate.NewDbUsernameValidator(r.Args.Engine, r.Args.EngineVersion)
+	passwordValidator := validate.NewDbPasswordValidator(r.Args.Engine)
+	if err := usernameValidator.Check(r.Args.Username, r.ResourceId); err != nil {
+		errs = append(errs, r.NewValidationError(err, "username"))
+	}
+	if err := passwordValidator.Check(r.Args.Password, r.ResourceId); err != nil {
+		errs = append(errs, r.NewValidationError(err, "password"))
+	}
 	return errs
 }
