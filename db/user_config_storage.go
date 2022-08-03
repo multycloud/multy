@@ -1,23 +1,27 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	aws_client "github.com/multycloud/multy/api/aws"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/configpb"
 	"google.golang.org/protobuf/encoding/protojson"
 	"log"
+	"runtime/trace"
 )
 
 type userConfigStorage struct {
 	AwsClient aws_client.AwsClient
 }
 
-func (d *userConfigStorage) StoreUserConfig(config *configpb.Config, lock *ConfigLock) error {
+func (d *userConfigStorage) StoreUserConfig(ctx context.Context, config *configpb.Config, lock *ConfigLock) error {
 	if !lock.IsActive() {
 		return fmt.Errorf("unable to store user config because lock is invalid")
 	}
 	log.Printf("[INFO] Storing user config from api_key %s\n", config.UserId)
+	region := trace.StartRegion(ctx, "config store")
+	defer region.End()
 	b, err := protojson.Marshal(config)
 	if err != nil {
 		return err
@@ -30,11 +34,13 @@ func (d *userConfigStorage) StoreUserConfig(config *configpb.Config, lock *Confi
 	return nil
 }
 
-func (d *userConfigStorage) LoadUserConfig(userId string, lock *ConfigLock) (*configpb.Config, error) {
+func (d *userConfigStorage) LoadUserConfig(ctx context.Context, userId string, lock *ConfigLock) (*configpb.Config, error) {
 	if lock != nil && !lock.IsActive() {
 		return nil, fmt.Errorf("unable to load user config because lock is invalid")
 	}
 	log.Printf("[INFO] Loading config from api_key %s\n", userId)
+	region := trace.StartRegion(ctx, "config load")
+	defer region.End()
 	result := configpb.Config{
 		UserId: userId,
 	}

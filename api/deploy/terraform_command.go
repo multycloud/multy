@@ -6,19 +6,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources/output"
 	"io"
 	"log"
 	"os"
 	"os/exec"
+	"runtime/trace"
 )
 
 type TerraformCommand interface {
 	Init(ctx context.Context, dir string) error
 	Apply(ctx context.Context, dir string, resources []string) error
 	Refresh(ctx context.Context, dir string) error
-	GetState(ctx context.Context, dir string) (*output.TfState, error)
+	GetState(ctx context.Context, userId string, dir db.TfStateReader) (*output.TfState, error)
 }
 
 type terraformCmd struct {
@@ -38,13 +40,18 @@ func (c terraformCmd) Apply(ctx context.Context, dir string, resources []string)
 	if len(resources) == 0 {
 		return nil
 	}
+
+	region := trace.StartRegion(ctx, "tf apply")
+	defer region.End()
+
 	var targetArgs []string
 
-	log.Println("[INFO] Running apply for targets:")
+	idsToPrint := ""
 	for _, id := range resources {
-		log.Printf("[INFO] %s", id)
+		idsToPrint += id + ", "
 		targetArgs = append(targetArgs, "-target="+id)
 	}
+	log.Printf("[INFO] Running apply for targets: %s", idsToPrint)
 	cmd := exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + dir, "apply", "-refresh=false", "-auto-approve", "--json"}, targetArgs...)...)
 	if flags.DryRun {
 		cmd = exec.CommandContext(ctx, "terraform", append([]string{"-chdir=" + dir, "plan", "-refresh=false", "--json"}, targetArgs...)...)
@@ -68,6 +75,9 @@ func (c terraformCmd) Apply(ctx context.Context, dir string, resources []string)
 }
 
 func (c terraformCmd) Init(ctx context.Context, dir string) error {
+	region := trace.StartRegion(ctx, "tf init")
+	defer region.End()
+
 	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+dir, "init", "-reconfigure", "-lock-timeout", "1m")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -79,6 +89,9 @@ func (c terraformCmd) Init(ctx context.Context, dir string) error {
 }
 
 func (c terraformCmd) Refresh(ctx context.Context, dir string) error {
+	region := trace.StartRegion(ctx, "tf refresh")
+	defer region.End()
+
 	outputJson := new(bytes.Buffer)
 	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+dir, "refresh", "-json")
 	cmd.Stdout = outputJson
@@ -97,18 +110,18 @@ func (c terraformCmd) Refresh(ctx context.Context, dir string) error {
 	return err
 }
 
-func (c terraformCmd) GetState(ctx context.Context, dir string) (*output.TfState, error) {
-	state := output.TfState{}
-	stateJson := new(bytes.Buffer)
-	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+dir, "show", "-json")
-	cmd.Stdout = stateJson
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
+func (c terraformCmd) GetState(ctx context.Context, userId string, client db.TfStateReader) (*output.TfState, error) {
+	region := trace.StartRegion(ctx, "tf show")
+	defer region.End()
+
+	terraformState, err := client.LoadTerraformState(ctx, userId)
 	if err != nil {
-		return &state, err
+		return nil, err
 	}
 
-	err = json.Unmarshal(stateJson.Bytes(), &state)
+	state := output.TfState{}
+
+	err = json.Unmarshal([]byte(terraformState), &state)
 	if err != nil {
 		return nil, err
 	}

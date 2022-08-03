@@ -4,6 +4,9 @@ import (
 	"context"
 	_ "github.com/go-sql-driver/mysql"
 	aws_client "github.com/multycloud/multy/api/aws"
+	"os"
+	"path"
+	"path/filepath"
 )
 
 type localDatabase struct {
@@ -29,6 +32,11 @@ func (d *localDatabase) LockConfig(ctx context.Context, userId string) (lock *Co
 
 func (d *localDatabase) UnlockConfig(ctx context.Context, lock *ConfigLock) error {
 	return d.lockDatabase.UnlockConfig(ctx, lock)
+}
+
+func (d *localDatabase) LoadTerraformState(_ context.Context, userId string) (string, error) {
+	file, err := os.ReadFile(path.Join(filepath.Join(os.TempDir(), "multy", userId, "local"), TfState))
+	return string(file), err
 }
 
 func newLocalDatabase(awsClient aws_client.AwsClient) (*localDatabase, error) {

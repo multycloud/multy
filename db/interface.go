@@ -7,17 +7,25 @@ import (
 	"github.com/multycloud/multy/flags"
 )
 
+const TfState = "terraform.tfstate"
+
 type LockDatabase interface {
 	LockConfig(ctx context.Context, userId string) (lock *ConfigLock, err error)
 	UnlockConfig(ctx context.Context, lock *ConfigLock) error
 }
 
+type TfStateReader interface {
+	LoadTerraformState(ctx context.Context, userId string) (string, error)
+}
+
 type Database interface {
+	TfStateReader
 	LockDatabase
 	GetUserId(ctx context.Context, apiKey string) (string, error)
 	CreateUser(ctx context.Context, emailAddress string) (apiKey string, err error)
-	StoreUserConfig(config *configpb.Config, lock *ConfigLock) error
-	LoadUserConfig(userId string, lock *ConfigLock) (*configpb.Config, error)
+	StoreUserConfig(ctx context.Context, config *configpb.Config, lock *ConfigLock) error
+	LoadUserConfig(ctx context.Context, userId string, lock *ConfigLock) (*configpb.Config, error)
+
 	Close() error
 }
 

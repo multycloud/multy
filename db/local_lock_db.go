@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"runtime/trace"
 	"sync"
 	"time"
 )
@@ -10,7 +11,9 @@ type LocalLockDatabase struct {
 	lockCache sync.Map
 }
 
-func (d *LocalLockDatabase) LockConfig(_ context.Context, userId string) (lock *ConfigLock, err error) {
+func (d *LocalLockDatabase) LockConfig(ctx context.Context, userId string) (lock *ConfigLock, err error) {
+	region := trace.StartRegion(ctx, "lock wait")
+	defer region.End()
 	l, _ := d.lockCache.LoadOrStore(userId, &sync.Mutex{})
 	l.(*sync.Mutex).Lock()
 	return &ConfigLock{

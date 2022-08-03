@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"context"
+	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/resources/output"
 	"github.com/stretchr/testify/mock"
 )
@@ -25,7 +26,7 @@ func (m *MockTerraformCommand) Refresh(ctx context.Context, dir string) error {
 	return args.Error(0)
 }
 
-func (m *MockTerraformCommand) GetState(ctx context.Context, dir string) (*output.TfState, error) {
-	args := m.Called(ctx, dir)
+func (m *MockTerraformCommand) GetState(ctx context.Context, userId string, reader db.TfStateReader) (*output.TfState, error) {
+	args := m.Called(ctx, userId, reader)
 	return args.Get(0).(*output.TfState), args.Error(1)
 }

@@ -40,11 +40,13 @@ func (r GcpVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.Vau
 
 	var ids []string
 
-	prefix := output.GetResourceName(vault_access_policy.GoogleSecretManagerSecretIamMember{}) + "."
-	for _, resource := range state.Values.RootModule.Resources {
-		if strings.HasPrefix(resource.Address,
-			fmt.Sprintf("%s%s-", prefix, r.ResourceId)) {
-			ids = append(ids, strings.TrimPrefix(resource.Address, prefix))
+	resourceName := output.GetResourceName(vault_access_policy.GoogleSecretManagerSecretIamMember{})
+	for _, resource := range state.Resources {
+		if resource.Type != resourceName {
+			continue
+		}
+		if strings.HasPrefix(resource.Name, fmt.Sprintf("%s-", r.ResourceId)) {
+			ids = append(ids, resource.Name)
 		}
 	}
 

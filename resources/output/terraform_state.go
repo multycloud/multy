@@ -5,17 +5,16 @@ import (
 	"fmt"
 )
 
-type TfResource struct {
-	Address string                 `json:"address"`
-	Values  map[string]interface{} `json:"values"`
+type TfState struct {
+	Resources []TfStateFileResource `json:"resources"`
 }
 
-type TfState struct {
-	Values struct {
-		RootModule struct {
-			Resources []TfResource `json:"resources"`
-		} `json:"root_module"`
-	} `json:"values"`
+type TfStateFileResource struct {
+	Type      string `json:"type"`
+	Name      string `json:"name"`
+	Instances []struct {
+		Attributes map[string]any `json:"attributes"`
+	} `json:"instances"`
 }
 
 func (t *TfState) GetValues(resourceType any, resourceId string) (map[string]interface{}, error) {
@@ -31,9 +30,9 @@ func (t *TfState) Get(resourceRef string) (map[string]interface{}, error) {
 }
 
 func (t *TfState) MaybeGet(resourceRef string) (map[string]interface{}, bool) {
-	for _, r := range t.Values.RootModule.Resources {
-		if r.Address == resourceRef {
-			return r.Values, true
+	for _, r := range t.Resources {
+		if resourceRef == fmt.Sprintf("%s.%s", r.Type, r.Name) {
+			return r.Instances[0].Attributes, true
 		}
 	}
 
