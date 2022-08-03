@@ -91,6 +91,15 @@ func (d *database) UnlockConfig(ctx context.Context, lock *ConfigLock) error {
 	return d.lockDatabase.UnlockConfig(ctx, lock)
 }
 
+func (d *database) LoadTerraformState(ctx context.Context, userId string) (string, error) {
+	result, err := d.AwsClient.ReadFile(userId, TfState)
+	if err != nil {
+		return "", errors.InternalServerErrorWithMessage("error reading terraform state", err)
+	}
+
+	return result, nil
+}
+
 func newDatabase(awsClient aws_client.AwsClient) (*database, error) {
 	connectionString, exists := os.LookupEnv("MULTY_DB_CONN_STRING")
 	if !exists {

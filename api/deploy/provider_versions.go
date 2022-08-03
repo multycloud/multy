@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/flags"
 	"os"
 	"path"
@@ -14,7 +15,6 @@ const (
 	randomProviderVersion = "3.1.3"
 	localProviderVersion  = "2.2.2"
 	tfStateRegion         = "eu-west-2"
-	tfState               = "terraform.tfstate"
 )
 
 func GetTerraformBlock(userId string) (string, error) {
@@ -29,7 +29,7 @@ func GetTerraformBlock(userId string) (string, error) {
 }
 
 func getLocalStateBlock(userId string) string {
-	p := path.Join(os.TempDir(), "multy", userId, "local", tfState)
+	p := path.Join(os.TempDir(), "multy", userId, "local", db.TfState)
 	return fmt.Sprintf(
 		`backend "local" {
     path = "%s"
@@ -41,7 +41,7 @@ func getRemoteStateBlock(userId, userStorageName string) string {
     key            = "%s/%s"
     region         = "%s"
     profile        = "multy"
-  }`, userStorageName, userId, tfState, tfStateRegion)
+  }`, userStorageName, userId, db.TfState, tfStateRegion)
 }
 
 func getTerraformBlock(providerBlock string) (string, error) {

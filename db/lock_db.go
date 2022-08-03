@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"runtime/trace"
 	"time"
 )
 
@@ -15,7 +16,8 @@ type ConfigLock struct {
 
 	active bool
 	// used to cache lock so we don't do unnecessary db calls when running in a single server
-	localLock *ConfigLock
+	localLock   *ConfigLock
+	traceRegion *trace.Region
 }
 
 type RemoteLockDatabase struct {

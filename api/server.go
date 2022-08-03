@@ -6,6 +6,7 @@ import (
 	aws_client "github.com/multycloud/multy/api/aws"
 	"github.com/multycloud/multy/api/deploy"
 	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/interceptors"
 	"github.com/multycloud/multy/api/proto"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
@@ -13,7 +14,6 @@ import (
 	"github.com/multycloud/multy/api/services"
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
-	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/types/metadata"
 	"google.golang.org/grpc"
@@ -57,9 +57,9 @@ func RunServer(ctx context.Context, port int) {
 	}
 
 	var s *grpc.Server
-	if flags.Environment == flags.Local {
-		log.Println("[INFO] running in local mode")
-		s = grpc.NewServer()
+	if port != 443 {
+		log.Println("[INFO] Running in HTTP mode, port is not 443")
+		s = grpc.NewServer(grpc.UnaryInterceptor(interceptors.TraceUnaryInterceptor()))
 	} else {
 		endpoint, exists := os.LookupEnv("MULTY_API_ENDPOINT")
 		if !exists {
@@ -72,7 +72,7 @@ func RunServer(ctx context.Context, port int) {
 		if err != nil {
 			log.Fatalf("unable to read certificate (%s)", err.Error())
 		}
-		s = grpc.NewServer(grpc.Creds(creds))
+		s = grpc.NewServer(grpc.Creds(creds), grpc.UnaryInterceptor(interceptors.TraceUnaryInterceptor()))
 	}
 
 	go func() {
@@ -379,7 +379,7 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 	}
 	defer s.Database.UnlockConfig(ctx, lock)
 
-	c, err := s.Database.LoadUserConfig(userId, lock)
+	c, err := s.Database.LoadUserConfig(ctx, userId, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -393,7 +393,7 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 		return nil, err
 	}
 
-	err = s.Database.StoreUserConfig(c, lock)
+	err = s.Database.StoreUserConfig(ctx, c, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -422,7 +422,7 @@ func (s *Server) list(ctx context.Context, _ *commonpb.Empty) (*commonpb.ListRes
 		return nil, err
 	}
 
-	c, err := s.Database.LoadUserConfig(userId, nil)
+	c, err := s.Database.LoadUserConfig(ctx, userId, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -467,7 +467,7 @@ func (s *Server) deleteResource(ctx context.Context, req *proto.DeleteResourceRe
 		return nil, err
 	}
 	defer s.Database.UnlockConfig(ctx, lock)
-	c, err := s.Database.LoadUserConfig(userId, lock)
+	c, err := s.Database.LoadUserConfig(ctx, userId, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -477,7 +477,7 @@ func (s *Server) deleteResource(ctx context.Context, req *proto.DeleteResourceRe
 		return nil, err
 	}
 
-	err = s.Database.StoreUserConfig(c, lock)
+	err = s.Database.StoreUserConfig(ctx, c, lock)
 	if err != nil {
 		return nil, err
 	}
