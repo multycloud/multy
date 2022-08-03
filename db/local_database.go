@@ -36,6 +36,10 @@ func (d *localDatabase) UnlockConfig(ctx context.Context, lock *ConfigLock) erro
 
 func (d *localDatabase) LoadTerraformState(_ context.Context, userId string) (string, error) {
 	file, err := os.ReadFile(path.Join(filepath.Join(os.TempDir(), "multy", userId, "local"), TfState))
+	// empty state is fine and expected in dry runs
+	if os.IsNotExist(err) {
+		return "{}", nil
+	}
 	return string(file), err
 }
 
