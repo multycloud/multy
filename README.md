@@ -13,7 +13,7 @@ Multy is the easiest way to deploy multi cloud infrastructure
 <br>
 <br>
 <p align="center">
-<img src="https://multy.dev/assets/multy-diagram.png" width="500">
+<img src="https://multy.dev/images/reusibility.svg" width="500">
 </p>
 
 <br>
