@@ -2,8 +2,10 @@ package types
 
 import (
 	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/validate"
 )
 
@@ -42,4 +44,8 @@ func NewVaultSecret(vs *VaultSecret, resourceId string, args *resourcespb.VaultS
 
 func (r *VaultSecret) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	return errs
+}
+
+func (r *VaultSecret) ParseCloud(args *resourcespb.VaultSecretArgs) commonpb.CloudProvider {
+	return common.ParseCloudFromResourceId(args.VaultId)
 }

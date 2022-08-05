@@ -2,8 +2,10 @@ package types
 
 import (
 	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/validate"
 )
 
@@ -48,4 +50,8 @@ func NewNetworkInterfaceSecurityGroupAssociation(r *NetworkInterfaceSecurityGrou
 
 func (r *NetworkInterfaceSecurityGroupAssociation) Validate(ctx resources.MultyContext) (errs []validate.ValidationError) {
 	return nil
+}
+
+func (r *NetworkInterfaceSecurityGroupAssociation) ParseCloud(args *resourcespb.NetworkInterfaceSecurityGroupAssociationArgs) commonpb.CloudProvider {
+	return common.ParseCloudFromResourceId(args.NetworkInterfaceId)
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/validate"
 )
 
@@ -105,4 +106,8 @@ func (r *KubernetesNodePool) Validate(ctx resources.MultyContext) (errs []valida
 	}
 
 	return errs
+}
+
+func (r *KubernetesNodePool) ParseCloud(args *resourcespb.KubernetesNodePoolArgs) commonpb.CloudProvider {
+	return common.ParseCloudFromResourceId(args.ClusterId)
 }

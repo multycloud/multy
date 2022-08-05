@@ -15,11 +15,11 @@ type userConfigStorage struct {
 	AwsClient aws_client.AwsClient
 }
 
-func (d *userConfigStorage) StoreUserConfig(ctx context.Context, config *configpb.Config, lock *ConfigLock) error {
+func (d *userConfigStorage) StoreUserConfig(ctx context.Context, config *configpb.Config, configPrefix string, lock *ConfigLock) error {
 	if !lock.IsActive() {
 		return fmt.Errorf("unable to store user config because lock is invalid")
 	}
-	log.Printf("[INFO] Storing user config from api_key %s\n", config.UserId)
+	log.Printf("[INFO] Storing user config for %s\n", configPrefix)
 	region := trace.StartRegion(ctx, "config store")
 	defer region.End()
 	b, err := protojson.Marshal(config)
@@ -27,25 +27,25 @@ func (d *userConfigStorage) StoreUserConfig(ctx context.Context, config *configp
 		return err
 	}
 
-	err = d.AwsClient.SaveFile(config.UserId, configFile, string(b))
+	err = d.AwsClient.SaveFile(configPrefix, configFile, string(b))
 	if err != nil {
 		return errors.InternalServerErrorWithMessage("error storing configuration", err)
 	}
 	return nil
 }
 
-func (d *userConfigStorage) LoadUserConfig(ctx context.Context, userId string, lock *ConfigLock) (*configpb.Config, error) {
+func (d *userConfigStorage) LoadUserConfig(ctx context.Context, userId string, configPrefix string, lock *ConfigLock) (*configpb.Config, error) {
 	if lock != nil && !lock.IsActive() {
 		return nil, fmt.Errorf("unable to load user config because lock is invalid")
 	}
-	log.Printf("[INFO] Loading config from api_key %s\n", userId)
+	log.Printf("[INFO] Loading config from %s\n", configPrefix)
 	region := trace.StartRegion(ctx, "config load")
 	defer region.End()
 	result := configpb.Config{
 		UserId: userId,
 	}
 
-	configFileStr, err := d.AwsClient.ReadFile(userId, configFile)
+	configFileStr, err := d.AwsClient.ReadFile(configPrefix, configFile)
 	if err != nil {
 		return nil, errors.InternalServerErrorWithMessage("error reading configuration", err)
 	}

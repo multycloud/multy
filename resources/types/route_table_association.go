@@ -3,8 +3,10 @@ package types
 import (
 	"fmt"
 	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/validate"
 )
 
@@ -55,4 +57,8 @@ func (r *RouteTableAssociation) Validate(ctx resources.MultyContext) (errs []val
 			"subnet_id"))
 	}
 	return errs
+}
+
+func (r *RouteTableAssociation) ParseCloud(args *resourcespb.RouteTableAssociationArgs) commonpb.CloudProvider {
+	return common.ParseCloudFromResourceId(args.RouteTableId)
 }

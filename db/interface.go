@@ -10,7 +10,7 @@ import (
 const TfState = "terraform.tfstate"
 
 type LockDatabase interface {
-	LockConfig(ctx context.Context, userId string) (lock *ConfigLock, err error)
+	LockConfig(ctx context.Context, userId string, lockId string) (lock *ConfigLock, err error)
 	UnlockConfig(ctx context.Context, lock *ConfigLock) error
 }
 
@@ -23,8 +23,8 @@ type Database interface {
 	LockDatabase
 	GetUserId(ctx context.Context, apiKey string) (string, error)
 	CreateUser(ctx context.Context, emailAddress string) (apiKey string, err error)
-	StoreUserConfig(ctx context.Context, config *configpb.Config, lock *ConfigLock) error
-	LoadUserConfig(ctx context.Context, userId string, lock *ConfigLock) (*configpb.Config, error)
+	StoreUserConfig(ctx context.Context, config *configpb.Config, configPrefix string, lock *ConfigLock) error
+	LoadUserConfig(ctx context.Context, userId string, configPrefix string, lock *ConfigLock) (*configpb.Config, error)
 
 	Close() error
 }

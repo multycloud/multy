@@ -4,8 +4,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/validate"
 )
 
@@ -53,4 +55,8 @@ func (r *ObjectStorageObject) Validate(ctx resources.MultyContext) (errs []valid
 		errs = append(errs, r.NewValidationError(fmt.Errorf("content_base64 is not a valid base64 string: %s", err), "content_base64"))
 	}
 	return errs
+}
+
+func (r *ObjectStorageObject) ParseCloud(args *resourcespb.ObjectStorageObjectArgs) commonpb.CloudProvider {
+	return common.ParseCloudFromResourceId(args.ObjectStorageId)
 }

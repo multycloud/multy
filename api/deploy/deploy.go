@@ -41,14 +41,14 @@ func NewDeploymentExecutor() DeploymentExecutor {
 	return DeploymentExecutor{TfCmd: terraformCmd{}}
 }
 
-func (d DeploymentExecutor) Deploy(ctx context.Context, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource) (rollbackFn func(), err error) {
-	tmpDir := GetTempDirForUser(c.GetUserId())
-	encoded, err := d.EncodeAndStoreTfFile(ctx, c, prev, curr)
+func (d DeploymentExecutor) Deploy(ctx context.Context, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource, configPrefix string) (rollbackFn func(), err error) {
+	tmpDir := GetTempDirForUser(configPrefix)
+	encoded, err := d.EncodeAndStoreTfFile(ctx, c, prev, curr, configPrefix)
 	if err != nil {
 		return
 	}
 
-	err = d.MaybeInit(ctx, c.GetUserId())
+	err = d.MaybeInit(ctx, configPrefix)
 	if err != nil {
 		return
 	}
@@ -68,7 +68,7 @@ func (d DeploymentExecutor) Deploy(ctx context.Context, c *resources.MultyConfig
 			log.Printf("[ERROR] Rollback unsuccessful: %s\n", err2)
 			return
 		}
-		_, err2 = d.EncodeAndStoreTfFile(ctx, originalC, curr, prev)
+		_, err2 = d.EncodeAndStoreTfFile(ctx, originalC, curr, prev, configPrefix)
 		if err2 != nil {
 			log.Printf("[ERROR] Rollback unsuccessful: %s\n", err2)
 			return
@@ -96,7 +96,7 @@ func (d DeploymentExecutor) Deploy(ctx context.Context, c *resources.MultyConfig
 	return
 }
 
-func (d DeploymentExecutor) EncodeAndStoreTfFile(ctx context.Context, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource) (EncodedResources, error) {
+func (d DeploymentExecutor) EncodeAndStoreTfFile(ctx context.Context, c *resources.MultyConfig, prev resources.Resource, curr resources.Resource, configPrefix string) (EncodedResources, error) {
 	credentials, err := util.ExtractCloudCredentials(ctx)
 	if err != nil {
 		return EncodedResources{}, err
@@ -106,7 +106,7 @@ func (d DeploymentExecutor) EncodeAndStoreTfFile(ctx context.Context, c *resourc
 		return encoded, err
 	}
 
-	tfBlock, err := GetTerraformBlock(c.GetUserId())
+	tfBlock, err := GetTerraformBlock(configPrefix)
 	if err != nil {
 		return encoded, err
 	}
@@ -114,7 +114,7 @@ func (d DeploymentExecutor) EncodeAndStoreTfFile(ctx context.Context, c *resourc
 	// TODO: move this to a proper place
 	hclOutput := tfBlock + encoded.HclString
 
-	tmpDir := GetTempDirForUser(c.GetUserId())
+	tmpDir := GetTempDirForUser(configPrefix)
 	err = os.MkdirAll(tmpDir, os.ModeDir|(os.ModePerm&0775))
 	if err != nil {
 		return EncodedResources{}, err
@@ -123,8 +123,8 @@ func (d DeploymentExecutor) EncodeAndStoreTfFile(ctx context.Context, c *resourc
 	return encoded, err
 }
 
-func (d DeploymentExecutor) MaybeInit(ctx context.Context, userId string) error {
-	tmpDir := GetTempDirForUser(userId)
+func (d DeploymentExecutor) MaybeInit(ctx context.Context, configPrefix string) error {
+	tmpDir := GetTempDirForUser(configPrefix)
 	_, err := os.Stat(filepath.Join(tmpDir, tfDir))
 	if os.IsNotExist(err) {
 		start := time.Now()
@@ -147,17 +147,17 @@ func (d DeploymentExecutor) MaybeInit(ctx context.Context, userId string) error 
 	return nil
 }
 
-func (d DeploymentExecutor) GetState(ctx context.Context, userId string, client db.TfStateReader) (*output.TfState, error) {
-	return d.TfCmd.GetState(ctx, userId, client)
+func (d DeploymentExecutor) GetState(ctx context.Context, configPrefix string, client db.TfStateReader) (*output.TfState, error) {
+	return d.TfCmd.GetState(ctx, configPrefix, client)
 }
 
-func (d DeploymentExecutor) RefreshState(ctx context.Context, userId string, c *resources.MultyConfig) error {
-	_, err := d.EncodeAndStoreTfFile(ctx, c, nil, nil)
+func (d DeploymentExecutor) RefreshState(ctx context.Context, configPrefix string, c *resources.MultyConfig) error {
+	_, err := d.EncodeAndStoreTfFile(ctx, c, nil, nil, configPrefix)
 	if err != nil {
 		return err
 	}
 
-	err = d.MaybeInit(ctx, userId)
+	err = d.MaybeInit(ctx, configPrefix)
 	if err != nil {
 		return err
 	}
@@ -167,21 +167,21 @@ func (d DeploymentExecutor) RefreshState(ctx context.Context, userId string, c *
 		log.Printf("[DEBUG] refresh finished in %s", time.Since(start))
 	}()
 
-	return d.refresh(ctx, userId)
+	return d.refresh(ctx, configPrefix)
 }
 
-func (d DeploymentExecutor) refresh(ctx context.Context, userId string) error {
+func (d DeploymentExecutor) refresh(ctx context.Context, configPrefix string) error {
 	start := time.Now()
 	defer func() {
 		log.Printf("[DEBUG] refresh finished in %s", time.Since(start))
 	}()
 
-	tmpDir := GetTempDirForUser(userId)
+	tmpDir := GetTempDirForUser(configPrefix)
 	return d.TfCmd.Refresh(ctx, tmpDir)
 }
 
-func GetTempDirForUser(userId string) string {
-	tmpDir := filepath.Join(os.TempDir(), "multy", userId)
+func GetTempDirForUser(configPrefix string) string {
+	tmpDir := filepath.Join(os.TempDir(), "multy", configPrefix)
 
 	if flags.Environment == flags.Local {
 		tmpDir = filepath.Join(tmpDir, "local")

@@ -3,8 +3,10 @@ package types
 import (
 	"fmt"
 	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/validate"
 )
 
@@ -53,4 +55,8 @@ func (r *VaultAccessPolicy) Validate(ctx resources.MultyContext) (errs []validat
 		errs = append(errs, r.NewValidationError(fmt.Errorf("unknown vault access"), "access"))
 	}
 	return errs
+}
+
+func (r *VaultAccessPolicy) ParseCloud(args *resourcespb.VaultAccessPolicyArgs) commonpb.CloudProvider {
+	return common.ParseCloudFromResourceId(args.VaultId)
 }
