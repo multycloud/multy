@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+	"github.com/multycloud/multy/api/proto/commonpb"
+	"github.com/multycloud/multy/resources/common"
 
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/resourcespb"
@@ -58,4 +60,8 @@ func (r *RouteTable) Validate(ctx resources.MultyContext) (errs []validate.Valid
 		//	if route.CidrBlock valid CIDR
 	}
 	return errs
+}
+
+func (r *RouteTable) ParseCloud(args *resourcespb.RouteTableArgs) commonpb.CloudProvider {
+	return common.ParseCloudFromResourceId(args.VirtualNetworkId)
 }

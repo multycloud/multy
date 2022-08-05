@@ -11,7 +11,7 @@ import (
 
 type localDatabase struct {
 	*userConfigStorage
-	lockDatabase *LocalLockDatabase
+	*LocalLockDatabase
 }
 
 func (d *localDatabase) Close() error {
@@ -24,14 +24,6 @@ func (d *localDatabase) GetUserId(ctx context.Context, apiKey string) (string, e
 
 func (d *localDatabase) CreateUser(ctx context.Context, emailAddress string) (string, error) {
 	return emailAddress, nil
-}
-
-func (d *localDatabase) LockConfig(ctx context.Context, userId string) (lock *ConfigLock, err error) {
-	return d.lockDatabase.LockConfig(ctx, userId)
-}
-
-func (d *localDatabase) UnlockConfig(ctx context.Context, lock *ConfigLock) error {
-	return d.lockDatabase.UnlockConfig(ctx, lock)
 }
 
 func (d *localDatabase) LoadTerraformState(_ context.Context, userId string) (string, error) {
@@ -50,6 +42,6 @@ func newLocalDatabase(awsClient aws_client.AwsClient) (*localDatabase, error) {
 	}
 	return &localDatabase{
 		userConfigStorage: userStg,
-		lockDatabase:      newLocalLockDatabase(),
+		LocalLockDatabase: newLocalLockDatabase(),
 	}, nil
 }

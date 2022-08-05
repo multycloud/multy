@@ -373,13 +373,14 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 		return nil, err
 	}
 
-	lock, err := s.Database.LockConfig(ctx, userId)
+	lock, err := s.Database.LockConfig(ctx, userId, userId)
 	if err != nil {
 		return nil, err
 	}
 	defer s.Database.UnlockConfig(ctx, lock)
 
-	c, err := s.Database.LoadUserConfig(ctx, userId, lock)
+	// TODO: ask for cloud in request
+	c, err := s.Database.LoadUserConfig(ctx, userId, userId, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -393,7 +394,7 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 		return nil, err
 	}
 
-	err = s.Database.StoreUserConfig(ctx, c, lock)
+	err = s.Database.StoreUserConfig(ctx, c, userId, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -422,20 +423,27 @@ func (s *Server) list(ctx context.Context, _ *commonpb.Empty) (*commonpb.ListRes
 		return nil, err
 	}
 
-	c, err := s.Database.LoadUserConfig(ctx, userId, nil)
-	if err != nil {
-		return nil, err
-	}
-
 	resp := &commonpb.ListResourcesResponse{}
-	for _, r := range c.Resources {
-		name := string(r.ResourceArgs.ResourceArgs.MessageName().Name())
-		name = strings.TrimSuffix(name, "Args")
 
-		resp.Resources = append(resp.Resources, &commonpb.ListResourcesResponse_ResourceMetadata{
-			ResourceId:   r.ResourceId,
-			ResourceType: name,
-		})
+	for cloudValue := range commonpb.CloudProvider_name {
+		cloud := commonpb.CloudProvider(cloudValue)
+		if cloud == commonpb.CloudProvider_UNKNOWN_PROVIDER {
+			continue
+		}
+		c, err := s.Database.LoadUserConfig(ctx, userId, services.GetConfigPrefixForCloud(userId, cloud), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, r := range c.Resources {
+			name := string(r.ResourceArgs.ResourceArgs.MessageName().Name())
+			name = strings.TrimSuffix(name, "Args")
+
+			resp.Resources = append(resp.Resources, &commonpb.ListResourcesResponse_ResourceMetadata{
+				ResourceId:   r.ResourceId,
+				ResourceType: name,
+			})
+		}
 	}
 
 	return resp, nil
@@ -461,13 +469,14 @@ func (s *Server) deleteResource(ctx context.Context, req *proto.DeleteResourceRe
 	if err != nil {
 		return nil, err
 	}
+	configPrefix := services.GetConfigPrefix(req, userId)
 
-	lock, err := s.Database.LockConfig(ctx, userId)
+	lock, err := s.Database.LockConfig(ctx, userId, configPrefix)
 	if err != nil {
 		return nil, err
 	}
 	defer s.Database.UnlockConfig(ctx, lock)
-	c, err := s.Database.LoadUserConfig(ctx, userId, lock)
+	c, err := s.Database.LoadUserConfig(ctx, userId, configPrefix, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -477,7 +486,7 @@ func (s *Server) deleteResource(ctx context.Context, req *proto.DeleteResourceRe
 		return nil, err
 	}
 
-	err = s.Database.StoreUserConfig(ctx, c, lock)
+	err = s.Database.StoreUserConfig(ctx, c, configPrefix, lock)
 	if err != nil {
 		return nil, err
 	}

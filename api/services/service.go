@@ -63,17 +63,18 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	if err != nil {
 		return
 	}
+	configPrefix := getConfigPrefixForCreateReq(in.GetResource(), userId)
 
 	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "create")
 	log.Printf("[INFO] user: %s. create %s", userId, s.ResourceName)
 
-	lock, err := s.ServiceContext.LockConfig(ctx, userId)
+	lock, err := s.ServiceContext.LockConfig(ctx, userId, configPrefix)
 	if err != nil {
 		return
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
 
-	c, err := s.getConfig(ctx, userId, lock)
+	c, err := s.getConfig(ctx, configPrefix, lock, configPrefix)
 	if err != nil {
 		return
 	}
@@ -85,14 +86,14 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 
 	defer func() {
 		if err == nil {
-			err = s.saveConfig(ctx, c, lock)
+			err = s.saveConfig(ctx, c, lock, configPrefix)
 		} else {
 			log.Println("[DEBUG] Something went wrong, not storing state")
 		}
 	}()
 
 	log.Printf("[INFO] Deploying %s\n", resource.GetResourceId())
-	rollbackFn, err := s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, nil, resource)
+	rollbackFn, err := s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, nil, resource, configPrefix)
 	if err != nil {
 		return
 	}
@@ -102,11 +103,11 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 		}
 	}()
 
-	return s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.GetResourceId()})
+	return s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.GetResourceId()}, configPrefix)
 }
 
-func (s Service[Arg, OutT]) getConfig(ctx context.Context, userId string, lock *db.ConfigLock) (*resources.MultyConfig, error) {
-	c, err := s.ServiceContext.LoadUserConfig(ctx, userId, lock)
+func (s Service[Arg, OutT]) getConfig(ctx context.Context, userId string, lock *db.ConfigLock, configPrefix string) (*resources.MultyConfig, error) {
+	c, err := s.ServiceContext.LoadUserConfig(ctx, userId, configPrefix, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -117,13 +118,13 @@ func (s Service[Arg, OutT]) getConfig(ctx context.Context, userId string, lock *
 	return mconfig, err
 }
 
-func (s Service[Arg, OutT]) saveConfig(ctx context.Context, c *resources.MultyConfig, lock *db.ConfigLock) error {
+func (s Service[Arg, OutT]) saveConfig(ctx context.Context, c *resources.MultyConfig, lock *db.ConfigLock, configPrefix string) error {
 	exportedConfig, err := c.ExportConfig()
 	if err != nil {
 		return err
 	}
 
-	return s.ServiceContext.StoreUserConfig(ctx, exportedConfig, lock)
+	return s.ServiceContext.StoreUserConfig(ctx, exportedConfig, configPrefix, lock)
 }
 
 func (s Service[Arg, OutT]) Read(ctx context.Context, in WithResourceId) (out OutT, err error) {
@@ -141,37 +142,38 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 	if err != nil {
 		return *new(OutT), err
 	}
+	configPrefix := GetConfigPrefix(in, userId)
 
 	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "read")
 	log.Printf("[INFO] user: %s. read %s %s", userId, s.ResourceName, in.GetResourceId())
 
-	lock, err := s.ServiceContext.LockConfig(ctx, userId)
+	lock, err := s.ServiceContext.LockConfig(ctx, userId, configPrefix)
 	if err != nil {
 		return *new(OutT), err
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
 
-	c, err := s.getConfig(ctx, userId, nil)
+	c, err := s.getConfig(ctx, configPrefix, lock, configPrefix)
 	if err != nil {
 		return *new(OutT), err
 	}
 
-	_, err = s.ServiceContext.DeploymentExecutor.EncodeAndStoreTfFile(ctx, c, nil, nil)
+	_, err = s.ServiceContext.DeploymentExecutor.EncodeAndStoreTfFile(ctx, c, nil, nil, configPrefix)
 	if err != nil {
 		return *new(OutT), err
 	}
 
-	return s.readFromConfig(ctx, c, in)
+	return s.readFromConfig(ctx, c, in, configPrefix)
 }
 
-func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.MultyConfig, in WithResourceId) (OutT, error) {
+func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.MultyConfig, in WithResourceId, configPrefix string) (OutT, error) {
 	for _, r := range c.Resources.GetAll() {
 		if r.GetResourceId() == in.GetResourceId() {
-			err := s.ServiceContext.DeploymentExecutor.MaybeInit(ctx, c.GetUserId())
+			err := s.ServiceContext.DeploymentExecutor.MaybeInit(ctx, configPrefix)
 			if err != nil {
 				return *new(OutT), err
 			}
-			state, err := s.ServiceContext.DeploymentExecutor.GetState(ctx, c.GetUserId(), s.ServiceContext.Database)
+			state, err := s.ServiceContext.DeploymentExecutor.GetState(ctx, configPrefix, s.ServiceContext.Database)
 			if err != nil {
 				return *new(OutT), err
 			}
@@ -204,15 +206,17 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 	if err != nil {
 		return
 	}
+	configPrefix := GetConfigPrefix(in, userId)
+
 	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "update")
 	log.Printf("[INFO] user: %s. update %s %s", userId, s.ResourceName, in.GetResourceId())
-	lock, err := s.ServiceContext.LockConfig(ctx, userId)
+	lock, err := s.ServiceContext.LockConfig(ctx, userId, configPrefix)
 	if err != nil {
 		return
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
 
-	c, err := s.getConfig(ctx, userId, lock)
+	c, err := s.getConfig(ctx, configPrefix, lock, configPrefix)
 	if err != nil {
 		return
 	}
@@ -224,13 +228,13 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 
 	defer func() {
 		if err == nil {
-			err = s.saveConfig(ctx, c, lock)
+			err = s.saveConfig(ctx, c, lock, configPrefix)
 		} else {
 			log.Println("[DEBUG] Something went wrong, not storing state")
 		}
 	}()
 
-	rollbackFn, err := s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, r, r)
+	rollbackFn, err := s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, r, r, configPrefix)
 	if err != nil {
 		return
 	}
@@ -239,7 +243,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 			rollbackFn()
 		}
 	}()
-	return s.readFromConfig(ctx, c, in)
+	return s.readFromConfig(ctx, c, in, configPrefix)
 }
 
 func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (_ *commonpb.Empty, err error) {
@@ -256,14 +260,15 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (out 
 	if err != nil {
 		return
 	}
+	configPrefix := GetConfigPrefix(in, userId)
 	go s.ServiceContext.AwsClient.UpdateQPSMetric(userId, s.ResourceName, "delete")
 	log.Printf("[INFO] user: %s. delete %s %s", userId, s.ResourceName, in.GetResourceId())
-	lock, err := s.ServiceContext.LockConfig(ctx, userId)
+	lock, err := s.ServiceContext.LockConfig(ctx, userId, configPrefix)
 	if err != nil {
 		return
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
-	c, err := s.getConfig(ctx, userId, lock)
+	c, err := s.getConfig(ctx, configPrefix, lock, configPrefix)
 	if err != nil {
 		return
 	}
@@ -274,13 +279,13 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (out 
 
 	defer func() {
 		if err == nil {
-			err = s.saveConfig(ctx, c, lock)
+			err = s.saveConfig(ctx, c, lock, configPrefix)
 		} else {
 			log.Println("[DEBUG] Something went wrong, not storing state")
 		}
 	}()
 
-	_, err = s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, previousResource, nil)
+	_, err = s.ServiceContext.DeploymentExecutor.Deploy(ctx, c, previousResource, nil, configPrefix)
 	if err != nil {
 		if s, ok := status.FromError(err); ok && s.Code() == codes.InvalidArgument {
 			for _, details := range s.Details() {

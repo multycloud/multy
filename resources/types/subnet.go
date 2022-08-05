@@ -3,8 +3,10 @@ package types
 import (
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/multycloud/multy/api/errors"
+	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/validate"
 	"net"
 )
@@ -71,4 +73,8 @@ func (r *Subnet) Validate(ctx resources.MultyContext) (errs []validate.Validatio
 	}
 
 	return errs
+}
+
+func (r *Subnet) ParseCloud(args *resourcespb.SubnetArgs) commonpb.CloudProvider {
+	return common.ParseCloudFromResourceId(args.VirtualNetworkId)
 }

@@ -51,8 +51,12 @@ func (r *ResourceWithId[T]) GetCloud() commonpb.CloudProvider {
 	return r.Args.GetCommonParameters().CloudProvider
 }
 
+func (r *ResourceWithId[T]) ParseCloud(args T) commonpb.CloudProvider {
+	return args.GetCommonParameters().CloudProvider
+}
+
 func (r *ResourceWithId[T]) GetMetadata(m ResourceMetadatas) (ResourceMetadataInterface, error) {
-	converter, err := m.getConverter(proto.MessageName(r.Args))
+	converter, err := m.GetConverter(proto.MessageName(r.Args))
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +141,7 @@ func (r *ChildResourceWithId[A, B]) GetCloudSpecificLocation() string {
 }
 
 func (r *ChildResourceWithId[A, B]) GetMetadata(m ResourceMetadatas) (ResourceMetadataInterface, error) {
-	converter, err := m.getConverter(proto.MessageName(r.Args))
+	converter, err := m.GetConverter(proto.MessageName(r.Args))
 	if err != nil {
 		return nil, err
 	}

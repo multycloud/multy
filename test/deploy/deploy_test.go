@@ -95,7 +95,7 @@ func TestDeploy_rollbacksIfSomethingFails(t *testing.T) {
 	mockTfCmd.
 		On("GetState", mock.Anything, mock.Anything).
 		Return(&output.TfState{}, nil)
-	_, err = sut.Deploy(ctx, config, nil, nil)
+	_, err = sut.Deploy(ctx, config, nil, nil, config.GetUserId())
 	assert.Error(t, err)
 
 	mockTfCmd.AssertNumberOfCalls(t, "Apply", 2)
@@ -145,7 +145,7 @@ func TestDeploy_callsTfApply(t *testing.T) {
 	mockTfCmd.
 		On("GetState", mock.Anything, mock.Anything).
 		Return(&output.TfState{}, nil)
-	_, err = sut.Deploy(ctx, config, nil, nil)
+	_, err = sut.Deploy(ctx, config, nil, nil, config.GetUserId())
 	if err != nil {
 		t.Fatalf("can't deploy, %s", err)
 	}
@@ -194,7 +194,7 @@ func TestDeploy_onlyAffectedResources(t *testing.T) {
 	mockTfCmd.
 		On("GetState", mock.Anything, mock.Anything).
 		Return(&output.TfState{}, nil)
-	_, err = sut.Deploy(ctx, config, nil, r1)
+	_, err = sut.Deploy(ctx, config, nil, r1, config.GetUserId())
 	if err != nil {
 		t.Fatalf("can't deploy, %s", err)
 	}
@@ -214,7 +214,7 @@ func TestDeploy_onlyAffectedResources(t *testing.T) {
 	mockTfCmd.
 		On("Apply", mock.Anything, mock.Anything, mock.Anything).
 		Return(nil).Once()
-	_, err = sut.Deploy(ctx, config, nil, res2)
+	_, err = sut.Deploy(ctx, config, nil, res2, config.GetUserId())
 	if err != nil {
 		t.Fatalf("can't deploy, %s", err)
 	}
@@ -291,7 +291,7 @@ func TestDeploy_rollbacksIfGetStateFails(t *testing.T) {
 	mockTfCmd.
 		On("GetState", mock.Anything, mock.Anything).
 		Return(&output.TfState{}, nil)
-	rollbackFn, err := sut.Deploy(ctx, config, nil, nil)
+	rollbackFn, err := sut.Deploy(ctx, config, nil, nil, config.GetUserId())
 	if err != nil {
 		t.Fatalf("error when deploying, %s", err)
 	}

@@ -13,8 +13,8 @@ func newLocalClient() (*LocalClient, error) {
 	return &LocalClient{}, nil
 }
 
-func (c LocalClient) SaveFile(userId string, fileName string, content string) error {
-	filePath, err := c.getFilePath(userId, fileName)
+func (c LocalClient) SaveFile(configPrefix string, fileName string, content string) error {
+	filePath, err := c.getFilePath(configPrefix, fileName)
 	if err != nil {
 		return err
 	}
@@ -26,8 +26,8 @@ func (c LocalClient) SaveFile(userId string, fileName string, content string) er
 	return nil
 }
 
-func (c LocalClient) ReadFile(userId string, fileName string) (string, error) {
-	filePath, err := c.getFilePath(userId, fileName)
+func (c LocalClient) ReadFile(configPrefix string, fileName string) (string, error) {
+	filePath, err := c.getFilePath(configPrefix, fileName)
 	if err != nil {
 		return "", err
 	}
@@ -42,8 +42,8 @@ func (c LocalClient) ReadFile(userId string, fileName string) (string, error) {
 	return string(file), nil
 }
 
-func (c LocalClient) getFilePath(userId string, fileName string) (string, error) {
-	tmpDir := path.Join(os.TempDir(), "multy", userId, "local")
+func (c LocalClient) getFilePath(configPrefix string, fileName string) (string, error) {
+	tmpDir := path.Join(os.TempDir(), "multy", configPrefix, "local")
 	err := os.MkdirAll(tmpDir, os.ModeDir|(os.ModePerm&0775))
 	if err != nil {
 		return "", err

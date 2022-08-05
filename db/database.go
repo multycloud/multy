@@ -15,7 +15,7 @@ import (
 
 type database struct {
 	*userConfigStorage
-	lockDatabase  *RemoteLockDatabase
+	*RemoteLockDatabase
 	sqlConnection *sql.DB
 	AwsClient     aws_client.AwsClient
 }
@@ -83,14 +83,6 @@ func (d *database) CreateUser(ctx context.Context, emailAddress string) (apiKey 
 	return apiKey, err
 }
 
-func (d *database) LockConfig(ctx context.Context, userId string) (lock *ConfigLock, err error) {
-	return d.lockDatabase.LockConfig(ctx, userId)
-}
-
-func (d *database) UnlockConfig(ctx context.Context, lock *ConfigLock) error {
-	return d.lockDatabase.UnlockConfig(ctx, lock)
-}
-
 func (d *database) LoadTerraformState(ctx context.Context, userId string) (string, error) {
 	result, err := d.AwsClient.ReadFile(userId, TfState)
 	if err != nil {
@@ -114,14 +106,14 @@ func newDatabase(awsClient aws_client.AwsClient) (*database, error) {
 	if err != nil {
 		return nil, err
 	}
-	db, err := NewLockDatabase(dbConnection)
+	lockDb, err := NewLockDatabase(dbConnection)
 	if err != nil {
 		return nil, err
 	}
 	return &database{
-		userConfigStorage: userStg,
-		lockDatabase:      db,
-		sqlConnection:     dbConnection,
-		AwsClient:         awsClient,
+		userConfigStorage:  userStg,
+		RemoteLockDatabase: lockDb,
+		sqlConnection:      dbConnection,
+		AwsClient:          awsClient,
 	}, nil
 }

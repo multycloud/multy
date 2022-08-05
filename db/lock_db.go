@@ -34,8 +34,8 @@ type lockErr struct {
 	error
 }
 
-func (d *RemoteLockDatabase) LockConfig(ctx context.Context, userId string) (lock *ConfigLock, err error) {
-	localLock, err := d.localLockDatabase.LockConfig(ctx, userId)
+func (d *RemoteLockDatabase) LockConfig(ctx context.Context, userId string, lockId string) (lock *ConfigLock, err error) {
+	localLock, err := d.localLockDatabase.LockConfig(ctx, userId, lockId)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (d *RemoteLockDatabase) LockConfig(ctx context.Context, userId string) (loc
 	}()
 	retryPeriod := lockRetryPeriod
 	for {
-		configLock, err := d.lockConfig(ctx, userId)
+		configLock, err := d.lockConfig(ctx, userId, lockId)
 		if err != nil {
 			if !err.retryable {
 				return nil, err.error
@@ -75,7 +75,7 @@ func isRetryableSqlErr(err error) bool {
 	return err != sql.ErrTxDone && err != sql.ErrConnDone
 }
 
-func (d *RemoteLockDatabase) lockConfig(ctx context.Context, userId string) (*ConfigLock, *lockErr) {
+func (d *RemoteLockDatabase) lockConfig(ctx context.Context, userId string, lockId string) (*ConfigLock, *lockErr) {
 	log.Println("[DEBUG] locking")
 	tx, err := d.sqlConnection.BeginTx(ctx, nil)
 	if err != nil {
@@ -95,13 +95,13 @@ func (d *RemoteLockDatabase) lockConfig(ctx context.Context, userId string) (*Co
 		active: true,
 	}
 	err = d.sqlConnection.
-		QueryRowContext(ctx, "SELECT UserId, LockId, LockExpirationTimestamp FROM Locks WHERE UserId = ? AND LockId = ?;", userId, MainConfigLock).
+		QueryRowContext(ctx, "SELECT UserId, LockId, LockExpirationTimestamp FROM Locks WHERE UserId = ? AND LockId = ?;", userId, lockId).
 		Scan(&row.userId, &row.lockId, &row.expirationTimestamp)
 	now := time.Now().UTC()
 	expirationTimestamp := now.Add(lockExpirationPeriod)
 	if err == sql.ErrNoRows {
 		_, err := d.sqlConnection.
-			ExecContext(ctx, "INSERT INTO Locks (UserId, LockId, LockExpirationTimestamp) VALUES (?, ?, ?);", userId, MainConfigLock, expirationTimestamp)
+			ExecContext(ctx, "INSERT INTO Locks (UserId, LockId, LockExpirationTimestamp) VALUES (?, ?, ?);", userId, lockId, expirationTimestamp)
 		if err != nil {
 			return nil, &lockErr{isRetryableSqlErr(err), err}
 		}
@@ -111,7 +111,7 @@ func (d *RemoteLockDatabase) lockConfig(ctx context.Context, userId string) (*Co
 		}
 		committed = true
 		row.userId = userId
-		row.lockId = MainConfigLock
+		row.lockId = lockId
 		row.expirationTimestamp = expirationTimestamp
 		return &row, nil
 	} else if err != nil {
@@ -119,7 +119,7 @@ func (d *RemoteLockDatabase) lockConfig(ctx context.Context, userId string) (*Co
 	} else if err == nil && now.After(row.expirationTimestamp) {
 		log.Println("[WARNING] ConfigLock has expired, overwriting it")
 		_, err := d.sqlConnection.
-			ExecContext(ctx, "UPDATE Locks SET LockExpirationTimestamp = ? WHERE UserId = ? AND LockId = ?;", expirationTimestamp, userId, MainConfigLock)
+			ExecContext(ctx, "UPDATE Locks SET LockExpirationTimestamp = ? WHERE UserId = ? AND LockId = ?;", expirationTimestamp, userId, lockId)
 		if err != nil {
 			return nil, &lockErr{isRetryableSqlErr(err), err}
 		}

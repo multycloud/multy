@@ -27,6 +27,7 @@ type ResourceExporter[ArgsT proto.Message] interface {
 	Update(args ArgsT, others *Resources) error
 	Import(resourceId string, args ArgsT, others *Resources) error
 	Export(others *Resources) (ArgsT, bool, error)
+	ParseCloud(args ArgsT) commonpb.CloudProvider
 
 	Resource
 }
@@ -39,8 +40,14 @@ type ResourceMetadata[ArgsT proto.Message, R ResourceExporter[ArgsT], OutT proto
 	ResourceType string
 }
 
-func (m *ResourceMetadata[ArgsT, R, OutT]) Create(resourceId string, args proto.Message, resources *Resources) (Resource, error) {
+func (m *ResourceMetadata[ArgsT, R, OutT]) ParseCloud(args proto.Message) commonpb.CloudProvider {
 	r := reflect.New(reflect.TypeOf(*new(R)).Elem()).Interface().(R)
+	return r.ParseCloud(args.(ArgsT))
+}
+
+func (m *ResourceMetadata[ArgsT, R, OutT]) Create(resourceIdPrefix string, args proto.Message, resources *Resources) (Resource, error) {
+	r := reflect.New(reflect.TypeOf(*new(R)).Elem()).Interface().(R)
+	resourceId := common.GetResourceId(resourceIdPrefix, r.ParseCloud(args.(ArgsT)))
 	err := r.Create(resourceId, args.(ArgsT), resources)
 	return r, err
 }
@@ -87,6 +94,7 @@ func (m *ResourceMetadata[ArgsT, R, OutT]) GetAbbreviatedName() string {
 
 type ResourceMetadataInterface interface {
 	New() Resource
+	ParseCloud(proto.Message) commonpb.CloudProvider
 	Create(string, proto.Message, *Resources) (Resource, error)
 	Update(Resource, proto.Message, *Resources) error
 	ReadFromState(Resource, *output.TfState) (proto.Message, error)
@@ -120,7 +128,7 @@ func LoadConfig(c *configpb.Config, metadatas ResourceMetadatas) (*MultyConfig, 
 	res := NewResources()
 	// we'll first add empty resources so that they can be used when calling Import()
 	for _, r := range c.Resources {
-		conv, err := multyc.metadatas.getConverter(r.ResourceArgs.ResourceArgs.MessageName())
+		conv, err := multyc.metadatas.GetConverter(r.ResourceArgs.ResourceArgs.MessageName())
 		if err != nil {
 			return multyc, err
 		}
@@ -131,7 +139,7 @@ func LoadConfig(c *configpb.Config, metadatas ResourceMetadatas) (*MultyConfig, 
 	}
 
 	for _, r := range c.Resources {
-		conv, err := multyc.metadatas.getConverter(r.ResourceArgs.ResourceArgs.MessageName())
+		conv, err := multyc.metadatas.GetConverter(r.ResourceArgs.ResourceArgs.MessageName())
 		if err != nil {
 			return multyc, err
 		}
@@ -169,15 +177,15 @@ func addMultyResource(r *configpb.Resource, res *Resources, metadata ResourceMet
 }
 
 func (c *MultyConfig) CreateResource(args proto.Message) (Resource, error) {
-	conv, err := c.metadatas.getConverter(proto.MessageName(args))
+	conv, err := c.metadatas.GetConverter(proto.MessageName(args))
 	if err != nil {
 		return nil, err
 	}
 	c.c.ResourceCounter += 1
-	resourceId := fmt.Sprintf("multy_%s_u%s_r%d", conv.GetAbbreviatedName(),
+	resourceIdPrefix := fmt.Sprintf("multy_%s_u%s_r%d", conv.GetAbbreviatedName(),
 		common.GenerateHash(c.c.UserId),
 		c.c.ResourceCounter)
-	r, err := conv.Create(resourceId, args, c.Resources)
+	r, err := conv.Create(resourceIdPrefix, args, c.Resources)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +194,7 @@ func (c *MultyConfig) CreateResource(args proto.Message) (Resource, error) {
 }
 
 func (c *MultyConfig) UpdateResource(resourceId string, args proto.Message) (Resource, error) {
-	conv, err := c.metadatas.getConverter(proto.MessageName(args))
+	conv, err := c.metadatas.GetConverter(proto.MessageName(args))
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +296,7 @@ func (c *MultyConfig) ExportConfig() (*configpb.Config, error) {
 	return result, nil
 }
 
-func (m ResourceMetadatas) getConverter(name protoreflect.FullName) (ResourceMetadataInterface, error) {
+func (m ResourceMetadatas) GetConverter(name protoreflect.FullName) (ResourceMetadataInterface, error) {
 	for messageType, conv := range m {
 		if name == proto.MessageName(messageType) {
 			return conv, nil
