@@ -74,7 +74,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
 
-	c, err := s.getConfig(ctx, configPrefix, lock, configPrefix)
+	c, err := s.getConfig(ctx, userId, lock, configPrefix)
 	if err != nil {
 		return
 	}
@@ -153,7 +153,7 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
 
-	c, err := s.getConfig(ctx, configPrefix, lock, configPrefix)
+	c, err := s.getConfig(ctx, userId, lock, configPrefix)
 	if err != nil {
 		return *new(OutT), err
 	}
@@ -216,7 +216,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
 
-	c, err := s.getConfig(ctx, configPrefix, lock, configPrefix)
+	c, err := s.getConfig(ctx, userId, lock, configPrefix)
 	if err != nil {
 		return
 	}
@@ -268,7 +268,7 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (out 
 		return
 	}
 	defer s.ServiceContext.UnlockConfig(ctx, lock)
-	c, err := s.getConfig(ctx, configPrefix, lock, configPrefix)
+	c, err := s.getConfig(ctx, userId, lock, configPrefix)
 	if err != nil {
 		return
 	}

@@ -171,11 +171,6 @@ func (d DeploymentExecutor) RefreshState(ctx context.Context, configPrefix strin
 }
 
 func (d DeploymentExecutor) refresh(ctx context.Context, configPrefix string) error {
-	start := time.Now()
-	defer func() {
-		log.Printf("[DEBUG] refresh finished in %s", time.Since(start))
-	}()
-
 	tmpDir := GetTempDirForUser(configPrefix)
 	return d.TfCmd.Refresh(ctx, tmpDir)
 }
