@@ -352,16 +352,16 @@ func (s *Server) DeleteVirtualMachine(ctx context.Context, in *resourcespb.Delet
 	return s.VirtualMachineService.Delete(ctx, in)
 }
 
-func (s *Server) RefreshState(ctx context.Context, _ *commonpb.Empty) (_ *commonpb.Empty, err error) {
+func (s *Server) RefreshState(ctx context.Context, in *proto.RefreshStateRequest) (_ *commonpb.Empty, err error) {
 	defer func() {
 		if err != nil {
 			go s.AwsClient.UpdateErrorMetric("refresh", "refresh", errors.ErrorCode(err))
 		}
 	}()
-	return errors.WrappingErrors(s.refresh)(ctx, &commonpb.Empty{})
+	return errors.WrappingErrors(s.refresh)(ctx, in)
 }
 
-func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empty, error) {
+func (s *Server) refresh(ctx context.Context, in *proto.RefreshStateRequest) (*commonpb.Empty, error) {
 	log.Println("[INFO] Refreshing state")
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
@@ -372,15 +372,15 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 	if err != nil {
 		return nil, err
 	}
+	configPrefix := services.GetConfigPrefixForCloud(userId, in.GetCloud())
 
-	lock, err := s.Database.LockConfig(ctx, userId, userId)
+	lock, err := s.Database.LockConfig(ctx, userId, configPrefix)
 	if err != nil {
 		return nil, err
 	}
 	defer s.Database.UnlockConfig(ctx, lock)
 
-	// TODO: ask for cloud in request
-	c, err := s.Database.LoadUserConfig(ctx, userId, userId, lock)
+	c, err := s.Database.LoadUserConfig(ctx, userId, configPrefix, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -389,12 +389,12 @@ func (s *Server) refresh(ctx context.Context, _ *commonpb.Empty) (*commonpb.Empt
 		return nil, err
 	}
 
-	err = s.ResourceServiceContext.DeploymentExecutor.RefreshState(ctx, userId, mconfig)
+	err = s.ResourceServiceContext.DeploymentExecutor.RefreshState(ctx, configPrefix, mconfig)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.Database.StoreUserConfig(ctx, c, userId, lock)
+	err = s.Database.StoreUserConfig(ctx, c, configPrefix, lock)
 	if err != nil {
 		return nil, err
 	}
