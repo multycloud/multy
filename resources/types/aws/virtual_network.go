@@ -44,16 +44,20 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 		CloudProvider:   r.GetCloud(),
 		NeedsUpdate:     false,
 	}
-
-	stateResource, err := output.GetParsedById[virtual_network.AwsVpc](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	out.Name = stateResource.AwsResource.Tags["Name"]
-	out.CidrBlock = stateResource.CidrBlock
 	out.GcpOverride = r.Args.GcpOverride
-	out.AwsOutputs = &resourcespb.VirtualNetworkAwsOutputs{
-		VpcId: stateResource.AwsResource.ResourceId,
+	out.AwsOutputs = &resourcespb.VirtualNetworkAwsOutputs{}
+
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[virtual_network.AwsVpc](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.AwsResource.Tags["Name"]
+		out.CidrBlock = stateResource.CidrBlock
+		out.AwsOutputs.VpcId = stateResource.AwsResource.ResourceId
+	} else {
+		statuses["aws_vpc"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if stateResource, exists, err := output.MaybeGetParsedById[virtual_network.AwsInternetGateway](state, r.ResourceId); exists {
@@ -61,6 +65,8 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 			return nil, err
 		}
 		out.AwsOutputs.InternetGatewayId = stateResource.ResourceId
+	} else {
+		statuses["aws_internet_gateway"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if stateResource, exists, err := output.MaybeGetParsedById[network_security_group.AwsDefaultSecurityGroup](state, r.ResourceId); exists {
@@ -68,6 +74,12 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 			return nil, err
 		}
 		out.AwsOutputs.DefaultSecurityGroupId = stateResource.ResourceId
+	} else {
+		statuses["aws_default_security_group"] = commonpb.ResourceStatus_NEEDS_CREATE
+	}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
 
 	return out, nil

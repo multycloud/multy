@@ -38,13 +38,18 @@ func (r GcpVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[virtual_network.GoogleComputeNetwork](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	out.GcpOutputs = &resourcespb.VirtualNetworkGcpOutputs{
-		ComputeNetworkId: stateResource.SelfLink,
+	if stateResource, exists, err := output.MaybeGetParsedById[virtual_network.GoogleComputeNetwork](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		out.GcpOutputs = &resourcespb.VirtualNetworkGcpOutputs{
+			ComputeNetworkId: stateResource.SelfLink,
+		}
+	} else {
+		statuses["gcp_compute_network"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if stateResource, exists, err := output.MaybeGetParsedById[network_security_group.GoogleComputeFirewall](state, r.ResourceId); exists {
@@ -52,8 +57,13 @@ func (r GcpVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 			return nil, err
 		}
 		out.GcpOutputs.DefaultComputeFirewallId = stateResource.SelfLink
+	} else {
+		statuses["gcp_default_compute_firewall"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
