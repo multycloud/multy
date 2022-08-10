@@ -36,17 +36,24 @@ func (r GcpPublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpReso
 	if flags.DryRun {
 		return out, nil
 	}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	stateResource, err := output.GetParsedById[public_ip.GoogleComputeAddress](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	if stateResource, exists, err := output.MaybeGetParsedById[public_ip.GoogleComputeAddress](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		out.Ip = stateResource.Address
+		out.GcpOutputs = &resourcespb.PublicIpGcpOutputs{
+			ComputeAddressId: stateResource.SelfLink,
+		}
+	} else {
+		statuses["gcp_compute_address"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.Ip = stateResource.Address
-	out.GcpOutputs = &resourcespb.PublicIpGcpOutputs{
-		ComputeAddressId: stateResource.SelfLink,
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
-
 	return out, nil
 }
 

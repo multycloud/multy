@@ -36,16 +36,24 @@ func (r AwsPublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpReso
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[public_ip.AwsElasticIp](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	out.AwsOutputs = &resourcespb.PublicIpAwsOutputs{}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[public_ip.AwsElasticIp](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		out.Ip = stateResource.PublicIp
+		out.Name = stateResource.AwsResource.Tags["Name"]
+		out.AwsOutputs.PublicIpId = stateResource.ResourceId
+	} else {
+		statuses["aws_public_ip"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.Ip = stateResource.PublicIp
-	out.AwsOutputs = &resourcespb.PublicIpAwsOutputs{
-		PublicIpId: stateResource.ResourceId,
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
-
 	return out, nil
 }
 

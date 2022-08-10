@@ -40,12 +40,26 @@ func (r AzureNetworkInterface) FromState(state *output.TfState) (*resourcespb.Ne
 	}
 
 	out.AzureOutputs = &resourcespb.NetworkInterfaceAzureOutputs{}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	stateResource, err := output.GetParsedById[network_interface.AzureNetworkInterface](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	if stateResource, exists, err := output.MaybeGetParsedById[network_interface.AzureNetworkInterface](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.Name
+		out.AzureOutputs.NetworkInterfaceId = stateResource.ResourceId
+		if r.PublicIp != nil {
+			if len(stateResource.IpConfigurations) == 0 || stateResource.IpConfigurations[0].PublicIpAddressId == "" {
+				statuses["azure_network_interface"] = commonpb.ResourceStatus_NEEDS_UPDATE
+			}
+		}
+	} else {
+		statuses["azure_network_interface"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
-	out.AzureOutputs.NetworkInterfaceId = stateResource.ResourceId
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

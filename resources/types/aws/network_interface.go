@@ -40,20 +40,32 @@ func (r AwsNetworkInterface) FromState(state *output.TfState) (*resourcespb.Netw
 	}
 
 	out.AwsOutputs = &resourcespb.NetworkInterfaceAwsOutputs{}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	stateResource, err := output.GetParsedById[network_interface.AwsNetworkInterface](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	if stateResource, exists, err := output.MaybeGetParsedById[network_interface.AwsNetworkInterface](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		// TODO: map availability zone?
+		out.Name = stateResource.AwsResource.Tags["Name"]
+		out.AwsOutputs.NetworkInterfaceId = stateResource.ResourceId
+	} else {
+		statuses["aws_network_interface"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.AwsOutputs.NetworkInterfaceId = stateResource.ResourceId
 	if stateResource, exists, err := output.MaybeGetParsedById[network_interface.AwsEipAssociation](state, r.ResourceId); exists {
 		if err != nil {
 			return nil, err
 		}
 		out.AwsOutputs.EipAssociationId = stateResource.ResourceId
+	} else if r.PublicIp != nil {
+		statuses["aws_eip_association"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

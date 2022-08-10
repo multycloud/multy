@@ -36,16 +36,24 @@ func (r AzurePublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpRe
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[public_ip.AzurePublicIp](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[public_ip.AzurePublicIp](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		out.Ip = stateResource.IpAddress
+		out.AzureOutputs = &resourcespb.PublicIpAzureOutputs{
+			PublicIpId: stateResource.ResourceId,
+		}
+	} else {
+		statuses["azure_public_ip"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.Ip = stateResource.IpAddress
-	out.AzureOutputs = &resourcespb.PublicIpAzureOutputs{
-		PublicIpId: stateResource.ResourceId,
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
-
 	return out, nil
 }
 
