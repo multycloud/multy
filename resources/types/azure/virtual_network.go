@@ -44,16 +44,20 @@ func (r AzureVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virt
 		CloudProvider:   r.GetCloud(),
 		NeedsUpdate:     false,
 	}
-
-	stateResource, err := output.GetParsedById[virtual_network.AzureVnet](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	out.Name = stateResource.Name
-	out.CidrBlock = stateResource.AddressSpace[0]
 	out.GcpOverride = r.Args.GcpOverride
-	out.AzureOutputs = &resourcespb.VirtualNetworkAzureOutputs{
-		VirtualNetworkId: stateResource.AzResource.ResourceId,
+	out.AzureOutputs = &resourcespb.VirtualNetworkAzureOutputs{}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[virtual_network.AzureVnet](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.Name
+		out.CidrBlock = stateResource.AddressSpace[0]
+
+		out.AzureOutputs.VirtualNetworkId = stateResource.AzResource.ResourceId
+	} else {
+		statuses["azure_virtual_network"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if stateResource, exists, err := output.MaybeGetParsedById[route_table.AzureRouteTable](state, r.ResourceId); exists {
@@ -61,8 +65,13 @@ func (r AzureVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virt
 			return nil, err
 		}
 		out.AzureOutputs.LocalRouteTableId = stateResource.ResourceId
+	} else {
+		statuses["azure_local_route_table"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

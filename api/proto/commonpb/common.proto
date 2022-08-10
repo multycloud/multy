@@ -100,11 +100,26 @@ message CommonResourceParameters {
   Location location = 3;
   CloudProvider cloud_provider = 4;
   bool needs_update = 5;
+  ResourceStatus resource_status = 6;
 }
 
 message CommonChildResourceParameters {
   string resource_id = 1;
   bool needs_update = 2;
+  ResourceStatus resource_status = 3;
+}
+
+// Statuses of underlying created resources if they do not match the expected state.
+message ResourceStatus {
+  enum Status {
+    UKNOWN_STATUS = 0;
+    NEEDS_UPDATE = 1;
+    NEEDS_RECREATE = 2;
+    NEEDS_CREATE = 3;
+  }
+  // key is a custom identifier of the underlying resource
+  // examples: aws_default_security_group, gcp_compute_network
+  map<string, Status> statuses = 1;
 }
 
 // Common messages for CREATE and UPDATE requests
