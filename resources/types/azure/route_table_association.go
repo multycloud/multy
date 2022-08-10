@@ -3,6 +3,7 @@ package azure_resources
 import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -19,14 +20,28 @@ func InitRouteTableAssociation(vn *types.RouteTableAssociation) resources.Resour
 }
 
 func (r AzureRouteTableAssociation) FromState(state *output.TfState) (*resourcespb.RouteTableAssociationResource, error) {
-	return &resourcespb.RouteTableAssociationResource{
+	out := &resourcespb.RouteTableAssociationResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
 		},
 		SubnetId:     r.Args.SubnetId,
 		RouteTableId: r.Args.RouteTableId,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	if _, exists, _ := output.MaybeGetParsedById[route_table_association.AzureRouteTableAssociation](state, r.getRtaId()); !exists {
+		statuses["azure_route_table_association"] = commonpb.ResourceStatus_NEEDS_CREATE
+	}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
+	return out, nil
 }
 
 func (r AzureRouteTableAssociation) Translate(resources.MultyContext) ([]output.TfBlock, error) {
@@ -40,11 +55,8 @@ func (r AzureRouteTableAssociation) Translate(resources.MultyContext) ([]output.
 	}
 	return []output.TfBlock{
 		route_table_association.AzureRouteTableAssociation{
-			// Here we use the subnet id so that it is the same as the one that is created by default in the subnet.
-			// This ensures that if a RTA is created after the default RTA is created, they will have the same ID and
-			// terraform will either update it in place or destroy it before creating it.
 			AzResource: &common.AzResource{
-				TerraformResource: output.TerraformResource{ResourceId: r.Subnet.ResourceId},
+				TerraformResource: output.TerraformResource{ResourceId: r.getRtaId()},
 			},
 			RouteTableId: rtId,
 			SubnetId:     subnetId,
@@ -52,6 +64,12 @@ func (r AzureRouteTableAssociation) Translate(resources.MultyContext) ([]output.
 	}, nil
 }
 
+func (r AzureRouteTableAssociation) getRtaId() string {
+	// Here we use the subnet id so that it is the same as the one that is created by default in the subnet.
+	// This ensures that if a RTA is created after the default RTA is created, they will have the same ID and
+	// terraform will either update it in place or destroy it before creating it.
+	return r.Subnet.ResourceId
+}
 func (r AzureRouteTableAssociation) GetMainResourceName() (string, error) {
 	return route_table_association.AzureResourceName, nil
 }

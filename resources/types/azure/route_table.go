@@ -36,22 +36,37 @@ func (r AzureRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTab
 		ResourceId:  r.ResourceId,
 		NeedsUpdate: false,
 	}
-	stateResource, err := output.GetParsedById[route_table.AzureRouteTable](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	out.Name = stateResource.Name
-	out.VirtualNetworkId = r.Args.VirtualNetworkId
-	var routes []*resourcespb.Route
-	for _, r := range stateResource.Routes {
-		route := &resourcespb.Route{
-			CidrBlock:   r.AddressPrefix,
-			Destination: resourcespb.RouteDestination_INTERNET,
+	out.AzureOutputs = &resourcespb.RouteTableAzureOutputs{}
+
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[route_table.AzureRouteTable](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
 		}
-		routes = append(routes, route)
+		out.Name = stateResource.Name
+		out.VirtualNetworkId = r.Args.VirtualNetworkId
+		var routes []*resourcespb.Route
+		for _, r := range stateResource.Routes {
+			route := &resourcespb.Route{
+				CidrBlock:   r.AddressPrefix,
+				Destination: resourcespb.RouteDestination_INTERNET,
+			}
+			if r.NextHopType != "Internet" {
+				route.Destination = resourcespb.RouteDestination_UNKNOWN_DESTINATION
+			}
+
+			routes = append(routes, route)
+		}
+		out.Routes = routes
+		out.AzureOutputs.RouteTableId = stateResource.ResourceId
+	} else {
+		statuses["azure_route_table"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
-	out.Routes = routes
-	out.AzureOutputs = &resourcespb.RouteTableAzureOutputs{RouteTableId: stateResource.ResourceId}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

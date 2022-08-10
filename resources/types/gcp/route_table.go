@@ -84,16 +84,36 @@ func (r GcpRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTable
 		return out, nil
 	}
 
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 	out.GcpOutputs = &resourcespb.RouteTableGcpOutputs{}
 
-	for _, routeId := range r.getRouteIds() {
-		stateResource, err := output.GetParsedById[route_table.GoogleComputeRoute](state, routeId)
-		if err != nil {
-			return nil, err
-		}
-		out.GcpOutputs.ComputeRouteId = append(out.GcpOutputs.ComputeRouteId, stateResource.SelfLink)
-	}
+	var routes []*resourcespb.Route
+	for i, routeId := range r.getRouteIds() {
+		if stateResource, exists, err := output.MaybeGetParsedById[route_table.GoogleComputeRoute](state, routeId); exists {
+			if err != nil {
+				return nil, err
+			}
+			route := &resourcespb.Route{
+				CidrBlock:   stateResource.DestRange,
+				Destination: resourcespb.RouteDestination_INTERNET,
+			}
 
+			if stateResource.NextHopGateway != "default-internet-gateway" {
+				route.Destination = resourcespb.RouteDestination_UNKNOWN_DESTINATION
+			}
+			routes = append(routes, route)
+
+			out.GcpOutputs.ComputeRouteId = append(out.GcpOutputs.ComputeRouteId, stateResource.SelfLink)
+		} else {
+			statuses[fmt.Sprintf("gcp_compute_route_%d", i)] = commonpb.ResourceStatus_NEEDS_CREATE
+
+		}
+	}
+	out.Routes = routes
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
