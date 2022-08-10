@@ -305,7 +305,7 @@ type AwsResource struct {
 
 type GcpResource struct {
 	output.TerraformResource `hcl:",squash"`
-	Name                     string `hcl:"name" hcle:"omitempty"`
+	Name                     string `hcl:"name" hcle:"omitempty" json:"name"`
 	Project                  string `hcl:"project"  hcle:"omitempty"`
 	// output
 	SelfLink string `json:"self_link"   hcle:"omitempty"`

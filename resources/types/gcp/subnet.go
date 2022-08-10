@@ -35,12 +35,22 @@ func (r GcpSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[subnet.GoogleComputeSubnetwork](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[subnet.GoogleComputeSubnetwork](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.Name
+		out.CidrBlock = stateResource.IpCidrRange
+		out.GcpOutputs = &resourcespb.SubnetGcpOutputs{ComputeSubnetworkId: stateResource.SelfLink}
+	} else {
+		statuses["gcp_compute_subnetwork"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.GcpOutputs = &resourcespb.SubnetGcpOutputs{ComputeSubnetworkId: stateResource.SelfLink}
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

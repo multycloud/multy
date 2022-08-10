@@ -49,11 +49,20 @@ func (r AwsSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource
 		SubnetIdByAvailabilityZone: map[string]string{},
 	}
 
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 	if azArray, ok := common.AVAILABILITY_ZONES[r.VirtualNetwork.GetLocation()][r.GetCloud()]; ok {
 		for i, zone := range azArray {
-			stateResource, err := output.GetParsedById[subnet.AwsSubnet](state, r.getSubnetResourceId(i))
-			if err != nil || stateResource.AvailabilityZone != zone {
-				out.CommonParameters.NeedsUpdate = true
+			subnetI := fmt.Sprintf("aws_subnet_%d", i)
+			stateResource, exists, err := output.MaybeGetParsedById[subnet.AwsSubnet](state, r.getSubnetResourceId(i))
+			if err != nil {
+				return out, err
+			}
+			if !exists {
+				statuses[subnetI] = commonpb.ResourceStatus_NEEDS_CREATE
+				continue
+			}
+			if stateResource.AvailabilityZone != zone {
+				statuses[subnetI] = commonpb.ResourceStatus_NEEDS_RECREATE
 				continue
 			}
 			out.AwsOutputs.SubnetIdByAvailabilityZone[stateResource.AvailabilityZone] = stateResource.ResourceId
@@ -63,10 +72,14 @@ func (r AwsSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource
 				if strings.HasSuffix(name, suffix) {
 					out.Name = strings.TrimSuffix(name, suffix)
 				} else {
-					out.CommonParameters.NeedsUpdate = true
+					statuses[subnetI] = commonpb.ResourceStatus_NEEDS_UPDATE
 				}
 			}
 		}
+	}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
 	return out, nil
 }
