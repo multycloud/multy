@@ -35,18 +35,25 @@ func (r AwsRouteTableAssociation) FromState(state *output.TfState) (*resourcespb
 		return out, nil
 	}
 
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 	out.AwsOutputs = &resourcespb.RouteTableAssociationAwsOutputs{RouteTableAssociationIdByAvailabilityZone: map[string]string{}}
 
 	azArray := common.AVAILABILITY_ZONES[r.Subnet.VirtualNetwork.GetLocation()][r.GetCloud()]
 	for i, zone := range azArray {
 		resourceId := fmt.Sprintf("%s-%d", r.ResourceId, i+1)
-		stateResource, err := output.GetParsedById[route_table_association.AwsRouteTableAssociation](state, resourceId)
-		if err != nil {
-			return nil, err
+		if stateResource, exists, err := output.MaybeGetParsedById[route_table_association.AwsRouteTableAssociation](state, resourceId); exists {
+			if err != nil {
+				return nil, err
+			}
+			out.AwsOutputs.RouteTableAssociationIdByAvailabilityZone[zone] = stateResource.ResourceId
+		} else {
+			statuses[fmt.Sprintf("aws_route_table_association_%d", i)] = commonpb.ResourceStatus_NEEDS_CREATE
 		}
-		out.AwsOutputs.RouteTableAssociationIdByAvailabilityZone[zone] = stateResource.ResourceId
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

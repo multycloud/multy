@@ -36,23 +36,36 @@ func (r AwsRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTable
 		ResourceId:  r.ResourceId,
 		NeedsUpdate: false,
 	}
-	stateResource, err := output.GetParsedById[route_table.AwsRouteTable](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	out.Name = stateResource.AwsResource.Tags["Name"]
-	out.VirtualNetworkId = r.Args.VirtualNetworkId
-	var routes []*resourcespb.Route
-	for _, r := range stateResource.Routes {
-		route := &resourcespb.Route{
-			CidrBlock:   r.CidrBlock,
-			Destination: resourcespb.RouteDestination_INTERNET,
-		}
-		routes = append(routes, route)
-	}
-	out.Routes = routes
-	out.AwsOutputs = &resourcespb.RouteTableAwsOutputs{RouteTableId: stateResource.ResourceId}
+	out.AwsOutputs = &resourcespb.RouteTableAwsOutputs{}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
+	if stateResource, exists, err := output.MaybeGetParsedById[route_table.AwsRouteTable](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.AwsResource.Tags["Name"]
+		out.VirtualNetworkId = r.Args.VirtualNetworkId
+		var routes []*resourcespb.Route
+		for _, r := range stateResource.Routes {
+			route := &resourcespb.Route{
+				CidrBlock:   r.CidrBlock,
+				Destination: resourcespb.RouteDestination_INTERNET,
+			}
+			if r.GatewayId == "" {
+				route.Destination = resourcespb.RouteDestination_UNKNOWN_DESTINATION
+			}
+
+			routes = append(routes, route)
+		}
+		out.Routes = routes
+		out.AwsOutputs.RouteTableId = stateResource.ResourceId
+	} else {
+		statuses["aws_route_table"] = commonpb.ResourceStatus_NEEDS_CREATE
+	}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
@@ -68,6 +81,7 @@ func (r AwsRouteTable) Translate(resources.MultyContext) ([]output.TfBlock, erro
 
 	var routes []route_table.AwsRouteTableRoute
 	for _, route := range r.Args.Routes {
+
 		if route.Destination == resourcespb.RouteDestination_INTERNET {
 			routes = append(
 				routes, route_table.AwsRouteTableRoute{

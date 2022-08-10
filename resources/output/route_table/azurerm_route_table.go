@@ -14,9 +14,3 @@ type AzureRouteTableRoute struct {
 	AddressPrefix string `hcl:"address_prefix" json:"address_prefix"`
 	NextHopType   string `hcl:"next_hop_type" json:"next_hop_type"` // VirtualNetworkGateway , VnetLocal , Internet , VirtualAppliance and None
 }
-
-type AzureRouteTableAssociation struct {
-	*common.AzResource `hcl:",squash"`
-	RouteTableId       string `hcl:"route_table_id,expr"`
-	SubnetId           string `hcl:"subnet_id,expr"`
-}

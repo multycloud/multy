@@ -6,7 +6,7 @@ import (
 
 type GoogleComputeRoute struct {
 	*common.GcpResource `hcl:",squash" default:"name=google_compute_route"`
-	DestRange           string   `hcl:"dest_range"`
+	DestRange           string   `hcl:"dest_range" json:"dest_range" hcle:"omitempty"`
 	Network             string   `hcl:"network,expr"`
 	Priority            int      `hcl:"priority"`
 	Tags                []string `hcl:"tags"`
