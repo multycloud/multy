@@ -41,17 +41,26 @@ func (r AzureSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResour
 		NeedsUpdate: false,
 	}
 	out.VirtualNetworkId = r.Args.GetVirtualNetworkId()
+	out.AzureOutputs = &resourcespb.SubnetAzureOutputs{}
 
-	stateResource, err := output.GetParsedById[subnet.AzureSubnet](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	out.Name = stateResource.Name
-	out.CidrBlock = stateResource.AddressPrefixes[0]
-	out.AzureOutputs = &resourcespb.SubnetAzureOutputs{
-		SubnetId: stateResource.ResourceId,
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[subnet.AzureSubnet](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.Name
+		out.CidrBlock = stateResource.AddressPrefixes[0]
+		out.AzureOutputs.SubnetId = stateResource.ResourceId
+	} else {
+		statuses["azure_subnet"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	// TODO: check if subnet is associated with route table defined in the VN
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

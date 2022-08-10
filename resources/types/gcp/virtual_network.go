@@ -38,6 +38,7 @@ func (r GcpVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 		return out, nil
 	}
 
+	out.GcpOutputs = &resourcespb.VirtualNetworkGcpOutputs{}
 	statuses := map[string]commonpb.ResourceStatus_Status{}
 
 	if stateResource, exists, err := output.MaybeGetParsedById[virtual_network.GoogleComputeNetwork](state, r.ResourceId); exists {
@@ -45,9 +46,8 @@ func (r GcpVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 			return nil, err
 		}
 
-		out.GcpOutputs = &resourcespb.VirtualNetworkGcpOutputs{
-			ComputeNetworkId: stateResource.SelfLink,
-		}
+		out.Name = stateResource.Name
+		out.GcpOutputs.ComputeNetworkId = stateResource.SelfLink
 	} else {
 		statuses["gcp_compute_network"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
