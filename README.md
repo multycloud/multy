@@ -1,6 +1,7 @@
+<br>
 <p align="center">
 <a href="https://multy.dev?utm_source=github.com">
-    <img src="https://multy.dev/assets/multy_logo_horizontal.jpg" width="250">
+    <img src="https://multy.dev/logo.svg" width="250">
 </a>
 </p>
 
