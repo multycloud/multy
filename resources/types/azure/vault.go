@@ -40,13 +40,20 @@ func (r AzureVault) FromState(state *output.TfState) (*resourcespb.VaultResource
 	if flags.DryRun {
 		return out, nil
 	}
-	stateResource, err := output.GetParsedById[vault.AzureKeyVault](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	if stateResource, exists, err := output.MaybeGetParsedById[vault.AzureKeyVault](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.Name
+		out.AzureOutputs = &resourcespb.VaultAzureOutputs{KeyVaultId: stateResource.ResourceId}
+	} else {
+		statuses["azure_vault"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.AzureOutputs = &resourcespb.VaultAzureOutputs{KeyVaultId: stateResource.ResourceId}
-
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 
 }
