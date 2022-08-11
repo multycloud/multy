@@ -3,6 +3,7 @@ package aws_resources
 import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/flags"
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
@@ -19,14 +20,30 @@ func InitNetworkInterfaceSecurityGroupAssociation(vn *types.NetworkInterfaceSecu
 }
 
 func (r AwsNetworkInterfaceSecurityGroupAssociation) FromState(state *output.TfState) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
-	return &resourcespb.NetworkInterfaceSecurityGroupAssociationResource{
+	out := &resourcespb.NetworkInterfaceSecurityGroupAssociationResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
 			NeedsUpdate: false,
 		},
 		NetworkInterfaceId: r.Args.NetworkInterfaceId,
 		SecurityGroupId:    r.Args.SecurityGroupId,
-	}, nil
+	}
+
+	if flags.DryRun {
+		return out, nil
+	}
+
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if _, exists, _ := output.MaybeGetParsedById[network_interface_security_group_association.AwsNetworkInterfaceSecurityGroupAssociation](state, r.ResourceId); !exists {
+		statuses["aws_network_interface_security_group_association"] = commonpb.ResourceStatus_NEEDS_CREATE
+	}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
+
+	return out, nil
 }
 
 func (r AwsNetworkInterfaceSecurityGroupAssociation) Translate(resources.MultyContext) ([]output.TfBlock, error) {
