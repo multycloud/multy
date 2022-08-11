@@ -33,11 +33,18 @@ type AwsSecurityGroup struct {
 }
 
 type AwsSecurityGroupRule struct {
-	Protocol   string   `hcl:"protocol"`
-	FromPort   int      `hcl:"from_port"`
-	ToPort     int      `hcl:"to_port"`
-	CidrBlocks []string `hcl:"cidr_blocks"`
-	Self       bool     `hcl:"self" hcle:"omitempty"`
+	Protocol   string   `hcl:"protocol" json:"protocol"`
+	FromPort   int      `hcl:"from_port" json:"from_port"`
+	ToPort     int      `hcl:"to_port" json:"to_port"`
+	CidrBlocks []string `hcl:"cidr_blocks" json:"cidr_blocks"`
+	Self       bool     `hcl:"self" hcle:"omitempty" json:"self"`
+}
+
+// checks if 2 rules are equal, assuming they have at most 1 cidr block
+func (r AwsSecurityGroupRule) Equals(other AwsSecurityGroupRule) bool {
+	return r.Protocol == other.Protocol && r.FromPort == other.FromPort && r.ToPort == other.ToPort &&
+		r.Self == other.Self &&
+		len(r.CidrBlocks) == len(other.CidrBlocks) && (len(r.CidrBlocks) == 0 || r.CidrBlocks[0] == other.CidrBlocks[0])
 }
 
 type AwsDefaultAcl struct {

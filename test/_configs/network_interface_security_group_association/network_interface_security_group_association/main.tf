@@ -132,7 +132,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   name                = "test-nsg2"
   location            = "northeurope"
   security_rule {
-    name                       = "0"
+    name                       = "0-Inbound"
     protocol                   = "Tcp"
     priority                   = 120
     access                     = "Allow"
@@ -143,7 +143,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     direction                  = "Inbound"
   }
   security_rule {
-    name                       = "1"
+    name                       = "0-Outbound"
     protocol                   = "Tcp"
     priority                   = 120
     access                     = "Allow"
@@ -154,7 +154,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     direction                  = "Outbound"
   }
   security_rule {
-    name                       = "2"
+    name                       = "1-Inbound"
     protocol                   = "Tcp"
     priority                   = 140
     access                     = "Allow"
@@ -165,7 +165,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     direction                  = "Inbound"
   }
   security_rule {
-    name                       = "3"
+    name                       = "1-Outbound"
     protocol                   = "Tcp"
     priority                   = 140
     access                     = "Allow"

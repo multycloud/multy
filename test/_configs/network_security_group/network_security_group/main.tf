@@ -111,7 +111,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
   name                = "test-nsg2"
   location            = "northeurope"
   security_rule {
-    name                       = "0"
+    name                       = "0-Inbound"
     protocol                   = "Tcp"
     priority                   = 120
     access                     = "Allow"
@@ -122,40 +122,40 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     direction                  = "Inbound"
   }
   security_rule {
-    name                       = "1"
+    name                       = "0-Outbound"
     protocol                   = "Tcp"
     priority                   = 120
     access                     = "Allow"
     source_port_range          = "*"
     source_address_prefix      = "*"
     destination_port_range     = "22-22"
+    destination_address_prefix = "*"
+    direction                  = "Outbound"
+  }
+  security_rule {
+    name                       = "1-Inbound"
+    protocol                   = "Tcp"
+    priority                   = 140
+    access                     = "Allow"
+    source_port_range          = "*"
+    source_address_prefix      = "*"
+    destination_port_range     = "443-443"
+    destination_address_prefix = "*"
+    direction                  = "Inbound"
+  }
+  security_rule {
+    name                       = "1-Outbound"
+    protocol                   = "Tcp"
+    priority                   = 140
+    access                     = "Allow"
+    source_port_range          = "*"
+    source_address_prefix      = "*"
+    destination_port_range     = "443-443"
     destination_address_prefix = "*"
     direction                  = "Outbound"
   }
   security_rule {
     name                       = "2"
-    protocol                   = "Tcp"
-    priority                   = 140
-    access                     = "Allow"
-    source_port_range          = "*"
-    source_address_prefix      = "*"
-    destination_port_range     = "443-443"
-    destination_address_prefix = "*"
-    direction                  = "Inbound"
-  }
-  security_rule {
-    name                       = "3"
-    protocol                   = "Tcp"
-    priority                   = 140
-    access                     = "Allow"
-    source_port_range          = "*"
-    source_address_prefix      = "*"
-    destination_port_range     = "443-443"
-    destination_address_prefix = "*"
-    direction                  = "Outbound"
-  }
-  security_rule {
-    name                       = "4"
     protocol                   = "Tcp"
     priority                   = 150
     access                     = "Allow"
@@ -166,7 +166,7 @@ resource "azurerm_network_security_group" "nsg2_azure" {
     direction                  = "Inbound"
   }
   security_rule {
-    name                       = "5"
+    name                       = "3"
     protocol                   = "Tcp"
     priority                   = 160
     access                     = "Allow"
