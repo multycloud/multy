@@ -10,6 +10,7 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/vault_secret"
 	"github.com/multycloud/multy/resources/types"
+	"strings"
 )
 
 type AwsVaultSecret struct {
@@ -36,12 +37,21 @@ func (r AwsVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSecr
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[vault_secret.AwsSsmParameter](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	if stateResource, exists, err := output.MaybeGetParsedById[vault_secret.AwsSsmParameter](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Name = strings.TrimPrefix(stateResource.Name, fmt.Sprintf("/%s/", r.Vault.Args.Name))
+		out.Value = stateResource.Value
+		out.AwsOutputs = &resourcespb.VaultSecretAwsOutputs{SsmParameterArn: stateResource.Arn}
+	} else {
+		statuses["aws_ssm_parameter"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.AwsOutputs = &resourcespb.VaultSecretAwsOutputs{SsmParameterArn: stateResource.Arn}
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 
 }

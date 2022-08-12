@@ -35,19 +35,31 @@ func (r GcpVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSecr
 	if flags.DryRun {
 		return out, nil
 	}
+	out.GcpOutputs = &resourcespb.VaultSecretGcpOutputs{}
 
-	stateResource, err := output.GetParsedById[vault_secret.GoogleSecretManagerSecret](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	versionResource, err := output.GetParsedById[vault_secret.GoogleSecretManagerSecretVersion](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	if stateResource, exists, err := output.MaybeGetParsedById[vault_secret.GoogleSecretManagerSecret](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Name = stateResource.SecretId
+		out.GcpOutputs.SecretManagerSecretId = stateResource.ResourceId
+	} else {
+		statuses["gcp_secret_manager_secret"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.GcpOutputs = &resourcespb.VaultSecretGcpOutputs{
-		SecretManagerSecretId:        stateResource.ResourceId,
-		SecretManagerSecretVersionId: versionResource.ResourceId,
+	if versionResource, exists, err := output.MaybeGetParsedById[vault_secret.GoogleSecretManagerSecretVersion](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Value = versionResource.SecretData
+		out.GcpOutputs.SecretManagerSecretVersionId = versionResource.ResourceId
+	} else {
+		statuses["gcp_secret_manager_secret_version"] = commonpb.ResourceStatus_NEEDS_CREATE
+	}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
 	return out, nil
 }

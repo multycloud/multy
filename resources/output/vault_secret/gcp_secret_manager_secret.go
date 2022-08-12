@@ -5,7 +5,7 @@ import "github.com/multycloud/multy/resources/common"
 type GoogleSecretManagerSecret struct {
 	*common.GcpResource `hcl:",squash"  default:"name=google_secret_manager_secret"`
 
-	SecretId    string                                 `hcl:"secret_id"`
+	SecretId    string                                 `hcl:"secret_id" json:"secret_id"`
 	Replication []GoogleSecretManagerSecretReplication `hcl:"replication,blocks"`
 }
 
@@ -37,5 +37,5 @@ type GoogleSecretManagerSecretVersion struct {
 	*common.GcpResource `hcl:",squash"  default:"name=google_secret_manager_secret_version"`
 
 	SecretId   string `hcl:"secret,expr"`
-	SecretData string `hcl:"secret_data"`
+	SecretData string `hcl:"secret_data" json:"secret_data"`
 }
