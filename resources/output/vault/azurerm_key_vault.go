@@ -13,7 +13,7 @@ type AzureKeyVault struct {
 
 type AzureKeyVaultAccessPolicyInline struct {
 	TenantId                  string `hcl:"tenant_id,expr"`
-	ObjectId                  string `hcl:"object_id,expr"`
+	ObjectId                  string `hcl:"object_id,expr" json:"object_id"`
 	*AzureKeyVaultPermissions `hcl:",squash"`
 }
 

@@ -34,7 +34,7 @@ type AwsIamRolePolicyAttachment struct {
 
 type AwsIamRolePolicyAttachmentForVap struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_iam_role_policy_attachment"`
-	Role                string `hcl:"role"`
+	Role                string `hcl:"role" json:"role"`
 	PolicyArn           string `hcl:"policy_arn,expr"`
 }
 

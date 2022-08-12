@@ -10,5 +10,5 @@ type GoogleComputeRoute struct {
 	Network             string   `hcl:"network,expr"`
 	Priority            int      `hcl:"priority"`
 	Tags                []string `hcl:"tags"`
-	NextHopGateway      string   `hcl:"next_hop_gateway"`
+	NextHopGateway      string   `hcl:"next_hop_gateway" json:"next_hop_gateway"`
 }

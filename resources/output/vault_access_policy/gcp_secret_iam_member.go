@@ -10,6 +10,6 @@ type GoogleSecretManagerSecretIamMember struct {
 	*common.GcpResource `hcl:",squash"  default:"name=google_secret_manager_secret_iam_member"`
 
 	SecretId string `hcl:"secret_id,expr"`
-	Role     string `hcl:"role"`
-	Member   string `hcl:"member"`
+	Role     string `hcl:"role" json:"role"`
+	Member   string `hcl:"member" json:"member"`
 }
