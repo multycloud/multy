@@ -37,6 +37,7 @@ func (r GcpVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.Vau
 	}
 
 	out.GcpOutputs = &resourcespb.VaultAccessPolicyGcpOutputs{}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
 	var ids []string
 
@@ -51,13 +52,24 @@ func (r GcpVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.Vau
 	}
 
 	for _, resourceId := range ids {
-		stateResource, err := output.GetParsedById[vault_access_policy.GoogleSecretManagerSecretIamMember](state, resourceId)
-		if err != nil {
-			return nil, err
+		if stateResource, exists, err := output.MaybeGetParsedById[vault_access_policy.GoogleSecretManagerSecretIamMember](state, resourceId); exists {
+			if err != nil {
+				return nil, err
+			}
+			out.GcpOutputs.SecretManagerSecretIamMembershipId = append(out.GcpOutputs.SecretManagerSecretIamMembershipId, stateResource.ResourceId)
+			out.Access = getVaultAccess(stateResource.Role)
+			out.Identity = getIdentity(stateResource.Member)
+			if out.Access != r.Args.Access || out.Identity != r.Args.Identity {
+				statuses[fmt.Sprintf("gcp_secret_manager_secret_iam_member_%s", resourceId)] = commonpb.ResourceStatus_NEEDS_UPDATE
+			}
+		} else {
+			statuses[fmt.Sprintf("gcp_secret_manager_secret_iam_member_%s", resourceId)] = commonpb.ResourceStatus_NEEDS_CREATE
 		}
-		out.GcpOutputs.SecretManagerSecretIamMembershipId = append(out.GcpOutputs.SecretManagerSecretIamMembershipId, stateResource.ResourceId)
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
@@ -97,6 +109,26 @@ func getGcpIamRole(acl resourcespb.VaultAccess_Enum) (string, error) {
 	default:
 		return "", fmt.Errorf("unknown vault access: %s", acl.String())
 	}
+}
+
+func getVaultAccess(acl string) resourcespb.VaultAccess_Enum {
+	switch acl {
+	case vault_access_policy.SecretAccessorRole:
+		return resourcespb.VaultAccess_READ
+	case vault_access_policy.SecretWriterRole:
+		return resourcespb.VaultAccess_WRITE
+	case vault_access_policy.SecretOwnerRole:
+		return resourcespb.VaultAccess_OWNER
+	default:
+		return resourcespb.VaultAccess_UNKNOWN
+	}
+}
+
+func getIdentity(member string) string {
+	if strings.HasPrefix(member, "serviceAccount:") {
+		return strings.TrimPrefix(member, "serviceAccount:")
+	}
+	return "unknown"
 }
 
 func (r GcpVaultAccessPolicy) GetMainResourceName() (string, error) {

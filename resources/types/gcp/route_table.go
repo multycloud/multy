@@ -12,6 +12,7 @@ import (
 	"github.com/multycloud/multy/resources/output/virtual_network"
 	"github.com/multycloud/multy/resources/types"
 	"golang.org/x/exp/slices"
+	"strings"
 )
 
 type GcpRouteTable struct {
@@ -98,7 +99,9 @@ func (r GcpRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTable
 				Destination: resourcespb.RouteDestination_INTERNET,
 			}
 
-			if stateResource.NextHopGateway != "default-internet-gateway" {
+			// https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_route
+			// can be a partial or full url
+			if !strings.HasSuffix(stateResource.NextHopGateway, "default-internet-gateway") {
 				route.Destination = resourcespb.RouteDestination_UNKNOWN_DESTINATION
 			}
 			routes = append(routes, route)

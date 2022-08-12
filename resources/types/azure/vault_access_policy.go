@@ -36,13 +36,22 @@ func (r AzureVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.V
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[vault_access_policy.AzureKeyVaultAccessPolicy](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	// TODO: parse access
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	if stateResource, exists, err := output.MaybeGetParsedById[vault_access_policy.AzureKeyVaultAccessPolicy](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		out.AzureOutputs = &resourcespb.VaultAccessPolicyAzureOutputs{KeyVaultAccessPolicyId: stateResource.ResourceId}
+		out.Identity = stateResource.ObjectId
+	} else {
+		statuses["azure_key_vault_access_policy"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.AzureOutputs = &resourcespb.VaultAccessPolicyAzureOutputs{KeyVaultAccessPolicyId: stateResource.ResourceId}
-
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

@@ -37,15 +37,32 @@ func (r AwsVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.Vau
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[iam.AwsIamRolePolicy](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	// TODO: parse access
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	if stateResource, exists, err := output.MaybeGetParsedById[iam.AwsIamRolePolicy](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		out.AwsOutputs = &resourcespb.VaultAccessPolicyAwsOutputs{
+			IamPolicyArn: stateResource.Arn,
+		}
+	} else {
+		statuses["aws_iam_role_policy"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.AwsOutputs = &resourcespb.VaultAccessPolicyAwsOutputs{
-		IamPolicyArn: stateResource.Arn,
+	if stateResource, exists, err := output.MaybeGetParsedById[iam.AwsIamRolePolicyAttachmentForVap](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Identity = stateResource.Role
+	} else {
+		statuses["aws_iam_role_policy_attachment"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
