@@ -10,7 +10,6 @@ import (
 	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/output/database"
 	"github.com/multycloud/multy/resources/types"
-	"strings"
 )
 
 type AzureDatabase struct {
@@ -48,6 +47,7 @@ func (r AzureDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseRe
 	if flags.DryRun {
 		return out, nil
 	}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
 	var azureDatabaseEngine database.AzureDatabaseEngine
 
@@ -60,15 +60,28 @@ func (r AzureDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseRe
 	} else {
 		return nil, fmt.Errorf("unhandled engine %s", r.Args.Engine.String())
 	}
+	address := fmt.Sprintf("%s.%s", output.GetResourceName(azureDatabaseEngine), r.ResourceId)
+	if stateResource, exists, err := output.MaybeGetParsed[database.AzureDatabase](state, address); exists {
+		if err != nil {
+			return nil, err
+		}
 
-	values, err := state.GetValues(azureDatabaseEngine, r.ResourceId)
-	if err != nil {
-		return nil, err
+		out.Host = stateResource.Fqdn
+		out.ConnectionUsername = fmt.Sprintf("%s@%s", r.Args.Username, out.Host)
+		out.AzureOutputs = &resourcespb.DatabaseAzureOutputs{DatabaseServerId: stateResource.Id}
+
+		out.Username = stateResource.AdministratorLogin
+		out.Password = stateResource.AdministratorLoginPassword
+		out.StorageGb = int64(stateResource.StorageMb / 1024)
+		out.EngineVersion = stateResource.Version
+		out.Name = stateResource.NameOut
+	} else {
+		statuses["azure_database_server"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
-	out.Host = values["fqdn"].(string)
-	out.ConnectionUsername = fmt.Sprintf("%s@%s", r.Args.Username, out.Host)
-	out.AzureOutputs = &resourcespb.DatabaseAzureOutputs{DatabaseServerId: values["id"].(string)}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
@@ -85,7 +98,7 @@ func (r AzureDatabase) Translate(ctx resources.MultyContext) ([]output.TfBlock, 
 				ResourceGroupName: GetResourceGroupName(r.Args.GetCommonParameters().ResourceGroupId),
 				Location:          r.GetCloudSpecificLocation(),
 			},
-			Engine:                     strings.ToLower(r.Args.Engine.String()),
+			Engine:                     r.Args.Engine,
 			Version:                    r.Args.EngineVersion,
 			StorageMb:                  int(r.Args.StorageGb * 1024),
 			AdministratorLogin:         r.Args.Username,

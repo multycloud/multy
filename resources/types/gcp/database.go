@@ -40,7 +40,7 @@ func (r GcpDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 		SubnetIds:          r.Args.SubnetIds,
 		Port:               r.Args.Port,
 		SubnetId:           r.Args.SubnetId,
-		Host:               "dryrun",
+		Host:               "",
 		ConnectionUsername: r.Args.Username,
 		GcpOverride:        r.Args.GcpOverride,
 	}
@@ -49,13 +49,41 @@ func (r GcpDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 		return out, nil
 	}
 
-	db, err := output.GetParsedById[database.GoogleSqlDatabaseInstance](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	out.Host = db.PublicIpAddress
-	out.GcpOutputs = &resourcespb.DatabaseGcpOutputs{SqlDatabaseInstanceId: db.SelfLink}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	out.GcpOutputs = &resourcespb.DatabaseGcpOutputs{}
 
+	if db, exists, err := output.MaybeGetParsedById[database.GoogleSqlDatabaseInstance](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Host = db.PublicIpAddress
+		out.GcpOutputs.SqlDatabaseInstanceId = db.SelfLink
+		out.Name = db.Name
+		out.StorageGb = int64(db.Settings[0].DiskSize)
+		engine, version, versionErr := parseDbVersion(db.DatabaseVersion)
+		if versionErr != nil {
+			statuses["gcp_sql_database_instance"] = commonpb.ResourceStatus_NEEDS_RECREATE
+		}
+		out.Engine = engine
+		out.EngineVersion = version
+
+	} else {
+		statuses["gcp_sql_database_instance"] = commonpb.ResourceStatus_NEEDS_CREATE
+	}
+
+	if dbUser, exists, err := output.MaybeGetParsedById[database.GoogleSqlUser](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Username = dbUser.Name
+		out.Password = dbUser.Password
+	} else {
+		statuses["gcp_sql_user"] = commonpb.ResourceStatus_NEEDS_CREATE
+	}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
@@ -71,7 +99,21 @@ func (r GcpDatabase) getDbVersion() (string, error) {
 
 	version := strings.Replace(r.Args.EngineVersion, ".", "_", 1)
 	return fmt.Sprintf("%s_%s", engineMap[r.Args.Engine], version), nil
+}
 
+func parseDbVersion(dbVersion string) (resourcespb.DatabaseEngine, string, error) {
+	engine := resourcespb.DatabaseEngine_UNKNOWN_ENGINE
+	version := ""
+	engineAndVersion := strings.SplitN(dbVersion, "_", 2)
+	if len(engineAndVersion) != 2 {
+		return resourcespb.DatabaseEngine_UNKNOWN_ENGINE, "", fmt.Errorf("unknown version format")
+	}
+	if e, ok := resourcespb.DatabaseEngine_value[engineAndVersion[0]]; ok {
+		engine = resourcespb.DatabaseEngine(e)
+	}
+
+	version = strings.Replace(engineAndVersion[1], "_", ".", 1)
+	return engine, version, nil
 }
 
 func (r GcpDatabase) Translate(_ resources.MultyContext) ([]output.TfBlock, error) {
