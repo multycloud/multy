@@ -1,8 +1,8 @@
 package database
 
 import (
-	"strings"
-
+	"fmt"
+	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
 )
@@ -18,27 +18,44 @@ type AzureDbServer struct {
 	SkuName                    string
 	StorageMb                  int
 	Version                    string
-	Engine                     string
+	Engine                     resourcespb.DatabaseEngine
 	SubnetId                   string
 }
 
+type AzureDatabase struct {
+	AdministratorLogin         string `hcl:"administrator_login" json:"administrator_login"`
+	AdministratorLoginPassword string `hcl:"administrator_login_password" json:"administrator_login_password"`
+	SkuName                    string `hcl:"sku_name" json:"sku_name"`
+	StorageMb                  int    `hcl:"storage_mb" json:"storage_mb"`
+	Version                    string `hcl:"version" json:"version"`
+	SslEnforcementEnabled      bool   `hcl:"ssl_enforcement_enabled" json:"ssl_enforcement_enabled"`
+
+	Fqdn    string `hcl:"fqdn" hcle:"omitempty"`
+	Id      string `hcl:"id" hcle:"omitempty"`
+	NameOut string `json:"name" hcle:"omitempty"`
+}
+
 func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
-	switch strings.ToLower(server.Engine) {
+	azResource := &common.AzResource{
+		TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
+		ResourceGroupName: server.ResourceGroupName,
+		Name:              server.Name,
+		Location:          server.Location,
+	}
+	azDatabase := AzureDatabase{
+		AdministratorLogin:         server.AdministratorLogin,
+		AdministratorLoginPassword: server.AdministratorLoginPassword,
+		SkuName:                    server.SkuName,
+		StorageMb:                  server.StorageMb,
+		Version:                    server.Version,
+		SslEnforcementEnabled:      false,
+	}
+	switch server.Engine {
 	// TODO: move to flexible mysql server
-	case "mysql":
+	case resourcespb.DatabaseEngine_MYSQL:
 		mysqlServer := AzureMySqlServer{
-			AzResource: &common.AzResource{
-				TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
-				ResourceGroupName: server.ResourceGroupName,
-				Name:              server.Name,
-				Location:          server.Location,
-			},
-			AdministratorLogin:           server.AdministratorLogin,
-			AdministratorLoginPassword:   server.AdministratorLoginPassword,
-			SkuName:                      server.SkuName,
-			StorageMb:                    server.StorageMb,
-			Version:                      server.Version,
-			SslEnforcementEnabled:        false,
+			AzResource:                   azResource,
+			AzureDatabase:                azDatabase,
 			SslMinimalTlsVersionEnforced: "TLSEnforcementDisabled",
 		}
 
@@ -68,20 +85,10 @@ func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 
 		return resources
 
-	case "postgres":
+	case resourcespb.DatabaseEngine_POSTGRES:
 		postgresqlServer := AzurePostgreSqlServer{
-			AzResource: &common.AzResource{
-				TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
-				ResourceGroupName: server.ResourceGroupName,
-				Name:              server.Name,
-				Location:          server.Location,
-			},
-			AdministratorLogin:           server.AdministratorLogin,
-			AdministratorLoginPassword:   server.AdministratorLoginPassword,
-			SkuName:                      server.SkuName,
-			StorageMb:                    server.StorageMb,
-			Version:                      server.Version,
-			SslEnforcementEnabled:        false,
+			AzResource:                   azResource,
+			AzureDatabase:                azDatabase,
 			SslMinimalTlsVersionEnforced: "TLSEnforcementDisabled",
 		}
 
@@ -111,20 +118,10 @@ func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 
 		return resources
 
-	case "mariadb":
+	case resourcespb.DatabaseEngine_MARIADB:
 		mariaDbServer := AzureMariaDbServer{
-			AzResource: &common.AzResource{
-				TerraformResource: output.TerraformResource{ResourceId: server.ResourceId},
-				ResourceGroupName: server.ResourceGroupName,
-				Name:              server.Name,
-				Location:          server.Location,
-			},
-			AdministratorLogin:         server.AdministratorLogin,
-			AdministratorLoginPassword: server.AdministratorLoginPassword,
-			SkuName:                    server.SkuName,
-			StorageMb:                  server.StorageMb,
-			Version:                    server.Version,
-			SslEnforcementEnabled:      false,
+			AzResource:    azResource,
+			AzureDatabase: azDatabase,
 		}
 
 		resources := []output.TfBlock{mariaDbServer}
@@ -152,7 +149,8 @@ func NewAzureDatabase(server AzureDbServer) []output.TfBlock {
 		})
 
 		return resources
-
+	default:
+		panic(fmt.Sprintf("unknown engine %s", server.Engine.String()))
+		return nil
 	}
-	return nil
 }

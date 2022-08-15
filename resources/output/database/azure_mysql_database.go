@@ -10,12 +10,7 @@ const AzureMysqlResourceName = "azurerm_mysql_server"
 
 type AzureMySqlServer struct {
 	*common.AzResource           `hcl:",squash" default:"name=azurerm_mysql_server"`
-	AdministratorLogin           string `hcl:"administrator_login"`
-	AdministratorLoginPassword   string `hcl:"administrator_login_password"`
-	SkuName                      string `hcl:"sku_name"`
-	StorageMb                    int    `hcl:"storage_mb"`
-	Version                      string `hcl:"version"`
-	SslEnforcementEnabled        bool   `hcl:"ssl_enforcement_enabled"`
+	AzureDatabase                `hcl:",squash"`
 	SslMinimalTlsVersionEnforced string `hcl:"ssl_minimal_tls_version_enforced"`
 }
 

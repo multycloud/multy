@@ -21,6 +21,7 @@ func (t *TfState) GetValues(resourceType any, resourceId string) (map[string]int
 	address := fmt.Sprintf("%s.%s", GetResourceName(resourceType), resourceId)
 	return t.Get(address)
 }
+
 func (t *TfState) Get(resourceRef string) (map[string]interface{}, error) {
 	if o, exists := t.MaybeGet(resourceRef); exists {
 		return o, nil

@@ -41,7 +41,7 @@ func (r AwsDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 		SubnetIds:          r.Args.SubnetIds,
 		Port:               r.Args.Port,
 		SubnetId:           r.Args.SubnetId,
-		Host:               "dryrun",
+		Host:               "",
 		ConnectionUsername: r.Args.Username,
 		GcpOverride:        r.Args.GcpOverride,
 	}
@@ -50,21 +50,37 @@ func (r AwsDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 		return out, nil
 	}
 
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 	out.AwsOutputs = &resourcespb.DatabaseAwsOutputs{}
 
-	db, err := output.GetParsedById[database.AwsDbInstance](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	if db, exists, err := output.MaybeGetParsedById[database.AwsDbInstance](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.Host = db.Address
+		out.Name = db.AwsResource.Tags["Name"]
+		out.Username = db.Username
+		out.Password = db.Password
+		if e, ok := resourcespb.DatabaseEngine_value[strings.ToUpper(db.Engine)]; ok {
+			out.Engine = resourcespb.DatabaseEngine(e)
+		} else {
+			out.Engine = resourcespb.DatabaseEngine_UNKNOWN_ENGINE
+		}
+		out.EngineVersion = db.EngineVersion
+		out.Port = int32(db.Port)
+		out.StorageGb = int64(db.AllocatedStorage)
+		out.AwsOutputs.DbInstanceId = db.Arn
+	} else {
+		statuses["aws_db_instance"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
-	out.Host = db.Address
-
-	out.AwsOutputs.DbInstanceId = db.Arn
 
 	if stateResource, exists, err := output.MaybeGetParsedById[network_security_group.AwsSecurityGroup](state, r.ResourceId); exists {
 		if err != nil {
 			return nil, err
 		}
 		out.AwsOutputs.DefaultNetworkSecurityGroupId = stateResource.ResourceId
+	} else {
+		statuses["aws_default_network_security_group"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if stateResource, exists, err := output.MaybeGetParsedById[database.AwsDbSubnetGroup](state, r.ResourceId); exists {
@@ -72,8 +88,13 @@ func (r AwsDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 			return nil, err
 		}
 		out.AwsOutputs.DbSubnetGroupId = stateResource.Arn
+	} else {
+		statuses["aws_db_subnet_group"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 
 }
