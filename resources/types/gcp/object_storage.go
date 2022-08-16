@@ -62,6 +62,8 @@ func (r GcpObjectStorage) Translate(resources.MultyContext) ([]output.TfBlock, e
 		GcpResource:              common.NewGcpResource(r.ResourceId, r.Args.Name, r.Args.GetGcpOverride().GetProject()),
 		UniformBucketLevelAccess: false,
 		Location:                 r.GetCloudSpecificLocation(),
+		// this is needed, otherwise buckets with versioning can't be deleted normally
+		ForceDestroy: true,
 	}
 	if r.Args.Versioning {
 		o.Versioning = []object_storage.GoogleStorageBucketVersioning{{Enabled: true}}

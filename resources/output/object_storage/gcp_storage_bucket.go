@@ -7,6 +7,7 @@ type GoogleStorageBucket struct {
 	UniformBucketLevelAccess bool                            `hcl:"uniform_bucket_level_access" json:"uniform_bucket_level_access"`
 	Versioning               []GoogleStorageBucketVersioning `hcl:"versioning,blocks" hcle:"omitempty" json:"versioning"`
 	Location                 string                          `hcl:"location" json:"location"`
+	ForceDestroy             bool                            `hcl:"force_destroy"`
 }
 
 type GoogleStorageBucketVersioning struct {

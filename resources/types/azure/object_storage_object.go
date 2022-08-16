@@ -1,6 +1,7 @@
 package azure_resources
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
@@ -8,9 +9,7 @@ import (
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
-	"github.com/multycloud/multy/resources/output/object_storage"
 	"github.com/multycloud/multy/resources/output/object_storage_object"
-	"github.com/multycloud/multy/resources/output/terraform"
 	"github.com/multycloud/multy/resources/types"
 )
 
@@ -23,35 +22,44 @@ func InitObjectStorageObject(vn *types.ObjectStorageObject) resources.ResourceTr
 }
 
 func (r AzureObjectStorageObject) FromState(state *output.TfState) (*resourcespb.ObjectStorageObjectResource, error) {
-	out := new(resourcespb.ObjectStorageObjectResource)
-	out.CommonParameters = &commonpb.CommonChildResourceParameters{
-		ResourceId:  r.ResourceId,
-		NeedsUpdate: false,
+	out := &resourcespb.ObjectStorageObjectResource{
+		CommonParameters: &commonpb.CommonChildResourceParameters{
+			ResourceId:  r.ResourceId,
+			NeedsUpdate: false,
+		},
+		Name:            r.Args.Name,
+		Acl:             r.Args.Acl,
+		ObjectStorageId: r.Args.ObjectStorageId,
+		ContentBase64:   r.Args.ContentBase64,
+		ContentType:     r.Args.ContentType,
+		Source:          r.Args.Source,
 	}
 
-	id, err := resources.GetMainOutputRef(AzureObjectStorage{r.Parent})
-	if err != nil {
-		return nil, err
+	if flags.DryRun {
+		return out, nil
 	}
 
-	out.Name = r.Args.Name
-	out.ContentBase64 = r.Args.ContentBase64
-	out.ContentType = r.Args.ContentType
-	out.ObjectStorageId = r.Args.ObjectStorageId
-	out.Acl = r.Args.Acl
-	out.Source = r.Args.Source
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	if !flags.DryRun {
-		stateResource, err := output.GetParsed[object_storage.AzureStorageAccount](state, id)
+	if stateResource, exists, err := output.MaybeGetParsedById[object_storage_object.AzureStorageAccountBlob](state, r.ResourceId); exists {
 		if err != nil {
 			return nil, err
 		}
-		out.Url = fmt.Sprintf("https://%s.blob.core.windows.net/public/%s", stateResource.AzResource.Name, r.Args.Name)
+		out.Name = stateResource.Name
+		out.ContentType = stateResource.ContentType
+		out.Source = stateResource.Source
+		out.ContentBase64 = base64.StdEncoding.EncodeToString([]byte(stateResource.SourceContent))
+		if r.Args.Acl == resourcespb.ObjectStorageObjectAcl_PUBLIC_READ {
+			out.Url = fmt.Sprintf("https://%s.blob.core.windows.net/public/%s", stateResource.StorageAccountName, r.Args.Name)
+		}
 		out.AzureOutputs = &resourcespb.ObjectStorageObjectAzureOutputs{StorageBlobId: stateResource.ResourceId}
 	} else {
-		out.Url = "dryrun"
+		statuses["azure_storage_account_blob"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
@@ -62,9 +70,7 @@ func (r AzureObjectStorageObject) Translate(resources.MultyContext) ([]output.Tf
 	} else {
 		containerName = fmt.Sprintf("azurerm_storage_container.%s_private.name", r.ObjectStorage.ResourceId)
 	}
-	contentFile := terraform.NewLocalFile(r.ResourceId, r.Args.ContentBase64)
 	return []output.TfBlock{
-		contentFile,
 		object_storage_object.AzureStorageAccountBlob{
 			AzResource: &common.AzResource{
 				TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
@@ -73,8 +79,8 @@ func (r AzureObjectStorageObject) Translate(resources.MultyContext) ([]output.Tf
 			StorageAccountName:   fmt.Sprintf("azurerm_storage_account.%s.name", r.ObjectStorage.ResourceId),
 			StorageContainerName: containerName,
 			Type:                 "Block",
-			Source:               contentFile.GetFilename(),
 			ContentType:          r.Args.ContentType,
+			SourceContent:        fmt.Sprintf("base64decode(\"%s\")", r.Args.ContentBase64),
 		}}, nil
 }
 

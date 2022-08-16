@@ -1,13 +1,3 @@
-resource "local_file" "file2_private_azure" {
-  content_base64 = "PGgxPkhpPC9oMT4="
-  filename       = "./multy/local/file2_private_azure"
-}
-
-resource "local_file" "file1_public_azure" {
-  content_base64 = "PGgxPkhpPC9oMT4="
-  filename       = "./multy/local/file1_public_azure"
-}
-
 resource "aws_s3_object" "file1_public_aws" {
   provider       = "aws.eu-west-1"
   bucket         = aws_s3_bucket.obj_storage_aws.id
@@ -33,7 +23,7 @@ resource "azurerm_storage_blob" "file1_public_azure" {
   storage_account_name   = azurerm_storage_account.obj_storage_azure.name
   storage_container_name = azurerm_storage_container.obj_storage_azure_public.name
   type                   = "Block"
-  source                 = local_file.file1_public_azure.filename
+  source_content         = base64decode("PGgxPkhpPC9oMT4=")
   content_type           = "text/html"
 }
 resource "azurerm_storage_blob" "file2_private_azure" {
@@ -41,7 +31,7 @@ resource "azurerm_storage_blob" "file2_private_azure" {
   storage_account_name   = azurerm_storage_account.obj_storage_azure.name
   storage_container_name = azurerm_storage_container.obj_storage_azure_private.name
   type                   = "Block"
-  source                 = local_file.file2_private_azure.filename
+  source_content         = base64decode("PGgxPkhpPC9oMT4=")
   content_type           = "text/html"
 }
 resource "azurerm_storage_account" "obj_storage_azure" {
@@ -105,6 +95,7 @@ resource "google_storage_bucket" "obj_storage_GCP" {
   uniform_bucket_level_access = false
   location                    = "europe-west1"
   provider                    = "google.europe-west1"
+  force_destroy               = true
 }
 provider "google" {
   region = "europe-west1"
