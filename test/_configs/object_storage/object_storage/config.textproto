@@ -8,7 +8,7 @@ resources:  {
           location:  EU_WEST_1
           cloud_provider:  AWS
         }
-        name:  "test-storage-12384761234"
+        name:  "teststorage12384761234"
         versioning:  true
       }
     }
@@ -24,7 +24,7 @@ resources:  {
           location:  EU_WEST_1
           cloud_provider:  AZURE
         }
-        name:  "test-storage-12384761234"
+        name:  "teststorage12384761234"
         versioning:  true
       }
     }
@@ -40,7 +40,7 @@ resources:  {
           location:  EU_WEST_1
           cloud_provider:  GCP
         }
-        name:  "test-storage-12384761234"
+        name:  "teststorage12384761234"
         versioning:  true
         gcp_override: {
           project: "multy-project"

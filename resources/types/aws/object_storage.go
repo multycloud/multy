@@ -37,13 +37,35 @@ func (r AwsObjectStorage) FromState(state *output.TfState) (*resourcespb.ObjectS
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[object_storage.AwsS3Bucket](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[object_storage.AwsS3Bucket](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		out.Name = stateResource.Bucket
+		out.AwsOutputs = &resourcespb.ObjectStorageAwsOutputs{S3BucketArn: stateResource.Arn}
+	} else {
+		statuses["aws_s3_bucket"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.AwsOutputs = &resourcespb.ObjectStorageAwsOutputs{S3BucketArn: stateResource.Arn}
+	if stateResource, exists, err := output.MaybeGetParsedById[object_storage.AwsS3BucketVersioning](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
 
+		out.Versioning = len(stateResource.VersioningConfiguration) > 0 && stateResource.VersioningConfiguration[0].Status == "Enabled"
+	} else {
+		out.Versioning = false
+		if r.Args.Versioning {
+			statuses["aws_s3_bucket_versioning"] = commonpb.ResourceStatus_NEEDS_CREATE
+		}
+	}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
@@ -63,7 +85,7 @@ func (r AwsObjectStorage) Translate(resources.MultyContext) ([]output.TfBlock, e
 				TerraformResource: output.TerraformResource{ResourceId: r.ResourceId},
 			},
 			BucketId:                s3Bucket.GetBucketId(),
-			VersioningConfiguration: object_storage.VersioningConfiguration{Status: "Enabled"},
+			VersioningConfiguration: []object_storage.VersioningConfiguration{{Status: "Enabled"}},
 		})
 	}
 	return awsResources, nil

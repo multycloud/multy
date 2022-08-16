@@ -37,13 +37,23 @@ func (r GcpObjectStorage) FromState(state *output.TfState) (*resourcespb.ObjectS
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[object_storage.GoogleStorageBucket](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[object_storage.GoogleStorageBucket](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		out.GcpOutputs = &resourcespb.ObjectStorageGcpOutputs{StorageBucketId: stateResource.SelfLink}
+		out.Name = stateResource.Name
+		out.Versioning = len(stateResource.Versioning) > 0 && stateResource.Versioning[0].Enabled
+	} else {
+		statuses["gcp_storage_bucket"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.GcpOutputs = &resourcespb.ObjectStorageGcpOutputs{StorageBucketId: stateResource.SelfLink}
-
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

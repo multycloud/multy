@@ -39,24 +39,41 @@ func (r AzureObjectStorage) FromState(state *output.TfState) (*resourcespb.Objec
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[object_storage.AzureStorageAccount](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	out.AzureOutputs = &resourcespb.ObjectStorageAzureOutputs{StorageAccountId: stateResource.ResourceId}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	out.AzureOutputs = &resourcespb.ObjectStorageAzureOutputs{}
 
-	privContainer, err := output.GetParsedById[object_storage_object.AzureStorageContainer](state, r.getPrivateContainerId())
-	if err != nil {
-		return nil, err
+	if stateResource, exists, err := output.MaybeGetParsedById[object_storage.AzureStorageAccount](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AzureOutputs.StorageAccountId = stateResource.ResourceId
+		out.Name = stateResource.Name
+		out.Versioning = len(stateResource.BlobProperties) > 0 && stateResource.BlobProperties[0].VersioningEnabled
+	} else {
+		statuses["azure_storage_account"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
-	out.AzureOutputs.PrivateStorageContainerId = privContainer.ResourceId
 
-	publicContainer, err := output.GetParsedById[object_storage_object.AzureStorageContainer](state, r.getPublicContainerId())
-	if err != nil {
-		return nil, err
+	if privContainer, exists, err := output.MaybeGetParsedById[object_storage_object.AzureStorageContainer](state, r.getPrivateContainerId()); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AzureOutputs.PrivateStorageContainerId = privContainer.ResourceId
+	} else {
+		statuses["azure_private_storage_container"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
-	out.AzureOutputs.PublicStorageContainerId = publicContainer.ResourceId
 
+	if publicContainer, exists, err := output.MaybeGetParsedById[object_storage_object.AzureStorageContainer](state, r.getPublicContainerId()); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AzureOutputs.PublicStorageContainerId = publicContainer.ResourceId
+	} else {
+		statuses["azure_public_storage_container"] = commonpb.ResourceStatus_NEEDS_CREATE
+	}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
@@ -65,15 +82,15 @@ func (r AzureObjectStorage) Translate(resources.MultyContext) ([]output.TfBlock,
 
 	storageAccount := object_storage.AzureStorageAccount{
 		AzResource: common.NewAzResource(
-			r.ResourceId, common.RemoveSpecialChars(r.Args.Name), rgName,
+			r.ResourceId, r.Args.Name, rgName,
 			r.GetCloudSpecificLocation(),
 		),
 		AccountTier:                "Standard",
 		AccountReplicationType:     "GZRS",
 		AllowNestedItemsToBePublic: true,
-		BlobProperties: object_storage.BlobProperties{
+		BlobProperties: []object_storage.BlobProperties{{
 			VersioningEnabled: r.Args.Versioning,
-		},
+		}},
 	}
 
 	return []output.TfBlock{

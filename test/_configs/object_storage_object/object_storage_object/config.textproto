@@ -8,7 +8,7 @@ resources:  {
           location:  EU_WEST_1
           cloud_provider:  AZURE
         }
-        name:  "test-storage-9999919"
+        name:  "teststorage9999919"
       }
     }
   }
@@ -23,7 +23,7 @@ resources:  {
           location:  EU_WEST_1
           cloud_provider:  AWS
         }
-        name:  "test-storage-9999919"
+        name:  "teststorage9999919"
       }
     }
   }
@@ -106,7 +106,7 @@ resources:  {
           location:  EU_WEST_1
           cloud_provider:  GCP
         }
-        name:  "test-storage-9999919"
+        name:  "teststorage9999919"
         gcp_override: {
           project: "multy-project"
         }
