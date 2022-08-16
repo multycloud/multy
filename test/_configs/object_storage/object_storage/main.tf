@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "obj_storage_aws" {
   provider = "aws.eu-west-1"
-  bucket   = "test-storage-12384761234"
+  bucket   = "teststorage12384761234"
 }
 resource "aws_s3_bucket_versioning" "obj_storage_aws" {
   provider = "aws.eu-west-1"
@@ -45,7 +45,7 @@ provider "azurerm" {
   }
 }
 resource "google_storage_bucket" "object_storage_gcp" {
-  name                        = "test-storage-12384761234"
+  name                        = "teststorage12384761234"
   project                     = "multy-project"
   uniform_bucket_level_access = false
   versioning {

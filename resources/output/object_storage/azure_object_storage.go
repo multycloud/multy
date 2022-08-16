@@ -10,14 +10,14 @@ const AzureResourceName = "azurerm_storage_account"
 // azurerm_storage_account
 type AzureStorageAccount struct {
 	*common.AzResource         `hcl:",squash" default:"name=azurerm_storage_account"`
-	AccountTier                string         `hcl:"account_tier"`
-	AccountReplicationType     string         `hcl:"account_replication_type"`
-	AllowNestedItemsToBePublic bool           `hcl:"allow_nested_items_to_be_public"`
-	BlobProperties             BlobProperties `hcl:"blob_properties"`
+	AccountTier                string           `hcl:"account_tier" json:"account_tier"`
+	AccountReplicationType     string           `hcl:"account_replication_type" json:"account_replication_type"`
+	AllowNestedItemsToBePublic bool             `hcl:"allow_nested_items_to_be_public" json:"allow_nested_items_to_be_public"`
+	BlobProperties             []BlobProperties `hcl:"blob_properties,blocks" json:"blob_properties"`
 }
 
 type BlobProperties struct {
-	VersioningEnabled bool `hcl:"versioning_enabled"`
+	VersioningEnabled bool `hcl:"versioning_enabled" json:"versioning_enabled"`
 }
 
 func (r AzureStorageAccount) GetResourceName() string {

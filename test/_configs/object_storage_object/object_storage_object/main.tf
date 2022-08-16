@@ -26,7 +26,7 @@ resource "aws_s3_object" "file2_private_aws" {
 }
 resource "aws_s3_bucket" "obj_storage_aws" {
   provider = "aws.eu-west-1"
-  bucket   = "test-storage-9999919"
+  bucket   = "teststorage9999919"
 }
 resource "azurerm_storage_blob" "file1_public_azure" {
   name                   = "index.html"
@@ -100,7 +100,7 @@ resource "google_storage_bucket_object" "file2_private_GCP" {
   provider     = "google.europe-west1"
 }
 resource "google_storage_bucket" "obj_storage_GCP" {
-  name                        = "test-storage-9999919"
+  name                        = "teststorage9999919"
   project                     = "multy-project"
   uniform_bucket_level_access = false
   location                    = "europe-west1"
