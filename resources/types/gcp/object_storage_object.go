@@ -1,6 +1,7 @@
 package gcp_resources
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
@@ -22,41 +23,50 @@ func InitObjectStorageObject(vn *types.ObjectStorageObject) resources.ResourceTr
 }
 
 func (r GcpObjectStorageObject) FromState(state *output.TfState) (*resourcespb.ObjectStorageObjectResource, error) {
-	out := new(resourcespb.ObjectStorageObjectResource)
-	out.CommonParameters = &commonpb.CommonChildResourceParameters{
-		ResourceId:  r.ResourceId,
-		NeedsUpdate: false,
+	out := &resourcespb.ObjectStorageObjectResource{
+		CommonParameters: &commonpb.CommonChildResourceParameters{
+			ResourceId:  r.ResourceId,
+			NeedsUpdate: false,
+		},
+		Name:            r.Args.Name,
+		Acl:             r.Args.Acl,
+		ObjectStorageId: r.Args.ObjectStorageId,
+		ContentBase64:   r.Args.ContentBase64,
+		ContentType:     r.Args.ContentType,
+		Source:          r.Args.Source,
 	}
 
-	id, err := resources.GetMainOutputRef(r)
-	if err != nil {
-		return nil, err
+	if flags.DryRun {
+		return out, nil
 	}
 
-	out.Name = r.Args.Name
-	out.ContentBase64 = r.Args.ContentBase64
-	out.ContentType = r.Args.ContentType
-	out.ObjectStorageId = r.Args.ObjectStorageId
-	out.Acl = r.Args.Acl
-	out.Source = r.Args.Source
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	if !flags.DryRun {
-		stateResource, err := output.GetParsed[object_storage_object.GoogleStorageBucketObject](state, id)
+	if stateResource, exists, err := output.MaybeGetParsedById[object_storage_object.GoogleStorageBucketObject](state, r.ResourceId); exists {
 		if err != nil {
 			return nil, err
 		}
+		out.Name = stateResource.Name
+		out.ContentType = stateResource.ContentType
+		out.ContentBase64 = base64.StdEncoding.EncodeToString([]byte(stateResource.Content))
 		out.Url = fmt.Sprintf("https://storage.googleapis.com/%s/%s", stateResource.Bucket, r.Args.Name)
 		out.GcpOutputs = &resourcespb.ObjectStorageObjectGcpOutputs{StorageBucketObjectId: stateResource.SelfLink}
-		if stateResource, exists, err := output.MaybeGetParsedById[object_storage_object.GoogleStorageObjectAccessControl](state, r.ResourceId); exists {
+		if aclResource, exists, err := output.MaybeGetParsedById[object_storage_object.GoogleStorageObjectAccessControl](state, r.ResourceId); exists {
 			if err != nil {
 				return nil, err
 			}
-			out.GcpOutputs.StorageObjectAccessControl = stateResource.ResourceId
+			out.GcpOutputs.StorageObjectAccessControl = aclResource.ResourceId
+			out.Acl = resourcespb.ObjectStorageObjectAcl_PUBLIC_READ
+		} else {
+			out.Acl = resourcespb.ObjectStorageObjectAcl_PRIVATE
 		}
 	} else {
-		out.Url = "dryrun"
+		statuses["azure_storage_account_blob"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

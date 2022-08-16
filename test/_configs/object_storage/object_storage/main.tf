@@ -51,8 +51,9 @@ resource "google_storage_bucket" "object_storage_gcp" {
   versioning {
     enabled = true
   }
-  location = "europe-west1"
-  provider = "google.europe-west1"
+  location      = "europe-west1"
+  provider      = "google.europe-west1"
+  force_destroy = true
 }
 provider "google" {
   region = "europe-west1"
