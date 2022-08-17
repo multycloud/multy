@@ -26,16 +26,43 @@ func (r AzureKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[kubernetes_node_pool.AzureKubernetesNodePool](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[kubernetes_node_pool.AzureKubernetesNodePool](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		r.parseNodePoolResource(out, stateResource)
+	} else {
+		statuses["azure_kubernetes_node_pool"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	out.AzureOutputs = &resourcespb.KubernetesNodePoolAzureOutputs{
-		AksNodePoolId: stateResource.ResourceId,
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
-
 	return out, nil
+}
+
+func (r AzureKubernetesNodePool) parseNodePoolResource(out *resourcespb.KubernetesNodePoolResource, stateResource *kubernetes_node_pool.AzureKubernetesNodePool) {
+	out.Name = stateResource.Name
+	out.DiskSizeGb = int64(stateResource.OsDiskSizeGb)
+	out.MaxNodeCount = int32(stateResource.MaxSize)
+	out.MinNodeCount = int32(stateResource.MinSize)
+	out.Labels = stateResource.Labels
+	if len(r.Args.GetAzureOverride().GetVmSize()) > 0 {
+		out.AzureOverride.VmSize = stateResource.VmSize
+	} else {
+		out.VmSize = common.ParseVmSize(stateResource.VmSize, common.AZURE)
+	}
+
+	// its null for default node pool
+	if stateResource.AzResource != nil {
+		out.AzureOutputs = &resourcespb.KubernetesNodePoolAzureOutputs{
+			AksNodePoolId: stateResource.ResourceId,
+		}
+	}
+
 }
 
 func (r AzureKubernetesNodePool) translateToResource() *resourcespb.KubernetesNodePoolResource {
@@ -110,6 +137,7 @@ func (r AzureKubernetesNodePool) translateAzNodePool() (*kubernetes_node_pool.Az
 		VmSize:                 vmSize,
 		VirtualNetworkSubnetId: subnetId,
 		Zones:                  zones,
+		OsDiskSizeGb:           int(r.Args.DiskSizeGb),
 	}, nil
 }
 

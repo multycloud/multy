@@ -49,22 +49,34 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		return result, nil
 	}
 
-	cluster, err := output.GetParsedById[kubernetes_service.GoogleContainerCluster](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	result.Endpoint = fmt.Sprintf("https://%s", cluster.Endpoint)
-	result.CaCertificate = cluster.MasterAuth[0].ClusterCaCertificate
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	rawConfig, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint)
-	if err != nil {
-		return nil, err
-	}
+	if cluster, exists, err := output.MaybeGetParsedById[kubernetes_service.GoogleContainerCluster](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
 
-	result.KubeConfigRaw = rawConfig
+		result.Name = cluster.Name
+		if len(cluster.IpAllocationPolicy) == 0 {
+			result.ServiceCidr = ""
+		} else {
+			result.ServiceCidr = cluster.IpAllocationPolicy[0].ServicesIpv4CidrBlock
+		}
+		result.Endpoint = fmt.Sprintf("https://%s", cluster.Endpoint)
+		result.CaCertificate = cluster.MasterAuth[0].ClusterCaCertificate
 
-	result.GcpOutputs = &resourcespb.KubernetesClusterGcpOutputs{
-		GkeClusterId: cluster.SelfLink,
+		rawConfig, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint)
+		if err != nil {
+			return nil, err
+		}
+
+		result.KubeConfigRaw = rawConfig
+
+		result.GcpOutputs = &resourcespb.KubernetesClusterGcpOutputs{
+			GkeClusterId: cluster.SelfLink,
+		}
+	} else {
+		statuses["gcp_container_cluster"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if stateResource, exists, err := output.MaybeGetParsedById[iam.GoogleServiceAccount](state, r.ResourceId); exists {
@@ -72,6 +84,12 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 			return nil, err
 		}
 		result.GcpOutputs.ServiceAccountEmail = stateResource.Email
+	} else {
+		statuses["gcp_service_account"] = commonpb.ResourceStatus_NEEDS_CREATE
+	}
+
+	if len(statuses) > 0 {
+		result.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
 	return result, nil
 }
@@ -153,16 +171,16 @@ func (r GcpKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.Tf
 		Location:              r.GetCloudSpecificLocation(),
 		Subnetwork:            fmt.Sprintf("%s.%s.id", output.GetResourceName(subnet.GoogleComputeSubnetwork{}), r.DefaultNodePool.Subnet.ResourceId),
 		Network:               fmt.Sprintf("%s.%s.id", output.GetResourceName(virtual_network.GoogleComputeNetwork{}), r.VirtualNetwork.ResourceId),
-		IpAllocationPolicy: kubernetes_service.GoogleContainerClusterIpAllocationPolicy{
+		IpAllocationPolicy: []kubernetes_service.GoogleContainerClusterIpAllocationPolicy{{
 			ServicesIpv4CidrBlock: r.Args.ServiceCidr,
-		},
-		NodeConfig: kubernetes_node_pool.GoogleContainerNodeConfig{
+		}},
+		NodeConfig: []kubernetes_node_pool.GoogleContainerNodeConfig{{
 			MachineType: "e2-micro",
 			Tags:        tags,
 			// Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
 			ServiceAccount: fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), r.ResourceId),
 			OAuthScopes:    []string{"https://www.googleapis.com/auth/cloud-platform"},
-		},
+		}},
 	})
 	return outputs, nil
 }

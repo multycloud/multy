@@ -46,13 +46,38 @@ func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[kubernetes_node_pool.AwsKubernetesNodeGroup](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	out.AwsOutputs = &resourcespb.KubernetesNodePoolAwsOutputs{}
 
-	out.AwsOutputs = &resourcespb.KubernetesNodePoolAwsOutputs{
-		EksNodePoolId: stateResource.Arn,
+	if stateResource, exists, err := output.MaybeGetParsedById[kubernetes_node_pool.AwsKubernetesNodeGroup](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		out.Name = stateResource.NodeGroupName
+		out.DiskSizeGb = int64(stateResource.DiskSize)
+		if len(stateResource.ScalingConfig) == 0 {
+			out.MaxNodeCount = 0
+			out.MinNodeCount = 0
+		} else {
+			out.MaxNodeCount = int32(stateResource.ScalingConfig[0].MaxSize)
+			out.MinNodeCount = int32(stateResource.ScalingConfig[0].MinSize)
+		}
+		out.Labels = stateResource.Labels
+		if len(r.Args.GetAwsOverride().GetInstanceTypes()) > 0 {
+			out.AwsOverride.InstanceTypes = stateResource.InstanceTypes
+		} else {
+			if len(stateResource.InstanceTypes) == 1 {
+				out.VmSize = common.ParseVmSize(stateResource.InstanceTypes[0], common.AWS)
+			} else {
+				out.VmSize = commonpb.VmSize_UNKNOWN_VM_SIZE
+				statuses["aws_kubernetes_node_group"] = commonpb.ResourceStatus_NEEDS_UPDATE
+			}
+		}
+
+		out.AwsOutputs.EksNodePoolId = stateResource.Arn
+	} else {
+		statuses["aws_kubernetes_node_group"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if stateResource, exists, err := output.MaybeGetParsedById[iam.AwsIamRole](state, r.ResourceId); exists {
@@ -60,8 +85,13 @@ func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 			return nil, err
 		}
 		out.AwsOutputs.IamRoleArn = stateResource.Arn
+	} else {
+		statuses["aws_iam_role"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 
 }
@@ -120,13 +150,14 @@ func (r AwsKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 			NodeGroupName: r.Args.Name,
 			NodeRoleArn:   fmt.Sprintf("aws_iam_role.%s.arn", r.ResourceId),
 			SubnetIds:     subnetIds,
-			ScalingConfig: kubernetes_node_pool.ScalingConfig{
+			ScalingConfig: []kubernetes_node_pool.ScalingConfig{{
 				DesiredSize: int(r.Args.StartingNodeCount),
 				MaxSize:     int(r.Args.MaxNodeCount),
 				MinSize:     int(r.Args.MinNodeCount),
-			},
+			}},
 			Labels:        r.Args.Labels,
 			InstanceTypes: instanceTypes,
+			DiskSize:      int(r.Args.DiskSizeGb),
 		},
 	}, nil
 

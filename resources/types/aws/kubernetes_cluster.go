@@ -104,20 +104,30 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		return result, nil
 	}
 
-	cluster, err := output.GetParsedById[kubernetes_service.AwsEksCluster](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	result.Endpoint = cluster.Endpoint
-	result.CaCertificate = cluster.CertificateAuthority[0].Data
-	kubeCgfRaw, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint, r.GetCloudSpecificLocation())
-	if err != nil {
-		return nil, err
-	}
-	result.KubeConfigRaw = kubeCgfRaw
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	result.AwsOutputs = &resourcespb.KubernetesClusterAwsOutputs{}
 
-	result.AwsOutputs = &resourcespb.KubernetesClusterAwsOutputs{
-		EksClusterId: cluster.Arn,
+	if cluster, exists, err := output.MaybeGetParsedById[kubernetes_service.AwsEksCluster](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		result.Endpoint = cluster.Endpoint
+		result.CaCertificate = cluster.CertificateAuthority[0].Data
+		result.Name = cluster.Name
+		if len(cluster.KubernetesNetworkConfig) == 0 {
+			result.ServiceCidr = ""
+		} else {
+			result.ServiceCidr = cluster.KubernetesNetworkConfig[0].ServiceIpv4Cidr
+		}
+		kubeCgfRaw, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint, r.GetCloudSpecificLocation())
+		if err != nil {
+			return nil, err
+		}
+		result.KubeConfigRaw = kubeCgfRaw
+
+		result.AwsOutputs.EksClusterId = cluster.Arn
+	} else {
+		statuses["aws_eks_cluster"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if stateResource, exists, err := output.MaybeGetParsedById[iam.AwsIamRole](state, r.ResourceId); exists {
@@ -125,8 +135,13 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 			return nil, err
 		}
 		result.AwsOutputs.IamRoleArn = stateResource.Arn
+	} else {
+		statuses["aws_iam_role"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if len(statuses) > 0 {
+		result.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return result, nil
 }
 
@@ -180,11 +195,11 @@ func (r AwsKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.Tf
 		&kubernetes_service.AwsEksCluster{
 			AwsResource: common.NewAwsResourceWithDeps(r.ResourceId, r.Args.Name, deps),
 			RoleArn:     fmt.Sprintf("aws_iam_role.%s.arn", r.ResourceId),
-			VpcConfig:   kubernetes_service.VpcConfig{SubnetIds: subnetIds, EndpointPrivateAccess: true},
+			VpcConfig:   []kubernetes_service.VpcConfig{{SubnetIds: subnetIds, EndpointPrivateAccess: true}},
 			Name:        r.Args.Name,
-			KubernetesNetworkConfig: kubernetes_service.KubernetesNetworkConfig{
+			KubernetesNetworkConfig: []kubernetes_service.KubernetesNetworkConfig{{
 				ServiceIpv4Cidr: r.Args.ServiceCidr,
-			},
+			}},
 		})
 	return outputs, nil
 }

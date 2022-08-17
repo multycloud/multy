@@ -5,11 +5,11 @@ import (
 )
 
 type AwsEksCluster struct {
-	*common.AwsResource     `hcl:",squash" default:"name=aws_eks_cluster"`
-	RoleArn                 string                  `hcl:"role_arn,expr"`
-	VpcConfig               VpcConfig               `hcl:"vpc_config"`
-	KubernetesNetworkConfig KubernetesNetworkConfig `hcl:"kubernetes_network_config"`
-	Name                    string                  `hcl:"name"`
+	*common.AwsResource     `hcl:",squash" default:"name=aws_eks_cluster" json:"*_common_._aws_resource"`
+	RoleArn                 string                    `hcl:"role_arn,expr" json:"role_arn"`
+	VpcConfig               []VpcConfig               `hcl:"vpc_config,blocks" json:"vpc_config"`
+	KubernetesNetworkConfig []KubernetesNetworkConfig `hcl:"kubernetes_network_config,blocks" json:"kubernetes_network_config"`
+	Name                    string                    `hcl:"name" json:"name"`
 
 	// outputs
 	Endpoint             string                 `json:"endpoint" hcle:"omitempty"`
@@ -23,7 +23,7 @@ type VpcConfig struct {
 }
 
 type KubernetesNetworkConfig struct {
-	ServiceIpv4Cidr string `hcl:"service_ipv4_cidr"`
+	ServiceIpv4Cidr string `hcl:"service_ipv4_cidr" json:"service_ipv_4_cidr"`
 }
 
 type CertificateAuthority struct {

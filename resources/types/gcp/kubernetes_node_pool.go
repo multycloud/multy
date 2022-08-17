@@ -46,15 +46,52 @@ func (r GcpKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 		return out, nil
 	}
 
-	stateResource, err := output.GetParsedById[kubernetes_node_pool.GoogleContainerNodePool](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+
+	if stateResource, exists, err := output.MaybeGetParsedById[kubernetes_node_pool.GoogleContainerNodePool](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		numZones := len(stateResource.NodeLocations)
+		if numZones == 0 {
+			numZones = 3
+		}
+		out.Name = stateResource.Name
+
+		out.StartingNodeCount = int32(stateResource.InitialNodeCount * numZones)
+		if len(stateResource.Autoscaling) == 0 {
+			out.MaxNodeCount = 0
+			out.MinNodeCount = 0
+		} else {
+			out.MaxNodeCount = int32(stateResource.Autoscaling[0].MaxNodeCount * numZones)
+			out.MinNodeCount = int32(stateResource.Autoscaling[0].MinNodeCount * numZones)
+		}
+
+		if len(stateResource.NodeConfig) == 0 {
+			out.Labels = map[string]string{}
+			out.DiskSizeGb = 0
+		} else {
+			out.Labels = stateResource.NodeConfig[0].Labels
+			out.DiskSizeGb = int64(stateResource.NodeConfig[0].DiskSizeGb)
+			if len(r.Args.GetGcpOverride().GetMachineType()) > 0 {
+				out.GcpOverride.MachineType = stateResource.NodeConfig[0].MachineType
+			} else {
+				out.VmSize = common.ParseVmSize(stateResource.NodeConfig[0].MachineType, common.GCP)
+			}
+		}
+
+		out.GcpOutputs = &resourcespb.KubernetesNodePoolGcpOutputs{
+			GkeNodePoolId: stateResource.SelfLink,
+		}
+	} else {
+		statuses["gcp_container_node_pool"] = commonpb.ResourceStatus_NEEDS_CREATE
+
 	}
 
-	out.GcpOutputs = &resourcespb.KubernetesNodePoolGcpOutputs{
-		GkeNodePoolId: stateResource.SelfLink,
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
-
 	return out, nil
 }
 
@@ -96,11 +133,11 @@ func (r GcpKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 		Cluster:          clusterId,
 		NodeLocations:    zones,
 		InitialNodeCount: int(r.Args.StartingNodeCount) / numZones,
-		Autoscaling: kubernetes_node_pool.GoogleContainerNodePoolAutoScaling{
+		Autoscaling: []kubernetes_node_pool.GoogleContainerNodePoolAutoScaling{{
 			MinNodeCount: int(r.Args.MinNodeCount) / numZones,
 			MaxNodeCount: int(r.Args.MaxNodeCount) / numZones,
-		},
-		NodeConfig: kubernetes_node_pool.GoogleContainerNodeConfig{
+		}},
+		NodeConfig: []kubernetes_node_pool.GoogleContainerNodeConfig{{
 			DiskSizeGb:  int(r.Args.DiskSizeGb),
 			Labels:      r.Args.Labels,
 			MachineType: size,
@@ -108,7 +145,7 @@ func (r GcpKubernetesNodePool) Translate(_ resources.MultyContext) ([]output.TfB
 			// Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
 			ServiceAccount: fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), r.KubernetesCluster.ResourceId),
 			OAuthScopes:    []string{"https://www.googleapis.com/auth/cloud-platform"},
-		},
+		}},
 	}
 
 	return []output.TfBlock{nodePool}, nil
