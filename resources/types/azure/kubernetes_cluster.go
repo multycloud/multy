@@ -40,19 +40,38 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState) (*resourcespb.K
 	if flags.DryRun {
 		return result, nil
 	}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	cluster, err := output.GetParsedById[kubernetes_service.AzureEksCluster](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	if cluster, exists, err := output.MaybeGetParsedById[kubernetes_service.AzureEksCluster](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		result.Name = cluster.Name
+		if len(cluster.NetworkProfile) == 0 {
+			result.ServiceCidr = ""
+		} else {
+			result.ServiceCidr = cluster.NetworkProfile[0].ServiceCidr
+		}
+
+		result.Endpoint = cluster.KubeConfig[0].Host
+		result.CaCertificate = cluster.KubeConfig[0].ClusterCaCertificate
+		result.KubeConfigRaw = cluster.KubeConfigRaw
+		if len(cluster.DefaultNodePoolOut) == 0 {
+			result.DefaultNodePool = nil
+		} else {
+			AzureKubernetesNodePool{r.DefaultNodePool}.parseNodePoolResource(result.DefaultNodePool, cluster.DefaultNodePoolOut[0])
+		}
+
+		result.AzureOutputs = &resourcespb.KubernetesClusterAzureOutputs{
+			AksClusterId: cluster.ResourceId,
+		}
+	} else {
+		statuses["azure_kubernetes_cluster"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
-	result.Endpoint = cluster.KubeConfig[0].Host
-	result.CaCertificate = cluster.KubeConfig[0].ClusterCaCertificate
-	result.KubeConfigRaw = cluster.KubeConfigRaw
 
-	result.AzureOutputs = &resourcespb.KubernetesClusterAzureOutputs{
-		AksClusterId: cluster.ResourceId,
+	if len(statuses) > 0 {
+		result.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
-
 	return result, nil
 }
 
@@ -71,12 +90,12 @@ func (r AzureKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.
 			DefaultNodePool: defaultPool,
 			DnsPrefix:       common.UniqueId(r.Args.Name, "aks", common.LowercaseAlphanumericFormatFunc),
 			Identity:        []kubernetes_service.AzureIdentity{{Type: "SystemAssigned"}},
-			NetworkProfile: kubernetes_service.NetworkProfile{
+			NetworkProfile: []kubernetes_service.NetworkProfile{{
 				NetworkPlugin:    "azure",
 				DnsServiceIp:     "10.100.0.10",
 				DockerBridgeCidr: "172.17.0.1/16",
 				ServiceCidr:      r.Args.ServiceCidr,
-			},
+			}},
 		},
 	}, nil
 }

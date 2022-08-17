@@ -54,6 +54,7 @@ func (s Service[Arg, OutT]) Create(ctx context.Context, in CreateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (out OutT, err error) {
+	done := false
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return
@@ -85,7 +86,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 	}
 
 	defer func() {
-		if err == nil {
+		if done && err == nil {
 			err = s.saveConfig(ctx, c, lock, configPrefix)
 		} else {
 			log.Println("[DEBUG] Something went wrong, not storing state")
@@ -98,12 +99,16 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 		return
 	}
 	defer func() {
-		if err != nil {
+		if err != nil || !done {
 			rollbackFn()
 		}
 	}()
 
-	return s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.GetResourceId()}, configPrefix)
+	out, err = s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.GetResourceId()}, configPrefix)
+
+	// this must always be the last statement, if it doesn't execute it means we panicked or returned and need to rollback
+	done = true
+	return
 }
 
 func (s Service[Arg, OutT]) getConfig(ctx context.Context, userId string, lock *db.ConfigLock, configPrefix string) (*resources.MultyConfig, error) {
@@ -198,6 +203,7 @@ func (s Service[Arg, OutT]) Update(ctx context.Context, in UpdateRequest[Arg]) (
 }
 
 func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (out OutT, err error) {
+	done := false
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return
@@ -227,7 +233,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 	}
 
 	defer func() {
-		if err == nil {
+		if err == nil && done {
 			err = s.saveConfig(ctx, c, lock, configPrefix)
 		} else {
 			log.Println("[DEBUG] Something went wrong, not storing state")
@@ -239,11 +245,15 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 		return
 	}
 	defer func() {
-		if err != nil {
+		if err != nil || !done {
 			rollbackFn()
 		}
 	}()
-	return s.readFromConfig(ctx, c, in, configPrefix)
+	out, err = s.readFromConfig(ctx, c, in, configPrefix)
+
+	// this must always be the last statement, if it doesn't execute it means we panicked or returned and need to rollback
+	done = true
+	return
 }
 
 func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (_ *commonpb.Empty, err error) {
@@ -252,6 +262,7 @@ func (s Service[Arg, OutT]) Delete(ctx context.Context, in WithResourceId) (_ *c
 }
 
 func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (out *commonpb.Empty, err error) {
+	done := false
 	key, err := util.ExtractApiKey(ctx)
 	if err != nil {
 		return
@@ -278,7 +289,7 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (out 
 	}
 
 	defer func() {
-		if err == nil {
+		if err == nil && done {
 			err = s.saveConfig(ctx, c, lock, configPrefix)
 		} else {
 			log.Println("[DEBUG] Something went wrong, not storing state")
@@ -297,5 +308,8 @@ func (s Service[Arg, OutT]) delete(ctx context.Context, in WithResourceId) (out 
 		}
 		return nil, err
 	}
+
+	// this must always be the last statement, if it doesn't execute it means we panicked or returned and need to rollback
+	done = true
 	return &commonpb.Empty{}, nil
 }

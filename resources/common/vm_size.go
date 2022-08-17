@@ -130,3 +130,13 @@ func GetVmSize(s commonpb.VmSize_Enum, c commonpb.CloudProvider) (string, error)
 		return result, nil
 	}
 }
+
+func ParseVmSize(size string, c commonpb.CloudProvider) commonpb.VmSize_Enum {
+	for generalSize, perCloud := range VMSIZE {
+		if vmSize, ok := perCloud[c]; ok && vmSize == size {
+			return generalSize
+		}
+	}
+
+	return commonpb.VmSize_UNKNOWN_VM_SIZE
+}

@@ -14,21 +14,22 @@ type AzureIdentity struct {
 
 type AzureEksCluster struct {
 	*common.AzResource `hcl:",squash" default:"name=azurerm_kubernetes_cluster"`
-	DefaultNodePool    *kubernetes_node_pool.AzureKubernetesNodePool `hcl:"default_node_pool"`
-	DnsPrefix          string                                        `hcl:"dns_prefix"`
-	Identity           []AzureIdentity                               `hcl:"identity,blocks"`
-	NetworkProfile     NetworkProfile                                `hcl:"network_profile"`
+	DefaultNodePool    *kubernetes_node_pool.AzureKubernetesNodePool `hcl:"default_node_pool" json:"-"`
+	DnsPrefix          string                                        `hcl:"dns_prefix" json:"dns_prefix"`
+	Identity           []AzureIdentity                               `hcl:"identity,blocks" json:"identity"`
+	NetworkProfile     []NetworkProfile                              `hcl:"network_profile,blocks" json:"network_profile"`
 
 	// outputs
-	KubeConfigRaw string            `json:"kube_config_raw" hcle:"omitempty"`
-	KubeConfig    []AzureKubeConfig `json:"kube_config" hcle:"omitempty"`
+	KubeConfigRaw      string                                          `json:"kube_config_raw" hcle:"omitempty" json:"kube_config_raw"`
+	KubeConfig         []AzureKubeConfig                               `json:"kube_config" hcle:"omitempty" json:"kube_config"`
+	DefaultNodePoolOut []*kubernetes_node_pool.AzureKubernetesNodePool `json:"default_node_pool"`
 }
 
 type NetworkProfile struct {
-	NetworkPlugin    string `hcl:"network_plugin"`
-	DnsServiceIp     string `hcl:"dns_service_ip"`
-	DockerBridgeCidr string `hcl:"docker_bridge_cidr"`
-	ServiceCidr      string `hcl:"service_cidr"`
+	NetworkPlugin    string `hcl:"network_plugin" json:"network_plugin"`
+	DnsServiceIp     string `hcl:"dns_service_ip" json:"dns_service_ip"`
+	DockerBridgeCidr string `hcl:"docker_bridge_cidr" json:"docker_bridge_cidr"`
+	ServiceCidr      string `hcl:"service_cidr" json:"service_cidr"`
 }
 
 type AzureKubeConfig struct {
