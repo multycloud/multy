@@ -36,7 +36,14 @@ func testObjectStorageObject(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 	cleanup(t, ctx, server.ObjectStorageService, storage)
 
-	t.Logf("%+v", storage)
+	read, err := server.ObjectStorageService.Read(ctx, &resourcespb.ReadObjectStorageRequest{ResourceId: storage.CommonParameters.ResourceId})
+	if err != nil {
+		t.Fatalf("unable to read obj, %s", err)
+	}
+
+	assert.Nil(t, read.GetCommonParameters().GetResourceStatus())
+	assert.Equal(t, read.GetName(), createObjStorageRequest.GetResource().GetName())
+	assert.Equal(t, read.GetVersioning(), createObjStorageRequest.GetResource().GetVersioning())
 
 	createObjStorageObjRequest := &resourcespb.CreateObjectStorageObjectRequest{Resource: &resourcespb.ObjectStorageObjectArgs{
 		Name:            "public-text.html",
@@ -52,7 +59,15 @@ func testObjectStorageObject(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 	cleanup(t, ctx, server.ObjectStorageObjectService, obj)
 
-	t.Logf("%+v", obj)
+	readObj, err := server.ObjectStorageObjectService.Read(ctx, &resourcespb.ReadObjectStorageObjectRequest{ResourceId: obj.CommonParameters.ResourceId})
+	if err != nil {
+		t.Fatalf("unable to read obj, %s", err)
+	}
+
+	assert.Nil(t, readObj.GetCommonParameters().GetResourceStatus())
+	assert.Equal(t, readObj.GetName(), createObjStorageObjRequest.GetResource().GetName())
+	assert.Equal(t, readObj.GetAcl(), createObjStorageObjRequest.GetResource().GetAcl())
+	assert.Equal(t, readObj.GetContentBase64(), createObjStorageObjRequest.GetResource().GetContentBase64())
 
 	resp, err := http.Get(obj.GetUrl())
 	if err != nil {

@@ -4,8 +4,10 @@
 package e2e
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/multycloud/multy/api"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/stretchr/testify/assert"
@@ -108,6 +110,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		},
 		Name:             "k8testmulty",
 		VirtualNetworkId: vn.CommonParameters.ResourceId,
+		ServiceCidr:      "10.100.0.0/16",
 		DefaultNodePool: &resourcespb.KubernetesNodePoolArgs{
 			Name:              "default",
 			SubnetId:          subnet.CommonParameters.ResourceId,
@@ -128,6 +131,8 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("unable to create kubernetes cluster: %+v", err)
 	}
 	cleanup(t, ctx, server.KubernetesClusterService, k8s)
+
+	readAndAssertEq(t, server, ctx, createK8sClusterRequest, k8s.CommonParameters.ResourceId)
 
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -167,6 +172,30 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 
 	testKubernetesDeployment(t, kubecfg)
+
+}
+
+func readAndAssertEq(t *testing.T, s *api.Server, ctx context.Context, cluster *resourcespb.CreateKubernetesClusterRequest, clusterId string) {
+	read, err := s.KubernetesClusterService.Read(ctx, &resourcespb.ReadKubernetesClusterRequest{ResourceId: clusterId})
+	if err != nil {
+		t.Fatalf("unable to read k8s cluster, %s", err)
+	}
+
+	assert.Equal(t, cluster.GetResource().GetCommonParameters().GetLocation(), read.GetCommonParameters().GetLocation())
+	assert.Equal(t, cluster.GetResource().GetCommonParameters().GetCloudProvider(), read.GetCommonParameters().GetCloudProvider())
+	assert.Nil(t, read.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, cluster.GetResource().GetName(), read.GetName())
+	assert.Equal(t, cluster.GetResource().GetServiceCidr(), read.GetServiceCidr())
+	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetName(), read.GetDefaultNodePool().GetName())
+	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetVmSize(), read.GetDefaultNodePool().GetVmSize())
+	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetMinNodeCount(), read.GetDefaultNodePool().GetMinNodeCount())
+	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetMaxNodeCount(), read.GetDefaultNodePool().GetMaxNodeCount())
+	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetStartingNodeCount(), read.GetDefaultNodePool().GetStartingNodeCount())
+	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetDiskSizeGb(), read.GetDefaultNodePool().GetDiskSizeGb())
+	assert.EqualValues(t, cluster.GetResource().GetDefaultNodePool().GetLabels(), read.GetDefaultNodePool().GetLabels())
+	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetSubnetId(), read.GetDefaultNodePool().GetSubnetId())
+	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetAvailabilityZone(), read.GetDefaultNodePool().GetAvailabilityZone())
 
 }
 

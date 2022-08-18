@@ -114,6 +114,29 @@ sudo echo "hello world" > /tmp/test.txt`)),
 		t.Fatalf("unable to create virtual machine: %+v", err)
 	}
 	cleanup(t, ctx, server.VirtualMachineService, vm)
+
+	readVm, err := server.VirtualMachineService.Read(ctx, &resourcespb.ReadVirtualMachineRequest{ResourceId: vm.CommonParameters.ResourceId})
+	if err != nil {
+		t.Fatalf("unable to read virtual machine, %s", err)
+	}
+
+	assert.Equal(t, readVm.GetCommonParameters().GetLocation(), createVmRequest.GetResource().GetCommonParameters().GetLocation())
+	assert.Equal(t, readVm.GetCommonParameters().GetCloudProvider(), createVmRequest.GetResource().GetCommonParameters().GetCloudProvider())
+	assert.Nil(t, readVm.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, readVm.GetName(), createVmRequest.GetResource().GetName())
+	assert.Equal(t, readVm.GetVmSize(), createVmRequest.GetResource().GetVmSize())
+	assert.Equal(t, readVm.GetPublicIpId(), createVmRequest.GetResource().GetPublicIpId())
+	assert.Equal(t, readVm.GetSubnetId(), createVmRequest.GetResource().GetSubnetId())
+	//assert.Equal(t, readVm.GetAvailabilityZone(), createVmRequest.GetResource().GetAvailabilityZone())
+	assert.Equal(t, readVm.GetGeneratePublicIp(), createVmRequest.GetResource().GetGeneratePublicIp())
+	assert.Equal(t, readVm.GetPublicSshKey(), createVmRequest.GetResource().GetPublicSshKey())
+	assert.Equal(t, readVm.GetUserDataBase64(), createVmRequest.GetResource().GetUserDataBase64())
+	assert.Equal(t, readVm.GetNetworkInterfaceIds(), createVmRequest.GetResource().GetNetworkInterfaceIds())
+	assert.Equal(t, readVm.GetNetworkSecurityGroupIds(), createVmRequest.GetResource().GetNetworkSecurityGroupIds())
+	assert.Equal(t, readVm.GetImageReference().GetOs(), createVmRequest.GetResource().GetImageReference().GetOs())
+	assert.Equal(t, readVm.GetImageReference().GetVersion(), createVmRequest.GetResource().GetImageReference().GetVersion())
+
 	return vm, nsg
 }
 
