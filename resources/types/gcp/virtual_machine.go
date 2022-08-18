@@ -76,7 +76,7 @@ func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 			out.PublicSshKey = ""
 		} else {
 			// remove the expiration timestamp (https://cloud.google.com/compute/docs/connect/add-ssh-keys#gcloud_1)
-			out.PublicSshKey = strings.SplitN(userAndKey[1], " google-ssh ", 2)[0]
+			out.PublicSshKey = strings.TrimSpace(strings.SplitN(userAndKey[1], " google-ssh ", 2)[0])
 		}
 
 		if r.Args.GeneratePublicIp {
