@@ -40,6 +40,17 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 	cleanup(t, ctx, server.VaultService, vault)
 
+	readVault, err := server.VaultService.Read(ctx, &resourcespb.ReadVaultRequest{ResourceId: vault.CommonParameters.ResourceId})
+	if err != nil {
+		t.Fatalf("unable to read vault, %s", err)
+	}
+
+	assert.Equal(t, createVaultRequest.GetResource().GetCommonParameters().GetLocation(), readVault.GetCommonParameters().GetLocation())
+	assert.Equal(t, createVaultRequest.GetResource().GetCommonParameters().GetCloudProvider(), readVault.GetCommonParameters().GetCloudProvider())
+	assert.Nil(t, readVault.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, createVaultRequest.GetResource().GetName(), readVault.GetName())
+
 	createVaultSecretRequest := &resourcespb.CreateVaultSecretRequest{Resource: &resourcespb.VaultSecretArgs{
 		Name:    "test-secret",
 		Value:   "test-value",
@@ -51,6 +62,17 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatalf("unable to create vault secret: %+v", err)
 	}
 	cleanup(t, ctx, server.VaultSecretService, vaultSecret)
+
+	readVaultSecret, err := server.VaultSecretService.Read(ctx, &resourcespb.ReadVaultSecretRequest{ResourceId: vaultSecret.CommonParameters.ResourceId})
+	if err != nil {
+		t.Fatalf("unable to read vault secret, %s", err)
+	}
+
+	assert.Nil(t, readVaultSecret.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, createVaultSecretRequest.GetResource().GetName(), readVaultSecret.GetName())
+	assert.Equal(t, createVaultSecretRequest.GetResource().GetValue(), readVaultSecret.GetValue())
+	assert.Equal(t, createVaultSecretRequest.GetResource().GetVaultId(), readVaultSecret.GetVaultId())
 
 	t.Run("vault-access-policy-reader", func(t *testing.T) {
 		testReaderAccess(t, ctx, cloud, vm, config, vault, vaultSecret)

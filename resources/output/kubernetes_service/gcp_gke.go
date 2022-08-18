@@ -28,5 +28,5 @@ type GoogleContainerClusterAuth struct {
 
 type GoogleContainerClusterIpAllocationPolicy struct {
 	//ClusterIpv4CidrBlock  string `hcl:"cluster_ipv_4_cidr_block"`
-	ServicesIpv4CidrBlock string `hcl:"services_ipv4_cidr_block"`
+	ServicesIpv4CidrBlock string `hcl:"services_ipv4_cidr_block" json:"services_ipv4_cidr_block"`
 }

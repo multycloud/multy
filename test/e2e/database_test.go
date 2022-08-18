@@ -93,6 +93,24 @@ func testDatabase(t *testing.T, cloud commonpb.CloudProvider) {
 	}
 	cleanup(t, ctx, server.DatabaseService, db)
 
+	readDb, err := server.DatabaseService.Read(ctx, &resourcespb.ReadDatabaseRequest{ResourceId: db.CommonParameters.ResourceId})
+	if err != nil {
+		t.Fatalf("unable to read db, %s", err)
+	}
+
+	assert.Equal(t, createDbRequest.GetResource().GetCommonParameters().GetLocation(), readDb.GetCommonParameters().GetLocation())
+	assert.Equal(t, createDbRequest.GetResource().GetCommonParameters().GetCloudProvider(), readDb.GetCommonParameters().GetCloudProvider())
+	assert.Nil(t, readDb.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, createDbRequest.GetResource().GetName(), readDb.GetName())
+	assert.Equal(t, createDbRequest.GetResource().GetSubnetId(), readDb.GetSubnetId())
+	assert.Equal(t, createDbRequest.GetResource().GetEngine(), readDb.GetEngine())
+	assert.Equal(t, createDbRequest.GetResource().GetEngineVersion(), readDb.GetEngineVersion())
+	assert.Equal(t, createDbRequest.GetResource().GetStorageGb(), readDb.GetStorageGb())
+	assert.Equal(t, createDbRequest.GetResource().GetSize(), readDb.GetSize())
+	assert.Equal(t, createDbRequest.GetResource().GetUsername(), readDb.GetUsername())
+	assert.Equal(t, createDbRequest.GetResource().GetPassword(), readDb.GetPassword())
+
 	time.Sleep(5 * time.Second)
 
 	out, err := exec.Command("mysql", "-h", db.Host, "-P", "3306", "-u", db.ConnectionUsername, "--password="+db.Password, "-e", "select 12+34;").CombinedOutput()

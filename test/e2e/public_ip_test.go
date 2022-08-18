@@ -7,6 +7,7 @@ import (
 	"context"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/ssh"
 	"testing"
 	"time"
@@ -32,6 +33,12 @@ func testPublicIp(t *testing.T, ctx context.Context, vm *resourcespb.VirtualMach
 		t.Fatalf("unable to create public ip: %+v", err)
 	}
 	cleanup(t, ctx, server.PublicIpService, pip)
+
+	assert.Equal(t, createPipRequest.GetResource().GetCommonParameters().GetLocation(), pip.GetCommonParameters().GetLocation())
+	assert.Equal(t, createPipRequest.GetResource().GetCommonParameters().GetCloudProvider(), pip.GetCommonParameters().GetCloudProvider())
+	assert.Nil(t, pip.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, createPipRequest.GetResource().GetName(), pip.GetName())
 
 	updateReq := getNoopUpdate(vm)
 	updateReq.Resource.GeneratePublicIp = false
