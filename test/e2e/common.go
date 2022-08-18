@@ -8,6 +8,7 @@ import (
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
 	"github.com/multycloud/multy/api/services"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 	"testing"
 )
@@ -34,6 +35,13 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 	}
 	cleanup(t, ctx, server.VnService, vn)
 
+	assert.Equal(t, createVnRequest.GetResource().GetCommonParameters().GetLocation(), vn.GetCommonParameters().GetLocation())
+	assert.Equal(t, createVnRequest.GetResource().GetCommonParameters().GetCloudProvider(), vn.GetCommonParameters().GetCloudProvider())
+	assert.Nil(t, vn.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, createVnRequest.GetResource().GetName(), vn.GetName())
+	assert.Equal(t, createVnRequest.GetResource().GetCidrBlock(), vn.GetCidrBlock())
+
 	createPublicSubnetRequest := &resourcespb.CreateSubnetRequest{Resource: &resourcespb.SubnetArgs{
 		Name:             prefix + "-test-public-subnet",
 		CidrBlock:        publicSubnetCidr,
@@ -45,6 +53,12 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 		t.Fatalf("unable to create publicSubnet: %+v", err)
 	}
 	cleanup(t, ctx, server.SubnetService, publicSubnet)
+
+	assert.Nil(t, publicSubnet.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, createPublicSubnetRequest.GetResource().GetName(), publicSubnet.GetName())
+	assert.Equal(t, createPublicSubnetRequest.GetResource().GetCidrBlock(), publicSubnet.GetCidrBlock())
+	assert.Equal(t, createPublicSubnetRequest.GetResource().GetVirtualNetworkId(), publicSubnet.GetVirtualNetworkId())
 
 	createRtRequest := &resourcespb.CreateRouteTableRequest{Resource: &resourcespb.RouteTableArgs{
 		Name:             prefix + "-test-rt",
@@ -63,6 +77,14 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 	}
 	cleanup(t, ctx, server.RouteTableService, rt)
 
+	assert.Nil(t, rt.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, createRtRequest.GetResource().GetName(), rt.GetName())
+	assert.Len(t, rt.GetRoutes(), 1)
+	assert.Equal(t, createRtRequest.GetResource().GetRoutes()[0].GetCidrBlock(), rt.GetRoutes()[0].GetCidrBlock())
+	assert.Equal(t, createRtRequest.GetResource().GetRoutes()[0].GetDestination(), rt.GetRoutes()[0].GetDestination())
+	assert.Equal(t, createRtRequest.GetResource().GetVirtualNetworkId(), rt.GetVirtualNetworkId())
+
 	createRtaRequest := &resourcespb.CreateRouteTableAssociationRequest{Resource: &resourcespb.RouteTableAssociationArgs{
 		SubnetId:     publicSubnet.CommonParameters.ResourceId,
 		RouteTableId: rt.CommonParameters.ResourceId,
@@ -73,6 +95,11 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 		t.Fatalf("unable to create route table association: %+v", err)
 	}
 	cleanup(t, ctx, server.RouteTableAssociationService, rta)
+
+	assert.Nil(t, rta.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, createRtaRequest.GetResource().GetSubnetId(), rta.GetSubnetId())
+	assert.Equal(t, createRtaRequest.GetResource().GetRouteTableId(), rta.GetRouteTableId())
 
 	createNsgRequest := &resourcespb.CreateNetworkSecurityGroupRequest{Resource: &resourcespb.NetworkSecurityGroupArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
@@ -117,6 +144,23 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 		t.Fatalf("unable to create network security group: %+v", err)
 	}
 	cleanup(t, ctx, server.NetworkSecurityGroupService, nsg)
+
+	assert.Equal(t, createNsgRequest.GetResource().GetCommonParameters().GetLocation(), nsg.GetCommonParameters().GetLocation())
+	assert.Equal(t, createNsgRequest.GetResource().GetCommonParameters().GetCloudProvider(), nsg.GetCommonParameters().GetCloudProvider())
+	assert.Nil(t, nsg.GetCommonParameters().GetResourceStatus())
+
+	assert.Equal(t, createNsgRequest.GetResource().GetName(), nsg.GetName())
+	assert.Equal(t, createNsgRequest.GetResource().GetVirtualNetworkId(), nsg.GetVirtualNetworkId())
+	assert.Len(t, nsg.GetRules(), len(createNsgRequest.GetResource().GetRules()))
+	if len(nsg.GetRules()) == len(createNsgRequest.GetResource().GetRules()) {
+		for i, rule := range createNsgRequest.GetResource().GetRules() {
+			assert.Equal(t, rule.GetCidrBlock(), nsg.GetRules()[i].GetCidrBlock())
+			assert.Equal(t, rule.GetDirection(), nsg.GetRules()[i].GetDirection())
+			assert.Equal(t, rule.GetPortRange().GetFrom(), nsg.GetRules()[i].GetPortRange().GetFrom())
+			assert.Equal(t, rule.GetPortRange().GetTo(), nsg.GetRules()[i].GetPortRange().GetTo())
+			assert.Equal(t, rule.GetPriority(), nsg.GetRules()[i].GetPriority())
+		}
+	}
 
 	return publicSubnet, nsg
 }

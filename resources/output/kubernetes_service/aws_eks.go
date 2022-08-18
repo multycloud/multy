@@ -23,7 +23,7 @@ type VpcConfig struct {
 }
 
 type KubernetesNetworkConfig struct {
-	ServiceIpv4Cidr string `hcl:"service_ipv4_cidr" json:"service_ipv_4_cidr"`
+	ServiceIpv4Cidr string `hcl:"service_ipv4_cidr" json:"service_ipv4_cidr"`
 }
 
 type CertificateAuthority struct {
