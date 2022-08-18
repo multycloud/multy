@@ -11,8 +11,8 @@ import (
 
 type AwsIamRole struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_iam_role"`
-	Name                string `hcl:"name"`
-	AssumeRolePolicy    string `hcl:"assume_role_policy"`
+	Name                string `hcl:"name" json:"name"`
+	AssumeRolePolicy    string `hcl:"assume_role_policy" json:"assume_role_policy"`
 
 	Id  string `json:"id" hcle:"omitempty"`
 	Arn string `json:"arn" hcle:"omitempty"`
@@ -56,8 +56,8 @@ type AwsIamPolicy struct {
 
 type AwsIamInstanceProfile struct {
 	*common.AwsResource `hcl:",squash" default:"name=aws_iam_instance_profile"`
-	Name                string `hcl:"name"`
-	Role                string `hcl:"role,expr"`
+	Name                string `hcl:"name" json:"name"`
+	Role                string `hcl:"role,expr" json:"role"`
 
 	Arn string `json:"arn" hcle:"omitempty"`
 }

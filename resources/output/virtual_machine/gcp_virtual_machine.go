@@ -11,14 +11,14 @@ import (
 type GoogleComputeInstance struct {
 	*common.GcpResource `hcl:",squash"  default:"name=google_compute_instance"`
 
-	MachineType           string                              `hcl:"machine_type"`
-	BootDisk              GoogleBootDisk                      `hcl:"boot_disk"`
-	Zone                  string                              `hcl:"zone" hcle:"omitempty"`
-	Tags                  []string                            `hcl:"tags" hcle:"omitempty"`
-	MetadataStartupScript string                              `hcl:"metadata_startup_script" hcle:"omitempty"`
-	NetworkInterface      []GoogleNetworkInterface            `hcl:"network_interface,blocks" json:"network_interface"`
-	Metadata              map[string]string                   `hcl:"metadata" hcle:"omitempty"`
-	ServiceAccount        GoogleComputeInstanceServiceAccount `hcl:"service_account"`
+	MachineType           string                                `hcl:"machine_type" json:"machine_type"`
+	BootDisk              []GoogleBootDisk                      `hcl:"boot_disk,blocks" json:"boot_disk"`
+	Zone                  string                                `hcl:"zone" hcle:"omitempty" json:"zone"`
+	Tags                  []string                              `hcl:"tags" hcle:"omitempty" json:"tags"`
+	MetadataStartupScript string                                `hcl:"metadata_startup_script" hcle:"omitempty" json:"metadata_startup_script"`
+	NetworkInterface      []GoogleNetworkInterface              `hcl:"network_interface,blocks" json:"network_interface" json:"network_interface"`
+	Metadata              map[string]string                     `hcl:"metadata" hcle:"omitempty" json:"metadata"`
+	ServiceAccount        []GoogleComputeInstanceServiceAccount `hcl:"service_account,blocks" json:"service_account"`
 }
 
 type GoogleBootDisk struct {
@@ -43,8 +43,8 @@ type GoogleNetworkInterfaceAccessConfig struct {
 }
 
 type GoogleComputeInstanceServiceAccount struct {
-	Email  string   `hcl:"email,expr"`
-	Scopes []string `hcl:"scopes"`
+	Email  string   `hcl:"email,expr" json:"email"`
+	Scopes []string `hcl:"scopes" json:"scopes"`
 }
 
 func GetLatestGcpImage(ref *resourcespb.ImageReference) (string, error) {
