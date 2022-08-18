@@ -13,6 +13,7 @@ import (
 	"github.com/multycloud/multy/resources/output/subnet"
 	"github.com/multycloud/multy/resources/output/virtual_machine"
 	"github.com/multycloud/multy/resources/types"
+	"strings"
 )
 
 const (
@@ -49,33 +50,59 @@ func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		AzureOverride:           r.Args.AzureOverride,
 		GcpOverride:             r.Args.GcpOverride,
 		AvailabilityZone:        r.Args.AvailabilityZone,
-		IdentityId:              "dryrun",
 	}
 
 	if flags.DryRun {
 		return out, nil
 	}
 
-	vm, err := output.GetParsedById[virtual_machine.GoogleComputeInstance](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	out.GcpOutputs = &resourcespb.VirtualMachineGcpOutputs{}
+
+	if vm, exists, err := output.MaybeGetParsedById[virtual_machine.GoogleComputeInstance](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+
+		out.Name = vm.Name
+		if len(r.Args.GetGcpOverride().GetMachineType()) > 0 {
+			out.GcpOverride.MachineType = vm.MachineType
+		} else {
+			out.VmSize = common.ParseVmSize(vm.MachineType, common.GCP)
+		}
+		out.UserDataBase64 = base64.StdEncoding.EncodeToString([]byte(vm.Metadata["user-data"]))
+		userAndKey := strings.SplitN(strings.Split(vm.Metadata["ssh-keys"], "\n")[0], ":", 2)
+		if len(userAndKey) != 2 {
+			out.PublicSshKey = ""
+		} else {
+			// remove the expiration timestamp (https://cloud.google.com/compute/docs/connect/add-ssh-keys#gcloud_1)
+			out.PublicSshKey = strings.SplitN(userAndKey[1], " google-ssh ", 2)[0]
+		}
+
+		if r.Args.GeneratePublicIp {
+			out.PublicIp = vm.NetworkInterface[0].AccessConfig[0].NatIp
+		}
+		if len(vm.ServiceAccount) > 0 {
+			out.IdentityId = vm.ServiceAccount[0].Email
+		}
+
+		out.GcpOutputs.ComputeInstanceId = vm.SelfLink
+	} else {
+		statuses["gcp_compute_instance"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	if r.Args.GeneratePublicIp {
-		out.PublicIp = vm.NetworkInterface[0].AccessConfig[0].NatIp
+	if sa, exists, err := output.MaybeGetParsedById[iam.GoogleServiceAccount](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.GcpOutputs.ServiceAccountEmail = sa.Email
+	} else {
+		statuses["gcp_compute_instance"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	sa, err := output.GetParsedById[iam.GoogleServiceAccount](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
 	}
-	out.IdentityId = sa.Email
-
-	out.GcpOutputs = &resourcespb.VirtualMachineGcpOutputs{
-		ComputeInstanceId:   vm.SelfLink,
-		ServiceAccountEmail: sa.Email,
-	}
-
 	return out, nil
 }
 
@@ -154,17 +181,17 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 		MachineType: size,
 		Zone:        zone,
 		Tags:        tags,
-		BootDisk: virtual_machine.GoogleBootDisk{
+		BootDisk: []virtual_machine.GoogleBootDisk{{
 			InitializeParams: virtual_machine.GoogleBootDiskInitializeParams{
 				Image: image,
 			},
-		},
+		}},
 		Metadata:         m,
 		NetworkInterface: []virtual_machine.GoogleNetworkInterface{networkInterface},
-		ServiceAccount: virtual_machine.GoogleComputeInstanceServiceAccount{
+		ServiceAccount: []virtual_machine.GoogleComputeInstanceServiceAccount{{
 			Email:  fmt.Sprintf("%s.%s.email", output.GetResourceName(iam.GoogleServiceAccount{}), r.ResourceId),
 			Scopes: []string{"cloud-platform"},
-		},
+		}},
 	}
 	return []output.TfBlock{serviceAccount, vm}, nil
 }

@@ -11,21 +11,21 @@ import (
 const AzureResourceName = "azurerm_linux_virtual_machine"
 
 type AzureVirtualMachine struct {
-	*common.AzResource            `hcl:",squash" default:"name=azurerm_linux_virtual_machine"`
-	Location                      string                    `hcl:"location"`
-	Size                          string                    `hcl:"size"`
-	NetworkInterfaceIds           []string                  `hcl:"network_interface_ids,expr"`
-	CustomData                    string                    `hcl:"custom_data" hcle:"omitempty"`
-	OsDisk                        AzureOsDisk               `hcl:"os_disk"`
-	AdminUsername                 string                    `hcl:"admin_username"`
-	AdminPassword                 string                    `hcl:"admin_password,expr" hcle:"omitempty"`
-	AdminSshKey                   AzureAdminSshKey          `hcl:"admin_ssh_key" hcle:"omitempty"`
-	SourceImageReference          AzureSourceImageReference `hcl:"source_image_reference"`
-	DisablePasswordAuthentication bool                      `hcl:"disable_password_authentication"`
-	Identity                      AzureIdentity             `hcl:"identity"`
-	Identities                    []AzureGeneratedIdentity  `json:"identity"`
-	ComputerName                  string                    `hcl:"computer_name"`
-	Zone                          string                    `hcl:"zone" hcle:"omitempty"`
+	*common.AzResource            `hcl:",squash" default:"name=azurerm_linux_virtual_machine" `
+	Location                      string                      `hcl:"location" json:"location"`
+	Size                          string                      `hcl:"size" json:"size"`
+	NetworkInterfaceIds           []string                    `hcl:"network_interface_ids,expr" json:"network_interface_ids"`
+	CustomData                    string                      `hcl:"custom_data" hcle:"omitempty" json:"custom_data"`
+	OsDisk                        []AzureOsDisk               `hcl:"os_disk,blocks" json:"os_disk"`
+	AdminUsername                 string                      `hcl:"admin_username" json:"admin_username"`
+	AdminPassword                 string                      `hcl:"admin_password,expr" hcle:"omitempty" json:"admin_password"`
+	AdminSshKey                   []AzureAdminSshKey          `hcl:"admin_ssh_key,blocks" hcle:"omitempty" json:"admin_ssh_key"`
+	SourceImageReference          []AzureSourceImageReference `hcl:"source_image_reference,blocks" json:"source_image_reference"`
+	DisablePasswordAuthentication bool                        `hcl:"disable_password_authentication" json:"disable_password_authentication"`
+	Identity                      AzureIdentity               `hcl:"identity"`
+	Identities                    []AzureGeneratedIdentity    `json:"identity" hcle:"omitempty"`
+	ComputerName                  string                      `hcl:"computer_name" json:"computer_name"`
+	Zone                          string                      `hcl:"zone" hcle:"omitempty" json:"zone"`
 }
 
 type AzureGeneratedIdentity struct {
@@ -41,8 +41,8 @@ type AzureIdentity struct {
 }
 
 type AzureAdminSshKey struct {
-	Username  string `hcl:"username"`
-	PublicKey string `hcl:"public_key"`
+	Username  string `hcl:"username" json:"username"`
+	PublicKey string `hcl:"public_key" json:"public_key"`
 }
 
 type AzureOsDisk struct {

@@ -11,15 +11,15 @@ const AwsResourceName = "aws_instance"
 
 type AwsEC2 struct {
 	*common.AwsResource      `hcl:",squash"  default:"name=aws_instance"`
-	Ami                      string                   `hcl:"ami,expr"`
-	InstanceType             string                   `hcl:"instance_type"`
-	AssociatePublicIpAddress bool                     `hcl:"associate_public_ip_address" hcle:"omitempty"`
-	SubnetId                 string                   `hcl:"subnet_id,expr" hcle:"omitempty"`
-	UserDataBase64           string                   `hcl:"user_data_base64" hcle:"omitempty"`
-	NetworkInterfaces        []AwsEc2NetworkInterface `hcl:"network_interface,blocks" hcle:"omitempty"`
-	SecurityGroupIds         []string                 `hcl:"vpc_security_group_ids,expr" hcle:"omitempty"`
-	KeyName                  string                   `hcl:"key_name,expr" hcle:"omitempty"`
-	IamInstanceProfile       string                   `hcl:"iam_instance_profile,expr" hcle:"omitempty"`
+	Ami                      string                   `hcl:"ami,expr" json:"ami"`
+	InstanceType             string                   `hcl:"instance_type" json:"instance_type"`
+	AssociatePublicIpAddress bool                     `hcl:"associate_public_ip_address" hcle:"omitempty" json:"associate_public_ip_address"`
+	SubnetId                 string                   `hcl:"subnet_id,expr" hcle:"omitempty" json:"subnet_id"`
+	UserDataBase64           string                   `hcl:"user_data_base64" hcle:"omitempty" json:"user_data_base64"`
+	NetworkInterfaces        []AwsEc2NetworkInterface `hcl:"network_interface,blocks" hcle:"omitempty" json:"network_interfaces"`
+	SecurityGroupIds         []string                 `hcl:"vpc_security_group_ids,expr" hcle:"omitempty" json:"security_group_ids"`
+	KeyName                  string                   `hcl:"key_name,expr" hcle:"omitempty" json:"key_name"`
+	IamInstanceProfile       string                   `hcl:"iam_instance_profile,expr" hcle:"omitempty" json:"iam_instance_profile"`
 
 	// outputs
 	PublicIp string `json:"public_ip" hcle:"omitempty"`
@@ -34,10 +34,10 @@ const AwsKeyPairResourceName = "aws_key_pair"
 
 type AwsKeyPair struct {
 	*common.AwsResource `hcl:",squash"  default:"name=aws_key_pair"`
-	KeyName             string `hcl:"key_name"`
-	PublicKey           string `hcl:"public_key"`
+	KeyName             string `hcl:"key_name" json:"key_name"`
+	PublicKey           string `hcl:"public_key" json:"public_key"`
 
-	Arn string `json:"arn" hcle:"omitempty"`
+	Arn string `json:"arn" hcle:"omitempty" `
 }
 
 type AwsAmi struct {

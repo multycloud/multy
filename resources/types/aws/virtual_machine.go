@@ -45,45 +45,73 @@ func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		AzureOverride:           r.Args.AzureOverride,
 		GcpOverride:             r.Args.GcpOverride,
 		AvailabilityZone:        r.Args.AvailabilityZone,
-		IdentityId:              "dryrun",
 	}
 
 	if flags.DryRun {
 		return out, nil
 	}
 
-	vmResource, err := output.GetParsedById[virtual_machine.AwsEC2](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	out.AwsOutputs = &resourcespb.VirtualMachineAwsOutputs{
-		Ec2InstanceId: vmResource.ResourceId,
-	}
+	out.AwsOutputs = &resourcespb.VirtualMachineAwsOutputs{}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	keyName := ""
 
-	if r.Args.GeneratePublicIp {
+	if vmResource, exists, err := output.MaybeGetParsedById[virtual_machine.AwsEC2](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AwsOutputs.Ec2InstanceId = vmResource.ResourceId
+
 		out.PublicIp = vmResource.PublicIp
+		out.Name = vmResource.Tags["Name"]
+		if len(r.Args.GetAwsOverride().GetInstanceType()) > 0 {
+			out.AwsOverride.InstanceType = vmResource.InstanceType
+		} else {
+			out.VmSize = common.ParseVmSize(vmResource.InstanceType, common.AWS)
+		}
+		out.UserDataBase64 = vmResource.UserDataBase64
+		out.GeneratePublicIp = vmResource.AssociatePublicIpAddress
+		keyName = vmResource.KeyName
+		if vmResource.KeyName == "" {
+			out.PublicSshKey = ""
+		}
+	} else {
+		statuses["aws_ec2"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
-	iamRoleResource, err := output.GetParsedById[iam.AwsIamRole](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	if iamRoleResource, exists, err := output.MaybeGetParsedById[iam.AwsIamRole](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.IdentityId = iamRoleResource.Id
+		out.AwsOutputs.IamRoleArn = iamRoleResource.Arn
+	} else {
+		statuses["aws_iam_role"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
-	out.IdentityId = iamRoleResource.Id
-	out.AwsOutputs.IamRoleArn = iamRoleResource.Arn
 
-	iamInstanceProfileResource, err := output.GetParsedById[iam.AwsIamInstanceProfile](state, r.ResourceId)
-	if err != nil {
-		return nil, err
+	if iamInstanceProfileResource, exists, err := output.MaybeGetParsedById[iam.AwsIamInstanceProfile](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.AwsOutputs.IamInstanceProfileArn = iamInstanceProfileResource.Arn
+	} else {
+		statuses["aws_iam_instance_profile"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
-	out.AwsOutputs.IamInstanceProfileArn = iamInstanceProfileResource.Arn
 
 	if stateResource, exists, err := output.MaybeGetParsedById[virtual_machine.AwsKeyPair](state, r.ResourceId); exists {
 		if err != nil {
 			return nil, err
 		}
 		out.AwsOutputs.KeyPairArn = stateResource.Arn
+		if keyName == stateResource.KeyName {
+			out.PublicSshKey = stateResource.PublicKey
+		}
+	} else if r.Args.PublicSshKey != "" {
+		statuses["aws_key_pair"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 

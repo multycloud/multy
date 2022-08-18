@@ -48,30 +48,35 @@ func (r AzureVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virt
 		AzureOverride:           r.Args.AzureOverride,
 		GcpOverride:             r.Args.GcpOverride,
 		AvailabilityZone:        r.Args.AvailabilityZone,
-		IdentityId:              "dryrun",
 	}
 
 	if flags.DryRun {
 		return out, nil
 	}
+	statuses := map[string]commonpb.ResourceStatus_Status{}
+	out.AzureOutputs = &resourcespb.VirtualMachineAzureOutputs{}
 
-	vmResource, err := output.GetParsedById[virtual_machine.AzureVirtualMachine](state, r.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	out.IdentityId = vmResource.Identities[0].PrincipalId
-
-	out.AzureOutputs = &resourcespb.VirtualMachineAzureOutputs{
-		VirtualMachineId: vmResource.ResourceId,
-	}
-
-	if r.Args.GeneratePublicIp {
-		ipResource, err := output.GetParsedById[public_ip.AzurePublicIp](state, r.ResourceId)
+	if vmResource, exists, err := output.MaybeGetParsedById[virtual_machine.AzureVirtualMachine](state, r.ResourceId); exists {
 		if err != nil {
 			return nil, err
 		}
-		out.PublicIp = ipResource.IpAddress
-		out.AzureOutputs.PublicIpId = ipResource.ResourceId
+		out.IdentityId = vmResource.Identities[0].PrincipalId
+
+		out.AzureOutputs.VirtualMachineId = vmResource.ResourceId
+		out.Name = vmResource.Name
+		out.UserDataBase64 = vmResource.CustomData
+		if len(r.Args.GetAzureOverride().GetSize()) > 0 {
+			out.AzureOverride.Size = vmResource.Size
+		} else {
+			out.VmSize = common.ParseVmSize(vmResource.Size, common.AZURE)
+		}
+		if len(vmResource.AdminSshKey) == 0 {
+			out.PublicSshKey = ""
+		} else {
+			out.PublicSshKey = vmResource.AdminSshKey[0].PublicKey
+		}
+	} else {
+		statuses["azure_virtual_machine"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if stateResource, exists, err := output.MaybeGetParsedById[network_interface.AzureNetworkInterface](state, r.ResourceId); exists {
@@ -79,8 +84,23 @@ func (r AzureVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virt
 			return nil, err
 		}
 		out.AzureOutputs.NetworkInterfaceId = stateResource.ResourceId
+	} else if len(r.NetworkInterface) == 0 {
+		statuses["azure_network_interface"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
+	if ipResource, exists, err := output.MaybeGetParsedById[public_ip.AzurePublicIp](state, r.ResourceId); exists {
+		if err != nil {
+			return nil, err
+		}
+		out.PublicIp = ipResource.IpAddress
+		out.AzureOutputs.PublicIpId = ipResource.ResourceId
+	} else if r.Args.GeneratePublicIp {
+		statuses["azure_public_ip"] = commonpb.ResourceStatus_NEEDS_CREATE
+	}
+
+	if len(statuses) > 0 {
+		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}
+	}
 	return out, nil
 }
 
@@ -163,14 +183,14 @@ func (r AzureVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock
 	// ssh authentication will replace password authentication
 	// if no ssh key is passed, password is required
 	// random_password will be used
-	var azureSshKey virtual_machine.AzureAdminSshKey
+	var azureSshKey []virtual_machine.AzureAdminSshKey
 	var vmPassword string
 	disablePassAuth := false
 	if r.Args.PublicSshKey != "" {
-		azureSshKey = virtual_machine.AzureAdminSshKey{
+		azureSshKey = []virtual_machine.AzureAdminSshKey{{
 			Username:  "adminuser",
 			PublicKey: r.Args.PublicSshKey,
-		}
+		}}
 		disablePassAuth = true
 	} else {
 		randomPassword := terraform.RandomPassword{
@@ -220,14 +240,14 @@ func (r AzureVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock
 			Size:                vmSize,
 			NetworkInterfaceIds: nicIds,
 			CustomData:          r.Args.UserDataBase64,
-			OsDisk: virtual_machine.AzureOsDisk{
+			OsDisk: []virtual_machine.AzureOsDisk{{
 				Caching:            "None",
 				StorageAccountType: "Standard_LRS",
-			},
+			}},
 			AdminUsername:                 "adminuser",
 			AdminPassword:                 vmPassword,
 			AdminSshKey:                   azureSshKey,
-			SourceImageReference:          sourceImg,
+			SourceImageReference:          []virtual_machine.AzureSourceImageReference{sourceImg},
 			DisablePasswordAuthentication: disablePassAuth,
 			Identity:                      virtual_machine.AzureIdentity{Type: "SystemAssigned"},
 			ComputerName:                  computerName,
