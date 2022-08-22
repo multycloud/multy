@@ -35,6 +35,20 @@ func (d *localDatabase) LoadTerraformState(_ context.Context, userId string) (st
 	return string(file), err
 }
 
+func (d *localDatabase) LoadTerraformPlan(_ context.Context, userId string) (string, error) {
+	file, err := os.ReadFile(path.Join(filepath.Join(os.TempDir(), "multy", userId, "local"), TfPlan))
+	// empty plan is fine and expected in dry runs
+	if os.IsNotExist(err) {
+		return "", nil
+	}
+	return string(file), err
+}
+
+func (d *localDatabase) StoreTerraformPlan(_ context.Context, userId string, plan string) error {
+	err := os.WriteFile(path.Join(filepath.Join(os.TempDir(), "multy", userId, "local"), TfPlan), []byte(plan), os.ModePerm&0664)
+	return err
+}
+
 func newLocalDatabase(awsClient aws_client.AwsClient) (*localDatabase, error) {
 	userStg, err := newUserConfigStorage(awsClient)
 	if err != nil {

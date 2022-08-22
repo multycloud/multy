@@ -21,7 +21,7 @@ func InitVirtualNetwork(vn *types.VirtualNetwork) resources.ResourceTranslator[*
 	return GcpVirtualNetwork{vn}
 }
 
-func (r GcpVirtualNetwork) FromState(state *output.TfState) (*resourcespb.VirtualNetworkResource, error) {
+func (r GcpVirtualNetwork) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VirtualNetworkResource, error) {
 	out := &resourcespb.VirtualNetworkResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,

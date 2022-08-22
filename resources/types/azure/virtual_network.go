@@ -21,7 +21,7 @@ func InitVirtualNetwork(vn *types.VirtualNetwork) resources.ResourceTranslator[*
 	return AzureVirtualNetwork{vn}
 }
 
-func (r AzureVirtualNetwork) FromState(state *output.TfState) (*resourcespb.VirtualNetworkResource, error) {
+func (r AzureVirtualNetwork) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VirtualNetworkResource, error) {
 	if flags.DryRun {
 		return &resourcespb.VirtualNetworkResource{
 			CommonParameters: &commonpb.CommonResourceParameters{

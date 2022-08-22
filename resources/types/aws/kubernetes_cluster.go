@@ -80,7 +80,7 @@ func createKubeConfig(clusterName string, certData string, endpoint string, awsR
 	return string(s), nil
 }
 
-func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.KubernetesClusterResource, error) {
+func (r AwsKubernetesCluster) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.KubernetesClusterResource, error) {
 	result := &resourcespb.KubernetesClusterResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -96,7 +96,7 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		Endpoint:         "dryrun",
 	}
 	var err error
-	result.DefaultNodePool, err = AwsKubernetesNodePool{r.DefaultNodePool}.FromState(state)
+	result.DefaultNodePool, err = AwsKubernetesNodePool{r.DefaultNodePool}.FromState(state, plan)
 	if err != nil {
 		return nil, err
 	}

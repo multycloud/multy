@@ -19,7 +19,7 @@ func InitNetworkInterfaceSecurityGroupAssociation(vn *types.NetworkInterfaceSecu
 	return AwsNetworkInterfaceSecurityGroupAssociation{vn}
 }
 
-func (r AwsNetworkInterfaceSecurityGroupAssociation) FromState(state *output.TfState) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+func (r AwsNetworkInterfaceSecurityGroupAssociation) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
 	out := &resourcespb.NetworkInterfaceSecurityGroupAssociationResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

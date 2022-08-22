@@ -70,7 +70,7 @@ func (r GcpRouteTable) getRouteIds() (out []string) {
 	return
 }
 
-func (r GcpRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTableResource, error) {
+func (r GcpRouteTable) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.RouteTableResource, error) {
 	out := &resourcespb.RouteTableResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

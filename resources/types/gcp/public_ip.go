@@ -20,7 +20,7 @@ func InitPublicIp(vn *types.PublicIp) resources.ResourceTranslator[*resourcespb.
 	return GcpPublicIp{vn}
 }
 
-func (r GcpPublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpResource, error) {
+func (r GcpPublicIp) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.PublicIpResource, error) {
 	out := &resourcespb.PublicIpResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,

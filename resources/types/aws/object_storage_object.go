@@ -20,7 +20,7 @@ func InitObjectStorageObject(vn *types.ObjectStorageObject) resources.ResourceTr
 	return AwsObjectStorageObject{vn}
 }
 
-func (r AwsObjectStorageObject) FromState(state *output.TfState) (*resourcespb.ObjectStorageObjectResource, error) {
+func (r AwsObjectStorageObject) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.ObjectStorageObjectResource, error) {
 	out := &resourcespb.ObjectStorageObjectResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

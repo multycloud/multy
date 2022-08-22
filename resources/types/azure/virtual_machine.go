@@ -26,7 +26,7 @@ func InitVirtualMachine(vn *types.VirtualMachine) resources.ResourceTranslator[*
 	return AzureVirtualMachine{vn}
 }
 
-func (r AzureVirtualMachine) FromState(state *output.TfState) (*resourcespb.VirtualMachineResource, error) {
+func (r AzureVirtualMachine) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VirtualMachineResource, error) {
 	out := &resourcespb.VirtualMachineResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,

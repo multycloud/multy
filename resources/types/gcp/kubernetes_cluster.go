@@ -25,7 +25,7 @@ func InitKubernetesCluster(r *types.KubernetesCluster) resources.ResourceTransla
 	return GcpKubernetesCluster{r}
 }
 
-func (r GcpKubernetesCluster) FromState(state *output.TfState) (*resourcespb.KubernetesClusterResource, error) {
+func (r GcpKubernetesCluster) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.KubernetesClusterResource, error) {
 	result := &resourcespb.KubernetesClusterResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -41,7 +41,7 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		Endpoint:         "dryrun",
 	}
 	var err error
-	result.DefaultNodePool, err = GcpKubernetesNodePool{r.DefaultNodePool}.FromState(state)
+	result.DefaultNodePool, err = GcpKubernetesNodePool{r.DefaultNodePool}.FromState(state, plan)
 	if err != nil {
 		return nil, err
 	}

@@ -22,7 +22,7 @@ func InitObjectStorageObject(vn *types.ObjectStorageObject) resources.ResourceTr
 	return GcpObjectStorageObject{vn}
 }
 
-func (r GcpObjectStorageObject) FromState(state *output.TfState) (*resourcespb.ObjectStorageObjectResource, error) {
+func (r GcpObjectStorageObject) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.ObjectStorageObjectResource, error) {
 	out := &resourcespb.ObjectStorageObjectResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

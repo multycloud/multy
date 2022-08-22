@@ -394,6 +394,16 @@ func (s *Server) refresh(ctx context.Context, in *proto.RefreshStateRequest) (*c
 		return nil, err
 	}
 
+	plan, err := s.ResourceServiceContext.DeploymentExecutor.GetPlan(ctx, configPrefix)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.Database.StoreTerraformPlan(ctx, configPrefix, plan)
+	if err != nil {
+		return nil, err
+	}
+
 	err = s.Database.StoreUserConfig(ctx, c, configPrefix, lock)
 	if err != nil {
 		return nil, err

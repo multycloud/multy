@@ -19,7 +19,7 @@ type ResourceMetadatas map[proto.Message]ResourceMetadataInterface
 
 type ResourceTranslator[OutT proto.Message] interface {
 	Translate(MultyContext) ([]output.TfBlock, error)
-	FromState(state *output.TfState) (OutT, error)
+	FromState(state *output.TfState, plan *output.TfPlan) (OutT, error)
 }
 
 type ResourceExporter[ArgsT proto.Message] interface {
@@ -57,8 +57,8 @@ func (m *ResourceMetadata[ArgsT, R, OutT]) Update(resource Resource, args proto.
 	return r.Update(args.(ArgsT), resources)
 }
 
-func (m *ResourceMetadata[ArgsT, R, OutT]) ReadFromState(resource Resource, state *output.TfState) (proto.Message, error) {
-	out, err := m.Translators[resource.GetCloud()](resource.(R)).FromState(state)
+func (m *ResourceMetadata[ArgsT, R, OutT]) ReadFromState(resource Resource, state *output.TfState, plan *output.TfPlan) (proto.Message, error) {
+	out, err := m.Translators[resource.GetCloud()](resource.(R)).FromState(state, plan)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ type ResourceMetadataInterface interface {
 	ParseCloud(proto.Message) commonpb.CloudProvider
 	Create(string, proto.Message, *Resources) (Resource, error)
 	Update(Resource, proto.Message, *Resources) error
-	ReadFromState(Resource, *output.TfState) (proto.Message, error)
+	ReadFromState(Resource, *output.TfState, *output.TfPlan) (proto.Message, error)
 
 	Export(Resource, *Resources) (proto.Message, bool, error)
 	Import(string, proto.Message, *Resources) error

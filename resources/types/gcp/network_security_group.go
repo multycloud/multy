@@ -24,7 +24,7 @@ func InitNetworkSecurityGroup(r *types.NetworkSecurityGroup) resources.ResourceT
 	return GcpNetworkSecurityGroup{r}
 }
 
-func (r GcpNetworkSecurityGroup) FromState(state *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {
+func (r GcpNetworkSecurityGroup) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.NetworkSecurityGroupResource, error) {
 	out := &resourcespb.NetworkSecurityGroupResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,

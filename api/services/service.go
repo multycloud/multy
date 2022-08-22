@@ -11,6 +11,7 @@ import (
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/types/metadata"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -182,11 +183,19 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.Mul
 			if err != nil {
 				return *new(OutT), err
 			}
+			planStr, err := s.ServiceContext.Database.LoadTerraformPlan(ctx, configPrefix)
+			if err != nil {
+				return *new(OutT), err
+			}
+			plan, err := output.ParsePlanFromOutput(planStr)
+			if err != nil {
+				return *new(OutT), err
+			}
 			m, err := r.GetMetadata(metadata.Metadatas)
 			if err != nil {
 				return *new(OutT), err
 			}
-			out, err := m.ReadFromState(r, state)
+			out, err := m.ReadFromState(r, state, plan)
 			if err != nil {
 				return *new(OutT), errors.InternalServerErrorWithMessage(fmt.Sprintf("Unable to retrieve data for resource %s.", r.GetResourceId()), err)
 			}

@@ -23,7 +23,7 @@ func InitSubnet(r *types.Subnet) resources.ResourceTranslator[*resourcespb.Subne
 	return AzureSubnet{r}
 }
 
-func (r AzureSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource, error) {
+func (r AzureSubnet) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.SubnetResource, error) {
 	if flags.DryRun {
 		return &resourcespb.SubnetResource{
 			CommonParameters: &commonpb.CommonChildResourceParameters{

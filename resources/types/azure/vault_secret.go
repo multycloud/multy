@@ -21,7 +21,7 @@ func InitVaultSecret(vn *types.VaultSecret) resources.ResourceTranslator[*resour
 	return AzureVaultSecret{vn}
 }
 
-func (r AzureVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSecretResource, error) {
+func (r AzureVaultSecret) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultSecretResource, error) {
 	out := &resourcespb.VaultSecretResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

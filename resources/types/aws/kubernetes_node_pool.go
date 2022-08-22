@@ -21,7 +21,7 @@ func InitKubernetesNodePool(r *types.KubernetesNodePool) resources.ResourceTrans
 	return AwsKubernetesNodePool{r}
 }
 
-func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.KubernetesNodePoolResource, error) {
+func (r AwsKubernetesNodePool) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.KubernetesNodePoolResource, error) {
 	out := &resourcespb.KubernetesNodePoolResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

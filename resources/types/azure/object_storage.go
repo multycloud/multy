@@ -21,7 +21,7 @@ func InitObjectStorage(vn *types.ObjectStorage) resources.ResourceTranslator[*re
 	return AzureObjectStorage{vn}
 }
 
-func (r AzureObjectStorage) FromState(state *output.TfState) (*resourcespb.ObjectStorageResource, error) {
+func (r AzureObjectStorage) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.ObjectStorageResource, error) {
 	out := &resourcespb.ObjectStorageResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,

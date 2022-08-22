@@ -19,7 +19,7 @@ func InitPublicIp(r *types.PublicIp) resources.ResourceTranslator[*resourcespb.P
 	return AzurePublicIp{r}
 }
 
-func (r AzurePublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpResource, error) {
+func (r AzurePublicIp) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.PublicIpResource, error) {
 	out := &resourcespb.PublicIpResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,

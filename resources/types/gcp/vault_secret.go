@@ -20,7 +20,7 @@ func InitVaultSecret(vn *types.VaultSecret) resources.ResourceTranslator[*resour
 	return GcpVaultSecret{vn}
 }
 
-func (r GcpVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSecretResource, error) {
+func (r GcpVaultSecret) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultSecretResource, error) {
 	out := &resourcespb.VaultSecretResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

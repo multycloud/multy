@@ -92,6 +92,24 @@ func (d *database) LoadTerraformState(ctx context.Context, userId string) (strin
 	return result, nil
 }
 
+func (d *database) LoadTerraformPlan(ctx context.Context, configPrefix string) (string, error) {
+	result, err := d.AwsClient.ReadFile(configPrefix, TfState)
+	if err != nil {
+		return "", errors.InternalServerErrorWithMessage("error reading terraform plan", err)
+	}
+
+	return result, nil
+}
+
+func (d *database) StoreTerraformPlan(ctx context.Context, configPrefix string, plan string) error {
+	err := d.AwsClient.SaveFile(configPrefix, TfPlan, plan)
+	if err != nil {
+		return errors.InternalServerErrorWithMessage("error storing terraform plan", err)
+	}
+
+	return nil
+}
+
 func newDatabase(awsClient aws_client.AwsClient) (*database, error) {
 	connectionString, exists := os.LookupEnv("MULTY_DB_CONN_STRING")
 	if !exists {

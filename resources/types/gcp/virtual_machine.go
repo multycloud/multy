@@ -28,7 +28,7 @@ func InitVirtualMachine(vn *types.VirtualMachine) resources.ResourceTranslator[*
 	return GcpVirtualMachine{vn}
 }
 
-func (r GcpVirtualMachine) FromState(state *output.TfState) (*resourcespb.VirtualMachineResource, error) {
+func (r GcpVirtualMachine) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VirtualMachineResource, error) {
 	out := &resourcespb.VirtualMachineResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,

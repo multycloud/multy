@@ -20,7 +20,7 @@ func InitNetworkInterface(r *types.NetworkInterface) resources.ResourceTranslato
 	return AwsNetworkInterface{r}
 }
 
-func (r AwsNetworkInterface) FromState(state *output.TfState) (*resourcespb.NetworkInterfaceResource, error) {
+func (r AwsNetworkInterface) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.NetworkInterfaceResource, error) {
 	out := &resourcespb.NetworkInterfaceResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,

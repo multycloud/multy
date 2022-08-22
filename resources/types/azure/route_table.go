@@ -19,7 +19,7 @@ func InitRouteTable(vn *types.RouteTable) resources.ResourceTranslator[*resource
 	return AzureRouteTable{vn}
 }
 
-func (r AzureRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTableResource, error) {
+func (r AzureRouteTable) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.RouteTableResource, error) {
 	if flags.DryRun {
 		return &resourcespb.RouteTableResource{
 			CommonParameters: &commonpb.CommonChildResourceParameters{

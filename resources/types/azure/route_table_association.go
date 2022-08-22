@@ -19,7 +19,7 @@ func InitRouteTableAssociation(vn *types.RouteTableAssociation) resources.Resour
 	return AzureRouteTableAssociation{vn}
 }
 
-func (r AzureRouteTableAssociation) FromState(state *output.TfState) (*resourcespb.RouteTableAssociationResource, error) {
+func (r AzureRouteTableAssociation) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.RouteTableAssociationResource, error) {
 	out := &resourcespb.RouteTableAssociationResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

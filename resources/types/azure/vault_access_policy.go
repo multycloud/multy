@@ -21,7 +21,7 @@ func InitVaultAccessPolicy(vn *types.VaultAccessPolicy) resources.ResourceTransl
 	return AzureVaultAccessPolicy{vn}
 }
 
-func (r AzureVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.VaultAccessPolicyResource, error) {
+func (r AzureVaultAccessPolicy) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultAccessPolicyResource, error) {
 	out := &resourcespb.VaultAccessPolicyResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

@@ -19,7 +19,7 @@ func InitKubernetesNodePool(r *types.KubernetesNodePool) resources.ResourceTrans
 	return AzureKubernetesNodePool{r}
 }
 
-func (r AzureKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.KubernetesNodePoolResource, error) {
+func (r AzureKubernetesNodePool) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.KubernetesNodePoolResource, error) {
 	out := r.translateToResource()
 
 	if flags.DryRun {

@@ -21,7 +21,7 @@ func InitSubnet(r *types.Subnet) resources.ResourceTranslator[*resourcespb.Subne
 	return GcpSubnet{r}
 }
 
-func (r GcpSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource, error) {
+func (r GcpSubnet) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.SubnetResource, error) {
 	out := &resourcespb.SubnetResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

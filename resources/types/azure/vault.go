@@ -24,7 +24,7 @@ type AzureClientConfig struct {
 	*output.TerraformDataSource `hcl:",squash" default:"name=azurerm_client_config"`
 }
 
-func (r AzureVault) FromState(state *output.TfState) (*resourcespb.VaultResource, error) {
+func (r AzureVault) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultResource, error) {
 	out := &resourcespb.VaultResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,

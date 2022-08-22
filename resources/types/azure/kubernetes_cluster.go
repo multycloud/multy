@@ -19,7 +19,7 @@ func InitKubernetesCluster(r *types.KubernetesCluster) resources.ResourceTransla
 	return AzureKubernetesCluster{r}
 }
 
-func (r AzureKubernetesCluster) FromState(state *output.TfState) (*resourcespb.KubernetesClusterResource, error) {
+func (r AzureKubernetesCluster) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.KubernetesClusterResource, error) {
 	result := &resourcespb.KubernetesClusterResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
