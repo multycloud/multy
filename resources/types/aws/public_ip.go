@@ -47,6 +47,7 @@ func (r AwsPublicIp) FromState(state *output.TfState, plan *output.TfPlan) (*res
 		out.Ip = stateResource.PublicIp
 		out.Name = stateResource.AwsResource.Tags["Name"]
 		out.AwsOutputs.PublicIpId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "aws_public_ip", output.MaybeGetPlannedChageById[public_ip.AwsElasticIp](plan, r.ResourceId))
 	} else {
 		statuses["aws_public_ip"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

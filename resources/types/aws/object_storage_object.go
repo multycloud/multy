@@ -53,6 +53,7 @@ func (r AwsObjectStorageObject) FromState(state *output.TfState, plan *output.Tf
 			out.Url = fmt.Sprintf("https://%s.s3.amazonaws.com/%s", stateResource.Bucket, stateResource.Key)
 		}
 		out.AwsOutputs = &resourcespb.ObjectStorageObjectAwsOutputs{S3BucketObjectId: stateResource.ResourceId}
+		output.AddToStatuses(statuses, "aws_s3_bucket_object", output.MaybeGetPlannedChageById[object_storage_object.AwsS3BucketObject](plan, r.ResourceId))
 	} else {
 		statuses["aws_s3_bucket_object"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

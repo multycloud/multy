@@ -45,6 +45,7 @@ func (r AwsVaultSecret) FromState(state *output.TfState, plan *output.TfPlan) (*
 		out.Name = strings.TrimPrefix(stateResource.Name, fmt.Sprintf("/%s/", r.Vault.Args.Name))
 		out.Value = stateResource.Value
 		out.AwsOutputs = &resourcespb.VaultSecretAwsOutputs{SsmParameterArn: stateResource.Arn}
+		output.AddToStatuses(statuses, "aws_ssm_parameter", output.MaybeGetPlannedChageById[vault_secret.AwsSsmParameter](plan, r.ResourceId))
 	} else {
 		statuses["aws_ssm_parameter"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

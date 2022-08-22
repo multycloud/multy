@@ -50,6 +50,7 @@ func (r AwsNetworkInterface) FromState(state *output.TfState, plan *output.TfPla
 		// TODO: map availability zone?
 		out.Name = stateResource.AwsResource.Tags["Name"]
 		out.AwsOutputs.NetworkInterfaceId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "aws_network_interface", output.MaybeGetPlannedChageById[network_interface.AwsNetworkInterface](plan, r.ResourceId))
 	} else {
 		statuses["aws_network_interface"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -59,6 +60,7 @@ func (r AwsNetworkInterface) FromState(state *output.TfState, plan *output.TfPla
 			return nil, err
 		}
 		out.AwsOutputs.EipAssociationId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "aws_eip_association", output.MaybeGetPlannedChageById[network_interface.AwsEipAssociation](plan, r.ResourceId))
 	} else if r.PublicIp != nil {
 		statuses["aws_eip_association"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

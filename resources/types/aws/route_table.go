@@ -59,6 +59,7 @@ func (r AwsRouteTable) FromState(state *output.TfState, plan *output.TfPlan) (*r
 		}
 		out.Routes = routes
 		out.AwsOutputs.RouteTableId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "aws_route_table", output.MaybeGetPlannedChageById[route_table.AwsRouteTable](plan, r.ResourceId))
 	} else {
 		statuses["aws_route_table"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

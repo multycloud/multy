@@ -70,6 +70,7 @@ func (r AwsDatabase) FromState(state *output.TfState, plan *output.TfPlan) (*res
 		out.Port = int32(db.Port)
 		out.StorageGb = int64(db.AllocatedStorage)
 		out.AwsOutputs.DbInstanceId = db.Arn
+		output.AddToStatuses(statuses, "aws_db_instance", output.MaybeGetPlannedChageById[database.AwsDbInstance](plan, r.ResourceId))
 	} else {
 		statuses["aws_db_instance"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -79,6 +80,7 @@ func (r AwsDatabase) FromState(state *output.TfState, plan *output.TfPlan) (*res
 			return nil, err
 		}
 		out.AwsOutputs.DefaultNetworkSecurityGroupId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "aws_default_network_security_group", output.MaybeGetPlannedChageById[network_security_group.AwsSecurityGroup](plan, r.ResourceId))
 	} else {
 		statuses["aws_default_network_security_group"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -88,6 +90,7 @@ func (r AwsDatabase) FromState(state *output.TfState, plan *output.TfPlan) (*res
 			return nil, err
 		}
 		out.AwsOutputs.DbSubnetGroupId = stateResource.Arn
+		output.AddToStatuses(statuses, "aws_db_subnet_group", output.MaybeGetPlannedChageById[database.AwsDbSubnetGroup](plan, r.ResourceId))
 	} else {
 		statuses["aws_db_subnet_group"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

@@ -46,6 +46,7 @@ func (r AwsObjectStorage) FromState(state *output.TfState, plan *output.TfPlan) 
 
 		out.Name = stateResource.Bucket
 		out.AwsOutputs = &resourcespb.ObjectStorageAwsOutputs{S3BucketArn: stateResource.Arn}
+		output.AddToStatuses(statuses, "aws_s3_bucket", output.MaybeGetPlannedChageById[object_storage.AwsS3Bucket](plan, r.ResourceId))
 	} else {
 		statuses["aws_s3_bucket"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -56,6 +57,7 @@ func (r AwsObjectStorage) FromState(state *output.TfState, plan *output.TfPlan) 
 		}
 
 		out.Versioning = len(stateResource.VersioningConfiguration) > 0 && stateResource.VersioningConfiguration[0].Status == "Enabled"
+		output.AddToStatuses(statuses, "aws_s3_bucket_versioning", output.MaybeGetPlannedChageById[object_storage.AwsS3BucketVersioning](plan, r.ResourceId))
 	} else {
 		out.Versioning = false
 		if r.Args.Versioning {

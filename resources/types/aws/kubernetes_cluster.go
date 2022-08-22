@@ -126,6 +126,7 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState, plan *output.TfPl
 		result.KubeConfigRaw = kubeCgfRaw
 
 		result.AwsOutputs.EksClusterId = cluster.Arn
+		output.AddToStatuses(statuses, "aws_eks_cluster", output.MaybeGetPlannedChageById[kubernetes_service.AwsEksCluster](plan, r.ResourceId))
 	} else {
 		statuses["aws_eks_cluster"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -135,6 +136,7 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState, plan *output.TfPl
 			return nil, err
 		}
 		result.AwsOutputs.IamRoleArn = stateResource.Arn
+		output.AddToStatuses(statuses, "aws_iam_role", output.MaybeGetPlannedChageById[iam.AwsIamRole](plan, r.ResourceId))
 	} else {
 		statuses["aws_iam_role"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
