@@ -53,6 +53,7 @@ func (r AzureObjectStorageObject) FromState(state *output.TfState, plan *output.
 			out.Url = fmt.Sprintf("https://%s.blob.core.windows.net/public/%s", stateResource.StorageAccountName, r.Args.Name)
 		}
 		out.AzureOutputs = &resourcespb.ObjectStorageObjectAzureOutputs{StorageBlobId: stateResource.ResourceId}
+		output.AddToStatuses(statuses, "azure_storage_account_blob", output.MaybeGetPlannedChageById[object_storage_object.AzureStorageAccountBlob](plan, r.ResourceId))
 	} else {
 		statuses["azure_storage_account_blob"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

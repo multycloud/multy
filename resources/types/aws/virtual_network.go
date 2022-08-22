@@ -67,7 +67,6 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState, plan *output.TfPlan)
 		}
 		out.AwsOutputs.InternetGatewayId = stateResource.ResourceId
 		output.AddToStatuses(statuses, "aws_internet_gateway", output.MaybeGetPlannedChageById[virtual_network.AwsInternetGateway](plan, r.ResourceId))
-
 	} else {
 		statuses["aws_internet_gateway"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

@@ -75,6 +75,7 @@ func (r AzureVirtualMachine) FromState(state *output.TfState, plan *output.TfPla
 		} else {
 			out.PublicSshKey = vmResource.AdminSshKey[0].PublicKey
 		}
+		output.AddToStatuses(statuses, "azure_virtual_machine", output.MaybeGetPlannedChageById[virtual_machine.AzureVirtualMachine](plan, r.ResourceId))
 	} else {
 		statuses["azure_virtual_machine"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -84,6 +85,7 @@ func (r AzureVirtualMachine) FromState(state *output.TfState, plan *output.TfPla
 			return nil, err
 		}
 		out.AzureOutputs.NetworkInterfaceId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "azure_network_interface", output.MaybeGetPlannedChageById[network_interface.AzureNetworkInterface](plan, r.ResourceId))
 	} else if len(r.NetworkInterface) == 0 {
 		statuses["azure_network_interface"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -94,6 +96,7 @@ func (r AzureVirtualMachine) FromState(state *output.TfState, plan *output.TfPla
 		}
 		out.PublicIp = ipResource.IpAddress
 		out.AzureOutputs.PublicIpId = ipResource.ResourceId
+		output.AddToStatuses(statuses, "azure_public_ip", output.MaybeGetPlannedChageById[public_ip.AzurePublicIp](plan, r.ResourceId))
 	} else if r.Args.GeneratePublicIp {
 		statuses["azure_public_ip"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

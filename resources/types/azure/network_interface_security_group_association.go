@@ -35,9 +35,8 @@ func (r AzureNetworkInterfaceSecurityGroupAssociation) FromState(state *output.T
 
 	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	if _, exists, _ := output.MaybeGetParsedById[network_interface_security_group_association.AzureNetworkInterfaceSecurityGroupAssociation](state, r.ResourceId); !exists {
-		statuses["azure_network_interface_security_group_association"] = commonpb.ResourceStatus_NEEDS_CREATE
-	}
+	output.AddToStatuses(statuses, "azure_network_interface_security_group_association",
+		output.MaybeGetPlannedChageById[network_interface_security_group_association.AzureNetworkInterfaceSecurityGroupAssociation](plan, r.ResourceId))
 
 	if len(statuses) > 0 {
 		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}

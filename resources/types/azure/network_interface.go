@@ -53,6 +53,7 @@ func (r AzureNetworkInterface) FromState(state *output.TfState, plan *output.TfP
 				statuses["azure_network_interface"] = commonpb.ResourceStatus_NEEDS_UPDATE
 			}
 		}
+		output.AddToStatuses(statuses, "azure_network_interface", output.MaybeGetPlannedChageById[network_interface.AzureNetworkInterface](plan, r.ResourceId))
 	} else {
 		statuses["azure_network_interface"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

@@ -45,6 +45,7 @@ func (r AzureVaultAccessPolicy) FromState(state *output.TfState, plan *output.Tf
 
 		out.AzureOutputs = &resourcespb.VaultAccessPolicyAzureOutputs{KeyVaultAccessPolicyId: stateResource.ResourceId}
 		out.Identity = stateResource.ObjectId
+		output.AddToStatuses(statuses, "azure_key_vault_access_policy", output.MaybeGetPlannedChageById[vault_access_policy.AzureKeyVaultAccessPolicy](plan, r.ResourceId))
 	} else {
 		statuses["azure_key_vault_access_policy"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

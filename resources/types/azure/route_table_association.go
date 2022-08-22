@@ -7,6 +7,7 @@ import (
 	"github.com/multycloud/multy/resources"
 	"github.com/multycloud/multy/resources/common"
 	"github.com/multycloud/multy/resources/output"
+	"github.com/multycloud/multy/resources/output/route_table"
 	"github.com/multycloud/multy/resources/output/route_table_association"
 	"github.com/multycloud/multy/resources/types"
 )
@@ -34,9 +35,7 @@ func (r AzureRouteTableAssociation) FromState(state *output.TfState, plan *outpu
 	}
 
 	statuses := map[string]commonpb.ResourceStatus_Status{}
-	if _, exists, _ := output.MaybeGetParsedById[route_table_association.AzureRouteTableAssociation](state, r.getRtaId()); !exists {
-		statuses["azure_route_table_association"] = commonpb.ResourceStatus_NEEDS_CREATE
-	}
+	output.AddToStatuses(statuses, "azure_route_table_association", output.MaybeGetPlannedChageById[route_table.AzureRouteTable](plan, r.getRtaId()))
 
 	if len(statuses) > 0 {
 		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}

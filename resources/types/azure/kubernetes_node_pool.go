@@ -34,6 +34,7 @@ func (r AzureKubernetesNodePool) FromState(state *output.TfState, plan *output.T
 		}
 
 		r.parseNodePoolResource(out, stateResource)
+		output.AddToStatuses(statuses, "azure_kubernetes_node_pool", output.MaybeGetPlannedChageById[kubernetes_node_pool.AzureKubernetesNodePool](plan, r.ResourceId))
 	} else {
 		statuses["azure_kubernetes_node_pool"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

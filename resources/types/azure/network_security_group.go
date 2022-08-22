@@ -105,6 +105,7 @@ func (r AzureNetworkSecurityGroup) FromState(state *output.TfState, plan *output
 			}
 		}
 		out.AzureOutputs = &resourcespb.NetworkSecurityGroupAzureOutputs{NetworkSecurityGroupId: stateResource.ResourceId}
+		output.AddToStatuses(statuses, "azure_network_security_group", output.MaybeGetPlannedChageById[network_security_group.AzureNsg](plan, r.ResourceId))
 	} else {
 		statuses["azure_network_security_group"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

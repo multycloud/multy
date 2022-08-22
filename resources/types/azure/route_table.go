@@ -60,6 +60,7 @@ func (r AzureRouteTable) FromState(state *output.TfState, plan *output.TfPlan) (
 		}
 		out.Routes = routes
 		out.AzureOutputs.RouteTableId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "azure_route_table", output.MaybeGetPlannedChageById[route_table.AzureRouteTable](plan, r.ResourceId))
 	} else {
 		statuses["azure_route_table"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

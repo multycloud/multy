@@ -56,6 +56,7 @@ func (r AzureVirtualNetwork) FromState(state *output.TfState, plan *output.TfPla
 		out.CidrBlock = stateResource.AddressSpace[0]
 
 		out.AzureOutputs.VirtualNetworkId = stateResource.AzResource.ResourceId
+		output.AddToStatuses(statuses, "azure_virtual_network", output.MaybeGetPlannedChageById[virtual_network.AzureVnet](plan, r.ResourceId))
 	} else {
 		statuses["azure_virtual_network"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -65,6 +66,7 @@ func (r AzureVirtualNetwork) FromState(state *output.TfState, plan *output.TfPla
 			return nil, err
 		}
 		out.AzureOutputs.LocalRouteTableId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "azure_local_route_table", output.MaybeGetPlannedChageById[route_table.AzureRouteTable](plan, r.ResourceId))
 	} else {
 		statuses["azure_local_route_table"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

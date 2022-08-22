@@ -47,6 +47,7 @@ func (r AzureVault) FromState(state *output.TfState, plan *output.TfPlan) (*reso
 		}
 		out.Name = stateResource.Name
 		out.AzureOutputs = &resourcespb.VaultAzureOutputs{KeyVaultId: stateResource.ResourceId}
+		output.AddToStatuses(statuses, "azure_vault", output.MaybeGetPlannedChageById[vault.AzureKeyVault](plan, r.ResourceId))
 	} else {
 		statuses["azure_vault"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

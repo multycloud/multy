@@ -52,6 +52,7 @@ func (r AzureSubnet) FromState(state *output.TfState, plan *output.TfPlan) (*res
 		out.Name = stateResource.Name
 		out.CidrBlock = stateResource.AddressPrefixes[0]
 		out.AzureOutputs.SubnetId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "azure_subnet", output.MaybeGetPlannedChageById[subnet.AzureSubnet](plan, r.ResourceId))
 	} else {
 		statuses["azure_subnet"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

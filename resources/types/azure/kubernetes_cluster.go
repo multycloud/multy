@@ -65,6 +65,7 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState, plan *output.Tf
 		result.AzureOutputs = &resourcespb.KubernetesClusterAzureOutputs{
 			AksClusterId: cluster.ResourceId,
 		}
+		output.AddToStatuses(statuses, "azure_kubernetes_cluster", output.MaybeGetPlannedChageById[kubernetes_service.AzureEksCluster](plan, r.ResourceId))
 	} else {
 		statuses["azure_kubernetes_cluster"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

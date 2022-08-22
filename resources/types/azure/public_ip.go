@@ -47,6 +47,7 @@ func (r AzurePublicIp) FromState(state *output.TfState, plan *output.TfPlan) (*r
 		out.AzureOutputs = &resourcespb.PublicIpAzureOutputs{
 			PublicIpId: stateResource.ResourceId,
 		}
+		output.AddToStatuses(statuses, "azure_public_ip", output.MaybeGetPlannedChageById[public_ip.AzurePublicIp](plan, r.ResourceId))
 	} else {
 		statuses["azure_public_ip"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
