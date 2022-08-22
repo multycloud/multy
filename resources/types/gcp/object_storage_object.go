@@ -60,8 +60,10 @@ func (r GcpObjectStorageObject) FromState(state *output.TfState, plan *output.Tf
 		} else {
 			out.Acl = resourcespb.ObjectStorageObjectAcl_PRIVATE
 		}
+		output.AddToStatuses(statuses, "gcp_storage_bucket_object", output.MaybeGetPlannedChageById[object_storage_object.GoogleStorageBucketObject](plan, r.ResourceId))
+		output.AddToStatuses(statuses, "gcp_storage_bucket_object_acl", output.MaybeGetPlannedChageById[object_storage_object.GoogleStorageObjectAccessControl](plan, r.ResourceId))
 	} else {
-		statuses["azure_storage_account_blob"] = commonpb.ResourceStatus_NEEDS_CREATE
+		statuses["gcp_storage_bucket_object"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if len(statuses) > 0 {

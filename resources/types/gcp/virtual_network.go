@@ -48,6 +48,7 @@ func (r GcpVirtualNetwork) FromState(state *output.TfState, plan *output.TfPlan)
 
 		out.Name = stateResource.Name
 		out.GcpOutputs.ComputeNetworkId = stateResource.SelfLink
+		output.AddToStatuses(statuses, "gcp_compute_network", output.MaybeGetPlannedChageById[virtual_network.GoogleComputeNetwork](plan, r.ResourceId))
 	} else {
 		statuses["gcp_compute_network"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -57,6 +58,7 @@ func (r GcpVirtualNetwork) FromState(state *output.TfState, plan *output.TfPlan)
 			return nil, err
 		}
 		out.GcpOutputs.DefaultComputeFirewallId = stateResource.SelfLink
+		output.AddToStatuses(statuses, "gcp_default_compute_firewall", output.MaybeGetPlannedChageById[network_security_group.GoogleComputeFirewall](plan, r.ResourceId))
 	} else {
 		statuses["gcp_default_compute_firewall"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

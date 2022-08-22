@@ -62,6 +62,7 @@ func (r GcpVaultAccessPolicy) FromState(state *output.TfState, plan *output.TfPl
 			if out.Access != r.Args.Access || out.Identity != r.Args.Identity {
 				statuses[fmt.Sprintf("gcp_secret_manager_secret_iam_member_%s", resourceId)] = commonpb.ResourceStatus_NEEDS_UPDATE
 			}
+			output.AddToStatuses(statuses, fmt.Sprintf("gcp_secret_manager_secret_iam_member_%s", resourceId), output.MaybeGetPlannedChageById[vault_access_policy.GoogleSecretManagerSecretIamMember](plan, resourceId))
 		} else {
 			statuses[fmt.Sprintf("gcp_secret_manager_secret_iam_member_%s", resourceId)] = commonpb.ResourceStatus_NEEDS_CREATE
 		}

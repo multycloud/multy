@@ -47,6 +47,7 @@ func (r GcpObjectStorage) FromState(state *output.TfState, plan *output.TfPlan) 
 		out.GcpOutputs = &resourcespb.ObjectStorageGcpOutputs{StorageBucketId: stateResource.SelfLink}
 		out.Name = stateResource.Name
 		out.Versioning = len(stateResource.Versioning) > 0 && stateResource.Versioning[0].Enabled
+		output.AddToStatuses(statuses, "gcp_storage_bucket", output.MaybeGetPlannedChageById[object_storage.GoogleStorageBucket](plan, r.ResourceId))
 	} else {
 		statuses["gcp_storage_bucket"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

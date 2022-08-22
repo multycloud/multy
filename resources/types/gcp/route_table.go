@@ -107,9 +107,9 @@ func (r GcpRouteTable) FromState(state *output.TfState, plan *output.TfPlan) (*r
 			routes = append(routes, route)
 
 			out.GcpOutputs.ComputeRouteId = append(out.GcpOutputs.ComputeRouteId, stateResource.SelfLink)
+			output.AddToStatuses(statuses, fmt.Sprintf("gcp_compute_route_%d", i), output.MaybeGetPlannedChageById[route_table.GoogleComputeRoute](plan, routeId))
 		} else {
 			statuses[fmt.Sprintf("gcp_compute_route_%d", i)] = commonpb.ResourceStatus_NEEDS_CREATE
-
 		}
 	}
 	out.Routes = routes

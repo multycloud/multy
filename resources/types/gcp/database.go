@@ -66,7 +66,7 @@ func (r GcpDatabase) FromState(state *output.TfState, plan *output.TfPlan) (*res
 		}
 		out.Engine = engine
 		out.EngineVersion = version
-
+		output.AddToStatuses(statuses, "gcp_sql_database_instance", output.MaybeGetPlannedChageById[database.GoogleSqlDatabaseInstance](plan, r.ResourceId))
 	} else {
 		statuses["gcp_sql_database_instance"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -77,6 +77,7 @@ func (r GcpDatabase) FromState(state *output.TfState, plan *output.TfPlan) (*res
 		}
 		out.Username = dbUser.Name
 		out.Password = dbUser.Password
+		output.AddToStatuses(statuses, "gcp_sql_user", output.MaybeGetPlannedChageById[database.GoogleSqlUser](plan, r.ResourceId))
 	} else {
 		statuses["gcp_sql_user"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

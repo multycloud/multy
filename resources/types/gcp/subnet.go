@@ -44,6 +44,7 @@ func (r GcpSubnet) FromState(state *output.TfState, plan *output.TfPlan) (*resou
 		out.Name = stateResource.Name
 		out.CidrBlock = stateResource.IpCidrRange
 		out.GcpOutputs = &resourcespb.SubnetGcpOutputs{ComputeSubnetworkId: stateResource.SelfLink}
+		output.AddToStatuses(statuses, "gcp_compute_subnetwork", output.MaybeGetPlannedChageById[subnet.GoogleComputeSubnetwork](plan, r.ResourceId))
 	} else {
 		statuses["gcp_compute_subnetwork"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

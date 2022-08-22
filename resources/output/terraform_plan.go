@@ -93,6 +93,8 @@ func convertActionToStatus(action TfPlanAction) commonpb.ResourceStatus_Status {
 		return commonpb.ResourceStatus_NEEDS_UPDATE
 	case Replace:
 		return commonpb.ResourceStatus_NEEDS_RECREATE
+	case Delete:
+		return commonpb.ResourceStatus_NEEDS_DELETE
 	}
 
 	return commonpb.ResourceStatus_UKNOWN_STATUS

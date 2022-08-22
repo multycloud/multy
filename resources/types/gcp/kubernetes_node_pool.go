@@ -84,6 +84,7 @@ func (r GcpKubernetesNodePool) FromState(state *output.TfState, plan *output.TfP
 		out.GcpOutputs = &resourcespb.KubernetesNodePoolGcpOutputs{
 			GkeNodePoolId: stateResource.SelfLink,
 		}
+		output.AddToStatuses(statuses, "gcp_container_node_pool", output.MaybeGetPlannedChageById[kubernetes_node_pool.GoogleContainerNodePool](plan, r.ResourceId))
 	} else {
 		statuses["gcp_container_node_pool"] = commonpb.ResourceStatus_NEEDS_CREATE
 

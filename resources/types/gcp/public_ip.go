@@ -30,7 +30,6 @@ func (r GcpPublicIp) FromState(state *output.TfState, plan *output.TfPlan) (*res
 			NeedsUpdate:     false,
 		},
 		Name:        r.Args.Name,
-		Ip:          "dryrun",
 		GcpOverride: r.Args.GcpOverride,
 	}
 	if flags.DryRun {
@@ -47,6 +46,7 @@ func (r GcpPublicIp) FromState(state *output.TfState, plan *output.TfPlan) (*res
 		out.GcpOutputs = &resourcespb.PublicIpGcpOutputs{
 			ComputeAddressId: stateResource.SelfLink,
 		}
+		output.AddToStatuses(statuses, "gcp_compute_address", output.MaybeGetPlannedChageById[public_ip.GoogleComputeAddress](plan, r.ResourceId))
 	} else {
 		statuses["gcp_compute_address"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

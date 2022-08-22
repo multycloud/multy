@@ -44,6 +44,7 @@ func (r GcpVaultSecret) FromState(state *output.TfState, plan *output.TfPlan) (*
 		}
 		out.Name = stateResource.SecretId
 		out.GcpOutputs.SecretManagerSecretId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "gcp_secret_manager_secret", output.MaybeGetPlannedChageById[vault_secret.GoogleSecretManagerSecret](plan, r.ResourceId))
 	} else {
 		statuses["gcp_secret_manager_secret"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -54,6 +55,7 @@ func (r GcpVaultSecret) FromState(state *output.TfState, plan *output.TfPlan) (*
 		}
 		out.Value = versionResource.SecretData
 		out.GcpOutputs.SecretManagerSecretVersionId = versionResource.ResourceId
+		output.AddToStatuses(statuses, "gcp_secret_manager_secret_version", output.MaybeGetPlannedChageById[vault_secret.GoogleSecretManagerSecretVersion](plan, r.ResourceId))
 	} else {
 		statuses["gcp_secret_manager_secret_version"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

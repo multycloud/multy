@@ -51,6 +51,7 @@ func (r GcpNetworkSecurityGroup) FromState(state *output.TfState, plan *output.T
 			return nil, err
 		}
 		out.GcpOutputs.ComputeFirewallId = append(out.GcpOutputs.ComputeFirewallId, stateResource.SelfLink)
+		output.AddToStatuses(statuses, "gcp_default_firewall_rule", output.MaybeGetPlannedChageById[network_security_group.GoogleComputeFirewall](plan, r.ResourceId))
 	} else {
 		statuses["gcp_default_firewall_rule"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -65,6 +66,7 @@ func (r GcpNetworkSecurityGroup) FromState(state *output.TfState, plan *output.T
 				}
 				firewalls = append(firewalls, stateResource)
 				out.GcpOutputs.ComputeFirewallId = append(out.GcpOutputs.ComputeFirewallId, stateResource.SelfLink)
+				output.AddToStatuses(statuses, fmt.Sprintf("gcp_firewall_rule_%s", getRuleSuffix(i, rule.Direction)), output.MaybeGetPlannedChageById[network_security_group.GoogleComputeFirewall](plan, firewallId))
 			}
 		}
 

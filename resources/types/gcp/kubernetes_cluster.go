@@ -75,6 +75,7 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState, plan *output.TfPl
 		result.GcpOutputs = &resourcespb.KubernetesClusterGcpOutputs{
 			GkeClusterId: cluster.SelfLink,
 		}
+		output.AddToStatuses(statuses, "gcp_container_cluster", output.MaybeGetPlannedChageById[kubernetes_service.GoogleContainerCluster](plan, r.ResourceId))
 	} else {
 		statuses["gcp_container_cluster"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -84,6 +85,7 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState, plan *output.TfPl
 			return nil, err
 		}
 		result.GcpOutputs.ServiceAccountEmail = stateResource.Email
+		output.AddToStatuses(statuses, "gcp_service_account", output.MaybeGetPlannedChageById[iam.GoogleServiceAccount](plan, r.ResourceId))
 	} else {
 		statuses["gcp_service_account"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

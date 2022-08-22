@@ -87,6 +87,7 @@ func (r GcpVirtualMachine) FromState(state *output.TfState, plan *output.TfPlan)
 		}
 
 		out.GcpOutputs.ComputeInstanceId = vm.SelfLink
+		output.AddToStatuses(statuses, "gcp_compute_instance", output.MaybeGetPlannedChageById[virtual_machine.GoogleComputeInstance](plan, r.ResourceId))
 	} else {
 		statuses["gcp_compute_instance"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -96,8 +97,10 @@ func (r GcpVirtualMachine) FromState(state *output.TfState, plan *output.TfPlan)
 			return nil, err
 		}
 		out.GcpOutputs.ServiceAccountEmail = sa.Email
+		output.AddToStatuses(statuses, "gcp_service_account", output.MaybeGetPlannedChageById[iam.GoogleServiceAccount](plan, r.ResourceId))
+
 	} else {
-		statuses["gcp_compute_instance"] = commonpb.ResourceStatus_NEEDS_CREATE
+		statuses["gcp_service_account"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if len(statuses) > 0 {
