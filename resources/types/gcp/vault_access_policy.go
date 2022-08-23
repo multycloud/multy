@@ -21,7 +21,7 @@ func InitVaultAccessPolicy(vn *types.VaultAccessPolicy) resources.ResourceTransl
 	return GcpVaultAccessPolicy{vn}
 }
 
-func (r GcpVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.VaultAccessPolicyResource, error) {
+func (r GcpVaultAccessPolicy) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultAccessPolicyResource, error) {
 	out := &resourcespb.VaultAccessPolicyResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
@@ -62,6 +62,7 @@ func (r GcpVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.Vau
 			if out.Access != r.Args.Access || out.Identity != r.Args.Identity {
 				statuses[fmt.Sprintf("gcp_secret_manager_secret_iam_member_%s", resourceId)] = commonpb.ResourceStatus_NEEDS_UPDATE
 			}
+			output.AddToStatuses(statuses, fmt.Sprintf("gcp_secret_manager_secret_iam_member_%s", resourceId), output.MaybeGetPlannedChageById[vault_access_policy.GoogleSecretManagerSecretIamMember](plan, resourceId))
 		} else {
 			statuses[fmt.Sprintf("gcp_secret_manager_secret_iam_member_%s", resourceId)] = commonpb.ResourceStatus_NEEDS_CREATE
 		}

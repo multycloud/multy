@@ -19,7 +19,7 @@ func InitKubernetesCluster(r *types.KubernetesCluster) resources.ResourceTransla
 	return AzureKubernetesCluster{r}
 }
 
-func (r AzureKubernetesCluster) FromState(state *output.TfState) (*resourcespb.KubernetesClusterResource, error) {
+func (r AzureKubernetesCluster) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.KubernetesClusterResource, error) {
 	result := &resourcespb.KubernetesClusterResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -65,6 +65,7 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState) (*resourcespb.K
 		result.AzureOutputs = &resourcespb.KubernetesClusterAzureOutputs{
 			AksClusterId: cluster.ResourceId,
 		}
+		output.AddToStatuses(statuses, "azure_kubernetes_cluster", output.MaybeGetPlannedChageById[kubernetes_service.AzureEksCluster](plan, r.ResourceId))
 	} else {
 		statuses["azure_kubernetes_cluster"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

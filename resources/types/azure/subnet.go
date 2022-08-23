@@ -23,7 +23,7 @@ func InitSubnet(r *types.Subnet) resources.ResourceTranslator[*resourcespb.Subne
 	return AzureSubnet{r}
 }
 
-func (r AzureSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource, error) {
+func (r AzureSubnet) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.SubnetResource, error) {
 	if flags.DryRun {
 		return &resourcespb.SubnetResource{
 			CommonParameters: &commonpb.CommonChildResourceParameters{
@@ -52,6 +52,7 @@ func (r AzureSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResour
 		out.Name = stateResource.Name
 		out.CidrBlock = stateResource.AddressPrefixes[0]
 		out.AzureOutputs.SubnetId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "azure_subnet", output.MaybeGetPlannedChageById[subnet.AzureSubnet](plan, r.ResourceId))
 	} else {
 		statuses["azure_subnet"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

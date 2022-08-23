@@ -25,7 +25,7 @@ func InitSubnet(r *types.Subnet) resources.ResourceTranslator[*resourcespb.Subne
 	return AwsSubnet{r}
 }
 
-func (r AwsSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource, error) {
+func (r AwsSubnet) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.SubnetResource, error) {
 	if flags.DryRun {
 		return &resourcespb.SubnetResource{
 			CommonParameters: &commonpb.CommonChildResourceParameters{
@@ -61,8 +61,9 @@ func (r AwsSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource
 				statuses[subnetI] = commonpb.ResourceStatus_NEEDS_CREATE
 				continue
 			}
+			output.AddToStatuses(statuses, subnetI, output.MaybeGetPlannedChageById[subnet.AwsSubnet](plan, r.getSubnetResourceId(i)))
+
 			if stateResource.AvailabilityZone != zone {
-				statuses[subnetI] = commonpb.ResourceStatus_NEEDS_RECREATE
 				continue
 			}
 			out.AwsOutputs.SubnetIdByAvailabilityZone[stateResource.AvailabilityZone] = stateResource.ResourceId
@@ -71,7 +72,7 @@ func (r AwsSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource
 				suffix := fmt.Sprintf("-%d", i+1)
 				if strings.HasSuffix(name, suffix) {
 					out.Name = strings.TrimSuffix(name, suffix)
-				} else {
+				} else if _, ok := statuses[subnetI]; !ok {
 					statuses[subnetI] = commonpb.ResourceStatus_NEEDS_UPDATE
 				}
 			}

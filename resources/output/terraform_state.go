@@ -40,26 +40,6 @@ func (t *TfState) MaybeGet(resourceRef string) (map[string]interface{}, bool) {
 	return nil, false
 }
 
-func GetParsed[T any](state *TfState, resourceRef string) (*T, error) {
-	rawResourceState, err := state.Get(resourceRef)
-	if err != nil {
-		return nil, err
-	}
-
-	jsonResourceState, err := json.Marshal(rawResourceState)
-	if err != nil {
-		return nil, err
-	}
-
-	stateResource := new(T)
-	err = json.Unmarshal(jsonResourceState, stateResource)
-	if err != nil {
-		return nil, err
-	}
-
-	return stateResource, nil
-}
-
 func MaybeGetParsed[T any](state *TfState, resourceRef string) (*T, bool, error) {
 	rawResourceState, exists := state.MaybeGet(resourceRef)
 	if !exists {
@@ -78,11 +58,6 @@ func MaybeGetParsed[T any](state *TfState, resourceRef string) (*T, bool, error)
 	}
 
 	return stateResource, exists, nil
-}
-
-func GetParsedById[T any](state *TfState, resourceId string) (*T, error) {
-	resourceRef := fmt.Sprintf("%s.%s", GetResourceName(*new(T)), resourceId)
-	return GetParsed[T](state, resourceRef)
 }
 
 func MaybeGetParsedById[T any](state *TfState, resourceId string) (*T, bool, error) {

@@ -21,7 +21,7 @@ func InitObjectStorage(vn *types.ObjectStorage) resources.ResourceTranslator[*re
 	return AzureObjectStorage{vn}
 }
 
-func (r AzureObjectStorage) FromState(state *output.TfState) (*resourcespb.ObjectStorageResource, error) {
+func (r AzureObjectStorage) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.ObjectStorageResource, error) {
 	out := &resourcespb.ObjectStorageResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -49,6 +49,7 @@ func (r AzureObjectStorage) FromState(state *output.TfState) (*resourcespb.Objec
 		out.AzureOutputs.StorageAccountId = stateResource.ResourceId
 		out.Name = stateResource.Name
 		out.Versioning = len(stateResource.BlobProperties) > 0 && stateResource.BlobProperties[0].VersioningEnabled
+		output.AddToStatuses(statuses, "azure_storage_account", output.MaybeGetPlannedChageById[object_storage.AzureStorageAccount](plan, r.ResourceId))
 	} else {
 		statuses["azure_storage_account"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -58,6 +59,7 @@ func (r AzureObjectStorage) FromState(state *output.TfState) (*resourcespb.Objec
 			return nil, err
 		}
 		out.AzureOutputs.PrivateStorageContainerId = privContainer.ResourceId
+		output.AddToStatuses(statuses, "azure_private_storage_container", output.MaybeGetPlannedChageById[object_storage_object.AzureStorageContainer](plan, r.getPrivateContainerId()))
 	} else {
 		statuses["azure_private_storage_container"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -67,6 +69,7 @@ func (r AzureObjectStorage) FromState(state *output.TfState) (*resourcespb.Objec
 			return nil, err
 		}
 		out.AzureOutputs.PublicStorageContainerId = publicContainer.ResourceId
+		output.AddToStatuses(statuses, "azure_public_storage_container", output.MaybeGetPlannedChageById[object_storage_object.AzureStorageContainer](plan, r.getPublicContainerId()))
 	} else {
 		statuses["azure_public_storage_container"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

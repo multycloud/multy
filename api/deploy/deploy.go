@@ -151,6 +151,11 @@ func (d DeploymentExecutor) GetState(ctx context.Context, configPrefix string, c
 	return d.TfCmd.GetState(ctx, configPrefix, client)
 }
 
+func (d DeploymentExecutor) GetPlan(ctx context.Context, configPrefix string) (string, error) {
+	tmpDir := GetTempDirForUser(configPrefix)
+	return d.TfCmd.Plan(ctx, tmpDir)
+}
+
 func (d DeploymentExecutor) RefreshState(ctx context.Context, configPrefix string, c *resources.MultyConfig) error {
 	_, err := d.EncodeAndStoreTfFile(ctx, c, nil, nil, configPrefix)
 	if err != nil {

@@ -19,7 +19,7 @@ func InitKubernetesNodePool(r *types.KubernetesNodePool) resources.ResourceTrans
 	return AzureKubernetesNodePool{r}
 }
 
-func (r AzureKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.KubernetesNodePoolResource, error) {
+func (r AzureKubernetesNodePool) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.KubernetesNodePoolResource, error) {
 	out := r.translateToResource()
 
 	if flags.DryRun {
@@ -34,6 +34,7 @@ func (r AzureKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.
 		}
 
 		r.parseNodePoolResource(out, stateResource)
+		output.AddToStatuses(statuses, "azure_kubernetes_node_pool", output.MaybeGetPlannedChageById[kubernetes_node_pool.AzureKubernetesNodePool](plan, r.ResourceId))
 	} else {
 		statuses["azure_kubernetes_node_pool"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

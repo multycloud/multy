@@ -21,7 +21,7 @@ func InitVirtualNetwork(vn *types.VirtualNetwork) resources.ResourceTranslator[*
 	return GcpVirtualNetwork{vn}
 }
 
-func (r GcpVirtualNetwork) FromState(state *output.TfState) (*resourcespb.VirtualNetworkResource, error) {
+func (r GcpVirtualNetwork) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VirtualNetworkResource, error) {
 	out := &resourcespb.VirtualNetworkResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -48,6 +48,7 @@ func (r GcpVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 
 		out.Name = stateResource.Name
 		out.GcpOutputs.ComputeNetworkId = stateResource.SelfLink
+		output.AddToStatuses(statuses, "gcp_compute_network", output.MaybeGetPlannedChageById[virtual_network.GoogleComputeNetwork](plan, r.ResourceId))
 	} else {
 		statuses["gcp_compute_network"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -57,6 +58,7 @@ func (r GcpVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 			return nil, err
 		}
 		out.GcpOutputs.DefaultComputeFirewallId = stateResource.SelfLink
+		output.AddToStatuses(statuses, "gcp_default_compute_firewall", output.MaybeGetPlannedChageById[network_security_group.GoogleComputeFirewall](plan, r.ResourceId))
 	} else {
 		statuses["gcp_default_compute_firewall"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

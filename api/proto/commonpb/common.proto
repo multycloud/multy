@@ -116,6 +116,7 @@ message ResourceStatus {
     NEEDS_UPDATE = 1;
     NEEDS_RECREATE = 2;
     NEEDS_CREATE = 3;
+    NEEDS_DELETE = 4;
   }
   // key is a custom identifier of the underlying resource
   // examples: aws_default_security_group, gcp_compute_network

@@ -23,7 +23,7 @@ func InitVirtualMachine(vn *types.VirtualMachine) resources.ResourceTranslator[*
 	return AwsVirtualMachine{vn}
 }
 
-func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.VirtualMachineResource, error) {
+func (r AwsVirtualMachine) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VirtualMachineResource, error) {
 	out := &resourcespb.VirtualMachineResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -74,6 +74,7 @@ func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		if vmResource.KeyName == "" {
 			out.PublicSshKey = ""
 		}
+		output.AddToStatuses(statuses, "aws_ec2", output.MaybeGetPlannedChageById[virtual_machine.AwsEC2](plan, r.ResourceId))
 	} else {
 		statuses["aws_ec2"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -84,6 +85,7 @@ func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		}
 		out.IdentityId = iamRoleResource.Id
 		out.AwsOutputs.IamRoleArn = iamRoleResource.Arn
+		output.AddToStatuses(statuses, "aws_iam_role", output.MaybeGetPlannedChageById[iam.AwsIamRole](plan, r.ResourceId))
 	} else {
 		statuses["aws_iam_role"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -93,6 +95,7 @@ func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 			return nil, err
 		}
 		out.AwsOutputs.IamInstanceProfileArn = iamInstanceProfileResource.Arn
+		output.AddToStatuses(statuses, "aws_iam_instance_profile", output.MaybeGetPlannedChageById[iam.AwsIamInstanceProfile](plan, r.ResourceId))
 	} else {
 		statuses["aws_iam_instance_profile"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -105,6 +108,7 @@ func (r AwsVirtualMachine) FromState(state *output.TfState) (*resourcespb.Virtua
 		if keyName == stateResource.KeyName {
 			out.PublicSshKey = stateResource.PublicKey
 		}
+		output.AddToStatuses(statuses, "aws_key_pair", output.MaybeGetPlannedChageById[virtual_machine.AwsKeyPair](plan, r.ResourceId))
 	} else if r.Args.PublicSshKey != "" {
 		statuses["aws_key_pair"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

@@ -21,7 +21,7 @@ func InitKubernetesNodePool(r *types.KubernetesNodePool) resources.ResourceTrans
 	return AwsKubernetesNodePool{r}
 }
 
-func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.KubernetesNodePoolResource, error) {
+func (r AwsKubernetesNodePool) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.KubernetesNodePoolResource, error) {
 	out := &resourcespb.KubernetesNodePoolResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
@@ -76,6 +76,7 @@ func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 		}
 
 		out.AwsOutputs.EksNodePoolId = stateResource.Arn
+		output.AddToStatuses(statuses, "aws_kubernetes_node_group", output.MaybeGetPlannedChageById[kubernetes_node_pool.AwsKubernetesNodeGroup](plan, r.ResourceId))
 	} else {
 		statuses["aws_kubernetes_node_group"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -85,6 +86,7 @@ func (r AwsKubernetesNodePool) FromState(state *output.TfState) (*resourcespb.Ku
 			return nil, err
 		}
 		out.AwsOutputs.IamRoleArn = stateResource.Arn
+		output.AddToStatuses(statuses, "aws_iam_role", output.MaybeGetPlannedChageById[iam.AwsIamRole](plan, r.ResourceId))
 	} else {
 		statuses["aws_iam_role"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

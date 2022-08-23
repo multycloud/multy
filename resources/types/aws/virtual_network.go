@@ -21,7 +21,7 @@ func InitVirtualNetwork(vn *types.VirtualNetwork) resources.ResourceTranslator[*
 	return AwsVirtualNetwork{vn}
 }
 
-func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.VirtualNetworkResource, error) {
+func (r AwsVirtualNetwork) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VirtualNetworkResource, error) {
 	if flags.DryRun {
 		return &resourcespb.VirtualNetworkResource{
 			CommonParameters: &commonpb.CommonResourceParameters{
@@ -56,6 +56,7 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 		out.Name = stateResource.AwsResource.Tags["Name"]
 		out.CidrBlock = stateResource.CidrBlock
 		out.AwsOutputs.VpcId = stateResource.AwsResource.ResourceId
+		output.AddToStatuses(statuses, "aws_vpc", output.MaybeGetPlannedChageById[virtual_network.AwsVpc](plan, r.ResourceId))
 	} else {
 		statuses["aws_vpc"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -65,6 +66,7 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 			return nil, err
 		}
 		out.AwsOutputs.InternetGatewayId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "aws_internet_gateway", output.MaybeGetPlannedChageById[virtual_network.AwsInternetGateway](plan, r.ResourceId))
 	} else {
 		statuses["aws_internet_gateway"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -74,6 +76,7 @@ func (r AwsVirtualNetwork) FromState(state *output.TfState) (*resourcespb.Virtua
 			return nil, err
 		}
 		out.AwsOutputs.DefaultSecurityGroupId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "aws_default_security_group", output.MaybeGetPlannedChageById[network_security_group.AwsDefaultSecurityGroup](plan, r.ResourceId))
 	} else {
 		statuses["aws_default_security_group"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

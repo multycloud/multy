@@ -21,7 +21,7 @@ func InitVaultSecret(vn *types.VaultSecret) resources.ResourceTranslator[*resour
 	return AzureVaultSecret{vn}
 }
 
-func (r AzureVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSecretResource, error) {
+func (r AzureVaultSecret) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultSecretResource, error) {
 	out := &resourcespb.VaultSecretResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
@@ -45,6 +45,7 @@ func (r AzureVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSe
 		out.Name = stateResource.Name
 		out.Value = stateResource.Value
 		out.AzureOutputs = &resourcespb.VaultSecretAzureOutputs{KeyVaultSecretId: stateResource.ResourceId}
+		output.AddToStatuses(statuses, "azure_key_vault_secret", output.MaybeGetPlannedChageById[vault_secret.AzureKeyVaultSecret](plan, r.ResourceId))
 	} else {
 		statuses["azure_key_vault_secret"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

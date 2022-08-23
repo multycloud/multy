@@ -25,7 +25,7 @@ func InitNetworkSecurityGroup(r *types.NetworkSecurityGroup) resources.ResourceT
 	return AzureNetworkSecurityGroup{r}
 }
 
-func (r AzureNetworkSecurityGroup) FromState(state *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {
+func (r AzureNetworkSecurityGroup) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.NetworkSecurityGroupResource, error) {
 	out := &resourcespb.NetworkSecurityGroupResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -105,6 +105,7 @@ func (r AzureNetworkSecurityGroup) FromState(state *output.TfState) (*resourcesp
 			}
 		}
 		out.AzureOutputs = &resourcespb.NetworkSecurityGroupAzureOutputs{NetworkSecurityGroupId: stateResource.ResourceId}
+		output.AddToStatuses(statuses, "azure_network_security_group", output.MaybeGetPlannedChageById[network_security_group.AzureNsg](plan, r.ResourceId))
 	} else {
 		statuses["azure_network_security_group"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

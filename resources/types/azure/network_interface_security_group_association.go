@@ -19,7 +19,7 @@ func InitNetworkInterfaceSecurityGroupAssociation(vn *types.NetworkInterfaceSecu
 	return AzureNetworkInterfaceSecurityGroupAssociation{vn}
 }
 
-func (r AzureNetworkInterfaceSecurityGroupAssociation) FromState(state *output.TfState) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
+func (r AzureNetworkInterfaceSecurityGroupAssociation) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.NetworkInterfaceSecurityGroupAssociationResource, error) {
 	out := &resourcespb.NetworkInterfaceSecurityGroupAssociationResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
@@ -35,9 +35,8 @@ func (r AzureNetworkInterfaceSecurityGroupAssociation) FromState(state *output.T
 
 	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	if _, exists, _ := output.MaybeGetParsedById[network_interface_security_group_association.AzureNetworkInterfaceSecurityGroupAssociation](state, r.ResourceId); !exists {
-		statuses["azure_network_interface_security_group_association"] = commonpb.ResourceStatus_NEEDS_CREATE
-	}
+	output.AddToStatuses(statuses, "azure_network_interface_security_group_association",
+		output.MaybeGetPlannedChageById[network_interface_security_group_association.AzureNetworkInterfaceSecurityGroupAssociation](plan, r.ResourceId))
 
 	if len(statuses) > 0 {
 		out.CommonParameters.ResourceStatus = &commonpb.ResourceStatus{Statuses: statuses}

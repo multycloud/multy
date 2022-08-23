@@ -22,7 +22,7 @@ func InitVaultAccessPolicy(vn *types.VaultAccessPolicy) resources.ResourceTransl
 	return AwsVaultAccessPolicy{vn}
 }
 
-func (r AwsVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.VaultAccessPolicyResource, error) {
+func (r AwsVaultAccessPolicy) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultAccessPolicyResource, error) {
 	out := &resourcespb.VaultAccessPolicyResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
@@ -47,6 +47,7 @@ func (r AwsVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.Vau
 		out.AwsOutputs = &resourcespb.VaultAccessPolicyAwsOutputs{
 			IamPolicyArn: stateResource.Arn,
 		}
+		output.AddToStatuses(statuses, "aws_iam_role_policy", output.MaybeGetPlannedChageById[iam.AwsIamRolePolicy](plan, r.ResourceId))
 	} else {
 		statuses["aws_iam_role_policy"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -56,6 +57,7 @@ func (r AwsVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.Vau
 			return nil, err
 		}
 		out.Identity = stateResource.Role
+		output.AddToStatuses(statuses, "aws_iam_role_policy_attachment", output.MaybeGetPlannedChageById[iam.AwsIamRolePolicyAttachmentForVap](plan, r.ResourceId))
 	} else {
 		statuses["aws_iam_role_policy_attachment"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

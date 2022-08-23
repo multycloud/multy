@@ -21,7 +21,7 @@ func InitRouteTableAssociation(vn *types.RouteTableAssociation) resources.Resour
 	return AwsRouteTableAssociation{vn}
 }
 
-func (r AwsRouteTableAssociation) FromState(state *output.TfState) (*resourcespb.RouteTableAssociationResource, error) {
+func (r AwsRouteTableAssociation) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.RouteTableAssociationResource, error) {
 	out := &resourcespb.RouteTableAssociationResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
@@ -46,6 +46,7 @@ func (r AwsRouteTableAssociation) FromState(state *output.TfState) (*resourcespb
 				return nil, err
 			}
 			out.AwsOutputs.RouteTableAssociationIdByAvailabilityZone[zone] = stateResource.ResourceId
+			output.AddToStatuses(statuses, fmt.Sprintf("aws_route_table_association_%d", i), output.MaybeGetPlannedChageById[route_table_association.AwsRouteTableAssociation](plan, r.ResourceId))
 		} else {
 			statuses[fmt.Sprintf("aws_route_table_association_%d", i)] = commonpb.ResourceStatus_NEEDS_CREATE
 		}

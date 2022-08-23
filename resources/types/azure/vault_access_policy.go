@@ -21,7 +21,7 @@ func InitVaultAccessPolicy(vn *types.VaultAccessPolicy) resources.ResourceTransl
 	return AzureVaultAccessPolicy{vn}
 }
 
-func (r AzureVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.VaultAccessPolicyResource, error) {
+func (r AzureVaultAccessPolicy) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultAccessPolicyResource, error) {
 	out := &resourcespb.VaultAccessPolicyResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
@@ -45,6 +45,7 @@ func (r AzureVaultAccessPolicy) FromState(state *output.TfState) (*resourcespb.V
 
 		out.AzureOutputs = &resourcespb.VaultAccessPolicyAzureOutputs{KeyVaultAccessPolicyId: stateResource.ResourceId}
 		out.Identity = stateResource.ObjectId
+		output.AddToStatuses(statuses, "azure_key_vault_access_policy", output.MaybeGetPlannedChageById[vault_access_policy.AzureKeyVaultAccessPolicy](plan, r.ResourceId))
 	} else {
 		statuses["azure_key_vault_access_policy"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

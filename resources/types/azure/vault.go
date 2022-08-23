@@ -24,7 +24,7 @@ type AzureClientConfig struct {
 	*output.TerraformDataSource `hcl:",squash" default:"name=azurerm_client_config"`
 }
 
-func (r AzureVault) FromState(state *output.TfState) (*resourcespb.VaultResource, error) {
+func (r AzureVault) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultResource, error) {
 	out := &resourcespb.VaultResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -47,6 +47,7 @@ func (r AzureVault) FromState(state *output.TfState) (*resourcespb.VaultResource
 		}
 		out.Name = stateResource.Name
 		out.AzureOutputs = &resourcespb.VaultAzureOutputs{KeyVaultId: stateResource.ResourceId}
+		output.AddToStatuses(statuses, "azure_vault", output.MaybeGetPlannedChageById[vault.AzureKeyVault](plan, r.ResourceId))
 	} else {
 		statuses["azure_vault"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

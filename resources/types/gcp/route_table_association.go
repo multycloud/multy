@@ -17,7 +17,7 @@ func InitRouteTableAssociation(vn *types.RouteTableAssociation) resources.Resour
 	return GcpRouteTableAssociation{vn}
 }
 
-func (r GcpRouteTableAssociation) FromState(_ *output.TfState) (*resourcespb.RouteTableAssociationResource, error) {
+func (r GcpRouteTableAssociation) FromState(_ *output.TfState, _ *output.TfPlan) (*resourcespb.RouteTableAssociationResource, error) {
 	return &resourcespb.RouteTableAssociationResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,

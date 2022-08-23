@@ -40,10 +40,10 @@ func (rg ResourceGroup) Translate(ctx resources.MultyContext) ([]output.TfBlock,
 		},
 		Location: rg.GetCloudSpecificLocation(),
 	}}, nil
-	
+
 }
 
-func (rg ResourceGroup) FromState(_ *output.TfState) (*resourcespb.ResourceGroupResource, error) {
+func (rg ResourceGroup) FromState(_ *output.TfState, _ *output.TfPlan) (*resourcespb.ResourceGroupResource, error) {
 	return &resourcespb.ResourceGroupResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:    rg.ResourceId,

@@ -19,7 +19,7 @@ func InitPublicIp(r *types.PublicIp) resources.ResourceTranslator[*resourcespb.P
 	return AzurePublicIp{r}
 }
 
-func (r AzurePublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpResource, error) {
+func (r AzurePublicIp) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.PublicIpResource, error) {
 	out := &resourcespb.PublicIpResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -47,6 +47,7 @@ func (r AzurePublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpRe
 		out.AzureOutputs = &resourcespb.PublicIpAzureOutputs{
 			PublicIpId: stateResource.ResourceId,
 		}
+		output.AddToStatuses(statuses, "azure_public_ip", output.MaybeGetPlannedChageById[public_ip.AzurePublicIp](plan, r.ResourceId))
 	} else {
 		statuses["azure_public_ip"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

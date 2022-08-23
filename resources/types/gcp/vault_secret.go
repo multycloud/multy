@@ -20,7 +20,7 @@ func InitVaultSecret(vn *types.VaultSecret) resources.ResourceTranslator[*resour
 	return GcpVaultSecret{vn}
 }
 
-func (r GcpVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSecretResource, error) {
+func (r GcpVaultSecret) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultSecretResource, error) {
 	out := &resourcespb.VaultSecretResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
@@ -44,6 +44,7 @@ func (r GcpVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSecr
 		}
 		out.Name = stateResource.SecretId
 		out.GcpOutputs.SecretManagerSecretId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "gcp_secret_manager_secret", output.MaybeGetPlannedChageById[vault_secret.GoogleSecretManagerSecret](plan, r.ResourceId))
 	} else {
 		statuses["gcp_secret_manager_secret"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -54,6 +55,7 @@ func (r GcpVaultSecret) FromState(state *output.TfState) (*resourcespb.VaultSecr
 		}
 		out.Value = versionResource.SecretData
 		out.GcpOutputs.SecretManagerSecretVersionId = versionResource.ResourceId
+		output.AddToStatuses(statuses, "gcp_secret_manager_secret_version", output.MaybeGetPlannedChageById[vault_secret.GoogleSecretManagerSecretVersion](plan, r.ResourceId))
 	} else {
 		statuses["gcp_secret_manager_secret_version"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

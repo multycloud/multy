@@ -8,6 +8,7 @@ import (
 )
 
 const TfState = "terraform.tfstate"
+const TfPlan = "terraform.tfplan"
 
 type LockDatabase interface {
 	LockConfig(ctx context.Context, userId string, lockId string) (lock *ConfigLock, err error)
@@ -16,6 +17,8 @@ type LockDatabase interface {
 
 type TfStateReader interface {
 	LoadTerraformState(ctx context.Context, userId string) (string, error)
+	LoadTerraformPlan(ctx context.Context, configPrefix string) (string, error)
+	StoreTerraformPlan(ctx context.Context, configPrefix string, plan string) error
 }
 
 type Database interface {

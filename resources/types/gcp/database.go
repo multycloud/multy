@@ -21,7 +21,7 @@ func InitDatabase(r *types.Database) resources.ResourceTranslator[*resourcespb.D
 	return GcpDatabase{r}
 }
 
-func (r GcpDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseResource, error) {
+func (r GcpDatabase) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.DatabaseResource, error) {
 	out := &resourcespb.DatabaseResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -66,7 +66,7 @@ func (r GcpDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 		}
 		out.Engine = engine
 		out.EngineVersion = version
-
+		output.AddToStatuses(statuses, "gcp_sql_database_instance", output.MaybeGetPlannedChageById[database.GoogleSqlDatabaseInstance](plan, r.ResourceId))
 	} else {
 		statuses["gcp_sql_database_instance"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -77,6 +77,7 @@ func (r GcpDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseReso
 		}
 		out.Username = dbUser.Name
 		out.Password = dbUser.Password
+		output.AddToStatuses(statuses, "gcp_sql_user", output.MaybeGetPlannedChageById[database.GoogleSqlUser](plan, r.ResourceId))
 	} else {
 		statuses["gcp_sql_user"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

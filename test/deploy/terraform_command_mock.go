@@ -21,6 +21,11 @@ func (m *MockTerraformCommand) Apply(ctx context.Context, dir string, resources 
 	return args.Error(0)
 }
 
+func (m *MockTerraformCommand) Plan(ctx context.Context, dir string) (string, error) {
+	args := m.Called(ctx, dir)
+	return args.String(0), args.Error(1)
+}
+
 func (m *MockTerraformCommand) Refresh(ctx context.Context, dir string) error {
 	args := m.Called(ctx, dir)
 	return args.Error(0)

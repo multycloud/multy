@@ -11,6 +11,7 @@ import (
 	"github.com/multycloud/multy/api/util"
 	"github.com/multycloud/multy/db"
 	"github.com/multycloud/multy/resources"
+	"github.com/multycloud/multy/resources/output"
 	"github.com/multycloud/multy/resources/types/metadata"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -104,7 +105,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 		}
 	}()
 
-	out, err = s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.GetResourceId()}, configPrefix)
+	out, err = s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.GetResourceId()}, configPrefix, nil)
 
 	// this must always be the last statement, if it doesn't execute it means we panicked or returned and need to rollback
 	done = true
@@ -168,10 +169,19 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		return *new(OutT), err
 	}
 
-	return s.readFromConfig(ctx, c, in, configPrefix)
+	planStr, err := s.ServiceContext.Database.LoadTerraformPlan(ctx, configPrefix)
+	if err != nil {
+		return *new(OutT), err
+	}
+	plan, err := output.ParsePlanFromOutput(planStr)
+	if err != nil {
+		return *new(OutT), err
+	}
+	return s.readFromConfig(ctx, c, in, configPrefix, plan)
 }
 
-func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.MultyConfig, in WithResourceId, configPrefix string) (OutT, error) {
+func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.MultyConfig, in WithResourceId,
+	configPrefix string, plan *output.TfPlan) (OutT, error) {
 	for _, r := range c.Resources.GetAll() {
 		if r.GetResourceId() == in.GetResourceId() {
 			err := s.ServiceContext.DeploymentExecutor.MaybeInit(ctx, configPrefix)
@@ -186,7 +196,7 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.Mul
 			if err != nil {
 				return *new(OutT), err
 			}
-			out, err := m.ReadFromState(r, state)
+			out, err := m.ReadFromState(r, state, plan)
 			if err != nil {
 				return *new(OutT), errors.InternalServerErrorWithMessage(fmt.Sprintf("Unable to retrieve data for resource %s.", r.GetResourceId()), err)
 			}
@@ -249,7 +259,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 			rollbackFn()
 		}
 	}()
-	out, err = s.readFromConfig(ctx, c, in, configPrefix)
+	out, err = s.readFromConfig(ctx, c, in, configPrefix, nil)
 
 	// this must always be the last statement, if it doesn't execute it means we panicked or returned and need to rollback
 	done = true

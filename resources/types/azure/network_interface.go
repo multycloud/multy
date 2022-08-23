@@ -20,7 +20,7 @@ func InitNetworkInterface(r *types.NetworkInterface) resources.ResourceTranslato
 	return AzureNetworkInterface{r}
 }
 
-func (r AzureNetworkInterface) FromState(state *output.TfState) (*resourcespb.NetworkInterfaceResource, error) {
+func (r AzureNetworkInterface) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.NetworkInterfaceResource, error) {
 	out := &resourcespb.NetworkInterfaceResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -53,6 +53,7 @@ func (r AzureNetworkInterface) FromState(state *output.TfState) (*resourcespb.Ne
 				statuses["azure_network_interface"] = commonpb.ResourceStatus_NEEDS_UPDATE
 			}
 		}
+		output.AddToStatuses(statuses, "azure_network_interface", output.MaybeGetPlannedChageById[network_interface.AzureNetworkInterface](plan, r.ResourceId))
 	} else {
 		statuses["azure_network_interface"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

@@ -80,7 +80,7 @@ func createKubeConfig(clusterName string, certData string, endpoint string, awsR
 	return string(s), nil
 }
 
-func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.KubernetesClusterResource, error) {
+func (r AwsKubernetesCluster) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.KubernetesClusterResource, error) {
 	result := &resourcespb.KubernetesClusterResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -96,7 +96,7 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		Endpoint:         "dryrun",
 	}
 	var err error
-	result.DefaultNodePool, err = AwsKubernetesNodePool{r.DefaultNodePool}.FromState(state)
+	result.DefaultNodePool, err = AwsKubernetesNodePool{r.DefaultNodePool}.FromState(state, plan)
 	if err != nil {
 		return nil, err
 	}
@@ -126,6 +126,7 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 		result.KubeConfigRaw = kubeCgfRaw
 
 		result.AwsOutputs.EksClusterId = cluster.Arn
+		output.AddToStatuses(statuses, "aws_eks_cluster", output.MaybeGetPlannedChageById[kubernetes_service.AwsEksCluster](plan, r.ResourceId))
 	} else {
 		statuses["aws_eks_cluster"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -135,6 +136,7 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState) (*resourcespb.Kub
 			return nil, err
 		}
 		result.AwsOutputs.IamRoleArn = stateResource.Arn
+		output.AddToStatuses(statuses, "aws_iam_role", output.MaybeGetPlannedChageById[iam.AwsIamRole](plan, r.ResourceId))
 	} else {
 		statuses["aws_iam_role"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

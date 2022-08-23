@@ -19,7 +19,7 @@ func InitPublicIp(vn *types.PublicIp) resources.ResourceTranslator[*resourcespb.
 	return AwsPublicIp{vn}
 }
 
-func (r AwsPublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpResource, error) {
+func (r AwsPublicIp) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.PublicIpResource, error) {
 	out := &resourcespb.PublicIpResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -47,6 +47,7 @@ func (r AwsPublicIp) FromState(state *output.TfState) (*resourcespb.PublicIpReso
 		out.Ip = stateResource.PublicIp
 		out.Name = stateResource.AwsResource.Tags["Name"]
 		out.AwsOutputs.PublicIpId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "aws_public_ip", output.MaybeGetPlannedChageById[public_ip.AwsElasticIp](plan, r.ResourceId))
 	} else {
 		statuses["aws_public_ip"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

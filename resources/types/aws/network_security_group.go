@@ -28,7 +28,7 @@ const (
 	DENY    = "deny"
 )
 
-func (r AwsNetworkSecurityGroup) FromState(state *output.TfState) (*resourcespb.NetworkSecurityGroupResource, error) {
+func (r AwsNetworkSecurityGroup) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.NetworkSecurityGroupResource, error) {
 	out := &resourcespb.NetworkSecurityGroupResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -56,6 +56,7 @@ func (r AwsNetworkSecurityGroup) FromState(state *output.TfState) (*resourcespb.
 		out.Name = stateResource.AwsResource.Tags["Name"]
 		out.AwsOutputs = &resourcespb.NetworkSecurityGroupAwsOutputs{SecurityGroupId: stateResource.ResourceId}
 		out.Rules = nil
+		output.AddToStatuses(statuses, "aws_network_security_group", output.MaybeGetPlannedChageById[network_security_group.AwsSecurityGroup](plan, r.ResourceId))
 
 		// first attempt to get user-provided rules so that the order remains the same even if new rules were added
 		// this is also needed because certain properties (priority for example), are lost after deployment
@@ -120,7 +121,7 @@ func (r AwsNetworkSecurityGroup) FromState(state *output.TfState) (*resourcespb.
 		}
 
 	} else {
-		statuses["azure_network_security_group"] = commonpb.ResourceStatus_NEEDS_CREATE
+		statuses["aws_network_security_group"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
 
 	if len(statuses) > 0 {

@@ -17,7 +17,7 @@ func InitVault(vn *types.Vault) resources.ResourceTranslator[*resourcespb.VaultR
 	return GcpVault{vn}
 }
 
-func (r GcpVault) FromState(state *output.TfState) (*resourcespb.VaultResource, error) {
+func (r GcpVault) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.VaultResource, error) {
 	return &resourcespb.VaultResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,

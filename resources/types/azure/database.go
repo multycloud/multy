@@ -20,7 +20,7 @@ func InitDatabase(r *types.Database) resources.ResourceTranslator[*resourcespb.D
 	return AzureDatabase{r}
 }
 
-func (r AzureDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseResource, error) {
+func (r AzureDatabase) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.DatabaseResource, error) {
 	out := &resourcespb.DatabaseResource{
 		CommonParameters: &commonpb.CommonResourceParameters{
 			ResourceId:      r.ResourceId,
@@ -75,6 +75,7 @@ func (r AzureDatabase) FromState(state *output.TfState) (*resourcespb.DatabaseRe
 		out.StorageGb = int64(stateResource.StorageMb / 1024)
 		out.EngineVersion = stateResource.Version
 		out.Name = stateResource.NameOut
+		output.AddToStatuses(statuses, "azure_database_server", plan.MaybeGetPlannedChange(address))
 	} else {
 		statuses["azure_database_server"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

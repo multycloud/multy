@@ -19,7 +19,7 @@ func InitRouteTable(vn *types.RouteTable) resources.ResourceTranslator[*resource
 	return AwsRouteTable{vn}
 }
 
-func (r AwsRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTableResource, error) {
+func (r AwsRouteTable) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.RouteTableResource, error) {
 	if flags.DryRun {
 		return &resourcespb.RouteTableResource{
 			CommonParameters: &commonpb.CommonChildResourceParameters{
@@ -59,6 +59,7 @@ func (r AwsRouteTable) FromState(state *output.TfState) (*resourcespb.RouteTable
 		}
 		out.Routes = routes
 		out.AwsOutputs.RouteTableId = stateResource.ResourceId
+		output.AddToStatuses(statuses, "aws_route_table", output.MaybeGetPlannedChageById[route_table.AwsRouteTable](plan, r.ResourceId))
 	} else {
 		statuses["aws_route_table"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

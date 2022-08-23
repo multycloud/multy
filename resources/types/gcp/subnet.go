@@ -21,7 +21,7 @@ func InitSubnet(r *types.Subnet) resources.ResourceTranslator[*resourcespb.Subne
 	return GcpSubnet{r}
 }
 
-func (r GcpSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource, error) {
+func (r GcpSubnet) FromState(state *output.TfState, plan *output.TfPlan) (*resourcespb.SubnetResource, error) {
 	out := &resourcespb.SubnetResource{
 		CommonParameters: &commonpb.CommonChildResourceParameters{
 			ResourceId:  r.ResourceId,
@@ -44,6 +44,7 @@ func (r GcpSubnet) FromState(state *output.TfState) (*resourcespb.SubnetResource
 		out.Name = stateResource.Name
 		out.CidrBlock = stateResource.IpCidrRange
 		out.GcpOutputs = &resourcespb.SubnetGcpOutputs{ComputeSubnetworkId: stateResource.SelfLink}
+		output.AddToStatuses(statuses, "gcp_compute_subnetwork", output.MaybeGetPlannedChageById[subnet.GoogleComputeSubnetwork](plan, r.ResourceId))
 	} else {
 		statuses["gcp_compute_subnetwork"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}

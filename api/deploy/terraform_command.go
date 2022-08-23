@@ -20,6 +20,7 @@ type TerraformCommand interface {
 	Init(ctx context.Context, dir string) error
 	Apply(ctx context.Context, dir string, resources []string) error
 	Refresh(ctx context.Context, dir string) error
+	Plan(ctx context.Context, dir string) (string, error)
 	GetState(ctx context.Context, userId string, dir db.TfStateReader) (*output.TfState, error)
 }
 
@@ -108,6 +109,28 @@ func (c terraformCmd) Refresh(ctx context.Context, dir string) error {
 		return errors.InternalServerErrorWithMessage("error querying resources", err)
 	}
 	return err
+}
+
+func (c terraformCmd) Plan(ctx context.Context, dir string) (string, error) {
+	region := trace.StartRegion(ctx, "tf plan")
+	defer region.End()
+
+	outputJson := new(bytes.Buffer)
+	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+dir, "plan", "-json", "-refresh=false")
+	cmd.Stdout = outputJson
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		outputs, parseErr := parseTfOutputs(outputJson)
+		if parseErr != nil {
+			return "", errors.InternalServerErrorWithMessage("error querying resources for drift", parseErr)
+		}
+		if parseErr := getFirstError(outputs); parseErr != nil {
+			return "", errors.InternalServerErrorWithMessage("error querying resources for drift", parseErr)
+		}
+		return "", errors.InternalServerErrorWithMessage("error querying resources for drift", err)
+	}
+	return outputJson.String(), nil
 }
 
 func (c terraformCmd) GetState(ctx context.Context, userId string, client db.TfStateReader) (*output.TfState, error) {
