@@ -105,7 +105,7 @@ func (s Service[Arg, OutT]) create(ctx context.Context, in CreateRequest[Arg]) (
 		}
 	}()
 
-	out, err = s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.GetResourceId()}, configPrefix)
+	out, err = s.readFromConfig(ctx, c, &resourcespb.ReadVirtualNetworkRequest{ResourceId: resource.GetResourceId()}, configPrefix, nil)
 
 	// this must always be the last statement, if it doesn't execute it means we panicked or returned and need to rollback
 	done = true
@@ -169,10 +169,19 @@ func (s Service[Arg, OutT]) read(ctx context.Context, in WithResourceId) (OutT, 
 		return *new(OutT), err
 	}
 
-	return s.readFromConfig(ctx, c, in, configPrefix)
+	planStr, err := s.ServiceContext.Database.LoadTerraformPlan(ctx, configPrefix)
+	if err != nil {
+		return *new(OutT), err
+	}
+	plan, err := output.ParsePlanFromOutput(planStr)
+	if err != nil {
+		return *new(OutT), err
+	}
+	return s.readFromConfig(ctx, c, in, configPrefix, plan)
 }
 
-func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.MultyConfig, in WithResourceId, configPrefix string) (OutT, error) {
+func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.MultyConfig, in WithResourceId,
+	configPrefix string, plan *output.TfPlan) (OutT, error) {
 	for _, r := range c.Resources.GetAll() {
 		if r.GetResourceId() == in.GetResourceId() {
 			err := s.ServiceContext.DeploymentExecutor.MaybeInit(ctx, configPrefix)
@@ -180,14 +189,6 @@ func (s Service[Arg, OutT]) readFromConfig(ctx context.Context, c *resources.Mul
 				return *new(OutT), err
 			}
 			state, err := s.ServiceContext.DeploymentExecutor.GetState(ctx, configPrefix, s.ServiceContext.Database)
-			if err != nil {
-				return *new(OutT), err
-			}
-			planStr, err := s.ServiceContext.Database.LoadTerraformPlan(ctx, configPrefix)
-			if err != nil {
-				return *new(OutT), err
-			}
-			plan, err := output.ParsePlanFromOutput(planStr)
 			if err != nil {
 				return *new(OutT), err
 			}
@@ -258,7 +259,7 @@ func (s Service[Arg, OutT]) update(ctx context.Context, in UpdateRequest[Arg]) (
 			rollbackFn()
 		}
 	}()
-	out, err = s.readFromConfig(ctx, c, in, configPrefix)
+	out, err = s.readFromConfig(ctx, c, in, configPrefix, nil)
 
 	// this must always be the last statement, if it doesn't execute it means we panicked or returned and need to rollback
 	done = true

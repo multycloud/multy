@@ -61,6 +61,9 @@ func ParsePlanFromOutput(outputJson string) (*TfPlan, error) {
 }
 
 func (t *TfPlan) MaybeGetPlannedChange(resourceRef string) *TfPlannedChange {
+	if t == nil {
+		return nil
+	}
 	for _, r := range t.Messages {
 		if r.Type != plannedChangedType {
 			continue
