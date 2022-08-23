@@ -14,8 +14,6 @@ import (
 	"testing"
 )
 
-// todo: azure enforces rule priority, aws doesnt
-// todo: the provided RSA SSH key has 1024 bits. Only ssh-rsa keys with 2048 bits or higher are supported by Azure
 func testObjectStorageObject(t *testing.T, cloud commonpb.CloudProvider) {
 	ctx := getCtx(t, cloud, "obj")
 
