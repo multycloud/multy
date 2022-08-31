@@ -159,7 +159,7 @@ resources:  {
         subnet_id:  "subnet_aws"
         image_reference:  {
           os:  CENT_OS
-          version:  "8.2"
+          version:  "8.3"
         }
         availability_zone: 2
       }
@@ -181,7 +181,7 @@ resources:  {
         subnet_id:  "subnet_azure"
         image_reference:  {
           os:  CENT_OS
-          version:  "8.2"
+          version:  "8.3"
         }
         availability_zone: 2
       }

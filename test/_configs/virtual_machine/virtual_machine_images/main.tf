@@ -229,7 +229,7 @@ data "aws_ami" "vm3_aws" {
   most_recent = true
   filter {
     name   = "name"
-    values = ["CentOS 8.2* x86_64"]
+    values = ["CentOS 8.3* x86_64"]
   }
   filter {
     name   = "root-device-type"
@@ -282,7 +282,7 @@ resource "azurerm_linux_virtual_machine" "vm3_azure" {
   source_image_reference {
     publisher = "OpenLogic"
     offer     = "CentOs"
-    sku       = "8_2"
+    sku       = "8_3"
     version   = "latest"
   }
   disable_password_authentication = false

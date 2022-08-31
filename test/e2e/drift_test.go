@@ -19,7 +19,7 @@ func TestDriftDetection(t *testing.T) {
 	ctx := getCtx(t, commonpb.CloudProvider_AWS, "drift")
 	createVnRequest := &resourcespb.CreateVirtualNetworkRequest{Resource: &resourcespb.VirtualNetworkArgs{
 		CommonParameters: &commonpb.ResourceCommonArgs{
-			Location:      commonpb.Location_EU_WEST_1,
+			Location:      commonpb.Location_US_WEST_1,
 			CloudProvider: commonpb.CloudProvider_AWS,
 		},
 		Name:      "drift-test-vn",
@@ -33,8 +33,8 @@ func TestDriftDetection(t *testing.T) {
 	cleanup(t, ctx, server.VnService, vn)
 	assert.Nil(t, vn.CommonParameters.ResourceStatus)
 
-	// aws ec2 modify-vpc-attribute --no-enable-dns-support --vpc-id vpc-0af2d686ed858f734 --region eu-west-1
-	out, err := exec.Command("aws", "ec2", "modify-vpc-attribute", "--no-enable-dns-support", "--vpc-id", vn.AwsOutputs.VpcId, "--region", "eu-west-1").CombinedOutput()
+	// aws ec2 modify-vpc-attribute --no-enable-dns-support --vpc-id vpc-0af2d686ed858f734 --region us-west-1
+	out, err := exec.Command("aws", "ec2", "modify-vpc-attribute", "--no-enable-dns-support", "--vpc-id", vn.AwsOutputs.VpcId, "--region", "us-west-1").CombinedOutput()
 	if err != nil {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
@@ -53,14 +53,14 @@ func TestDriftDetection(t *testing.T) {
 
 	assert.Equal(t, commonpb.ResourceStatus_NEEDS_UPDATE, readVn.CommonParameters.ResourceStatus.Statuses["aws_vpc"])
 
-	// aws ec2 detach-internet-gateway --internet-gateway-id igw-02a9aedfe64b9eca9 --vpc-id vpc-0af2d686ed858f734 --region eu-west-1
-	out, err = exec.Command("aws", "ec2", "detach-internet-gateway", "--vpc-id", vn.AwsOutputs.VpcId, "--internet-gateway-id", vn.AwsOutputs.InternetGatewayId, "--region", "eu-west-1").CombinedOutput()
+	// aws ec2 detach-internet-gateway --internet-gateway-id igw-02a9aedfe64b9eca9 --vpc-id vpc-0af2d686ed858f734 --region us-west-1
+	out, err = exec.Command("aws", "ec2", "detach-internet-gateway", "--vpc-id", vn.AwsOutputs.VpcId, "--internet-gateway-id", vn.AwsOutputs.InternetGatewayId, "--region", "us-west-1").CombinedOutput()
 	if err != nil {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
 
-	// aws ec2 delete-internet-gateway --internet-gateway-id igw-02a9aedfe64b9eca9 --region eu-west-1
-	out, err = exec.Command("aws", "ec2", "delete-internet-gateway", "--internet-gateway-id", vn.AwsOutputs.InternetGatewayId, "--region", "eu-west-1").CombinedOutput()
+	// aws ec2 delete-internet-gateway --internet-gateway-id igw-02a9aedfe64b9eca9 --region us-west-1
+	out, err = exec.Command("aws", "ec2", "delete-internet-gateway", "--internet-gateway-id", vn.AwsOutputs.InternetGatewayId, "--region", "us-west-1").CombinedOutput()
 	if err != nil {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
