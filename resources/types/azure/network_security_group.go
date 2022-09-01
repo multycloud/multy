@@ -53,8 +53,14 @@ func (r AzureNetworkSecurityGroup) FromState(state *output.TfState, plan *output
 		singleDirectionRules := map[string]*resourcespb.NetworkSecurityRule{}
 		bothDirectionRules := map[string]*resourcespb.NetworkSecurityRule{}
 		for _, rule := range stateResource.Rules {
-			cidrBlock := rule.DestinationAddressPrefix
-			if rule.DestinationAddressPrefix == "*" {
+			direction := convertToDirection(rule.Direction)
+			cidrBlock := ""
+			if direction == resourcespb.Direction_INGRESS {
+				cidrBlock = rule.SourceAddressPrefix
+			} else {
+				cidrBlock = rule.DestinationAddressPrefix
+			}
+			if cidrBlock == "*" {
 				cidrBlock = "0.0.0.0/0"
 			}
 			inRule := &resourcespb.NetworkSecurityRule{
@@ -62,13 +68,13 @@ func (r AzureNetworkSecurityGroup) FromState(state *output.TfState, plan *output
 				Priority:  int64(rule.Priority),
 				PortRange: translateToPortRange(rule.DestinationPortRange),
 				CidrBlock: cidrBlock,
-				Direction: convertToDirection(rule.Direction),
+				Direction: direction,
 			}
 
 			if strings.HasSuffix(rule.Name, "-"+rule.Direction) {
 				if ruleNumber, err := strconv.Atoi(strings.TrimSuffix(rule.Name, "-"+rule.Direction)); err == nil {
 					var matchingRuleName string
-					if convertToDirection(rule.Direction) == resourcespb.Direction_INGRESS {
+					if direction == resourcespb.Direction_INGRESS {
 						matchingRuleName = getRuleNameForBidirectionalRule(ruleNumber, resourcespb.Direction_EGRESS)
 					} else {
 						matchingRuleName = getRuleNameForBidirectionalRule(ruleNumber, resourcespb.Direction_INGRESS)
@@ -133,6 +139,10 @@ func translateAzNsgRules(rules []*resourcespb.NetworkSecurityRule) []network_sec
 
 	for i, rule := range rules {
 		protocol := strings.Title(strings.ToLower(rule.Protocol))
+		cidrBlock := rule.CidrBlock
+		if cidrBlock == "0.0.0.0/0" {
+			cidrBlock = "*"
+		}
 		if rule.Direction == resourcespb.Direction_BOTH_DIRECTIONS {
 			rls = append(
 				rls, network_security_group.AzureRule{
@@ -141,7 +151,7 @@ func translateAzNsgRules(rules []*resourcespb.NetworkSecurityRule) []network_sec
 					Priority:                 int(rule.Priority),
 					Access:                   "Allow",
 					SourcePortRange:          "*",
-					SourceAddressPrefix:      "*",
+					SourceAddressPrefix:      cidrBlock,
 					DestinationPortRange:     translatePortRange(rule.PortRange),
 					DestinationAddressPrefix: "*",
 					Direction:                convertDirection(resourcespb.Direction_INGRESS),
@@ -156,11 +166,18 @@ func translateAzNsgRules(rules []*resourcespb.NetworkSecurityRule) []network_sec
 					SourcePortRange:          "*",
 					SourceAddressPrefix:      "*",
 					DestinationPortRange:     translatePortRange(rule.PortRange),
-					DestinationAddressPrefix: "*",
+					DestinationAddressPrefix: cidrBlock,
 					Direction:                convertDirection(resourcespb.Direction_EGRESS),
 				},
 			)
 		} else {
+			sourceAddress := "*"
+			destinationAddress := "*"
+			if rule.Direction == resourcespb.Direction_INGRESS {
+				sourceAddress = cidrBlock
+			} else {
+				destinationAddress = cidrBlock
+			}
 			rls = append(
 				rls, network_security_group.AzureRule{
 					Name:                     strconv.Itoa(i),
@@ -168,9 +185,9 @@ func translateAzNsgRules(rules []*resourcespb.NetworkSecurityRule) []network_sec
 					Priority:                 int(rule.Priority),
 					Access:                   "Allow",
 					SourcePortRange:          "*",
-					SourceAddressPrefix:      "*",
+					SourceAddressPrefix:      sourceAddress,
 					DestinationPortRange:     translatePortRange(rule.PortRange),
-					DestinationAddressPrefix: "*",
+					DestinationAddressPrefix: destinationAddress,
 					Direction:                convertDirection(rule.Direction),
 				},
 			)
