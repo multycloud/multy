@@ -116,7 +116,7 @@ func createNetworkWithInternetAccess(t *testing.T, ctx context.Context, location
 				To:   22,
 			},
 			CidrBlock: "0.0.0.0/0",
-			Direction: resourcespb.Direction_BOTH_DIRECTIONS,
+			Direction: resourcespb.Direction_INGRESS,
 		}, {
 			Protocol: "tcp",
 			Priority: 110,

@@ -25,6 +25,7 @@ func testNsgRules(t *testing.T, ctx context.Context, nsg *resourcespb.NetworkSec
 			},
 			Name:             nsg.Name,
 			VirtualNetworkId: nsg.VirtualNetworkId,
+			// dummy rules in all directions to make sure the port in test (22 inbound) is not open by a random rule
 			Rules: []*resourcespb.NetworkSecurityRule{{
 				Protocol: "tcp",
 				Priority: 110,
@@ -38,11 +39,29 @@ func testNsgRules(t *testing.T, ctx context.Context, nsg *resourcespb.NetworkSec
 				Protocol: "tcp",
 				Priority: 120,
 				PortRange: &resourcespb.PortRange{
-					From: 80,
+					From: 22,
 					To:   80,
 				},
 				CidrBlock: "0.0.0.0/0",
 				Direction: resourcespb.Direction_EGRESS,
+			}, {
+				Protocol: "tcp",
+				Priority: 130,
+				PortRange: &resourcespb.PortRange{
+					From: 4000,
+					To:   4000,
+				},
+				CidrBlock: "0.0.0.0/0",
+				Direction: resourcespb.Direction_INGRESS,
+			}, {
+				Protocol: "tcp",
+				Priority: 140,
+				PortRange: &resourcespb.PortRange{
+					From: 8000,
+					To:   8000,
+				},
+				CidrBlock: "0.0.0.0/0",
+				Direction: resourcespb.Direction_BOTH_DIRECTIONS,
 			}},
 		},
 	}
