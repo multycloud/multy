@@ -92,6 +92,7 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState, plan *output.TfPl
 		Name:             r.Args.Name,
 		ServiceCidr:      r.Args.ServiceCidr,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
+		Version:          r.Args.Version,
 		GcpOverride:      r.Args.GcpOverride,
 		Endpoint:         "dryrun",
 	}
@@ -119,6 +120,7 @@ func (r AwsKubernetesCluster) FromState(state *output.TfState, plan *output.TfPl
 		} else {
 			result.ServiceCidr = cluster.KubernetesNetworkConfig[0].ServiceIpv4Cidr
 		}
+		result.Version = cluster.Version
 		kubeCgfRaw, err := createKubeConfig(r.Args.Name, result.CaCertificate, result.Endpoint, r.GetCloudSpecificLocation())
 		if err != nil {
 			return nil, err
@@ -199,6 +201,7 @@ func (r AwsKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.Tf
 			RoleArn:     fmt.Sprintf("aws_iam_role.%s.arn", r.ResourceId),
 			VpcConfig:   []kubernetes_service.VpcConfig{{SubnetIds: subnetIds, EndpointPrivateAccess: true}},
 			Name:        r.Args.Name,
+			Version:     r.Args.Version,
 			KubernetesNetworkConfig: []kubernetes_service.KubernetesNetworkConfig{{
 				ServiceIpv4Cidr: r.Args.ServiceCidr,
 			}},

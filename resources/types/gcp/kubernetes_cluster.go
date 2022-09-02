@@ -37,6 +37,7 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState, plan *output.TfPl
 		Name:             r.Args.Name,
 		ServiceCidr:      r.Args.ServiceCidr,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
+		Version:          r.Args.Version,
 		GcpOverride:      r.Args.GcpOverride,
 		Endpoint:         "dryrun",
 	}
@@ -71,6 +72,10 @@ func (r GcpKubernetesCluster) FromState(state *output.TfState, plan *output.TfPl
 		}
 
 		result.KubeConfigRaw = rawConfig
+		// only set version if user explicitly set a version
+		if cluster.MinMasterVersion != "" {
+			result.Version = cluster.MasterVersion
+		}
 
 		result.GcpOutputs = &resourcespb.KubernetesClusterGcpOutputs{
 			GkeClusterId: cluster.SelfLink,
@@ -166,6 +171,13 @@ func (r GcpKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.Tf
 	var tags []string
 	tags = append(tags, GcpVirtualNetwork{r.DefaultNodePool.Subnet.VirtualNetwork}.getVnTag())
 	tags = append(tags, GcpSubnet{r.DefaultNodePool.Subnet}.getNetworkTags()...)
+
+	releaseChannel := "UNSPECIFIED"
+	//if r.Args.Version == "" {
+	//	// automatic upgrades
+	//	releaseChannel = ""
+	//}
+
 	outputs = append(outputs, &kubernetes_service.GoogleContainerCluster{
 		GcpResource:           common.NewGcpResource(r.ResourceId, r.Args.Name, r.Args.GetGcpOverride().GetProject()),
 		RemoveDefaultNodePool: true,
@@ -176,6 +188,8 @@ func (r GcpKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.Tf
 		IpAllocationPolicy: []kubernetes_service.GoogleContainerClusterIpAllocationPolicy{{
 			ServicesIpv4CidrBlock: r.Args.ServiceCidr,
 		}},
+		MinMasterVersion: r.Args.Version,
+		ReleaseChannel:   []kubernetes_service.GoogleContainerReleaseChannel{{releaseChannel}},
 		NodeConfig: []kubernetes_node_pool.GoogleContainerNodeConfig{{
 			MachineType: "e2-micro",
 			Tags:        tags,

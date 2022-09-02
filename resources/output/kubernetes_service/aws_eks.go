@@ -10,6 +10,7 @@ type AwsEksCluster struct {
 	VpcConfig               []VpcConfig               `hcl:"vpc_config,blocks" json:"vpc_config"`
 	KubernetesNetworkConfig []KubernetesNetworkConfig `hcl:"kubernetes_network_config,blocks" json:"kubernetes_network_config"`
 	Name                    string                    `hcl:"name" json:"name"`
+	Version                 string                    `hcl:"version" hcle:"omitempty" json:"version"`
 
 	// outputs
 	Endpoint             string                 `json:"endpoint" hcle:"omitempty"`

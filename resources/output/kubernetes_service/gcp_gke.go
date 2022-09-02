@@ -14,10 +14,13 @@ type GoogleContainerCluster struct {
 	IpAllocationPolicy    []GoogleContainerClusterIpAllocationPolicy       `hcl:"ip_allocation_policy,blocks" json:"ip_allocation_policy"`
 	Location              string                                           `hcl:"location" json:"location"`
 	NodeConfig            []kubernetes_node_pool.GoogleContainerNodeConfig `hcl:"node_config,blocks" json:"node_config"`
+	MinMasterVersion      string                                           `hcl:"min_master_version" hcle:"omitempty" json:"min_master_version"`
+	ReleaseChannel        []GoogleContainerReleaseChannel                  `hcl:"release_channel,blocks" hcle:"omitempty" json:"release_channel"`
 
 	// outputs
-	Endpoint   string                       `json:"endpoint" hcle:"omitempty" json:"endpoint"`
-	MasterAuth []GoogleContainerClusterAuth `json:"master_auth" hcle:"omitempty" json:"master_auth"`
+	Endpoint      string                       `json:"endpoint" hcle:"omitempty"`
+	MasterAuth    []GoogleContainerClusterAuth `json:"master_auth" hcle:"omitempty"`
+	MasterVersion string                       `json:"master_version" hcle:"omitempty"`
 }
 
 type GoogleContainerClusterAuth struct {
@@ -29,4 +32,8 @@ type GoogleContainerClusterAuth struct {
 type GoogleContainerClusterIpAllocationPolicy struct {
 	//ClusterIpv4CidrBlock  string `hcl:"cluster_ipv_4_cidr_block"`
 	ServicesIpv4CidrBlock string `hcl:"services_ipv4_cidr_block" json:"services_ipv4_cidr_block"`
+}
+
+type GoogleContainerReleaseChannel struct {
+	Channel string `hcl:"channel" json:"channel"`
 }

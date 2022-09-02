@@ -161,6 +161,9 @@ resource "google_container_cluster" "cluster_gcp" {
     service_account = google_service_account.cluster_gcp.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
   }
+  release_channel {
+    channel = "UNSPECIFIED"
+  }
   provider = "google.europe-west1"
 }
 resource "aws_vpc" "example_vn_aws" {
