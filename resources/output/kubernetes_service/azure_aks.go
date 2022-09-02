@@ -12,12 +12,13 @@ type AzureIdentity struct {
 	Type        string `hcl:"type" hcle:"omitempty"`
 }
 
-type AzureEksCluster struct {
+type AzureAksCluster struct {
 	*common.AzResource `hcl:",squash" default:"name=azurerm_kubernetes_cluster"`
 	DefaultNodePool    *kubernetes_node_pool.AzureKubernetesNodePool `hcl:"default_node_pool" json:"-"`
 	DnsPrefix          string                                        `hcl:"dns_prefix" json:"dns_prefix"`
 	Identity           []AzureIdentity                               `hcl:"identity,blocks" json:"identity"`
 	NetworkProfile     []NetworkProfile                              `hcl:"network_profile,blocks" json:"network_profile"`
+	KubernetesVersion  string                                        `hcl:"kubernetes_version" hcle:"omitempty" json:"kubernetes_version"`
 
 	// outputs
 	KubeConfigRaw      string                                          `json:"kube_config_raw" hcle:"omitempty" json:"kube_config_raw"`

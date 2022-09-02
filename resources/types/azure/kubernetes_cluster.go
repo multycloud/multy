@@ -31,6 +31,7 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState, plan *output.Tf
 		Name:             r.Args.Name,
 		ServiceCidr:      r.Args.ServiceCidr,
 		VirtualNetworkId: r.Args.VirtualNetworkId,
+		Version:          r.Args.Version,
 		GcpOverride:      r.Args.GcpOverride,
 		Endpoint:         "dryrun",
 	}
@@ -42,7 +43,7 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState, plan *output.Tf
 	}
 	statuses := map[string]commonpb.ResourceStatus_Status{}
 
-	if cluster, exists, err := output.MaybeGetParsedById[kubernetes_service.AzureEksCluster](state, r.ResourceId); exists {
+	if cluster, exists, err := output.MaybeGetParsedById[kubernetes_service.AzureAksCluster](state, r.ResourceId); exists {
 		if err != nil {
 			return nil, err
 		}
@@ -56,6 +57,7 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState, plan *output.Tf
 		result.Endpoint = cluster.KubeConfig[0].Host
 		result.CaCertificate = cluster.KubeConfig[0].ClusterCaCertificate
 		result.KubeConfigRaw = cluster.KubeConfigRaw
+		result.Version = cluster.KubernetesVersion
 		if len(cluster.DefaultNodePoolOut) == 0 {
 			result.DefaultNodePool = nil
 		} else {
@@ -65,7 +67,7 @@ func (r AzureKubernetesCluster) FromState(state *output.TfState, plan *output.Tf
 		result.AzureOutputs = &resourcespb.KubernetesClusterAzureOutputs{
 			AksClusterId: cluster.ResourceId,
 		}
-		output.AddToStatuses(statuses, "azure_kubernetes_cluster", output.MaybeGetPlannedChageById[kubernetes_service.AzureEksCluster](plan, r.ResourceId))
+		output.AddToStatuses(statuses, "azure_kubernetes_cluster", output.MaybeGetPlannedChageById[kubernetes_service.AzureAksCluster](plan, r.ResourceId))
 	} else {
 		statuses["azure_kubernetes_cluster"] = commonpb.ResourceStatus_NEEDS_CREATE
 	}
@@ -86,11 +88,12 @@ func (r AzureKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.
 	defaultPool.ClusterId = ""
 
 	return []output.TfBlock{
-		&kubernetes_service.AzureEksCluster{
-			AzResource:      common.NewAzResource(r.ResourceId, r.Args.Name, GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId), r.GetCloudSpecificLocation()),
-			DefaultNodePool: defaultPool,
-			DnsPrefix:       common.UniqueId(r.Args.Name, "aks", common.LowercaseAlphanumericFormatFunc),
-			Identity:        []kubernetes_service.AzureIdentity{{Type: "SystemAssigned"}},
+		&kubernetes_service.AzureAksCluster{
+			AzResource:        common.NewAzResource(r.ResourceId, r.Args.Name, GetResourceGroupName(r.Args.CommonParameters.ResourceGroupId), r.GetCloudSpecificLocation()),
+			DefaultNodePool:   defaultPool,
+			DnsPrefix:         common.UniqueId(r.Args.Name, "aks", common.LowercaseAlphanumericFormatFunc),
+			Identity:          []kubernetes_service.AzureIdentity{{Type: "SystemAssigned"}},
+			KubernetesVersion: r.Args.Version,
 			NetworkProfile: []kubernetes_service.NetworkProfile{{
 				NetworkPlugin:    "azure",
 				DnsServiceIp:     "10.100.0.10",
@@ -101,5 +104,5 @@ func (r AzureKubernetesCluster) Translate(ctx resources.MultyContext) ([]output.
 	}, nil
 }
 func (r AzureKubernetesCluster) GetMainResourceName() (string, error) {
-	return output.GetResourceName(kubernetes_service.AzureEksCluster{}), nil
+	return output.GetResourceName(kubernetes_service.AzureAksCluster{}), nil
 }

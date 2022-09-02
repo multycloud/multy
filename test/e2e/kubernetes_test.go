@@ -16,12 +16,20 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
 
 type GetNodesOutput struct {
 	Items []Node `json:"items"`
+}
+
+type VersionOutput struct {
+	ServerVersion struct {
+		Major string `json:"major,omitempty"`
+		Minor string `json:"minor,omitempty"`
+	} `json:"serverVersion"`
 }
 
 type NodeStatusCondition struct {
@@ -111,6 +119,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		Name:             "k8testmulty",
 		VirtualNetworkId: vn.CommonParameters.ResourceId,
 		ServiceCidr:      "10.100.0.0/16",
+		Version:          "1.23",
 		DefaultNodePool: &resourcespb.KubernetesNodePoolArgs{
 			Name:              "default",
 			SubnetId:          subnet.CommonParameters.ResourceId,
@@ -148,6 +157,7 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 	if err != nil {
 		t.Fatal(fmt.Errorf("can't create kube config: %s", err.Error()))
 	}
+
 	// kubectl get nodes -o json
 	out, err := exec.Command("/usr/local/bin/kubectl", "--kubeconfig", kubecfg, "get", "nodes", "-o", "json").CombinedOutput()
 	if err != nil {
@@ -171,6 +181,23 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		assert.Equal(t, "test", labels["multy.dev/env"])
 	}
 
+	// kubectl version -o json
+	out, err = exec.Command("/usr/local/bin/kubectl", "--kubeconfig", kubecfg, "version", "-o", "json").CombinedOutput()
+	if err != nil {
+		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
+	}
+	v := VersionOutput{}
+	err = json.Unmarshal(out, &v)
+	if assert.NoError(t, err, "output: %s", string(out)) {
+		assert.Equal(t, "1", v.ServerVersion.Major)
+		// for some reason this is 23+ for AWS
+		if len(v.ServerVersion.Minor) > 2 {
+			assert.Equal(t, "23", v.ServerVersion.Minor[:2])
+		} else {
+			assert.Equal(t, "23", v.ServerVersion.Minor)
+		}
+	}
+
 	testKubernetesDeployment(t, kubecfg)
 
 }
@@ -187,6 +214,7 @@ func readAndAssertEq(t *testing.T, s *api.Server, ctx context.Context, cluster *
 
 	assert.Equal(t, cluster.GetResource().GetName(), read.GetName())
 	assert.Equal(t, cluster.GetResource().GetServiceCidr(), read.GetServiceCidr())
+	assert.True(t, strings.HasPrefix(read.GetVersion(), cluster.GetResource().GetVersion()), "version mismatched, should be %s but is %s", cluster.GetResource().GetVersion(), read.GetVersion())
 	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetName(), read.GetDefaultNodePool().GetName())
 	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetVmSize(), read.GetDefaultNodePool().GetVmSize())
 	assert.Equal(t, cluster.GetResource().GetDefaultNodePool().GetMinNodeCount(), read.GetDefaultNodePool().GetMinNodeCount())

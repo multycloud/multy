@@ -36,6 +36,7 @@ message KubernetesClusterArgs {
   string name = 2;
   string service_cidr = 3;
   string virtual_network_id = 4;
+  string version = 7;
 
   KubernetesNodePoolArgs default_node_pool = 5;
   KubernetesClusterOverrides gcp_override = 6;
@@ -62,6 +63,8 @@ message KubernetesClusterResource {
   string service_cidr = 3;
   KubernetesNodePoolResource default_node_pool = 4;
   string virtual_network_id = 5;
+  string version = 13;
+
   KubernetesClusterOverrides gcp_override = 9;
 
   // outputs
