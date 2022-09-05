@@ -57,6 +57,10 @@ jobs:
       - name: Install gke-cloud-auth-plugin
         run: gcloud components install gke-gcloud-auth-plugin
 
+      - uses: tale/kubectl-action@v1
+        with:
+          kubectl-version: v1.24.0
+
       - name: Test
         run: go test ./test/e2e -tags=e2e -timeout=180m -parallel 20
         env:
