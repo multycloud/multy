@@ -4,6 +4,7 @@
 package e2e
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -187,7 +188,8 @@ func testKubernetes(t *testing.T, cloud commonpb.CloudProvider) {
 		t.Fatal(fmt.Errorf("command failed.\n err: %s\noutput: %s", err.Error(), string(out)))
 	}
 	v := VersionOutput{}
-	err = json.Unmarshal(out, &v)
+	// by using a decoder we only read the first value and can ingore warnings
+	err = json.NewDecoder(bytes.NewReader(out)).Decode(&v)
 	if assert.NoError(t, err, "output: %s", string(out)) {
 		assert.Equal(t, "1", v.ServerVersion.Major)
 		// for some reason this is 23+ for AWS
