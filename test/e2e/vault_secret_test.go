@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"github.com/multycloud/multy/api/proto/resourcespb"
+	"github.com/multycloud/multy/resources/common"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/ssh"
 	"testing"
@@ -31,7 +32,7 @@ func testVaultSecret(t *testing.T, cloud commonpb.CloudProvider) {
 			Location:      location,
 			CloudProvider: cloud,
 		},
-		Name: "test-vault-multy",
+		Name: "test-vault-multy-" + common.RandomString(2),
 	}}
 	vault, err := server.VaultService.Create(ctx, createVaultRequest)
 	if err != nil {
