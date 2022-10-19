@@ -40,6 +40,7 @@ message DeleteVirtualMachineRequest {
 
 message VirtualMachineAwsOverride {
   string instance_type = 1;
+  string ami = 2;
 }
 
 message VirtualMachineAzureOverride {
