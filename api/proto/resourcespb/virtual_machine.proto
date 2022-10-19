@@ -51,6 +51,7 @@ message VirtualMachineAzureOverride {
 message VirtualMachineGcpOverride {
   string project = 1;
   string machine_type = 2;
+  string image = 3;
 }
 
 message VirtualMachineArgs {

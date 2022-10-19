@@ -260,7 +260,7 @@ resource "google_compute_instance" "vm_gcp" {
   machine_type = "n2d-standard-16"
   boot_disk {
     initialize_params {
-      image = "ubuntu-os-cloud/ubuntu-1804-lts"
+      image = "debian-cloud/debian-11"
     }
   }
   zone = "europe-west1-b"

@@ -45,6 +45,7 @@ resources:  {
         subnet_id:  "subnet_gcp"
         gcp_override:  {
           machine_type:  "n2d-standard-16"
+          image: "debian-cloud/debian-11"
         }
         availability_zone: 1
       }
