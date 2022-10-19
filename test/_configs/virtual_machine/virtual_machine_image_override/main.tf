@@ -238,10 +238,10 @@ resource "azurerm_linux_virtual_machine" "vm_azure" {
   admin_username = "adminuser"
   admin_password = random_password.vm_azure.result
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
-    version   = "latest"
+    publisher = "atomizedinc1587939464368"
+    offer     = "atomized-h-debian10-v1"
+    sku       = "hdebian10plan"
+    version   = "1.0.0"
   }
   disable_password_authentication = false
   identity {

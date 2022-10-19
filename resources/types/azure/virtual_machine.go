@@ -212,9 +212,19 @@ func (r AzureVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock
 
 	computerName := regexp.MustCompile("[^a-zA-Z0-9]+").ReplaceAllString(r.Args.Name, "")
 
-	sourceImg, err := virtual_machine.GetLatestAzureSourceImageReference(r.Args.ImageReference)
-	if err != nil {
-		return nil, err
+	var sourceImg virtual_machine.AzureSourceImageReference
+	if sourceImgRefOverride := r.Args.AzureOverride.GetSourceImageReference(); sourceImgRefOverride != nil {
+		sourceImg = virtual_machine.AzureSourceImageReference{
+			Publisher: sourceImgRefOverride.GetPublisher(),
+			Offer:     sourceImgRefOverride.GetOffer(),
+			Sku:       sourceImgRefOverride.GetSku(),
+			Version:   sourceImgRefOverride.GetVersion(),
+		}
+	} else {
+		sourceImg, err = virtual_machine.GetLatestAzureSourceImageReference(r.Args.ImageReference)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var vmSize string

@@ -146,6 +146,12 @@ resources:  {
         subnet_id:  "subnet_azure"
         azure_override:  {
           size:  "Standard_F1"
+          source_image_reference: {
+            publisher: "atomizedinc1587939464368"
+            offer: "atomized-h-debian10-v1"
+            sku: "hdebian10plan"
+            version: "1.0.0"
+          }
         }
         availability_zone: 1
       }
