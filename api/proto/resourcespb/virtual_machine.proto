@@ -40,15 +40,18 @@ message DeleteVirtualMachineRequest {
 
 message VirtualMachineAwsOverride {
   string instance_type = 1;
+  string ami = 2;
 }
 
 message VirtualMachineAzureOverride {
   string size = 1;
+  AzureSourceImageReference source_image_reference = 2;
 }
 
 message VirtualMachineGcpOverride {
   string project = 1;
   string machine_type = 2;
+  string image = 3;
 }
 
 message VirtualMachineArgs {
@@ -108,7 +111,14 @@ message VirtualMachineResource {
   // outputs
   string public_ip = 12;
   string identity_id = 13;
-    VirtualMachineAwsOutputs aws_outputs = 19;
-    VirtualMachineAzureOutputs azure_outputs = 20;
-    VirtualMachineGcpOutputs gcp_outputs = 21;
+  VirtualMachineAwsOutputs aws_outputs = 19;
+  VirtualMachineAzureOutputs azure_outputs = 20;
+  VirtualMachineGcpOutputs gcp_outputs = 21;
+}
+
+message AzureSourceImageReference {
+  string publisher = 1;
+  string offer = 2;
+  string sku = 3;
+  string version = 4;
 }

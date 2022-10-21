@@ -13,6 +13,7 @@ import (
 	"github.com/multycloud/multy/resources/output/virtual_machine"
 	"github.com/multycloud/multy/resources/types"
 	"github.com/multycloud/multy/util"
+	"strconv"
 )
 
 type AwsVirtualMachine struct {
@@ -123,7 +124,7 @@ type AwsCallerIdentityData struct {
 	*output.TerraformDataSource `hcl:",squash" default:"name=aws_caller_identity"`
 }
 
-func (r AwsVirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlock, error) {
+func (r AwsVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, error) {
 	if r.Args.UserDataBase64 != "" {
 		r.Args.UserDataBase64 = fmt.Sprintf(hclencoder.EscapeString(r.Args.UserDataBase64))
 	}
@@ -212,16 +213,25 @@ func (r AwsVirtualMachine) Translate(ctx resources.MultyContext) ([]output.TfBlo
 		awsResources = append(awsResources, keyPair)
 	}
 
-	awsAmi, err := virtual_machine.LatestAwsAmi(r.Args.ImageReference, r.ResourceId)
-	if err != nil {
-		return nil, err
+	var ami string
+	if r.Args.AwsOverride.GetAmi() != "" {
+		// strconv.Quote is a workaround for [this edge case]:https://github.com/multycloud/multy/issues/382#issuecomment-1283038379
+		ami = strconv.Quote(r.Args.AwsOverride.GetAmi())
+	} else {
+		awsAmi, err := virtual_machine.LatestAwsAmi(r.Args.ImageReference, r.ResourceId)
+		if err != nil {
+			return nil, err
+		}
+
+		ami = fmt.Sprintf("%s.id", awsAmi.GetFullResourceRef())
+
+		awsResources = append(awsResources, awsAmi)
 	}
 
-	ec2.Ami = fmt.Sprintf("%s.id", awsAmi.GetFullResourceRef())
+	ec2.Ami = ami
 
-	awsResources = append(awsResources, awsAmi, ec2)
+	awsResources = append(awsResources, ec2)
 	return awsResources, nil
-
 }
 
 func (r AwsVirtualMachine) GetMainResourceName() (string, error) {

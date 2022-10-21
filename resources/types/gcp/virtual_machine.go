@@ -119,6 +119,7 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 	if err != nil {
 		return nil, err
 	}
+
 	var tags []string
 	if len(r.NetworkSecurityGroups) > 0 {
 		for _, nsg := range r.NetworkSecurityGroups {
@@ -129,6 +130,7 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 		tags = append(tags, GcpVirtualNetwork{r.Subnet.VirtualNetwork}.getVnTag())
 	}
 	tags = append(tags, GcpSubnet{r.Subnet}.getNetworkTags()...)
+
 	var size string
 	if r.Args.GetGcpOverride().GetMachineType() != "" {
 		size = r.Args.GetGcpOverride().GetMachineType()
@@ -138,9 +140,15 @@ func (r GcpVirtualMachine) Translate(resources.MultyContext) ([]output.TfBlock, 
 			return nil, err
 		}
 	}
-	image, err := virtual_machine.GetLatestGcpImage(r.Args.ImageReference)
-	if err != nil {
-		return nil, err
+
+	var image string
+	if r.Args.GcpOverride.GetImage() != "" {
+		image = r.Args.GcpOverride.GetImage()
+	} else {
+		image, err = virtual_machine.GetLatestGcpImage(r.Args.ImageReference)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	userData, err := base64.StdEncoding.DecodeString(r.Args.UserDataBase64)
