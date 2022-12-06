@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"io"
+	"log"
 )
 
 type TfPlan struct {
@@ -48,7 +50,8 @@ func ParsePlanFromOutput(outputJson string) (*TfPlan, error) {
 		elem := TfPlanMessage{}
 		err = json.Unmarshal([]byte(line), &elem)
 		if err != nil {
-			return nil, err
+			log.Printf("[ERROR] Unable to parse terraform output (error: %s, line: %s): %s\n", err, line, outputJson)
+			return nil, errors.InternalServerErrorWithMessage("unable to parse terraform plan output", err)
 		}
 		out = append(out, elem)
 	}

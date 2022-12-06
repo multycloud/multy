@@ -147,7 +147,7 @@ func (c terraformCmd) GetState(ctx context.Context, userId string, client db.TfS
 	err = json.Unmarshal([]byte(terraformState), &state)
 	if err != nil {
 		log.Printf("[ERROR] Unable to parse terraform output (error: %s): %s\n", err, terraformState)
-		return nil, errors.InternalServerErrorWithMessage("unable to parse terraform output", err)
+		return nil, errors.InternalServerErrorWithMessage("unable to parse terraform get output", err)
 	}
 	return &state, err
 }
