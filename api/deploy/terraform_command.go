@@ -146,7 +146,8 @@ func (c terraformCmd) GetState(ctx context.Context, userId string, client db.TfS
 
 	err = json.Unmarshal([]byte(terraformState), &state)
 	if err != nil {
-		return nil, err
+		log.Printf("[ERROR] Unable to parse terraform output (error: %s): %s\n", err, terraformState)
+		return nil, errors.InternalServerErrorWithMessage("unable to parse terraform output", err)
 	}
 	return &state, err
 }
@@ -171,6 +172,7 @@ func parseTfOutputs(outputJson *bytes.Buffer) ([]tfOutput, error) {
 		elem := tfOutput{}
 		err = json.Unmarshal([]byte(line), &elem)
 		if err != nil {
+			log.Printf("[ERROR] Unable to parse terraform output (error: %s, line: %s): %s\n", err, line, outputJson.String())
 			return nil, err
 		}
 		out = append(out, elem)
