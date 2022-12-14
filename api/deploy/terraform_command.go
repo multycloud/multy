@@ -79,7 +79,7 @@ func (c terraformCmd) Init(ctx context.Context, dir string) error {
 	region := trace.StartRegion(ctx, "tf init")
 	defer region.End()
 
-	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+dir, "init", "-reconfigure", "-lock-timeout", "1m")
+	cmd := exec.CommandContext(ctx, "terraform", "-chdir="+dir, "init", "-migrate-state", "-force-copy", "-lock-timeout", "1m")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
