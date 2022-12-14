@@ -1,13 +1,13 @@
 package output
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/multycloud/multy/api/errors"
 	"github.com/multycloud/multy/api/proto/commonpb"
 	"io"
 	"log"
+	"strings"
 )
 
 type TfPlan struct {
@@ -44,23 +44,20 @@ type TfPlanResource struct {
 
 func ParsePlanFromOutput(outputJson string) (*TfPlan, error) {
 	var out []TfPlanMessage
-	b := bytes.NewBufferString(outputJson)
-	line, err := b.ReadString('\n')
-	for ; err == nil; line, err = b.ReadString('\n') {
-		elem := TfPlanMessage{}
-		err = json.Unmarshal([]byte(line), &elem)
-		if err != nil {
-			log.Printf("[ERROR] Unable to parse terraform output (error: %s, line: %s): %s\n", err, line, outputJson)
-			return nil, errors.InternalServerErrorWithMessage("unable to parse terraform plan output", err)
-		}
+	elem := TfPlanMessage{}
+	var err error
+	dec := json.NewDecoder(strings.NewReader(outputJson))
+	for ; err == nil; err = dec.Decode(&elem) {
 		out = append(out, elem)
+		elem = TfPlanMessage{}
 	}
 
 	if err == io.EOF {
 		return &TfPlan{Messages: out}, nil
+	} else {
+		log.Printf("[ERROR] Unable to parse terraform output (error: %s): %s\n", err, outputJson)
+		return nil, errors.InternalServerErrorWithMessage("unable to parse terraform plan output", err)
 	}
-
-	return nil, err
 }
 
 func (t *TfPlan) MaybeGetPlannedChange(resourceRef string) *TfPlannedChange {

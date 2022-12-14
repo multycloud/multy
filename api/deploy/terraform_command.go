@@ -167,20 +167,18 @@ func getFirstError(outputs []tfOutput) error {
 
 func parseTfOutputs(outputJson *bytes.Buffer) ([]tfOutput, error) {
 	var out []tfOutput
-	line, err := outputJson.ReadString('\n')
-	for ; err == nil; line, err = outputJson.ReadString('\n') {
-		elem := tfOutput{}
-		err = json.Unmarshal([]byte(line), &elem)
-		if err != nil {
-			log.Printf("[ERROR] Unable to parse terraform output (error: %s, line: %s): %s\n", err, line, outputJson.String())
-			return nil, err
-		}
+	var err error
+	elem := tfOutput{}
+	dec := json.NewDecoder(outputJson)
+	for ; err == nil; err = dec.Decode(&elem) {
 		out = append(out, elem)
+		elem = tfOutput{}
 	}
 
 	if err == io.EOF {
 		return out, nil
+	} else {
+		log.Printf("[ERROR] Unable to parse terraform output (error: %s): %s\n", err, outputJson.String())
+		return nil, err
 	}
-
-	return nil, err
 }
