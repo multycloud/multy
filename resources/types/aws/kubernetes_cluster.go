@@ -46,7 +46,7 @@ func createKubeConfig(clusterName string, certData string, endpoint string, awsR
 		},
 		Contexts: []kubernetes_service.NamedKubeConfigContext{
 			{
-				Name: clusterName,
+				Name: clusterName + "-aws",
 				Context: kubernetes_service.KubeConfigContext{
 					User:    username,
 					Cluster: clusterName,
@@ -69,7 +69,7 @@ func createKubeConfig(clusterName string, certData string, endpoint string, awsR
 				},
 			},
 		},
-		CurrentContext: clusterName,
+		CurrentContext: clusterName + "-aws",
 	}
 
 	s, err := yaml.Marshal(kubeConfig)
