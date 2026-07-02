@@ -98,7 +98,7 @@ func (c Client) UpdateQPSMetric(userId string, service string, method string) er
 	wg.Go(func() error {
 		err := logAction(userId, service, method)
 		if err != nil {
-			log.Printf("[WARNING] Logging error ocurred: %s\n", err)
+			log.Printf("[WARNING] Logging error occurred: %s\n", err)
 		}
 		return err
 	})
@@ -128,7 +128,7 @@ func (c Client) UpdateQPSMetric(userId string, service string, method string) er
 			Namespace:  aws.String("multy/server/"),
 		})
 		if err != nil {
-			log.Printf("[WARNING] Cloudwatch error ocurred: %s\n", err.Error())
+			log.Printf("[WARNING] Cloudwatch error occurred: %s\n", err.Error())
 			return err
 		}
 		return nil
@@ -169,7 +169,7 @@ func (c Client) UpdateErrorMetric(service string, method string, errorCode strin
 		Namespace:  aws.String("multy/server/"),
 	})
 	if err != nil {
-		log.Printf("[WARNING] Cloudwatch error ocurred: %s\n", err.Error())
+		log.Printf("[WARNING] Cloudwatch error occurred: %s\n", err.Error())
 	}
 	return err
 }
