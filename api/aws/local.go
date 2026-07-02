@@ -54,7 +54,7 @@ func (c LocalClient) getFilePath(configPrefix string, fileName string) (string, 
 func (c LocalClient) UpdateQPSMetric(_ string, service string, method string) error {
 	err := logAction("local#", service, method)
 	if err != nil {
-		log.Printf("[WARNING] Logging error ocurred: %s", err)
+		log.Printf("[WARNING] Logging error occurred: %s", err)
 	}
 	return err
 }
